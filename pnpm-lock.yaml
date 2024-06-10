@@ -2509,6 +2509,7 @@ packages:
   /@humanwhocodes/config-array@0.11.14:
     resolution: {integrity: sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg==}
     engines: {node: '>=10.10.0'}
+    deprecated: Use @eslint/config-array instead
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
       debug: 4.3.5
@@ -2524,6 +2525,7 @@ packages:
 
   /@humanwhocodes/object-schema@2.0.3:
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
+    deprecated: Use @eslint/object-schema instead
     dev: true
 
   /@img/sharp-darwin-arm64@0.33.4:
@@ -7644,7 +7646,7 @@ packages:
     dependencies:
       '@types/node': 18.11.9
       cosmiconfig: 8.3.6(typescript@5.4.5)
-      jiti: 1.21.4
+      jiti: 1.21.6
       typescript: 5.4.5
     dev: true
 
@@ -11236,8 +11238,8 @@ packages:
       - ts-node
     dev: true
 
-  /jiti@1.21.4:
-    resolution: {integrity: sha512-DUP4hpE2Of384xS46IiRm1JK3r4Ix4ADQI5k65y4joiZF7Oeo2ySdYG7PbqioljFalu1ndzto0Sb5IfExYliYA==}
+  /jiti@1.21.6:
+    resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
     dev: true
 
@@ -12935,7 +12937,7 @@ packages:
         optional: true
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.4.5)
-      jiti: 1.21.4
+      jiti: 1.21.6
       postcss: 8.4.38
       semver: 7.6.2
       webpack: 5.91.0(esbuild@0.20.2)
