@@ -1,3 +1,5 @@
+import { golos } from '@/config/Fonts/golos';
+
 import breakpointsTheme from '../../UiBreakpoints';
 import colorTheme from '../../UiColorTheme';
 
@@ -51,5 +53,17 @@ export default {
 
   copyright: {
     color: colorTheme.palette.grey200.main,
+    fontFamily: golos.style.fontFamily,
+  },
+
+  listWrapper: {
+    gap: '0.5rem',
+    justifyContent: 'center',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+      gap: '0.25rem',
+    },
+    '@media (max-width: 350px)': {
+      gap: '0',
+    },
   },
 };

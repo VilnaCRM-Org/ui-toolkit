@@ -3,12 +3,12 @@ import Image from 'next/image';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Logo from '@/assets/svg/Logo.svg';
 import UiTypography from '@/components/UiTypography';
 
-import Logo from '../../../features/landing/assets/svg/logo/Logo.svg';
-import { SocialMediaList } from '../../../features/landing/components/SocialMedia';
-import { SocialMedia } from '../../../features/landing/types/social-media';
 import { PrivacyPolicy } from '../PrivacyPolicy';
+import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
+import { SocialMedia } from '../types';
 import { VilnaCRMEmail } from '../VilnaCRMEmail';
 
 import styles from './styles';
@@ -42,7 +42,11 @@ function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.R
             </UiTypography>
             <Stack direction="row" gap="0.875rem" alignItems="center">
               <VilnaCRMEmail />
-              <SocialMediaList socialLinks={socialLinks} />
+              <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
+                {socialLinks.map(item => (
+                  <SocialMediaItem item={item} key={item.id} />
+                ))}
+              </Stack>
             </Stack>
           </Stack>
         </Stack>

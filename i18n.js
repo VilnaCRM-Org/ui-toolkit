@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import resources from './pages/i18n/localization.json';
+import resources from './i18n/localization.json';
 
 i18n.use(initReactI18next).init({
   lng: 'en',

@@ -1,9 +1,9 @@
 import { Trans } from 'react-i18next';
 
-import { ServicesHoverCard } from '../../features/landing/components/Possibilities/ServicesHoverCard';
 import UiTooltip from '../UiTooltip';
 import UiTypography from '../UiTypography';
 
+import { ServicesHoverCard } from './ServicesHoverCard';
 import styles from './styles';
 import { CardContentProps } from './types';
 

@@ -3,12 +3,12 @@ import Image from 'next/image';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import Logo from '@/assets/svg/Logo.svg';
 import UiTypography from '@/components/UiTypography';
 
-import Logo from '../../../features/landing/assets/svg/logo/Logo.svg';
-import { SocialMediaList } from '../../../features/landing/components/SocialMedia';
-import { SocialMedia } from '../../../features/landing/types/social-media/index';
 import { PrivacyPolicy } from '../PrivacyPolicy';
+import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
+import { SocialMedia } from '../types';
 import { VilnaCRMEmail } from '../VilnaCRMEmail';
 
 import styles from './styles';
@@ -21,7 +21,11 @@ function Mobile({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactEle
     <Container sx={styles.wrapper}>
       <Stack sx={styles.content}>
         <Image src={Logo} alt={t('footer.logo_alt')} width={131} height={44} />
-        <SocialMediaList socialLinks={socialLinks} />
+        <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
+          {socialLinks.map(item => (
+            <SocialMediaItem item={item} key={item.id} />
+          ))}
+        </Stack>
       </Stack>
       <VilnaCRMEmail />
       <PrivacyPolicy />

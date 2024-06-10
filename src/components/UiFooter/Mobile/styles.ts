@@ -1,4 +1,6 @@
+import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
+import { golos } from '@/config/Fonts/golos';
 
 export default {
   wrapper: {
@@ -19,10 +21,22 @@ export default {
   },
 
   copyright: {
+    fontFamily: golos.style.fontFamily,
     paddingBottom: '1.25rem',
     color: colorTheme.palette.grey200.main,
     textAlign: 'center',
     width: '100%',
     mt: '1rem',
+  },
+
+  listWrapper: {
+    gap: '0.5rem',
+    justifyContent: 'center',
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+      gap: '0.25rem',
+    },
+    '@media (max-width: 350px)': {
+      gap: '0',
+    },
   },
 };

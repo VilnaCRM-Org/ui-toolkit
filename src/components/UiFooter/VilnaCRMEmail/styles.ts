@@ -1,3 +1,5 @@
+import { golos } from '@/config/Fonts/golos';
+
 import breakpointsTheme from '../../UiBreakpoints';
 import colorTheme from '../../UiColorTheme';
 
@@ -18,6 +20,7 @@ export default {
   emailLink: {
     color: 'inherit',
     textDecoration: 'none',
+    fontFamily: golos.style.fontFamily,
   },
 
   emailWrapper: {

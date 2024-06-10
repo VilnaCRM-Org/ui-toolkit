@@ -15,3 +15,8 @@ export interface CardContentProps {
   item: CardItem;
   isSmallCard: boolean;
 }
+
+export interface ImageList {
+  image: string;
+  alt: string;
+}

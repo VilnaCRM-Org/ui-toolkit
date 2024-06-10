@@ -29,7 +29,7 @@ function ToolbarComponent(): React.ReactElement {
         alignItems: 'center',
       }}
     >
-      {t('Hello World')}
+      {t('Click here')}
     </Box>
   );
 }

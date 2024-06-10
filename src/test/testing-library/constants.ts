@@ -1,8 +1,7 @@
 import { faker } from '@faker-js/faker';
 
 import { CardItem } from '@/components/UiCardList/types';
-
-import { SocialMedia } from '../../features/landing/types/social-media';
+import { SocialMedia } from '@/components/UiFooter/types';
 
 export const testId: string = faker.string.uuid();
 export const testTitle: string = faker.lorem.word(6);

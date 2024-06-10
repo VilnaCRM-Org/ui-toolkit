@@ -1,4 +1,5 @@
-import Check from '../../assets/img/check.svg';
+import Check from '@/assets/svg/check.svg';
+
 import colorTheme from '../UiColorTheme';
 
 export default {

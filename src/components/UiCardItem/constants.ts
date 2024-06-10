@@ -1,7 +1,15 @@
-import Ruby from '../../features/landing/assets/svg/possibilities/ruby.svg';
-import WhyUsTemplatesIcon from '../../features/landing/assets/svg/why-us/templates.svg';
+import WhyUsTemplatesIcon from '@/assets/svg/Features/templates.svg';
+import Ruby from '@/assets/svg/Gemstones/ruby.svg';
+import Drupal from '@/assets/svg/TooltipIcons/Drupal.svg';
+import Joomla from '@/assets/svg/TooltipIcons/Joomla.svg';
+import Magento from '@/assets/svg/TooltipIcons/Magento.svg';
+import Shopify from '@/assets/svg/TooltipIcons/Shopify.svg';
+import Wix from '@/assets/svg/TooltipIcons/Wix.svg';
+import WooCommerce from '@/assets/svg/TooltipIcons/WooCommerce.svg';
+import WordPress from '@/assets/svg/TooltipIcons/WordPress.svg';
+import Zapier from '@/assets/svg/TooltipIcons/Zapier.svg';
 
-import { CardItem } from './types';
+import { CardItem, ImageList } from './types';
 
 export const SMALL_CARD_ITEM: CardItem = {
   type: 'smallCard',
@@ -20,3 +28,14 @@ export const LARGE_CARD_ITEM: CardItem = {
   text: 'why_us.texts.text_you_have_store',
   alt: 'why_us.alt_image.alt_ready_templates',
 };
+
+export const imageList: ImageList[] = [
+  { image: Wix, alt: 'Wix' },
+  { image: WordPress, alt: 'WordPress' },
+  { image: Zapier, alt: 'Zapier' },
+  { image: Shopify, alt: 'Shopify' },
+  { image: Magento, alt: 'Magento' },
+  { image: Joomla, alt: 'Joomla' },
+  { image: Drupal, alt: 'Drupal' },
+  { image: WooCommerce, alt: 'WooCommerce' },
+];
