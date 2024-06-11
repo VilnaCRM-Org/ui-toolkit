@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { UiTextFieldForm } from '@/components';
+import { UiTextFieldForm } from '../../components';
 
 import { testPlaceholder, testText } from './constants';
 

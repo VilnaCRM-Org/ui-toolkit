@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { Mobile } from '@/components/UiFooter/Mobile';
+import { Mobile } from '../../components/UiFooter/Mobile';
 
 import { mockedSocialLinks } from './constants';
 

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import CardGrid from '@/components/UiCardList/CardGrid';
+import CardGrid from '../../components/UiCardList/CardGrid';
 
 import { cardList, largeCardList, smallCardList } from './constants';
 

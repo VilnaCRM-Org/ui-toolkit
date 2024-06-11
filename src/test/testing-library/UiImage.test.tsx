@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 
-import { UiImage } from '@/components';
+import { UiImage } from '../../components';
 
 import { testImg, testText } from './constants';
 

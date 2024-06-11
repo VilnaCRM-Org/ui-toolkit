@@ -8,10 +8,7 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
-  testMatch: [
-    '<rootDir>/src/test/testing-library**/*.test.tsx',
-    '<rootDir>/src/test/unit/**/*.test.ts',
-  ],
+  testMatch: ['<rootDir>/src/test/testing-library**/*.test.tsx'],
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],

@@ -8,10 +8,12 @@ import CardContent from './CardContent';
 import styles from './styles';
 import { UiCardItemProps } from './types';
 
+const SMALL_CARD_TEXT: string = 'smallCard';
+
 function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
 
-  const isSmallCard: boolean = item.type === 'smallCard';
+  const isSmallCard: boolean = item.type === SMALL_CARD_TEXT;
 
   return (
     <Stack sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}>

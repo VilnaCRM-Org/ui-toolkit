@@ -4,6 +4,8 @@ import React from 'react';
 import { theme } from './theme';
 import { UiInputProps } from './types';
 
+const DISPLAY_NAME: string = 'UiInput';
+
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>(
@@ -30,6 +32,6 @@ const UiInput: React.ForwardRefExoticComponent<
   )
 );
 
-UiInput.displayName = 'UiInput';
+UiInput.displayName = DISPLAY_NAME;
 
 export default UiInput;

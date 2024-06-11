@@ -1,7 +1,7 @@
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-import { UiCheckbox } from '@/components';
+import { UiCheckbox } from '../../components';
 
 import { testText } from './constants';
 

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import UiCardList from '@/components/UiCardList';
+import UiCardList from '../../components/UiCardList';
 
 import { cardList } from './constants';
 

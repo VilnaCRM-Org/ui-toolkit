@@ -2,8 +2,8 @@ import { ThemeProvider } from '@mui/material';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { UiTooltip } from '@/components';
-import { theme } from '@/components/UiTooltip/theme';
+import { UiTooltip } from '../../components';
+import { theme } from '../../components/UiTooltip/theme';
 
 import { testText } from './constants';
 

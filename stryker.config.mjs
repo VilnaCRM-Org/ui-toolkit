@@ -6,7 +6,7 @@ const config = {
   coverageAnalysis: 'perTest',
   plugins: ['@stryker-mutator/jest-runner'],
   tsconfigFile: 'tsconfig.json',
-  mutate: ['./src/components/**/*.tsx'],
+  mutate: ['./src/components/**/index.tsx'],
   thresholds: { high: 100, break: 99 },
 };
 

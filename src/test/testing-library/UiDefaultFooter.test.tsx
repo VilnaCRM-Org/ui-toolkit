@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { DefaultFooter } from '@/components/UiFooter/DefaultFooter';
+import { DefaultFooter } from '../../components/UiFooter/DefaultFooter';
 
 import { mockedSocialLinks } from './constants';
 
