@@ -5,10 +5,9 @@ import { useTranslation } from 'react-i18next';
 import UiImage from '@/components/UiImage';
 
 import CardContent from './CardContent';
+import { SMALL_CARD_TEXT } from './constants';
 import styles from './styles';
 import { UiCardItemProps } from './types';
-
-const SMALL_CARD_TEXT: string = 'smallCard';
 
 function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
@@ -28,4 +27,5 @@ function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
     </Stack>
   );
 }
+
 export default UiCardItem;

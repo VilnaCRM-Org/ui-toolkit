@@ -23,4 +23,18 @@ describe('UiTypography', () => {
     const typography: HTMLElement = getByText(testText);
     expect(typography.tagName).toBe('P');
   });
+
+  it('renders with default component "p" when component prop is not provided', () => {
+    const { container } = render(<UiTypography>Test Text</UiTypography>);
+    const element: HTMLElement | null = container.querySelector('p');
+    expect(element).toBeInTheDocument();
+    expect(element).toHaveTextContent('Test Text');
+  });
+
+  it('renders with specified component when component prop is provided', () => {
+    const { container } = render(<UiTypography component="h1">Test Text</UiTypography>);
+    const element: HTMLElement | null = container.querySelector('h1');
+    expect(element).toBeInTheDocument();
+    expect(element).toHaveTextContent('Test Text');
+  });
 });

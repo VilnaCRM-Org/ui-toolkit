@@ -11,6 +11,8 @@ import Zapier from '@/assets/svg/TooltipIcons/Zapier.svg';
 
 import { CardItem, ImageList } from './types';
 
+export const SMALL_CARD_TEXT: string = 'smallCard';
+
 export const SMALL_CARD_ITEM: CardItem = {
   type: 'smallCard',
   id: 'item_1',

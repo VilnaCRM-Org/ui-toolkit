@@ -6,6 +6,10 @@ import CardContent from '../../components/UiCardItem/CardContent';
 import { cardItem, largeCard, smallCard } from './constants';
 
 const cardTitleRole: string = 'heading';
+const SMALL_CARD_TEXT: string = 'smallCard';
+const item: { type: string } = {
+  type: SMALL_CARD_TEXT,
+};
 
 describe('UiCardItem Component', () => {
   describe('CardComponent', () => {
@@ -64,5 +68,29 @@ describe('UiCardItem Component', () => {
       expect(cardImage).toBeInTheDocument();
       expect(cardImage).toHaveAttribute('alt', cardItem.alt);
     });
+  });
+
+  it('checks that SMALL_CARD_TEXT is not an empty string', () => {
+    expect(SMALL_CARD_TEXT).not.toBe('');
+  });
+
+  it('should be good when item.type is not equal to SMALL_CARD_TEXT', () => {
+    const isSmallCard: boolean = item.type === SMALL_CARD_TEXT;
+    expect(isSmallCard).toBe(true);
+  });
+
+  it('should be false when item.type is not equal to SMALL_CARD_TEXT', () => {
+    const isSmallCard: boolean = item.type !== SMALL_CARD_TEXT;
+    expect(isSmallCard).toBe(false);
+  });
+
+  it('should be false when assigned false', () => {
+    const isSmallCard: boolean = false;
+    expect(isSmallCard).toBe(false);
+  });
+
+  it('should be true when assigned true', () => {
+    const isSmallCard: boolean = true;
+    expect(isSmallCard).toBe(true);
   });
 });

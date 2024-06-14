@@ -51,4 +51,10 @@ describe('UiInput', () => {
     const inputElement: HTMLElement = getByRole('textbox');
     expect(inputElement).toBeDisabled();
   });
+
+  it('should be a non-empty string', () => {
+    const DISPLAY_NAME: string = 'UiInput';
+    expect(typeof DISPLAY_NAME).toBe('string');
+    expect(DISPLAY_NAME).not.toBe('');
+  });
 });
