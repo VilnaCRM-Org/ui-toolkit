@@ -1,18 +1,13 @@
 import { test, expect, Locator, Page } from '@playwright/test';
 
-import {
-  containedButtonText,
-  outlinedButtonText,
-  socialButtonText,
-  storybookUrl,
-} from './constants';
+import { containedButtonText, outlinedButtonText, socialButtonText } from './constants';
 
 async function checkButtonVisibility(
   page: Page,
   storyPath: string,
   buttonText: string
 ): Promise<void> {
-  await page.goto(`${storybookUrl}/?path=/story/${storyPath}`);
+  await page.goto(`http://localhost:6006/?path=/story/${storyPath}`);
   const button: Locator = page.getByText(buttonText);
   await expect(button).toBeVisible();
 }
