@@ -2,7 +2,7 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import UiImage from '@/components/UiImage';
+import UiImage from '../UiImage';
 
 import CardContent from './CardContent';
 import { SMALL_CARD_TEXT } from './constants';

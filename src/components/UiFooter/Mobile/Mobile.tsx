@@ -1,5 +1,4 @@
 import { Box, Container, Stack } from '@mui/material';
-import Image from 'next/image';
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,7 +19,7 @@ function Mobile({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactEle
   return (
     <Container sx={styles.wrapper}>
       <Stack sx={styles.content}>
-        <Image src={Logo} alt={t('footer.logo_alt')} width={131} height={44} />
+        <img src={Logo.src} alt={t('footer.logo_alt')} width={131} height={44} loading="lazy" />
         <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
           {socialLinks.map(item => (
             <SocialMediaItem item={item} key={item.id} />

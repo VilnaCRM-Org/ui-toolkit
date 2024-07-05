@@ -1,7 +1,5 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
 
-import { golos } from '@/config/Fonts/golos';
-
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';
 
@@ -9,7 +7,7 @@ export const containedStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
   fontSize: '0.938rem',
-  fontFamily: golos.style.fontFamily,
+  fontFamily: 'Golos Text',
   fontWeight: '500',
   lineHeight: '1.125',
   letterSpacing: '0',
@@ -31,7 +29,7 @@ export const outlinedStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
   fontSize: '0.938rem',
-  fontFamily: golos.style.fontFamily,
+  fontFamily: 'Golos Text',
   fontWeight: '500',
   lineHeight: '1.125',
   letterSpacing: '0',
@@ -97,7 +95,7 @@ export const theme: Theme = createTheme({
             size: 'medium',
           },
           style: {
-            fontFamily: golos.style.fontFamily,
+            fontFamily: 'Golos Text',
             textTransform: 'none',
             borderRadius: '0.75rem',
             padding: '1.125rem',

@@ -1,5 +1,4 @@
 import { Box, Stack } from '@mui/material';
-import Image from 'next/image';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -29,7 +28,7 @@ function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.R
             alignItems="center"
             sx={styles.topContent}
           >
-            <Image src={Logo} alt={t('footer.logo_alt')} width={143} height={48} />
+            <img src={Logo.src} alt={t('footer.logo_alt')} width={143} height={48} loading="lazy" />
             <PrivacyPolicy />
           </Stack>
         </Box>

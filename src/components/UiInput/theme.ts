@@ -2,7 +2,6 @@ import { Theme, createTheme } from '@mui/material';
 
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
-import { inter } from '@/config/Fonts/inter';
 
 export const theme: Theme = createTheme({
   components: {
@@ -41,7 +40,7 @@ export const theme: Theme = createTheme({
             background: colorTheme.palette.white.main,
             '&::placeholder': {
               color: colorTheme.palette.grey300.main,
-              fontFamily: inter.style.fontFamily,
+              fontFamily: 'Inter',
               fontSize: '1rem',
               fontStyle: 'normal',
               fontWeight: '400',

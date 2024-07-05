@@ -1,5 +1,3 @@
-import { golos } from '@/config/Fonts/golos';
-
 import breakpointsTheme from '../../UiBreakpoints';
 import colorTheme from '../../UiColorTheme';
 
@@ -53,7 +51,7 @@ export default {
 
   copyright: {
     color: colorTheme.palette.grey200.main,
-    fontFamily: golos.style.fontFamily,
+    fontFamily: 'Golos Text',
   },
 
   listWrapper: {

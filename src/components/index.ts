@@ -1,3 +1,5 @@
+import './fonts.css';
+
 export { default as UiButton } from './UiButton';
 export { default as UiCheckbox } from './UiCheckbox';
 export { default as UiInput } from './UiInput';

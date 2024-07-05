@@ -1,6 +1,5 @@
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
-import { golos } from '@/config/Fonts/golos';
 
 export default {
   wrapper: {
@@ -21,7 +20,7 @@ export default {
   },
 
   copyright: {
-    fontFamily: golos.style.fontFamily,
+    fontFamily: 'Golos Text',
     paddingBottom: '1.25rem',
     color: colorTheme.palette.grey200.main,
     textAlign: 'center',
