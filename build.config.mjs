@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import path, { dirname } from 'path';
 import { createRequire } from 'module';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,8 +21,8 @@ const localizationPlugin = {
 
 esbuild
   .build({
-    outdir: 'build',
-    entryPoints: ['./src/components/index.ts'],
+    outdir: path.resolve(__dirname, 'build'),
+    entryPoints: [path.resolve(__dirname, 'src', 'components', 'index.ts')],
     entryNames: '[name]',
     bundle: true,
     minify: true,
