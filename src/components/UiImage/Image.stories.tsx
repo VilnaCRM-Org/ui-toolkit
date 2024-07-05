@@ -31,7 +31,7 @@ type Story = StoryObj<typeof UiImage>;
 
 export const Image: Story = {
   args: {
-    src: testImage.src,
+    src: testImage,
     alt: t('Story example image'),
     sx: {
       width: '200px',
