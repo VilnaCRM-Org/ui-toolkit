@@ -26,6 +26,7 @@ esbuild
     entryNames: '[name]',
     bundle: true,
     minify: true,
+    tsconfig: path.resolve(__dirname, 'tsconfig.json'),
     sourcemap: true,
     target: ['es2020'],
     loader: {

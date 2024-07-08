@@ -27,7 +27,6 @@
     "next-env.d.ts",
     "/*.ts",
     "/.tsx",
-    ".next/types/**/.ts",
     "playwrite",
     "src/components/UiFooter/.stories.tsx",
     "memoryLeak"

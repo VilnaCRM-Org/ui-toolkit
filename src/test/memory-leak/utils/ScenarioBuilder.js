@@ -1,8 +1,3 @@
-const { loadEnvConfig } = require('@next/env');
-
-const projectDir = process.cwd();
-loadEnvConfig(projectDir);
-
 class ScenarioBuilder {
   constructor() {
     this.url = () => process.env.MEMLAB_WEBSITE_URL;
