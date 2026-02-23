@@ -10,7 +10,7 @@ stepsCompleted:
   - 8
 inputDocuments:
   - specs/planning-artifacts/prd.md
-  - specs/2026-02-19-ui-kit-completion-implementation-plan.md
+  - specs/planning-artifacts/implementation-plan.md
 workflowType: 'architecture'
 lastStep: 8
 status: 'complete'
@@ -373,9 +373,9 @@ ui-toolkit/
 │       └── unit/
 │           └── localizationGenerator.spec.js
 ├── specs/
-│   ├── 2026-02-19-ui-kit-completion-prd.md
-│   ├── 2026-02-19-ui-kit-completion-implementation-plan.md
 │   ├── planning-artifacts/
+│   │   ├── prd.md
+│   │   ├── implementation-plan.md
 │   │   ├── architecture.md
 │   │   └── component-provenance.md                    # to create
 │   └── implementation-artifacts/

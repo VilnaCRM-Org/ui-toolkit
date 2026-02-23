@@ -2,6 +2,7 @@
 stepsCompleted:
   - 1
   - 2
+  - 3
 inputDocuments:
   - specs/planning-artifacts/prd.md
   - specs/planning-artifacts/architecture.md
@@ -82,3 +83,580 @@ Provide trusted loading experiences by delivering skeleton primitives and compos
 ### Epic 5: Production Adoption Readiness
 Make the toolkit safely adoptable across company projects by closing coverage, provenance, export, and release-gate governance.
 **FRs covered:** FR1, FR2, FR3, FR8
+
+## Epic 1: Core Controls and Contract Foundation
+
+Deliver stable, production-ready foundational controls and consistent contracts so product teams can build interactive UI without custom rework.
+
+### Story 1.1: Core Contract and Export Baseline
+
+As a consumer-team developer,
+I want core controls to expose a consistent public contract and entrypoint exports,
+So that I can integrate toolkit components predictably across company projects.
+
+**Acceptance Criteria:**
+
+**Given** the existing core control components are present
+**When** I inspect their public props and export surface
+**Then** each core control has documented and typed contract fields aligned to the shared API policy (or documented exception)
+**And** each core control is exported from `src/components/index.ts`.
+
+**Given** contract behavior is part of release quality gates
+**When** contract verification checks are run
+**Then** failing export/contract mismatches are detectable before release
+**And** results are reported in a way that blocks non-compliant changes.
+
+**Given** this epic must preserve compatibility
+**When** contract adjustments are introduced
+**Then** existing public API behavior remains backward compatible unless explicitly approved
+**And** any approved exception is documented.
+
+### Story 1.2: Core Control State Parity Completion
+
+As a product-team developer,
+I want the existing core controls to implement all required state variants,
+So that users get consistent behavior and visuals across company applications.
+
+**Acceptance Criteria:**
+
+**Given** the core controls in scope are `UiButton`, `UiInput`, `UiCheckbox`, and `UiLink`
+**When** state behavior is reviewed against the PRD and board requirements
+**Then** each control supports required states for its role (rest, hover, active, disabled, plus error where applicable)
+**And** state behavior is consistent with canonical `crm` behavior where equivalent.
+
+**Given** visual/interaction parity can drift during implementation
+**When** updates are delivered for these controls
+**Then** state semantics remain backward compatible for existing consumers
+**And** any unavoidable deviation is explicitly documented with rationale.
+
+**Given** this story must be independently verifiable
+**When** QA validation is executed for this story
+**Then** required state coverage is demonstrable for all four controls
+**And** unresolved parity gaps are tracked as blocking issues for this epic.
+
+### Story 1.3: Accessibility and Interaction Consistency Hardening
+
+As an end user,
+I want core controls to behave consistently for keyboard and disabled/error interactions,
+So that I can use company products reliably and accessibly.
+
+**Acceptance Criteria:**
+
+**Given** core controls are used in keyboard and assistive-technology flows
+**When** I navigate and interact without a mouse
+**Then** focus behavior is visible and consistent across controls
+**And** keyboard interactions follow expected patterns for each control type.
+
+**Given** controls can be set to disabled or error states
+**When** those states are active
+**Then** interaction behavior is predictable and non-conflicting
+**And** disabled/error semantics are consistently represented in component behavior and styling.
+
+**Given** accessibility is part of release quality gates
+**When** Epic 1 accessibility checks are executed
+**Then** core interaction and accessibility requirements are validated for all four controls
+**And** any failures are treated as blocking issues for Epic 1 completion.
+
+### Story 1.4: Epic 1 Quality Gate Closure
+
+As a release owner,
+I want Storybook coverage and unit-test validation finalized for Epic 1 controls,
+So that this foundation can be confidently consumed by company projects.
+
+**Acceptance Criteria:**
+
+**Given** Epic 1 controls are implemented and updated
+**When** I review Storybook coverage for these controls
+**Then** each control has stories that represent required states and core usage
+**And** story artifacts are ready for board-parity and interaction review.
+
+**Given** Epic 1 quality requires test-backed behavior
+**When** unit tests are executed for Epic 1 controls
+**Then** render and critical interaction behavior are validated
+**And** failing tests block Epic 1 completion.
+
+**Given** release readiness depends on contract and export integrity
+**When** Epic 1 checks are run end-to-end
+**Then** export surface, state coverage, and quality evidence are complete for Epic 1
+**And** Epic 1 is marked ready to enable subsequent epics without unresolved blockers.
+
+**Given** Epic 1 closure requires traceable completion evidence
+**When** Epic 1 is finalized
+**Then** a Definition of Done artifact and test/story/export evidence references are captured in implementation artifacts
+**And** those references are available for Epic 5 governance validation.
+
+## Epic 2: Selection, Search, and Input Workflows
+
+Enable users to search, select, and submit values through reusable input-selection components that support company app workflows.
+
+### Story 2.1: Search and Select Foundation
+
+As a product-team user,
+I want search-capable input and select controls,
+So that I can quickly find and choose values in complex forms.
+
+**Acceptance Criteria:**
+
+**Given** search/select workflows are required across company apps
+**When** I use `UiSearchInput` and `UiSelectWithSearch`
+**Then** I can input search text and receive appropriate selectable options behavior
+**And** controls support shared API contract fields where relevant (`value`, `onChange`, `disabled`, `error`, `size`, `variant`, `sx`).
+
+**Given** canonical behavior must align with `crm` where equivalent
+**When** these components are implemented
+**Then** behavior patterns follow reuse/canonical governance rules
+**And** visual/variant gaps are filled without violating canonical behavior.
+
+**Given** these components are foundational for later stories in this epic
+**When** Story 2.1 is complete
+**Then** it is independently usable and testable
+**And** subsequent Epic 2 stories can build on it without requiring future-story dependencies.
+
+### Story 2.2: Multi-Select Interaction Workflow
+
+As a product-team user,
+I want to select multiple values and manage selected chips clearly,
+So that I can complete multi-value form tasks efficiently.
+
+**Acceptance Criteria:**
+
+**Given** multi-value selection is required in board workflows
+**When** I interact with `UiMultiSelect`
+**Then** I can select multiple options and see clear selected-chip/tag representations
+**And** I can remove or update selections through consistent interaction patterns.
+
+**Given** this component must remain contract-consistent
+**When** `UiMultiSelect` is used in forms
+**Then** it supports shared contract expectations where relevant (`value`, `onChange`, `disabled`, `error`, `size`, `variant`, `sx`)
+**And** any contract exceptions are explicitly documented.
+
+**Given** quality and usability are mandatory
+**When** disabled or error states are applied
+**Then** interactions are correctly constrained and visually clear
+**And** behavior remains independently testable as a standalone story outcome.
+
+### Story 2.3: Calendar Multi-Select Variant
+
+As a product-team user,
+I want a calendar-style multi-select control,
+So that I can choose date-based values with a UI pattern consistent with toolkit standards.
+
+**Acceptance Criteria:**
+
+**Given** date-oriented multi-selection is required in board scope
+**When** I use `UiCalendarMultiSelect`
+**Then** I can select and manage date-oriented values using a calendar-style interaction
+**And** the component behavior is consistent with shared selection-control semantics.
+
+**Given** this story extends selection capabilities from earlier stories
+**When** Story 2.3 is implemented
+**Then** it reuses established contract and interaction patterns from Epic 2 where relevant
+**And** it does not introduce dependencies on future stories in this epic.
+
+**Given** accessibility and quality gates apply to all interactive controls
+**When** this component is validated
+**Then** keyboard/disabled/error behavior is consistent and testable
+**And** component behavior is documented with Storybook scenarios and unit-test coverage expectations.
+
+### Story 2.4: Radio and File Upload Input Workflows
+
+As a product-team user,
+I want reusable radio-group and file-upload input controls,
+So that I can complete common single-choice and file-submission tasks consistently across apps.
+
+**Acceptance Criteria:**
+
+**Given** board scope includes radio and file-upload interactions
+**When** I use `UiRadioGroup` and `UiFileUploadInput`
+**Then** I can select one option in radio workflows and provide files in upload workflows
+**And** interaction behavior is clear and consistent with toolkit control patterns.
+
+**Given** these controls are used in form contexts
+**When** disabled/error and callback behaviors are exercised
+**Then** controls follow shared contract expectations where relevant
+**And** any component-specific exceptions are documented.
+
+**Given** this story should remain independently completable
+**When** Story 2.4 is delivered
+**Then** both component workflows are usable and verifiable without relying on future Epic 2 stories
+**And** quality expectations for Storybook scenarios and unit validation are defined.
+
+### Story 2.5: Epic 2 Quality Gate Closure
+
+As a release owner,
+I want Epic 2 components to pass contract, coverage, and quality gates,
+So that selection and input workflows are safe for production adoption.
+
+**Acceptance Criteria:**
+
+**Given** Epic 2 components are implemented (`UiSearchInput`, `UiSelectWithSearch`, `UiMultiSelect`, `UiCalendarMultiSelect`, `UiRadioGroup`, `UiFileUploadInput`)
+**When** release-quality checks are executed
+**Then** each component has Storybook coverage for relevant states and usage flows
+**And** each component has unit-test validation for render and core interactions.
+
+**Given** export and contract consistency are required
+**When** Epic 2 deliverables are reviewed
+**Then** Epic 2 components are correctly exported from toolkit entrypoint
+**And** contract consistency and documented exceptions are complete.
+
+**Given** Epic 2 must enable future epics cleanly
+**When** Epic 2 is marked complete
+**Then** no unresolved blocking issues remain for downstream epics
+**And** evidence for FR7/FR8 coverage is captured for this epic.
+
+**Given** Epic 2 closure requires traceable completion evidence
+**When** Epic 2 is finalized
+**Then** a Definition of Done artifact and test/story/export evidence references are captured in implementation artifacts
+**And** those references are available for Epic 5 governance validation.
+
+## Epic 3: Data Presentation and Cards
+
+Enable users to understand and act on structured information via reusable item rows, lists, and card patterns.
+
+### Story 3.1: Item Row and List Data Presentation
+
+As a product-team user,
+I want reusable item-row and list components for structured data,
+So that I can view and act on list-based records consistently.
+
+**Acceptance Criteria:**
+
+**Given** board requirements include row/list data presentation patterns
+**When** I use `UiItemRow` and `UiItemsList`
+**Then** rows and list containers render structured data with clear semantics
+**And** state and interaction behavior remains consistent with toolkit conventions.
+
+**Given** method/status semantics are part of required board behavior
+**When** row variants are displayed
+**Then** method/status visual distinctions are supported
+**And** row interaction patterns are predictable and testable.
+
+**Given** this story must be independently completable
+**When** Story 3.1 is delivered
+**Then** `UiItemRow` and `UiItemsList` are usable without future-story dependencies
+**And** component contracts and usage examples are ready for downstream card stories.
+
+### Story 3.2: Task Card Workflow
+
+As a product-team user,
+I want a reusable task/person card component,
+So that I can view card-based information with consistent interaction states.
+
+**Acceptance Criteria:**
+
+**Given** card-based task/person presentation is required
+**When** I use `UiTaskCard`
+**Then** key card content and state behavior are supported consistently with board expectations
+**And** interaction semantics are clear for rest/active/disabled usage contexts.
+
+**Given** this component is part of a reusable library
+**When** `UiTaskCard` is integrated in consuming applications
+**Then** its API aligns with shared toolkit contract principles where relevant
+**And** contract exceptions are documented when needed.
+
+**Given** Epic 3 stories must remain sequential and independent
+**When** Story 3.2 is completed
+**Then** `UiTaskCard` is independently usable and testable
+**And** no future-story dependency is required for core behavior.
+
+### Story 3.3: Profile Select Card Workflow
+
+As a product-team user,
+I want a profile-select card with menu interactions,
+So that I can choose profile-related options through a consistent card UI pattern.
+
+**Acceptance Criteria:**
+
+**Given** profile card selection/menu behavior is required by board scope
+**When** I use `UiProfileSelectCard`
+**Then** profile information and selection/menu interaction states are supported
+**And** behavior is consistent with established card and control patterns.
+
+**Given** this card may include selectable and dropdown-like interactions
+**When** interaction states are exercised
+**Then** the component handles active/disabled/error-relevant behavior predictably
+**And** callback and contract behavior is clearly defined.
+
+**Given** this story must stand on its own
+**When** Story 3.3 is complete
+**Then** `UiProfileSelectCard` is independently usable and testable
+**And** it does not depend on any future Epic 3 story to function.
+
+### Story 3.4: Integration Card Workflow
+
+As a product-team user,
+I want an integration/brand selection card component,
+So that I can select integration options through a consistent card interaction model.
+
+**Acceptance Criteria:**
+
+**Given** integration/brand card selection is required by board scope
+**When** I use `UiIntegrationCard`
+**Then** selection behavior and state feedback are clear and consistent
+**And** card behavior aligns with toolkit interaction and contract standards.
+
+**Given** this component is used in configurable selection flows
+**When** selected/unselected and disabled states are exercised
+**Then** state transitions are predictable and testable
+**And** callback semantics are well-defined for consuming applications.
+
+**Given** this story must be independently completable
+**When** Story 3.4 is delivered
+**Then** `UiIntegrationCard` is usable and testable without future-story dependency
+**And** its behavior is ready for inclusion in Epic 3 quality closure.
+
+### Story 3.5: Board A Micro-Components Delivery
+
+As a product-team developer,
+I want reusable micro-components from Board A,
+So that I can compose common interaction patterns without custom one-off implementations.
+
+**Acceptance Criteria:**
+
+**Given** Board A requires multiple supporting micro-components
+**When** Epic 3 micro-components are delivered
+**Then** the following reusable components exist with defined contracts and interaction behavior:
+`UiFilterChip`, `UiPinInput`, `UiPaymentOptionCard`, `UiActionIconBar`, `UiStatusBadge`, `UiNotificationBadge`
+**And** each component follows shared styling/contract conventions where relevant.
+
+**Given** these micro-components are often used compositionally
+**When** they are integrated in consuming UIs
+**Then** they behave consistently and predictably with disabled/error/state semantics where applicable
+**And** documented exceptions are captured where shared contract fields are not applicable.
+
+**Given** this story should remain independently completable
+**When** Story 3.5 is complete
+**Then** each listed micro-component is individually usable and testable
+**And** no future Epic 3 story is required for baseline functionality.
+
+### Story 3.6: Epic 3 Quality Gate Closure
+
+As a release owner,
+I want all Epic 3 components to meet export, test, and Storybook quality requirements,
+So that data-presentation and card workflows are production-ready for company adoption.
+
+**Acceptance Criteria:**
+
+**Given** Epic 3 components are implemented (`UiItemRow`, `UiItemsList`, `UiTaskCard`, `UiProfileSelectCard`, `UiIntegrationCard`, and Board A micro-components)
+**When** Epic 3 quality validation is executed
+**Then** each component has Storybook coverage for required usage and state behavior
+**And** each component has unit-test validation for render and core interactions.
+
+**Given** public API integrity is mandatory
+**When** Epic 3 output is reviewed
+**Then** all Epic 3 components are exported correctly from toolkit entrypoint
+**And** contract consistency plus documented exceptions are complete.
+
+**Given** Epic 3 should enable subsequent epics cleanly
+**When** Epic 3 is marked complete
+**Then** there are no unresolved blockers for downstream epic execution
+**And** FR7/FR8 quality evidence for Epic 3 is captured and traceable.
+
+**Given** Epic 3 closure requires traceable completion evidence
+**When** Epic 3 is finalized
+**Then** a Definition of Done artifact and test/story/export evidence references are captured in implementation artifacts
+**And** those references are available for Epic 5 governance validation.
+
+## Epic 4: Skeleton Loading Experience Parity
+
+Provide trusted loading experiences by delivering skeleton primitives and composed variants with exact CRM animation parity.
+
+### Story 4.1: CRM Skeleton Baseline and Provenance Lock
+
+As a release owner,
+I want the toolkit skeleton foundation to be sourced from CRM baseline,
+So that loading experiences remain behaviorally consistent across company products.
+
+**Acceptance Criteria:**
+
+**Given** skeleton parity is a release blocker
+**When** skeleton implementation work starts
+**Then** CRM skeleton source is identified and reused as baseline
+**And** provenance/source details are recorded according to governance rules.
+
+**Given** canonical animation behavior is mandatory
+**When** baseline skeleton code is integrated
+**Then** key animation characteristics (timing/easing/keyframe behavior) are preserved
+**And** no redesign of animation behavior is introduced in this story.
+
+**Given** this story must be independently completable
+**When** Story 4.1 is complete
+**Then** a verified baseline exists for further skeleton variant/composition stories
+**And** no future-story dependency is required to validate baseline provenance/parity setup.
+
+### Story 4.2: Skeleton Primitive Variants
+
+As an end user,
+I want consistent primitive loading placeholders,
+So that content-loading states are understandable and visually stable.
+
+**Acceptance Criteria:**
+
+**Given** primitive skeleton variants are required by board scope
+**When** `UiSkeleton` primitive variants are implemented
+**Then** required primitive patterns are available (`image`, `text one-line`, `text many-lines`, `block`)
+**And** variant APIs and behavior are consistent with toolkit component standards.
+
+**Given** animation parity is mandatory
+**When** primitive variants render loading states
+**Then** they use the established CRM-derived animation system
+**And** no variant introduces incompatible animation behavior.
+
+**Given** this story must be independently completable
+**When** Story 4.2 is finished
+**Then** primitive skeleton variants are usable/testable on their own
+**And** they provide a stable base for composed skeleton layouts without future-story dependency.
+
+### Story 4.3: Composed Skeleton Layout Variants
+
+As an end user,
+I want realistic composed loading layouts,
+So that complex screens communicate structure while data is loading.
+
+**Acceptance Criteria:**
+
+**Given** board scope includes composed skeleton layouts
+**When** composed skeleton variants are implemented
+**Then** required composed patterns are available (widget small/medium, menu, tab bar, button, list, input, checkbox+text, radio+text, table)
+**And** composed variants are built from primitive skeleton foundations with consistent behavior.
+
+**Given** animation and interaction consistency are required
+**When** composed variants are rendered
+**Then** they preserve CRM-aligned animation behavior inherited from baseline/primitives
+**And** no composed variant introduces conflicting animation or state semantics.
+
+**Given** this story should be independently completable
+**When** Story 4.3 is delivered
+**Then** composed skeleton variants are independently usable/testable
+**And** completion does not require any future Epic 4 story to enable their baseline functionality.
+
+### Story 4.4: Skeleton Parity and Quality Gate Closure
+
+As a release owner,
+I want full skeleton parity and quality evidence validated,
+So that loading-state components are safe for production adoption.
+
+**Acceptance Criteria:**
+
+**Given** Epic 4 baseline, primitive, and composed variants are implemented
+**When** parity validation is executed
+**Then** CRM alignment for skeleton animation behavior is verified for the delivered scope
+**And** any parity deviation is treated as a blocking issue for Epic 4 completion.
+
+**Given** release-quality requirements apply to skeleton components
+**When** Epic 4 quality checks are run
+**Then** skeleton components have Storybook coverage for relevant variants
+**And** unit-test validation exists for render and key behavior expectations.
+
+**Given** provenance and export integrity are required for release readiness
+**When** Epic 4 is reviewed for completion
+**Then** source provenance is documented and export surface is complete
+**And** Epic 4 exits with traceable FR6/FR8 evidence and no unresolved blockers.
+
+**Given** Epic 4 closure requires traceable completion evidence
+**When** Epic 4 is finalized
+**Then** a Definition of Done artifact and test/story/export/parity evidence references are captured in implementation artifacts
+**And** those references are available for Epic 5 governance validation.
+
+## Epic 5: Production Adoption Readiness
+
+Make the toolkit safely adoptable across company projects by closing coverage, provenance, export, and release-gate governance.
+
+**Cross-Epic Dependency Note:** Epic 5 validates and consolidates outputs from Epics 1-4. It does not block execution start of Epics 1-4.
+
+### Story 5.1: Board Coverage Closure and Traceability
+
+As a release owner,
+I want board-to-component coverage fully tracked and closed,
+So that no required UI scope is omitted before production adoption.
+
+**Acceptance Criteria:**
+
+**Given** all boards define required component and state scope
+**When** coverage mapping is finalized
+**Then** each required board element is mapped to a delivered component or documented non-goal
+**And** unresolved items are visible and treated as blockers.
+
+**Given** traceability is required for implementation confidence
+**When** coverage documentation is reviewed
+**Then** mappings are clear enough to verify completion objectively
+**And** board-level completion status is explicit and auditable.
+
+**Given** this story must be independently completable
+**When** Story 5.1 is done
+**Then** board coverage status is complete and actionable
+**And** downstream readiness stories do not depend on future untracked scope decisions.
+
+### Story 5.2: Reuse/Canonical Compliance and Provenance Completion
+
+As a release owner,
+I want source provenance and canonical behavior compliance documented for all delivered components,
+So that company teams can trust consistency with CRM/website governance rules.
+
+**Acceptance Criteria:**
+
+**Given** reuse-first and canonical policies are mandatory
+**When** provenance documentation is completed
+**Then** each delivered/enhanced component is marked with `source` (`crm`, `website`, `new`) and rationale
+**And** canonical behavior alignment decisions are clearly documented.
+
+**Given** deviations may be necessary in limited cases
+**When** a component diverges from canonical expectations
+**Then** the deviation is explicitly justified and recorded
+**And** the decision is visible for release review.
+
+**Given** this story must be independently completable
+**When** Story 5.2 is complete
+**Then** provenance/compliance artifacts are production-review ready
+**And** future stories do not need to redefine component source governance.
+
+### Story 5.3: Export Contract and Entry Point Integrity
+
+As a consumer-team developer,
+I want all delivered components to be correctly exported from the toolkit entry point,
+So that application teams can adopt components without import-surface inconsistencies.
+
+**Acceptance Criteria:**
+
+**Given** delivered components must be publicly consumable
+**When** export integrity checks are executed
+**Then** all in-scope components are available from `src/components/index.ts`
+**And** missing or broken exports are treated as blocking issues.
+
+**Given** API contract consistency is required for adoption
+**When** export and contract verification is reviewed
+**Then** exported components align with expected public contract definitions
+**And** contract exceptions are documented and traceable.
+
+**Given** this story must be independently completable
+**When** Story 5.3 is complete
+**Then** entrypoint/export integrity evidence is ready for release review
+**And** no future Epic 5 story is needed to establish export correctness baseline.
+
+### Story 5.4: Internal Release-Readiness Governance Report
+
+As a release owner,
+I want a consolidated readiness report covering coverage, provenance, quality, and compatibility checks,
+So that internal package publication is a controlled and auditable decision.
+
+**Acceptance Criteria:**
+
+**Given** release depends on multiple governance gates
+**When** release-readiness evidence is consolidated
+**Then** board coverage closure, provenance compliance, export integrity, and quality-gate status are summarized in one report
+**And** blocking vs non-blocking issues are explicitly identified.
+
+**Given** internal consumers rely on predictable compatibility
+**When** readiness is finalized
+**Then** compatibility expectations for internal consumers are documented (consumer scope, baseline runtime/dependency constraints)
+**And** release-go/no-go decision criteria are explicit.
+
+**Given** this is the final Epic 5 story
+**When** Story 5.4 is completed
+**Then** Epic 5 can be marked complete with traceable FR1/FR2/FR3/FR8 evidence
+**And** the epics document is ready for final validation step.
+
+**Given** final governance sign-off requires auditable closure
+**When** Story 5.4 is finalized
+**Then** a Definition of Done artifact and consolidated evidence references are captured in implementation artifacts
+**And** the release go/no-go decision is traceable to those referenced artifacts.
