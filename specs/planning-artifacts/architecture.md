@@ -16,7 +16,7 @@ lastStep: 8
 status: 'complete'
 completedAt: '2026-02-20T18:15:15+02:00'
 project_name: 'ui-toolkit'
-user_name: 'Dima'
+user_name: 'platform-team'
 date: '2026-02-20T15:10:14+02:00'
 ---
 
@@ -375,6 +375,7 @@ ui-toolkit/
 ├── specs/
 │   ├── planning-artifacts/
 │   │   ├── prd.md
+│   │   ├── epics.md
 │   │   ├── implementation-plan.md
 │   │   ├── architecture.md
 │   │   └── component-provenance.md                    # to create
@@ -591,7 +592,7 @@ Naming, structure, contract, communication, and process patterns are specified w
   - supported consumer projects
   - minimum Node version for consumers
   - peer dependency expectations (`react`, `@mui/material`, etc.)
-- CI publish gate is defined conceptually but requires concrete workflow-level checks list.
+- CI publish gate is defined conceptually but requires concrete workflow-level checklist.
 
 **Nice-to-Have Gaps:**
 - Add a migration playbook for eventual legacy `UiPascalCase` → kebab-case folder convergence.

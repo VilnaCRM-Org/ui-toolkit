@@ -2,7 +2,7 @@
 
 **Date:** February 20, 2026  
 **Owner:** UI Toolkit Team  
-**Status:** Re-scoped Draft for Architecture Input
+**Status:** Approved
 
 ## 1. Product Outcome
 
