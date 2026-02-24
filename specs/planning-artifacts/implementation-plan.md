@@ -1,7 +1,5 @@
 # UI Toolkit Completion Implementation Plan (Re-scoped)
 
-> **For Claude:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task.
-
 **Goal:** Deliver a production-ready internal UI library for company projects (including `crm` and `website`) with complete Board A-D scope coverage, reuse-first delivery, canonical behavior consistency, and release-gate evidence.
 
 **Architecture:** Execute in epic order with governance-first setup, then deliver components by domain: core controls, selection/input workflows, data/cards, and skeletons. Reuse already implemented components from `crm` and `website` before creating new modules. Keep `crm` as canonical behavior source and use `website` only for visual and variant gap-fill.
@@ -19,7 +17,7 @@
 4. Toolkit remains UI-layer only: no backend ownership, no domain business logic.
 5. Shared contract fields are required where relevant: `value`, `onChange`, `disabled`, `error`, `size`, `variant`, `sx`.
 6. New component folders are kebab-case; existing legacy `UiPascalCase` folders stay unchanged unless explicitly migrated.
-7. Every story exits only with Storybook coverage, unit tests, export completeness, and provenance updates.
+7. Every story exits only when Storybook coverage, unit tests, export completeness, and provenance updates are complete.
 
 ## Current Repository Snapshot
 
@@ -112,7 +110,9 @@ Run and capture output:
 
 ```bash
 ls -1 src/components
-rg -n "export \\{ default as Ui" src/components/index.ts
+rg -n "export \\{\\s*default\\s+as\\s+Ui" src/components/index.ts
+rg -n "export \\{\\s*[^}]*Ui" src/components/index.ts
+rg -n "export \\* from" src/components/index.ts
 ```
 
 **Step 2: Inventory reusable candidates from `crm` and `website`**
@@ -184,7 +184,7 @@ git commit -m "feat: align core control contracts and export baseline"
 - Modify: `src/components/UiLink/**`
 - Modify: `src/test/testing-library/UiButton.test.tsx`
 - Modify: `src/test/testing-library/UiInput.test.tsx`
-- Modify: `src/test/testing-library/UiCheckBox.test.tsx`
+- Modify: `src/test/testing-library/UiCheckbox.test.tsx`
 - Modify: `src/test/testing-library/UiLink.test.tsx`
 
 **Step 1: Implement missing state parity**
@@ -208,7 +208,7 @@ Use `crm` behavior as source of truth; record any justified deviations in proven
 ```bash
 pnpm exec jest src/test/testing-library/UiButton.test.tsx --verbose
 pnpm exec jest src/test/testing-library/UiInput.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiCheckBox.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiCheckbox.test.tsx --verbose
 pnpm exec jest src/test/testing-library/UiLink.test.tsx --verbose
 ```
 
@@ -218,7 +218,7 @@ pnpm exec jest src/test/testing-library/UiLink.test.tsx --verbose
 git add src/components/UiButton src/components/UiInput src/components/UiCheckbox \
   src/components/UiLink src/test/testing-library/UiButton.test.tsx \
   src/test/testing-library/UiInput.test.tsx \
-  src/test/testing-library/UiCheckBox.test.tsx \
+  src/test/testing-library/UiCheckbox.test.tsx \
   src/test/testing-library/UiLink.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: complete core state parity and accessibility consistency"
@@ -249,7 +249,10 @@ Mark Epic 1 rows and link evidence.
 
 ```bash
 pnpm run storybook-build
-pnpm exec jest src/test/testing-library/UiButton.test.tsx src/test/testing-library/UiInput.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiButton.test.tsx \
+  src/test/testing-library/UiInput.test.tsx \
+  src/test/testing-library/UiCheckbox.test.tsx \
+  src/test/testing-library/UiLink.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -310,7 +313,7 @@ git add src/components/ui-search-input src/components/ui-select-with-search \
 git commit -m "feat: deliver epic 2 search/select foundation and multi-select"
 ```
 
-### Task 7: Epic 2 Stories 2.3 and 2.4 - Calendar Multi-Select + Radio/File Upload
+### Task 7: Epic 2 Stories 2.3, 2.4, and 2.4A - Calendar Multi-Select + Radio/File Upload
 
 **Files:**
 - Create: `src/components/ui-calendar-multi-select/index.tsx`
@@ -359,7 +362,40 @@ git add src/components/ui-calendar-multi-select src/components/ui-radio-group \
 git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 ```
 
-### Task 8: Epic 2 Story 2.5 - Quality Gate Closure
+### Task 7.5: Epic 2 Story 2.5 - Pagination Delivery
+
+**Files:**
+- Create: `src/components/ui-pagination/index.tsx`
+- Create: `src/components/ui-pagination/types.ts`
+- Create: `src/components/ui-pagination/UiPagination.stories.tsx`
+- Create: `src/test/testing-library/UiPagination.test.tsx`
+- Modify: `src/components/index.ts`
+- Modify: `specs/planning-artifacts/component-provenance.md`
+
+**Step 1: Implement `UiPagination` with reuse-first policy**
+
+Adapt from `crm`/`website` implementation patterns where viable and keep canonical behavior alignment.
+
+**Step 2: Add story and unit coverage**
+
+Document primary pagination states and test core interactions and disabled behavior.
+
+**Step 3: Verify**
+
+```bash
+pnpm exec jest src/test/testing-library/UiPagination.test.tsx --verbose
+```
+
+**Step 4: Commit**
+
+```bash
+git add src/components/ui-pagination src/components/index.ts \
+  src/test/testing-library/UiPagination.test.tsx \
+  specs/planning-artifacts/component-provenance.md
+git commit -m "feat: deliver epic 2 pagination module"
+```
+
+### Task 8: Epic 2 Story 2.6 - Quality Gate Closure
 
 **Files:**
 - Modify: `specs/planning-artifacts/board-coverage-checklist.md`
@@ -367,7 +403,7 @@ git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 
 **Step 1: Validate Epic 2 stories and tests**
 
-Ensure all Epic 2 components have stories and tests linked.
+Ensure all Epic 2 components have stories and tests linked, including `UiPagination`.
 
 **Step 2: Validate export completeness**
 
@@ -465,7 +501,18 @@ Cover render + one core interaction assertion per component.
 
 Ensure all components are exported and provenance entries are complete.
 
-**Step 4: Verify and commit**
+**Step 4: Verify**
+
+```bash
+pnpm exec jest src/test/testing-library/UiFilterChip.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiPinInput.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiPaymentOptionCard.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiActionIconBar.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiStatusBadge.test.tsx --verbose
+pnpm exec jest src/test/testing-library/UiNotificationBadge.test.tsx --verbose
+```
+
+**Step 5: Commit**
 
 ```bash
 git add src/components/ui-filter-chip src/components/ui-pin-input \
@@ -588,6 +635,8 @@ git commit -m "docs: finalize epic 5 adoption readiness governance"
 
 **Files:**
 - Modify: `specs/implementation-artifacts/release-readiness-report.md`
+- Modify: `package.json`
+- Modify: `CHANGELOG.md` (and/or `.changeset/**`, `pnpm-lock.yaml`) during version management
 
 **Step 1: Run full verification suite**
 
@@ -596,6 +645,26 @@ pnpm run lint
 pnpm run typecheck
 pnpm exec jest --verbose
 pnpm run storybook-build
+pnpm run build
+```
+
+**Step 1b: Perform version management (Changesets preferred)**
+
+Preferred Changesets flow:
+
+```bash
+pnpm changeset
+pnpm exec changeset version
+git add .changeset package.json pnpm-lock.yaml CHANGELOG.md
+git commit -m "chore: version ui-toolkit for release"
+```
+
+Fallback flow if Changesets are unavailable:
+
+```bash
+pnpm version <new-version> --no-git-tag-version
+git add package.json pnpm-lock.yaml CHANGELOG.md
+git commit -m "chore: bump ui-toolkit version to <new-version>"
 ```
 
 **Step 2: Confirm release exit criteria**
@@ -605,12 +674,15 @@ Checklist must be true:
 - stories exist for new/enhanced components
 - unit tests pass
 - strict TS checks pass
+- library build succeeds
 - skeleton parity verified
 - export surface complete
+- version bump PR includes updated `CHANGELOG.md` and package metadata
+- `ci:publish` script is present in `package.json` and points to the internal registry URL (`${NPM_REGISTRY_URL:-https://npm.company.internal}`)
 
 **Step 3: Record final evidence and release decision**
 
-Set `release-readiness-report.md` to `GO` or `NO-GO` with blocking items.
+Set `release-readiness-report.md` to `GO` or `NO-GO` with blocking items, and include links to verification output and the version-bump PR.
 
 **Step 4: Commit**
 
@@ -618,3 +690,23 @@ Set `release-readiness-report.md` to `GO` or `NO-GO` with blocking items.
 git add specs/implementation-artifacts/release-readiness-report.md
 git commit -m "chore: publish final release-readiness gate decision"
 ```
+
+**Step 5: Publish from CI after version-bump PR merge**
+
+Ensure `package.json` contains:
+
+```json
+{
+  "scripts": {
+    "ci:publish": "pnpm publish -r --registry ${NPM_REGISTRY_URL:-https://npm.company.internal}"
+  }
+}
+```
+
+After the version-bump PR is merged to the release branch, run publish in CI:
+
+```bash
+pnpm run ci:publish
+```
+
+Archive publish logs/artifact links in `specs/implementation-artifacts/release-readiness-report.md`.

@@ -1,8 +1,11 @@
 # UI Toolkit Completion PRD (Re-scoped)
 
-**Date:** February 20, 2026  
-**Owner:** UI Toolkit Team  
+**Date:** February 20, 2026
+**Owner:** UI Toolkit Team
 **Status:** Approved
+**Target Release Version:** `ui-toolkit` `v1.0.0`
+**Planned Release Window:** March 16, 2026 - March 27, 2026 (Sprint `2026-S06`)
+**Milestone Target:** `UITK-SR1`
 
 ## 1. Product Outcome
 
@@ -28,6 +31,7 @@ Toolkit remains strictly UI-layer:
 1. Presentation and interaction contracts only.
 2. No backend integrations or data-fetching ownership.
 3. No domain business logic.
+4. Styling override entrypoint is the shared `sx` contract defined in §3.5 and constrained by §8.
 
 ### 3.2 Reuse-First Delivery Rule (Hard Constraint)
 
@@ -63,6 +67,9 @@ New components follow a strict unified contract where relevant:
 7. `sx`
 
 Documented exceptions are allowed only where control semantics require it.
+`sx` is the MUI-style system prop and must accept `SxProps<Theme>` semantics (theme-aware object/array/function).
+Reference signature: `sx?: SxProps<Theme>`.
+Vendor-coupling guardrail: if a consumer cannot pass MUI `SxProps`, provide an adapter layer that maps to `className`/`style` while preserving theme-token behavior.
 
 ## 4. Scope Coverage by Board
 
@@ -125,7 +132,7 @@ Documented exceptions are allowed only where control semantics require it.
 3. Storybook story coverage for each delivered/enhanced module.
 4. Unit tests for each delivered/enhanced module.
 5. Export coverage via `src/components/index.ts`.
-6. Coverage checklist that maps board elements to component implementation status.
+6. Coverage checklist maintained as markdown at `specs/planning-artifacts/board-coverage-checklist.md` ("coverage checklist"), owned by the Component Lead / Frontend Team, with checklist rows mapping `board element -> component -> implementation status -> src/components/index.ts export link`.
 
 ## 6. Out of Scope
 
@@ -142,7 +149,7 @@ Every board section listed in Scope Coverage must map to a delivered toolkit com
 
 Acceptance:
 
-1. Coverage checklist exists and is complete.
+1. The canonical coverage checklist at `specs/planning-artifacts/board-coverage-checklist.md` exists, is complete, and is maintained by the Component Lead / Frontend Team.
 2. No unresolved board element remains without explicit non-goal decision.
 
 ### FR-02 Reuse-First Compliance
@@ -165,14 +172,14 @@ Acceptance:
 
 ### FR-04 State Parity for Existing Controls
 
-Existing controls must support board-required states.
+Existing controls must support board-required states defined in §4.1 and §4.2.
 
 Acceptance:
 
-1. `UiButton` supports required visible states.
-2. `UiInput` supports required visible states.
-3. `UiCheckbox` supports required visible states.
-4. `UiLink` supports required visible states where applicable.
+1. `UiButton` implements `rest`, `hover`, `active`, `focus-visible`, and `disabled` states (plus `error/invalid` where used by form-validation contexts).
+2. `UiInput` renders `rest`, `hover`, `active`, `focus-visible`, `disabled`, `error`, and `invalid` states.
+3. `UiCheckbox` provides `unchecked`, `checked`, `hover`, `active`, `focus-visible`, `disabled`, `error`, and `invalid` states where applicable.
+4. `UiLink` exposes `rest`, `hover`, `active`, `focus-visible`, and `disabled` states where applicable; `error/invalid` is not required unless explicitly introduced by product usage.
 
 ### FR-05 Missing Module Delivery
 
@@ -202,7 +209,7 @@ Deliver reusable components:
 
 Acceptance:
 
-1. CRM skeleton baseline is copied before extension.
+1. `crm` skeleton baseline is copied before extension.
 2. Animation parity is preserved exactly.
 3. Added variants reuse the same animation system.
 
@@ -226,14 +233,15 @@ Acceptance:
 
 1. Preserve backward compatibility for existing public component APIs unless explicitly approved.
 2. Keep naming aligned to existing `Ui*` conventions.
-3. Maintain keyboard accessibility and consistent disabled behavior.
+3. Maintain keyboard accessibility meeting WCAG 2.1 AA with explicit checks: `Tab`/`Shift+Tab` navigation, logical focus order, visible focus indicator, keyboard-operable controls, appropriate ARIA roles/states, and consistent disabled/error behavior.
 4. Keep implementation maintainable and composable for future board expansion.
+5. Keep `sx` usage compatible with MUI `SxProps<Theme>` and provide a documented fallback mapping strategy for non-MUI consumers.
 
 ## 9. Release Exit Criteria
 
 Release is complete only when all are true:
 
-1. Board coverage checklist is fully closed.
+1. The canonical coverage checklist at `specs/planning-artifacts/board-coverage-checklist.md` is fully closed and current under Component Lead / Frontend Team ownership.
 2. Storybook coverage exists for all new/enhanced components.
 3. Unit tests pass for new/enhanced components.
 4. TypeScript checks pass.
@@ -245,7 +253,7 @@ Release is complete only when all are true:
 1. Risk: Scope pressure from single-release mandate.
    - Mitigation: enforce board checklist and strict definition of done per component.
 2. Risk: Behavior drift between source systems.
-   - Mitigation: enforce CRM canonical behavior policy.
+   - Mitigation: enforce `crm` canonical behavior policy.
 3. Risk: Visual inconsistency while blending sources.
    - Mitigation: use website only for visual/variant gap-fill after behavior alignment.
 4. Risk: Skeleton parity regressions.

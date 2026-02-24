@@ -8,7 +8,7 @@ inputDocuments:
   - specs/planning-artifacts/architecture.md
 workflowType: 'epics-and-stories'
 project_name: 'ui-toolkit'
-user_name: 'Dima'
+user_name: 'platform-team'
 date: '2026-02-20T18:26:30+02:00'
 ---
 
@@ -54,13 +54,27 @@ NFR6: Maintain deterministic, async-stateless component behavior with consumer-o
 ### FR Coverage Map
 
 FR1: Epic 5 - Production Adoption Readiness ensures complete board-to-component coverage tracking and closure.
-FR2: Epic 5 - Production Adoption Readiness enforces reuse-first provenance and source-governance compliance.
-FR3: Epic 5 - Production Adoption Readiness verifies canonical behavior alignment to `crm`.
+FR2: Epics 2-4 delivery stories record reuse-first provenance details via the shared Definition of Done checklist; Epic 5 validates and closes cross-epic compliance.
+FR3: Epics 2-4 delivery stories record canonical behavior/source decisions via the shared Definition of Done checklist; Epic 5 validates and closes cross-epic alignment.
 FR4: Epic 1 - Core Controls and Contract Foundation delivers required state parity for existing controls.
 FR5: Epic 2, Epic 3, Epic 4 - Missing module delivery is split by user workflow domain (input/select, data/cards, skeletons).
 FR6: Epic 4 - Skeleton Loading Experience Parity delivers CRM baseline reuse and animation parity.
 FR7: Epic 1, Epic 2, Epic 3 - Unified API contract is applied across foundational and new interactive components.
 FR8: Epic 1, Epic 2, Epic 3, Epic 4, Epic 5 - Quality gates are enforced across all delivery domains and release readiness.
+
+### NFR Coverage Map
+
+NFR1: Epic 1 (Stories 1.1-1.4) preserves public API compatibility through contract/export reviews and quality-gate closure.
+NFR2: Epic 1 (Stories 1.1-1.4), Epic 2 (Stories 2.1-2.6 including Story 2.4A), and Epic 3 (Stories 3.1-3.6) enforce naming and API convention alignment.
+NFR3: Epic 1 Story 1.3 establishes accessibility baseline controls; Epic 2 Story 2.6 and Epic 3 Story 3.6 enforce keyboard accessibility plus disabled/error checks as closure gates.
+NFR4: Epic 2 (Stories 2.1-2.6 including Story 2.4A) and Epic 3 (Stories 3.1-3.6) ensure reusable, composable implementations.
+NFR5: Epic 1 Story 1.1 plus Epic 2/3 quality-gate stories enforce UI-layer-only boundaries.
+NFR6: Epic 2 and Epic 3 delivery stories enforce deterministic component behavior with consumer-owned orchestration.
+
+### Shared Definition of Done Checklist
+
+All delivery stories in Epic 2 (Stories 2.1-2.4, Story 2.4A, and Story 2.5) and Epic 3 (Stories 3.1-3.5) carry an implicit provenance obligation.
+Each delivery story must record source, reuse rationale, and reference IDs in PR/issue metadata using the shared Definition of Done checklist at `specs/implementation-artifacts/story-dod-template.md`.
 
 ## Epic List
 
@@ -258,30 +272,81 @@ So that I can choose date-based values with a UI pattern consistent with toolkit
 **Then** keyboard/disabled/error behavior is consistent and testable
 **And** component behavior is documented with Storybook scenarios and unit-test coverage expectations.
 
-### Story 2.4: Radio and File Upload Input Workflows
+### Story 2.4: Radio Group Input Workflow
 
 As a product-team user,
-I want reusable radio-group and file-upload input controls,
-So that I can complete common single-choice and file-submission tasks consistently across apps.
+I want a reusable radio-group control,
+So that I can complete single-choice tasks consistently across apps.
 
 **Acceptance Criteria:**
 
-**Given** board scope includes radio and file-upload interactions
-**When** I use `UiRadioGroup` and `UiFileUploadInput`
-**Then** I can select one option in radio workflows and provide files in upload workflows
-**And** interaction behavior is clear and consistent with toolkit control patterns.
+**Given** board scope includes single-choice radio interactions
+**When** I use `UiRadioGroup`
+**Then** I can select one option with clear focus and selection-state behavior
+**And** interaction behavior is consistent with toolkit control patterns.
 
-**Given** these controls are used in form contexts
+**Given** this control is used in form contexts
 **When** disabled/error and callback behaviors are exercised
-**Then** controls follow shared contract expectations where relevant
-**And** any component-specific exceptions are documented.
+**Then** `UiRadioGroup` follows shared contract expectations where relevant
+**And** any component-specific contract exceptions are documented.
 
 **Given** this story should remain independently completable
 **When** Story 2.4 is delivered
-**Then** both component workflows are usable and verifiable without relying on future Epic 2 stories
+**Then** `UiRadioGroup` is usable and verifiable without relying on future Epic 2 stories
 **And** quality expectations for Storybook scenarios and unit validation are defined.
 
-### Story 2.5: Epic 2 Quality Gate Closure
+### Story 2.4A: File Upload Input Workflows
+
+As a product-team user,
+I want a reusable file-upload input control,
+So that I can complete file-submission tasks consistently across apps.
+
+**Acceptance Criteria:**
+
+**Given** board scope includes file-upload interactions
+**When** I use `UiFileUploadInput`
+**Then** async upload states (`idle`, `uploading`, `success`, `error`) are represented clearly
+**And** progress reporting is available for long-running uploads.
+
+**Given** upload inputs must handle validation and failure paths
+**When** files violate type/size rules or upload requests fail
+**Then** validation and upload error states are surfaced with actionable messages
+**And** file type/size constraints are testable and documented.
+
+**Given** drag-and-drop and keyboard/assistive-technology access are required
+**When** files are provided via drag-and-drop or non-pointer interaction
+**Then** the component supports drag-and-drop behaviors and keyboard-operable upload actions
+**And** screen-reader announcements communicate selection/progress/error outcomes.
+
+**Given** this story should remain independently completable
+**When** Story 2.4A is delivered
+**Then** Storybook scenarios cover async, progress, validation, error, and drag-and-drop cases
+**And** unit tests validate render plus core upload interaction behavior.
+
+### Story 2.5: Pagination Workflow Component Delivery
+
+As a product-team user,
+I want a reusable pagination control,
+So that I can navigate long result sets with consistent toolkit behavior.
+
+**Acceptance Criteria:**
+
+**Given** board scope requires paginated list navigation
+**When** I use `UiPagination`
+**Then** I can navigate pages with clear current/next/previous semantics
+**And** component interactions follow shared contract expectations where relevant.
+
+**Given** this component must be reusable across company apps
+**When** `UiPagination` is delivered
+**Then** Storybook scenarios document key states and usage patterns
+**And** unit tests validate render and core interaction behavior.
+
+**Given** Epic 2 outcomes require export and governance traceability
+**When** Story 2.5 is complete
+**Then** `UiPagination` is exported from `src/components/index.ts`
+**And** provenance/source decisions are recorded using the shared Definition of Done checklist at `specs/implementation-artifacts/story-dod-template.md` (source, reuse rationale, and reference IDs in PR/issue metadata).
+
+### Story 2.6: Epic 2 Quality Gate Closure
 
 As a release owner,
 I want Epic 2 components to pass contract, coverage, and quality gates,
@@ -289,7 +354,7 @@ So that selection and input workflows are safe for production adoption.
 
 **Acceptance Criteria:**
 
-**Given** Epic 2 components are implemented (`UiSearchInput`, `UiSelectWithSearch`, `UiMultiSelect`, `UiCalendarMultiSelect`, `UiRadioGroup`, `UiFileUploadInput`)
+**Given** Epic 2 components are implemented (`UiSearchInput`, `UiSelectWithSearch`, `UiMultiSelect`, `UiCalendarMultiSelect`, `UiRadioGroup`, `UiFileUploadInput`, `UiPagination`)
 **When** release-quality checks are executed
 **Then** each component has Storybook coverage for relevant states and usage flows
 **And** each component has unit-test validation for render and core interactions.
@@ -298,6 +363,11 @@ So that selection and input workflows are safe for production adoption.
 **When** Epic 2 deliverables are reviewed
 **Then** Epic 2 components are correctly exported from toolkit entrypoint
 **And** contract consistency and documented exceptions are complete.
+
+**Given** Epic 2 must satisfy the Story 1.3 accessibility baseline and NFR3
+**When** Epic 2 accessibility checks are executed
+**Then** keyboard navigation (`Tab`/`Shift+Tab`), logical focus order, visible focus indicators, keyboard-operable controls, and disabled/error behavior are validated across Epic 2 components
+**And** accessibility failures are treated as blocking issues for Epic 2 completion.
 
 **Given** Epic 2 must enable future epics cleanly
 **When** Epic 2 is marked complete
@@ -437,7 +507,7 @@ So that data-presentation and card workflows are production-ready for company ad
 
 **Acceptance Criteria:**
 
-**Given** Epic 3 components are implemented (`UiItemRow`, `UiItemsList`, `UiTaskCard`, `UiProfileSelectCard`, `UiIntegrationCard`, and Board A micro-components)
+**Given** Epic 3 components are implemented (`UiItemRow`, `UiItemsList`, `UiTaskCard`, `UiProfileSelectCard`, `UiIntegrationCard`, `UiFilterChip`, `UiPinInput`, `UiPaymentOptionCard`, `UiActionIconBar`, `UiStatusBadge`, `UiNotificationBadge`)
 **When** Epic 3 quality validation is executed
 **Then** each component has Storybook coverage for required usage and state behavior
 **And** each component has unit-test validation for render and core interactions.
@@ -446,6 +516,11 @@ So that data-presentation and card workflows are production-ready for company ad
 **When** Epic 3 output is reviewed
 **Then** all Epic 3 components are exported correctly from toolkit entrypoint
 **And** contract consistency plus documented exceptions are complete.
+
+**Given** Epic 3 must satisfy the Story 1.3 accessibility baseline and NFR3
+**When** Epic 3 accessibility checks are executed
+**Then** keyboard navigation (`Tab`/`Shift+Tab`), logical focus order, visible focus indicators, keyboard-operable controls, and disabled/error behavior are validated across Epic 3 components
+**And** accessibility failures are treated as blocking issues for Epic 3 completion.
 
 **Given** Epic 3 should enable subsequent epics cleanly
 **When** Epic 3 is marked complete
@@ -472,7 +547,7 @@ So that loading experiences remain behaviorally consistent across company produc
 **Given** skeleton parity is a release blocker
 **When** skeleton implementation work starts
 **Then** CRM skeleton source is identified and reused as baseline
-**And** provenance/source details are recorded according to governance rules.
+**And** provenance/source details are recorded with the shared Definition of Done checklist at `specs/implementation-artifacts/story-dod-template.md` (source, reuse rationale, and reference IDs in PR/issue metadata).
 
 **Given** canonical animation behavior is mandatory
 **When** baseline skeleton code is integrated
@@ -550,8 +625,13 @@ So that loading-state components are safe for production adoption.
 
 **Given** provenance and export integrity are required for release readiness
 **When** Epic 4 is reviewed for completion
-**Then** source provenance is documented and export surface is complete
-**And** Epic 4 exits with traceable FR6/FR8 evidence and no unresolved blockers.
+**Then** source provenance is documented, `UiSkeleton` (primitive + composed) delivery artifacts are recorded with origin details, and export surface is complete
+**And** Epic 4 exits with traceable FR5/FR6/FR8 evidence and no unresolved blockers.
+
+**Given** Story 5.4 consolidates FR evidence across epics
+**When** Story 4.4 closure artifacts are finalized
+**Then** the provenance/export checklist and traceability matrix include explicit links to the delivered `UiSkeleton` artifact and its source
+**And** those links are ready for direct consolidation in Story 5.4 governance reporting.
 
 **Given** Epic 4 closure requires traceable completion evidence
 **When** Epic 4 is finalized
@@ -598,7 +678,7 @@ So that company teams can trust consistency with CRM/website governance rules.
 **Given** reuse-first and canonical policies are mandatory
 **When** provenance documentation is completed
 **Then** each delivered/enhanced component is marked with `source` (`crm`, `website`, `new`) and rationale
-**And** canonical behavior alignment decisions are clearly documented.
+**And** canonical behavior alignment decisions are clearly documented using the shared Definition of Done checklist at `specs/implementation-artifacts/story-dod-template.md` (source, reuse rationale, and reference IDs in PR/issue metadata).
 
 **Given** deviations may be necessary in limited cases
 **When** a component diverges from canonical expectations
@@ -653,10 +733,10 @@ So that internal package publication is a controlled and auditable decision.
 
 **Given** this is the final Epic 5 story
 **When** Story 5.4 is completed
-**Then** Epic 5 can be marked complete with traceable FR1/FR2/FR3/FR8 evidence
-**And** the epics document is ready for final validation step.
+**Then** Epic 5 can be marked complete with traceable FR1/FR2/FR3/FR5/FR6/FR8 evidence
+**And** the Release Manager performs a checklist-driven final validation review using `specs/planning-artifacts/epics.md` as the input artifact.
 
 **Given** final governance sign-off requires auditable closure
-**When** Story 5.4 is finalized
-**Then** a Definition of Done artifact and consolidated evidence references are captured in implementation artifacts
-**And** the release go/no-go decision is traceable to those referenced artifacts.
+**When** the Release Manager and Governance Board complete final validation
+**Then** the output artifact is either a signed `specs/implementation-artifacts/final-validation-certificate.md` or an annotated `specs/planning-artifacts/epics.md` containing sign-off fields (`reviewer`, `date`, `decision`, `blocking-issues`, `follow-ups`) plus linked Definition of Done evidence references
+**And** the signed/annotated artifact is stored under `specs/implementation-artifacts/` before Epic 5 can be marked complete and release go/no-go is approved.

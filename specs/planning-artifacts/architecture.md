@@ -480,7 +480,7 @@ ui-toolkit/
 - State tests:
   - `src/test/testing-library/UiButton.test.tsx`
   - `src/test/testing-library/UiInput.test.tsx`
-  - `src/test/testing-library/UiCheckBox.test.tsx`
+  - `src/test/testing-library/UiCheckbox.test.tsx`
   - `src/test/testing-library/UiLink.test.tsx`
 
 **FR-05 Missing Module Delivery**
