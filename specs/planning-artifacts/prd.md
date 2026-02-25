@@ -132,7 +132,7 @@ Vendor-coupling guardrail: if a consumer cannot pass MUI `SxProps`, provide an a
 3. Storybook story coverage for each delivered/enhanced module.
 4. Unit tests for each delivered/enhanced module.
 5. Export coverage via `src/components/index.ts`.
-6. Coverage checklist maintained as markdown at `specs/planning-artifacts/board-coverage-checklist.md` ("coverage checklist"), owned by the Component Lead / Frontend Team, with checklist rows mapping `board element -> component -> implementation status -> src/components/index.ts export link`.
+6. Coverage checklist maintained as Markdown at `specs/planning-artifacts/board-coverage-checklist.md` ("coverage checklist"), owned by the Component Lead / Frontend Team, with checklist rows mapping `board element -> component -> implementation status -> src/components/index.ts export link`.
 
 ## 6. Out of Scope
 

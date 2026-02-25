@@ -38,9 +38,9 @@ The PRD defines 8 functional requirement groups that drive architecture:
 - FR-05 Missing Module Delivery: broad module set including form controls, cards, micro-components, and skeleton suite.
 - FR-06 Skeleton Parity: CRM skeleton baseline and exact animation parity are mandatory and release-blocking.
 - FR-07 API Contract Consistency: unified prop model with documented exceptions.
-- FR-08 Quality Gates: Storybook + unit tests + TS strict + export completeness.
+- FR-08 Quality Gates: full GitHub CI parity with `website`/`crm` (lint, typecheck, unit, integration, e2e, visual, memory-leak, Storybook build, export completeness, and publish checks).
 
-Architecturally, this means we need a consistent component contract model, source provenance tracking, and enforcement mechanisms for parity and export completeness.
+Architecturally, this means we need a consistent component behavior model, source provenance tracking, and enforcement mechanisms for parity, CI completeness, and export completeness.
 
 **Non-Functional Requirements:**
 Key non-functional drivers from PRD and constraints:
@@ -66,16 +66,16 @@ Complexity drivers include breadth of UI patterns, strict cross-repo reuse polic
 - Reuse-first dependency on existing implementations in `crm` and `website`.
 - Canonical source rule: `crm` behavior first; `website` fills visual/variant gaps.
 - Skeleton dependency: CRM skeleton source is required baseline with exact animation parity.
-- Tooling baseline from implementation context: React 18, TypeScript strict mode, MUI v5, Storybook 8, Jest + Testing Library.
+- Tooling baseline from implementation context: Bun runtime/package manager, Dockerized local/CI runtime, React 18, TypeScript strict mode, MUI v5, Storybook 8, Jest + Testing Library, Playwright, and CRM/website-aligned rebuild/toolchain dependencies.
 - Single-release boundary for all board coverage increases need for strict definition-of-done and traceability.
 
 ### Cross-Cutting Concerns Identified
 
-- API contract governance across all modules and state variants.
+- UI component interface consistency across all modules and state variants (without backend API-contract scope).
 - Source provenance and drift control between toolkit and upstream `crm`/`website`.
 - Uniform state semantics (rest/hover/active/disabled/error) across component families.
 - Accessibility consistency (keyboard interaction, disabled semantics).
-- Verification strategy standardization (unit tests, parity checks, export contract checks, Storybook coverage).
+- Verification strategy standardization against `website`/`crm` CI checks (lint, typecheck, unit, integration, e2e, visual, memory-leak, Storybook/build, and publish gates).
 - Release traceability via board-to-component coverage checklist and explicit exit criteria.
 
 ## Starter Template Evaluation
@@ -95,9 +95,9 @@ Web frontend component library within an existing React + TypeScript workspace.
 - Modern library bundling defaults and templates.
 - Not selected due to migration overhead for this already-established codebase.
 
-3. `create-next-app` + `create-storybook` (greenfield app-first)
-- Strong for new app-oriented projects with Storybook added.
-- Not selected because this workstream is toolkit completion, not app bootstrap.
+3. Bun + Storybook + Bulletproof React structure adaptation
+- Strong option for a library-first workflow with Bun package/runtime consistency.
+- Not selected as a re-bootstrap path because this workstream extends an existing repository baseline.
 
 ### Selected Starter: Existing Repository Baseline (No Re-bootstrap)
 
@@ -107,26 +107,26 @@ Current architecture already matches project constraints and quality gates. Rebo
 **Initialization Command:**
 
 ```bash
-pnpm install
-pnpm run storybook-start
+bun install
+bun run storybook-start
 ```
 
 **Architectural Decisions Provided by Starter:**
 
 **Language & Runtime:**
-TypeScript strict mode, React 18, Node 20+ baseline.
+TypeScript strict mode, React 18, Bun runtime/package manager baseline, with Docker-first execution for local parity and CI.
 
 **Styling Solution:**
 MUI v5 + Emotion-based component styling model.
 
 **Build Tooling:**
-Existing Next.js-oriented build/export pipeline already integrated in repository scripts.
+Library-focused build/export pipeline integrated in repository scripts (no Next.js runtime dependency).
 
 **Testing Framework:**
 Jest + Testing Library for unit tests; Playwright for E2E/visual checks.
 
 **Code Organization:**
-`src/components` module structure with central export management and Storybook stories per component.
+Bulletproof React-inspired organization with clear `src/features`, `src/shared`, and app boundary separation, while preserving a centralized package export boundary.
 
 **Development Experience:**
 Established lint/test/storybook command surface and team-familiar workflows.
@@ -139,8 +139,9 @@ Established lint/test/storybook command surface and team-familiar workflows.
 
 **Critical Decisions (Block Implementation):**
 - Data Architecture: no persistent data layer; UI-library-only runtime model.
-- API & Communication: props + callbacks only for component contracts.
-- Distribution Model: internal npm registry as the single official consumption path.
+- Component Interface Model: props + callbacks only for UI component interaction; no backend API-contract layer.
+- Distribution Model: public npm registry as the official package distribution path.
+- Runtime/Tooling Model: Bun + Docker as the default execution baseline.
 - Security/Auth Scope: UI-library scoped only; no auth system architecture in this project.
 - Contract Enforcement: mandatory per-component checklist (exports, state matrix, accessibility, Storybook/tests, provenance note).
 
@@ -188,29 +189,30 @@ Established lint/test/storybook command surface and team-familiar workflows.
 
 - Decision Set:
   - Keep existing React + TypeScript strict + MUI-based architecture baseline.
-  - Enforce unified component contract policy from PRD.
-  - Maintain module-first organization under `src/components`.
+  - Enforce unified UI component interface policy from PRD.
+  - Follow Bulletproof React structure boundaries for new organization (`src/features`, `src/shared`, `src/app`).
 - Quality Architecture:
-  - Storybook and unit test coverage required for each new/enhanced component.
-  - Export surface managed centrally in `src/components/index.ts`.
+  - Enforce full GitHub CI check matrix aligned with `website`/`crm`: lint, typecheck, unit, integration, e2e, visual regression, memory-leak, Storybook build, package build, and publish checks.
+  - Storybook coverage and test evidence required for each new/enhanced component.
+  - Export surface managed centrally through the package entry boundary.
 - Rationale: Maximizes delivery speed while preserving consistency and maintainability.
 
 ### Infrastructure & Deployment
 
-- Decision: Internal npm package registry for distribution.
+- Decision: Public npm package registry for distribution.
 - Release Policy Direction:
   - Semver-managed versioning.
-  - CI publish gate on contract checklist completion.
-  - Consumer compatibility policy for internal projects (`crm`, `website`, others).
+  - CI publish gate on full CI matrix completion and checklist closure.
+  - Consumer compatibility policy for internal and external consumers.
 - Rationale: Standardized consumption path, clear upgrade flow, and governance-ready distribution.
 
 ### Decision Impact Analysis
 
 **Implementation Sequence:**
-1. Define and enforce contract checklist as definition-of-done.
+1. Define and enforce quality checklist as definition-of-done.
 2. Implement/upgrade components using reuse-first policy.
 3. Validate state matrix, tests, stories, exports per component.
-4. Package and publish through internal registry with versioned release gates.
+4. Package and publish through public npm registry with versioned release gates.
 
 **Cross-Component Dependencies:**
 - Contract checklist influences every component implementation and release eligibility.
@@ -246,16 +248,19 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Structure Patterns
 
 **Project Organization:**
-- Components remain module-first under `src/components`.
+- Follow Bulletproof React structure boundaries for new work:
+  - `src/app` for app/bootstrap-level composition
+  - `src/features/<domain>/components` for domain-driven components
+  - `src/shared/ui` for reusable cross-domain UI primitives
 - Stories are co-located with component implementation files.
-- Unit tests remain centralized in `src/test/testing-library`.
-- Public exports remain centralized in `src/components/index.ts`.
+- Unit tests are centralized in root-level `tests/unit`.
+- Public exports remain centralized in the package entry boundary (`src/components/index.ts` until migration is complete).
 
 **File Structure Patterns (per new component):**
-- `src/components/<kebab-name>/index.tsx`
-- `src/components/<kebab-name>/types.ts`
-- `src/components/<kebab-name>/<Name>.stories.tsx`
-- `src/test/testing-library/<Name>.test.tsx`
+- `src/features/<domain>/components/<kebab-name>/index.tsx`
+- `src/features/<domain>/components/<kebab-name>/types.ts`
+- `src/features/<domain>/components/<kebab-name>/<Name>.stories.tsx`
+- `tests/unit/<Name>.test.tsx`
 
 ### Format Patterns
 
@@ -308,12 +313,12 @@ Established lint/test/storybook command surface and team-familiar workflows.
   - rationale
   - notes on behavior/visual alignment decisions
 
-**Contract Enforcement Checklist (Mandatory per component):**
+**Quality Enforcement Checklist (Mandatory per component):**
 - Export present in `src/components/index.ts`
 - Required state matrix covered
 - Accessibility baseline checks included
 - Storybook coverage present
-- Unit tests present in `src/test/testing-library`
+- Unit tests present in `tests/unit`
 - Provenance entry exists in central registry
 
 ### Enforcement Guidelines
@@ -321,7 +326,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 **All AI Agents MUST:**
 - Follow naming and structure patterns exactly for new components.
 - Apply shared prop contract policy and document exceptions.
-- Complete contract checklist before considering a component done.
+- Complete quality checklist before considering a component done.
 - Update provenance registry for each delivered/enhanced component.
 
 **Pattern Enforcement:**
@@ -347,13 +352,19 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ```text
 ui-toolkit/
 ├── package.json
-├── pnpm-lock.yaml
+├── bun.lockb
 ├── tsconfig.json
 ├── tsconfig.paths.json
 ├── jest.config.ts
 ├── playwright.config.ts
 ├── build.config.mjs
 ├── .eslintrc.js
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   ├── visual/
+│   └── memory-leak/
 ├── .storybook/
 │   ├── main.ts
 │   └── preview.ts
@@ -365,8 +376,6 @@ ui-toolkit/
 │       ├── e2e-testing.yml
 │       ├── autorelease.yml
 │       └── autoprerelease.yml
-├── pages/
-│   └── _app.tsx
 ├── scripts/
 │   ├── localizationGenerator.js
 │   └── test/
@@ -381,6 +390,10 @@ ui-toolkit/
 │   │   └── component-provenance.md                    # to create
 │   └── implementation-artifacts/
 ├── src/
+│   ├── app/
+│   ├── features/
+│   │   └── <domain>/
+│   │       └── components/
 │   ├── components/
 │   │   ├── index.ts                                   # public API boundary
 │   │   ├── fonts.css
@@ -420,10 +433,9 @@ ui-toolkit/
 │   │   ├── ui-notification-badge/                     # new
 │   │   ├── ui-skeleton/                               # new
 │   │   └── ui-skeleton-composed/                      # new
-│   ├── test/
-│   │   ├── testing-library/                           # centralized component tests
-│   │   ├── e2e/
-│   │   └── memory-leak/
+│   ├── shared/
+│   │   ├── ui/
+│   │   └── lib/
 │   ├── assets/
 │   ├── hooks/
 │   ├── lib/
@@ -458,9 +470,9 @@ ui-toolkit/
 ### Requirements to Structure Mapping
 
 **FR-01 Board Coverage Completeness**
-- Component implementation: `src/components/*`
+- Component implementation: `src/features/*`, `src/shared/ui/*`, and exported entry boundary
 - Coverage governance artifacts: `specs/planning-artifacts/*`
-- Validation surfaces: stories in component folders + tests in `src/test/testing-library`
+- Validation surfaces: stories in component folders + tests in `tests/unit`
 
 **FR-02 Reuse-First Compliance**
 - Provenance registry: `specs/planning-artifacts/component-provenance.md`
@@ -468,8 +480,8 @@ ui-toolkit/
 
 **FR-03 Canonical Behavior Alignment**
 - Behavioral baseline encoded in component implementations and tests:
-  - `src/components/*`
-  - `src/test/testing-library/*`
+  - `src/features/*`, `src/shared/ui/*`
+  - `tests/unit/*`
 
 **FR-04 Existing Control State Parity**
 - Existing controls:
@@ -478,29 +490,29 @@ ui-toolkit/
   - `src/components/UiCheckbox/`
   - `src/components/UiLink/`
 - State tests:
-  - `src/test/testing-library/UiButton.test.tsx`
-  - `src/test/testing-library/UiInput.test.tsx`
-  - `src/test/testing-library/UiCheckbox.test.tsx`
-  - `src/test/testing-library/UiLink.test.tsx`
+  - `tests/unit/UiButton.test.tsx`
+  - `tests/unit/UiInput.test.tsx`
+  - `tests/unit/UiCheckbox.test.tsx`
+  - `tests/unit/UiLink.test.tsx`
 
 **FR-05 Missing Module Delivery**
-- New modules under `src/components/<kebab-name>/`
-- Matching tests in `src/test/testing-library/`
+- New modules under Bulletproof feature/shared paths with kebab-case naming
+- Matching tests in `tests/unit/`
 
 **FR-06 Skeleton Parity**
 - Skeleton implementation:
   - `src/components/ui-skeleton/`
   - `src/components/ui-skeleton-composed/`
-- Parity verification tests in `src/test/testing-library/`
+- Parity verification tests in `tests/unit/`
 
 **FR-07 API Contract Consistency**
-- Prop/type definitions in each component `types.ts`
+- Prop/type definitions in each component `types.ts` (UI component interfaces only)
 - Public export discipline in `src/components/index.ts`
 
 **FR-08 Quality Gates**
 - Stories co-located in component folders
-- Unit tests centralized under `src/test/testing-library/`
-- CI gates in `.github/workflows/`
+- Unit tests centralized under `tests/unit/`
+- CI gates in `.github/workflows/` aligned to `website`/`crm` matrices
 
 ### Integration Points
 
@@ -509,8 +521,8 @@ ui-toolkit/
 - Shared UI patterns through MUI theme/config and common prop contract rules.
 
 **External Integrations:**
-- Distribution via internal npm registry.
-- Consumer projects (`crm`, `website`, others) import published package surface.
+- Distribution via public npm registry.
+- Consumer projects (`crm`, `website`, others) and external adopters import published package surface.
 
 **Data Flow:**
 - Consumer app state drives component props.
@@ -523,13 +535,14 @@ ui-toolkit/
 - Root-level build/lint/test config files remain authoritative.
 
 **Source Organization:**
-- `src/components` is primary delivery area.
+- Bulletproof React boundaries are primary (`src/features`, `src/shared`, `src/app`).
+- `src/components` remains as package export boundary during migration.
 - Legacy `UiPascalCase` remains until explicit migration.
 - New components use kebab-case folders/files.
 
 **Test Organization:**
-- Unit tests centralized in `src/test/testing-library`.
-- E2E and memory-leak tests remain in existing `src/test/*` subtrees.
+- Unit tests centralized in root `tests/unit`.
+- Integration, E2E, visual, and memory-leak checks are mapped under root `tests/*`.
 
 **Asset Organization:**
 - Static visual assets in `src/assets`.
@@ -538,26 +551,26 @@ ui-toolkit/
 ### Development Workflow Integration
 
 **Development Server Structure:**
-- Storybook and local dev scripts operate against `src/components` and shared config.
+- Storybook and local dev scripts operate against Bulletproof domains (`src/features`, `src/shared`) and shared config.
 
 **Build Process Structure:**
-- Build scripts and TypeScript/Jest pipeline validate exported library surface and test suite.
+- Bun-driven build scripts and TypeScript/Jest/Playwright pipelines validate exported library surface and the full CI matrix.
 
 **Deployment Structure:**
-- CI workflow publishes versioned package to internal npm registry after quality gates pass.
+- CI workflow publishes versioned package to public npm registry after full quality gates pass.
 
 ## Architecture Validation Results
 
 ### Coherence Validation ✅
 
 **Decision Compatibility:**
-All major decisions align: UI-only scope, no persistent data layer, props/callback communication, centralized quality checklist, and internal npm distribution. No blocking contradictions detected.
+All major decisions align: UI-only scope, no persistent data layer, props/callback communication, full CI quality checklist, Bun+Docker runtime baseline, and public npm distribution. No blocking contradictions detected.
 
 **Pattern Consistency:**
 Patterns are internally consistent with one managed tension: new kebab-case component folders vs legacy `UiPascalCase` folders. This is resolved by explicit transition rule (legacy untouched unless dedicated migration task).
 
 **Structure Alignment:**
-Project structure supports all decisions: central export boundary, centralized unit tests, co-located stories, governance artifacts under `specs/planning-artifacts`, and clear consumer/app boundary.
+Project structure supports all decisions: Bulletproof React boundaries, central export boundary, root-level test matrix, co-located stories, governance artifacts under `specs/planning-artifacts`, and clear consumer/app boundary.
 
 ### Requirements Coverage Validation ✅
 
@@ -588,9 +601,9 @@ Naming, structure, contract, communication, and process patterns are specified w
 
 **Important Gaps:**
 - `specs/planning-artifacts/component-provenance.md` is defined but not yet created.
-- Internal npm distribution policy needs explicit compatibility matrix:
-  - supported consumer projects
-  - minimum Node version for consumers
+- Public npm distribution policy needs explicit compatibility matrix:
+  - supported consumer projects and external consumers
+  - minimum Bun/Node runtime expectations for consumers
   - peer dependency expectations (`react`, `@mui/material`, etc.)
 - CI publish gate is defined conceptually but requires concrete workflow-level checklist.
 
