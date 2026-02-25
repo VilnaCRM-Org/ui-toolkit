@@ -69,7 +69,7 @@ New components follow a strict unified contract where relevant:
 Documented exceptions are allowed only where control semantics require it.
 `sx` is the MUI-style system prop and must accept `SxProps<Theme>` semantics (theme-aware object/array/function).
 Reference signature: `sx?: SxProps<Theme>`.
-Vendor-coupling guardrail: if a consumer cannot pass MUI `SxProps`, provide an adapter layer that maps to `className`/`style` while preserving theme-token behavior.
+Vendor-coupling guardrail: if a consumer cannot pass MUI `SxProps`, provide an adapter layer that maps to `className`/`style` while preserving theme-token behavior; this requirement is mandatory under FR-07 Acceptance Criterion 3 and release-gated by §9 Criterion 7.
 
 ## 4. Scope Coverage by Board
 
@@ -132,7 +132,7 @@ Vendor-coupling guardrail: if a consumer cannot pass MUI `SxProps`, provide an a
 3. Storybook story coverage for each delivered/enhanced module.
 4. Unit tests for each delivered/enhanced module.
 5. Export coverage via `src/components/index.ts`.
-6. Coverage checklist maintained as Markdown at `specs/planning-artifacts/board-coverage-checklist.md` ("coverage checklist"), owned by the Component Lead / Frontend Team, with checklist rows mapping `board element -> component -> implementation status -> src/components/index.ts export link`.
+6. Coverage checklist maintained as Markdown at `specs/planning-artifacts/board-coverage-checklist.md` ("coverage checklist"), owned by the Component Lead / Frontend Team, with checklist rows mapping `board element -> component -> implementation status -> src/components/index.ts export link -> Storybook coverage (URL / status) -> Unit test coverage (coverage report link / status)`; the Component Lead / Frontend Team must populate every column for every row so FR-08 acceptance and §9 exit criteria items 2-3 can be verified from this single source of truth.
 
 ## 6. Out of Scope
 
@@ -179,31 +179,31 @@ Acceptance:
 1. `UiButton` implements `rest`, `hover`, `active`, `focus-visible`, and `disabled` states (plus `error/invalid` where used by form-validation contexts).
 2. `UiInput` renders `rest`, `hover`, `active`, `focus-visible`, `disabled`, `error`, and `invalid` states.
 3. `UiCheckbox` provides `unchecked`, `checked`, `hover`, `active`, `focus-visible`, `disabled`, `error`, and `invalid` states where applicable.
-4. `UiLink` exposes `rest`, `hover`, `active`, `focus-visible`, and `disabled` states where applicable; `error/invalid` is not required unless explicitly introduced by product usage.
+4. `UiLink` exposes `rest`, `hover`, `active`, `focus-visible`, and `disabled` states; `focus-visible` is mandatory and must be visibly distinct for keyboard operability per WCAG 2.1 AA, while `error/invalid` remains optional unless explicitly introduced by product usage.
 
 ### FR-05 Missing Module Delivery
 
 Deliver reusable components:
 
-1. `UiPagination`
-2. `UiSearchInput`
-3. `UiSelectWithSearch`
-4. `UiMultiSelect`
-5. `UiCalendarMultiSelect`
-6. `UiRadioGroup`
-7. `UiFileUploadInput`
-8. `UiItemRow`
-9. `UiItemsList`
-10. `UiTaskCard`
-11. `UiProfileSelectCard`
-12. `UiIntegrationCard`
-13. `UiFilterChip`
-14. `UiPinInput`
-15. `UiPaymentOptionCard`
-16. `UiActionIconBar`
-17. `UiStatusBadge`
-18. `UiNotificationBadge`
-19. `UiSkeleton` primitives and composed variants
+1. `ui-pagination`
+2. `ui-search-input`
+3. `ui-select-with-search`
+4. `ui-multi-select`
+5. `ui-calendar-multi-select`
+6. `ui-radio-group`
+7. `ui-file-upload-input`
+8. `ui-item-row`
+9. `ui-items-list`
+10. `ui-task-card`
+11. `ui-profile-select-card`
+12. `ui-integration-card`
+13. `ui-filter-chip`
+14. `ui-pin-input`
+15. `ui-payment-option-card`
+16. `ui-action-icon-bar`
+17. `ui-status-badge`
+18. `ui-notification-badge`
+19. `ui-skeleton` primitives and composed variants
 
 ### FR-06 Skeleton Parity (Release Blocker)
 
@@ -219,6 +219,7 @@ Acceptance:
 
 1. Unified API fields are used where relevant.
 2. Exceptions are documented with rationale.
+3. A documented and tested adapter that maps `SxProps` to `className`/`style` while preserving theme-token behavior is delivered and passes integration tests.
 
 ### FR-08 Quality Gates
 
@@ -235,7 +236,7 @@ Acceptance:
 2. Keep naming aligned to existing `Ui*` conventions.
 3. Maintain keyboard accessibility meeting WCAG 2.1 AA with explicit checks: `Tab`/`Shift+Tab` navigation, logical focus order, visible focus indicator, keyboard-operable controls, appropriate ARIA roles/states, and consistent disabled/error behavior.
 4. Keep implementation maintainable and composable for future board expansion.
-5. Keep `sx` usage compatible with MUI `SxProps<Theme>` and provide a documented fallback mapping strategy for non-MUI consumers.
+5. Keep `sx` usage compatible with MUI `SxProps<Theme>` and provide a documented fallback mapping strategy for non-MUI consumers, enforced by FR-07 Acceptance Criterion 3 and §9 Criterion 7.
 
 ## 9. Release Exit Criteria
 
@@ -247,6 +248,7 @@ Release is complete only when all are true:
 4. TypeScript checks pass.
 5. Skeleton parity requirements are verified.
 6. Exports are complete from toolkit entry point.
+7. Adapter implementation, documentation, and automated integration tests are present and passing.
 
 ## 10. Risks and Mitigations
 

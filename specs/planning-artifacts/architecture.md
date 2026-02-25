@@ -66,7 +66,7 @@ Complexity drivers include breadth of UI patterns, strict cross-repo reuse polic
 - Reuse-first dependency on existing implementations in `crm` and `website`.
 - Canonical source rule: `crm` behavior first; `website` fills visual/variant gaps.
 - Skeleton dependency: CRM skeleton source is required baseline with exact animation parity.
-- Tooling baseline from implementation context: Bun runtime/package manager, Dockerized local/CI runtime, React 18, TypeScript strict mode, MUI v5, Storybook 8, Jest + Testing Library, Playwright, and CRM/website-aligned rebuild/toolchain dependencies.
+- Tooling baseline from implementation context: Bun runtime/package manager (target `>=1.2.0`), Dockerized local/CI runtime, React 18, TypeScript strict mode, MUI v5, Storybook 8, Jest + Testing Library, Playwright, and CRM/website-aligned rebuild/toolchain dependencies.
 - Single-release boundary for all board coverage increases need for strict definition-of-done and traceability.
 
 ### Cross-Cutting Concerns Identified
@@ -249,11 +249,12 @@ Established lint/test/storybook command surface and team-familiar workflows.
 
 **Project Organization:**
 - Follow Bulletproof React structure boundaries for new work:
-  - `src/app` for app/bootstrap-level composition
+  - `src/app/providers` for Storybook/dev-harness provider composition only
   - `src/features/<domain>/components` for domain-driven components
   - `src/shared/ui` for reusable cross-domain UI primitives
 - Stories are co-located with component implementation files.
 - Unit tests are centralized in root-level `tests/unit`.
+- Integration tests are centralized in root-level `tests/integration`.
 - Public exports remain centralized in the package entry boundary (`src/components/index.ts` until migration is complete).
 
 **File Structure Patterns (per new component):**
@@ -261,6 +262,15 @@ Established lint/test/storybook command surface and team-familiar workflows.
 - `src/features/<domain>/components/<kebab-name>/types.ts`
 - `src/features/<domain>/components/<kebab-name>/<Name>.stories.tsx`
 - `tests/unit/<Name>.test.tsx`
+
+### Integration Test Conventions
+
+- Framework: Jest is used for integration tests in this repository.
+- Naming/location: `tests/integration/**/*.integration.test.ts(x)`.
+- Scope definitions:
+  - Unit tests (`tests/unit`): single-module behavior and pure logic in isolation.
+  - Integration tests (`tests/integration`): behavior spanning multiple toolkit modules and/or external resource boundaries (mocked/stubbed where needed).
+- CI enforcement: all integration specs are executed by the CI matrix gate named `integration`.
 
 ### Format Patterns
 
@@ -352,7 +362,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ```text
 ui-toolkit/
 ├── package.json
-├── bun.lockb
+├── bun.lock
 ├── tsconfig.json
 ├── tsconfig.paths.json
 ├── jest.config.ts
@@ -360,8 +370,8 @@ ui-toolkit/
 ├── build.config.mjs
 ├── .eslintrc.js
 ├── tests/
-│   ├── unit/
-│   ├── integration/
+│   ├── unit/                                        # Jest + Testing Library; `*.test.ts(x)` for single-module logic
+│   ├── integration/                                 # Jest; `*.integration.test.ts(x)` for multi-module/external-resource interactions
 │   ├── e2e/
 │   ├── visual/
 │   └── memory-leak/
@@ -391,61 +401,82 @@ ui-toolkit/
 │   └── implementation-artifacts/
 ├── src/
 │   ├── app/
+│   │   └── providers/                               # Storybook/dev-harness provider wrappers only
 │   ├── features/
-│   │   └── <domain>/
-│   │       └── components/
-│   ├── components/
-│   │   ├── index.ts                                   # public API boundary
-│   │   ├── fonts.css
-│   │   ├── Types.d.ts
-│   │   ├── AppTheme/
-│   │   ├── UiButton/                                  # legacy (existing)
-│   │   ├── UiInput/                                   # legacy (existing)
-│   │   ├── UiCheckbox/                                # legacy (existing)
-│   │   ├── UiLink/                                    # legacy (existing)
-│   │   ├── UiTypography/                              # legacy (existing)
-│   │   ├── UiImage/                                   # legacy (existing)
-│   │   ├── UiToolbar/                                 # legacy (existing)
-│   │   ├── UiTooltip/                                 # legacy (existing)
-│   │   ├── UiTextFieldForm/                           # legacy (existing)
-│   │   ├── UiCardItem/                                # legacy (existing)
-│   │   ├── UiCardList/                                # legacy (existing)
-│   │   ├── UiFooter/                                  # legacy (existing)
-│   │   ├── UiBreakpoints/                             # legacy (existing)
-│   │   ├── UiColorTheme/                              # legacy (existing)
-│   │   ├── ui-pagination/                             # new
-│   │   ├── ui-search-input/                           # new
-│   │   ├── ui-select-with-search/                     # new
-│   │   ├── ui-multi-select/                           # new
-│   │   ├── ui-calendar-multi-select/                  # new
-│   │   ├── ui-radio-group/                            # new
-│   │   ├── ui-file-upload-input/                      # new
-│   │   ├── ui-item-row/                               # new
-│   │   ├── ui-items-list/                             # new
-│   │   ├── ui-task-card/                              # new
-│   │   ├── ui-profile-select-card/                    # new
-│   │   ├── ui-integration-card/                       # new
-│   │   ├── ui-filter-chip/                            # new
-│   │   ├── ui-pin-input/                              # new
-│   │   ├── ui-payment-option-card/                    # new
-│   │   ├── ui-action-icon-bar/                        # new
-│   │   ├── ui-status-badge/                           # new
-│   │   ├── ui-notification-badge/                     # new
-│   │   ├── ui-skeleton/                               # new
-│   │   └── ui-skeleton-composed/                      # new
+│   │   ├── core-controls/
+│   │   │   ├── components/
+│   │   │   │   ├── ui-button/
+│   │   │   │   ├── ui-checkbox/
+│   │   │   │   ├── ui-input/
+│   │   │   │   └── ui-link/
+│   │   │   ├── hooks/
+│   │   │   ├── types/
+│   │   │   └── index.ts
+│   │   ├── selection-input/
+│   │   │   ├── components/
+│   │   │   │   ├── ui-pagination/
+│   │   │   │   ├── ui-search-input/
+│   │   │   │   ├── ui-select-with-search/
+│   │   │   │   ├── ui-multi-select/
+│   │   │   │   ├── ui-calendar-multi-select/
+│   │   │   │   ├── ui-radio-group/
+│   │   │   │   └── ui-file-upload-input/
+│   │   │   ├── hooks/
+│   │   │   ├── types/
+│   │   │   └── index.ts
+│   │   ├── data-cards/
+│   │   │   ├── components/
+│   │   │   │   ├── ui-item-row/
+│   │   │   │   ├── ui-items-list/
+│   │   │   │   ├── ui-task-card/
+│   │   │   │   ├── ui-profile-select-card/
+│   │   │   │   └── ui-integration-card/
+│   │   │   ├── hooks/
+│   │   │   ├── types/
+│   │   │   └── index.ts
+│   │   ├── micro-components/
+│   │   │   ├── components/
+│   │   │   │   ├── ui-filter-chip/
+│   │   │   │   ├── ui-pin-input/
+│   │   │   │   ├── ui-payment-option-card/
+│   │   │   │   ├── ui-action-icon-bar/
+│   │   │   │   ├── ui-status-badge/
+│   │   │   │   └── ui-notification-badge/
+│   │   │   ├── hooks/
+│   │   │   ├── types/
+│   │   │   └── index.ts
+│   │   └── skeleton/
+│   │       ├── components/
+│   │       │   ├── ui-skeleton/
+│   │       │   └── ui-skeleton-composed/
+│   │       ├── hooks/
+│   │       ├── types/
+│   │       └── index.ts
 │   ├── shared/
-│   │   ├── ui/
-│   │   └── lib/
+│   │   ├── ui/                                        # shared primitives and legacy bridges
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   ├── types/
+│   │   └── utils/
+│   ├── components/
+│   │   └── index.ts                                   # package public API boundary (transitional)
 │   ├── assets/
-│   ├── hooks/
-│   ├── lib/
-│   ├── providers/
-│   ├── routes/
-│   ├── stores/
-│   ├── types/
 │   └── utils/
 └── docs/
 ```
+
+**Lockfile Policy (Bun v1.2+):**
+- Required lockfile format is text-based `bun.lock` (legacy `bun.lockb` is not allowed on active branches).
+- Migration command:
+
+```bash
+bun install --save-text-lockfile --frozen-lockfile --lockfile-only
+```
+
+**`src/app` Scope Constraint:**
+- `src/app/providers` is limited to provider wrappers used by Storybook/dev harnesses (for example `ThemeProvider` composition).
+- Do not add app-level `routes/` or `stores/` to this library architecture.
+- `src/app` must not contain async orchestration, backend coupling, or product application logic.
 
 ### Architectural Boundaries
 
@@ -501,8 +532,8 @@ ui-toolkit/
 
 **FR-06 Skeleton Parity**
 - Skeleton implementation:
-  - `src/components/ui-skeleton/`
-  - `src/components/ui-skeleton-composed/`
+  - `src/features/skeleton/components/ui-skeleton/`
+  - `src/features/skeleton/components/ui-skeleton-composed/`
 - Parity verification tests in `tests/unit/`
 
 **FR-07 API Contract Consistency**
@@ -528,6 +559,30 @@ ui-toolkit/
 - Consumer app state drives component props.
 - Components emit interaction callbacks to consumer handlers.
 - No repository-owned external data fetch lifecycle.
+
+### Compatibility Matrix (Build vs Consumer Runtime)
+
+#### Dev/build requirements
+
+- Purpose: local development, test execution, package build, and publish automation for this repository.
+- Bun: `>=1.2.0` (enforced via `bun.lock` text lockfile policy).
+- Toolchain baseline: TypeScript strict mode, Jest + Testing Library, Playwright, Storybook 8, and Docker-based CI parity.
+- Build/publish responsibility: maintainers and CI only.
+
+#### Consumer runtime requirements
+
+- Bun is **not required** to consume the published npm package.
+- Supported Node.js LTS range for consumer build/SSR environments: `20.x` and `22.x`.
+- Browser target matrix for rendered components:
+  - Chromium browsers (Chrome/Edge): latest stable and previous stable.
+  - Firefox: latest stable and ESR.
+  - Safari (macOS/iOS): latest major and previous major.
+- Peer dependency expectations for downstream consumers (`crm`, `website`, external adopters):
+  - `react`: `^18.2.0`
+  - `react-dom`: `^18.2.0`
+  - `@mui/material`: `^5.15.0`
+  - `@emotion/react`: `^11.11.0`
+  - `@emotion/styled`: `^11.11.0`
 
 ### File Organization Patterns
 
@@ -564,7 +619,7 @@ ui-toolkit/
 ### Coherence Validation ✅
 
 **Decision Compatibility:**
-All major decisions align: UI-only scope, no persistent data layer, props/callback communication, full CI quality checklist, Bun+Docker runtime baseline, and public npm distribution. No blocking contradictions detected.
+All major decisions align: UI-only scope, no persistent data layer, props/callback communication, full CI quality checklist, Bun+Docker dev/build baseline, and public npm distribution. No blocking contradictions detected.
 
 **Pattern Consistency:**
 Patterns are internally consistent with one managed tension: new kebab-case component folders vs legacy `UiPascalCase` folders. This is resolved by explicit transition rule (legacy untouched unless dedicated migration task).
@@ -601,10 +656,7 @@ Naming, structure, contract, communication, and process patterns are specified w
 
 **Important Gaps:**
 - `specs/planning-artifacts/component-provenance.md` is defined but not yet created.
-- Public npm distribution policy needs explicit compatibility matrix:
-  - supported consumer projects and external consumers
-  - minimum Bun/Node runtime expectations for consumers
-  - peer dependency expectations (`react`, `@mui/material`, etc.)
+- Compatibility matrix is now defined in this document and must be mirrored in release-gate automation (validation + documentation checks) before publish.
 - CI publish gate is defined conceptually but requires concrete workflow-level checklist.
 
 **Nice-to-Have Gaps:**
@@ -654,7 +706,6 @@ Naming, structure, contract, communication, and process patterns are specified w
 - Practical enforcement model (tests, stories, exports, provenance).
 
 **Areas for Future Enhancement:**
-- Formal consumer compatibility matrix.
 - Planned legacy folder naming migration path.
 
 ### Implementation Handoff

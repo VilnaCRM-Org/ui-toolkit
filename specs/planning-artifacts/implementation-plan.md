@@ -4,7 +4,7 @@
 
 **Architecture:** Execute in epic order with governance-first setup, then deliver components by domain: core controls, selection/input workflows, data/cards, and skeletons. Reuse already implemented components from `crm` and `website` before creating new modules. Keep `crm` as canonical behavior source and use `website` only for visual and variant gap-fill.
 
-**Tech Stack:** React 18, TypeScript strict, MUI v5, Storybook 8, Jest + Testing Library, internal npm registry publishing.
+**Tech Stack:** React 18, TypeScript strict, MUI v5, Storybook 8, Jest + Testing Library, public npm registry publishing.
 
 **Plan Date:** 2026-02-23  
 **Input Artifacts:** `specs/planning-artifacts/prd.md`, `specs/planning-artifacts/architecture.md`, `specs/planning-artifacts/epics.md`
@@ -163,7 +163,7 @@ Validate that expected exports exist and fail on missing exports.
 **Step 4: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiExportsCoverage.test.tsx --verbose
+bunx jest src/test/testing-library/UiExportsCoverage.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -206,10 +206,10 @@ Use `crm` behavior as source of truth; record any justified deviations in proven
 **Step 4: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiButton.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiInput.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiCheckbox.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiLink.test.tsx --verbose
+bunx jest src/test/testing-library/UiButton.test.tsx --verbose
+bunx jest src/test/testing-library/UiInput.test.tsx --verbose
+bunx jest src/test/testing-library/UiCheckbox.test.tsx --verbose
+bunx jest src/test/testing-library/UiLink.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -248,8 +248,8 @@ Mark Epic 1 rows and link evidence.
 **Step 4: Verify**
 
 ```bash
-pnpm run storybook-build
-pnpm exec jest src/test/testing-library/UiButton.test.tsx \
+bun run storybook-build
+bunx jest src/test/testing-library/UiButton.test.tsx \
   src/test/testing-library/UiInput.test.tsx \
   src/test/testing-library/UiCheckbox.test.tsx \
   src/test/testing-library/UiLink.test.tsx --verbose
@@ -296,9 +296,9 @@ Cover render, selection/search interaction, and disabled/error behavior.
 **Step 4: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiSearchInput.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiSelectWithSearch.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiMultiSelect.test.tsx --verbose
+bunx jest src/test/testing-library/UiSearchInput.test.tsx --verbose
+bunx jest src/test/testing-library/UiSelectWithSearch.test.tsx --verbose
+bunx jest src/test/testing-library/UiMultiSelect.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -345,9 +345,9 @@ Include keyboard behavior for calendar and radio where relevant.
 **Step 4: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiCalendarMultiSelect.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiRadioGroup.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiFileUploadInput.test.tsx --verbose
+bunx jest src/test/testing-library/UiCalendarMultiSelect.test.tsx --verbose
+bunx jest src/test/testing-library/UiRadioGroup.test.tsx --verbose
+bunx jest src/test/testing-library/UiFileUploadInput.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -383,7 +383,7 @@ Document primary pagination states and test core interactions and disabled behav
 **Step 3: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiPagination.test.tsx --verbose
+bunx jest src/test/testing-library/UiPagination.test.tsx --verbose
 ```
 
 **Step 4: Commit**
@@ -451,11 +451,11 @@ Cover method/status variants, selectable states, disabled behavior.
 **Step 4: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiItemRow.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiItemsList.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiTaskCard.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiProfileSelectCard.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiIntegrationCard.test.tsx --verbose
+bunx jest src/test/testing-library/UiItemRow.test.tsx --verbose
+bunx jest src/test/testing-library/UiItemsList.test.tsx --verbose
+bunx jest src/test/testing-library/UiTaskCard.test.tsx --verbose
+bunx jest src/test/testing-library/UiProfileSelectCard.test.tsx --verbose
+bunx jest src/test/testing-library/UiIntegrationCard.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -504,12 +504,12 @@ Ensure all components are exported and provenance entries are complete.
 **Step 4: Verify**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiFilterChip.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiPinInput.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiPaymentOptionCard.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiActionIconBar.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiStatusBadge.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiNotificationBadge.test.tsx --verbose
+bunx jest src/test/testing-library/UiFilterChip.test.tsx --verbose
+bunx jest src/test/testing-library/UiPinInput.test.tsx --verbose
+bunx jest src/test/testing-library/UiPaymentOptionCard.test.tsx --verbose
+bunx jest src/test/testing-library/UiActionIconBar.test.tsx --verbose
+bunx jest src/test/testing-library/UiStatusBadge.test.tsx --verbose
+bunx jest src/test/testing-library/UiNotificationBadge.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -532,8 +532,8 @@ git commit -m "feat: complete epic 3 micro-components and quality closure"
 ### Task 11: Epic 4 Stories 4.1 to 4.3 - Skeleton Baseline, Primitive, and Composed Variants
 
 **Files:**
-- Create/Modify: `src/components/ui-skeleton/**`
-- Create/Modify: `src/components/ui-skeleton-composed/**`
+- Create/Modify: `src/features/skeleton/components/ui-skeleton/**`
+- Create/Modify: `src/features/skeleton/components/ui-skeleton-composed/**`
 - Create: `src/test/testing-library/UiSkeleton.test.tsx`
 - Create: `src/test/testing-library/UiSkeletonComposed.test.tsx`
 - Modify: `src/components/index.ts`
@@ -554,14 +554,14 @@ Implement required composed layouts (widgets, menu, tab bar, controls, table).
 **Step 4: Verify parity + behavior**
 
 ```bash
-pnpm exec jest src/test/testing-library/UiSkeleton.test.tsx --verbose
-pnpm exec jest src/test/testing-library/UiSkeletonComposed.test.tsx --verbose
+bunx jest src/test/testing-library/UiSkeleton.test.tsx --verbose
+bunx jest src/test/testing-library/UiSkeletonComposed.test.tsx --verbose
 ```
 
 **Step 5: Commit**
 
 ```bash
-git add src/components/ui-skeleton src/components/ui-skeleton-composed \
+git add src/features/skeleton/components/ui-skeleton src/features/skeleton/components/ui-skeleton-composed \
   src/components/index.ts src/test/testing-library/UiSkeleton.test.tsx \
   src/test/testing-library/UiSkeletonComposed.test.tsx \
   specs/planning-artifacts/component-provenance.md
@@ -636,16 +636,16 @@ git commit -m "docs: finalize epic 5 adoption readiness governance"
 **Files:**
 - Modify: `specs/implementation-artifacts/release-readiness-report.md`
 - Modify: `package.json`
-- Modify: `CHANGELOG.md` (and/or `.changeset/**`, `pnpm-lock.yaml`) during version management
+- Modify: `CHANGELOG.md` (and/or `.changeset/**`, `bun.lock`) during version management
 
 **Step 1: Run full verification suite**
 
 ```bash
-pnpm run lint
-pnpm run typecheck
-pnpm exec jest --verbose
-pnpm run storybook-build
-pnpm run build
+bun run lint
+bun run typecheck
+bunx jest --verbose
+bun run storybook-build
+bun run build
 ```
 
 **Step 1b: Perform version management (Changesets preferred)**
@@ -653,17 +653,17 @@ pnpm run build
 Preferred Changesets flow:
 
 ```bash
-pnpm changeset
-pnpm exec changeset version
-git add .changeset package.json pnpm-lock.yaml CHANGELOG.md
+bunx changeset
+bunx changeset version
+git add .changeset package.json bun.lock CHANGELOG.md
 git commit -m "chore: version ui-toolkit for release"
 ```
 
 Fallback flow if Changesets are unavailable:
 
 ```bash
-pnpm version <new-version> --no-git-tag-version
-git add package.json pnpm-lock.yaml CHANGELOG.md
+npm version <new-version> --no-git-tag-version
+git add package.json bun.lock CHANGELOG.md
 git commit -m "chore: bump ui-toolkit version to <new-version>"
 ```
 
@@ -678,7 +678,7 @@ Checklist must be true:
 - skeleton parity verified
 - export surface complete
 - version bump PR includes updated `CHANGELOG.md` and package metadata
-- `ci:publish` script is present in `package.json` and points to the internal registry URL (`${NPM_REGISTRY_URL:-https://npm.company.internal}`)
+- `ci:publish` script is present in `package.json` and points to the public npm registry URL (`${NPM_REGISTRY_URL:-https://registry.npmjs.org}`)
 
 **Step 3: Record final evidence and release decision**
 
@@ -698,7 +698,7 @@ Ensure `package.json` contains:
 ```json
 {
   "scripts": {
-    "ci:publish": "pnpm publish -r --registry ${NPM_REGISTRY_URL:-https://npm.company.internal}"
+    "ci:publish": "bun publish --registry ${NPM_REGISTRY_URL:-https://registry.npmjs.org}"
   }
 }
 ```
@@ -706,7 +706,7 @@ Ensure `package.json` contains:
 After the version-bump PR is merged to the release branch, run publish in CI:
 
 ```bash
-pnpm run ci:publish
+bun run ci:publish
 ```
 
 Archive publish logs/artifact links in `specs/implementation-artifacts/release-readiness-report.md`.
