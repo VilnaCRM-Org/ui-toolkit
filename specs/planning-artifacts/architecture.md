@@ -265,7 +265,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 
 ### Integration Test Conventions
 
-- Framework: Jest is used for integration tests in this repository.
+- Framework/library: Jest runner with React Testing Library is used for integration tests in this repository.
 - Naming/location: `tests/integration/**/*.integration.test.ts(x)`.
 - Scope definitions:
   - Unit tests (`tests/unit`): single-module behavior and pure logic in isolation.
@@ -371,7 +371,7 @@ ui-toolkit/
 ├── .eslintrc.js
 ├── tests/
 │   ├── unit/                                        # Jest + Testing Library; `*.test.ts(x)` for single-module logic
-│   ├── integration/                                 # Jest; `*.integration.test.ts(x)` for multi-module/external-resource interactions
+│   ├── integration/                                 # Jest + React Testing Library; `*.integration.test.ts(x)` for multi-module/external-resource interactions
 │   ├── e2e/
 │   ├── visual/
 │   └── memory-leak/
