@@ -267,22 +267,23 @@ git commit -m "test: close epic 1 quality gates with story and test evidence"
 
 ### Task 6: Epic 2 Stories 2.1 and 2.2 - Search/Select Foundation + Multi-Select
 
-**Canonical module location for Tasks 6-11:** `src/shared/ui/<component>`
+**Canonical module locations for Tasks 6-11:** `src/features/<domain>/components/<component>`
 
 **Files:**
-- Create: `src/shared/ui/ui-search-input/index.tsx`
-- Create: `src/shared/ui/ui-search-input/types.ts`
-- Create: `src/shared/ui/ui-search-input/UiSearchInput.stories.tsx`
-- Create: `src/shared/ui/ui-select-with-search/index.tsx`
-- Create: `src/shared/ui/ui-select-with-search/types.ts`
-- Create: `src/shared/ui/ui-select-with-search/UiSelectWithSearch.stories.tsx`
-- Create: `src/shared/ui/ui-multi-select/index.tsx`
-- Create: `src/shared/ui/ui-multi-select/types.ts`
-- Create: `src/shared/ui/ui-multi-select/UiMultiSelect.stories.tsx`
+- Create: `src/features/selection-input/components/ui-search-input/index.tsx`
+- Create: `src/features/selection-input/components/ui-search-input/types.ts`
+- Create: `src/features/selection-input/components/ui-search-input/UiSearchInput.stories.tsx`
+- Create: `src/features/selection-input/components/ui-select-with-search/index.tsx`
+- Create: `src/features/selection-input/components/ui-select-with-search/types.ts`
+- Create: `src/features/selection-input/components/ui-select-with-search/UiSelectWithSearch.stories.tsx`
+- Create: `src/features/selection-input/components/ui-multi-select/index.tsx`
+- Create: `src/features/selection-input/components/ui-multi-select/types.ts`
+- Create: `src/features/selection-input/components/ui-multi-select/UiMultiSelect.stories.tsx`
 - Create: `tests/unit/ui-search-input.test.tsx`
 - Create: `tests/unit/ui-select-with-search.test.tsx`
 - Create: `tests/unit/ui-multi-select.test.tsx`
-- Modify: `src/components/index.ts`
+- Modify: `src/features/selection-input/index.ts`
+- Modify: `src/components/index.ts` (re-export via feature domain entry)
 
 **Step 1: Reuse implementations from `crm` and `website`**
 
@@ -307,8 +308,10 @@ bunx jest tests/unit/ui-multi-select.test.tsx --verbose
 **Step 5: Commit**
 
 ```bash
-git add src/shared/ui/ui-search-input src/shared/ui/ui-select-with-search \
-  src/shared/ui/ui-multi-select src/components/index.ts \
+git add src/features/selection-input/components/ui-search-input \
+  src/features/selection-input/components/ui-select-with-search \
+  src/features/selection-input/components/ui-multi-select \
+  src/features/selection-input/index.ts src/components/index.ts \
   tests/unit/ui-search-input.test.tsx \
   tests/unit/ui-select-with-search.test.tsx \
   tests/unit/ui-multi-select.test.tsx \
@@ -319,19 +322,20 @@ git commit -m "feat: deliver epic 2 search/select foundation and multi-select"
 ### Task 7: Epic 2 Stories 2.3, 2.4, and 2.4A - Calendar Multi-Select + Radio/File Upload
 
 **Files:**
-- Create: `src/shared/ui/ui-calendar-multi-select/index.tsx`
-- Create: `src/shared/ui/ui-calendar-multi-select/types.ts`
-- Create: `src/shared/ui/ui-calendar-multi-select/UiCalendarMultiSelect.stories.tsx`
-- Create: `src/shared/ui/ui-radio-group/index.tsx`
-- Create: `src/shared/ui/ui-radio-group/types.ts`
-- Create: `src/shared/ui/ui-radio-group/UiRadioGroup.stories.tsx`
-- Create: `src/shared/ui/ui-file-upload-input/index.tsx`
-- Create: `src/shared/ui/ui-file-upload-input/types.ts`
-- Create: `src/shared/ui/ui-file-upload-input/UiFileUploadInput.stories.tsx`
+- Create: `src/features/selection-input/components/ui-calendar-multi-select/index.tsx`
+- Create: `src/features/selection-input/components/ui-calendar-multi-select/types.ts`
+- Create: `src/features/selection-input/components/ui-calendar-multi-select/UiCalendarMultiSelect.stories.tsx`
+- Create: `src/features/selection-input/components/ui-radio-group/index.tsx`
+- Create: `src/features/selection-input/components/ui-radio-group/types.ts`
+- Create: `src/features/selection-input/components/ui-radio-group/UiRadioGroup.stories.tsx`
+- Create: `src/features/selection-input/components/ui-file-upload-input/index.tsx`
+- Create: `src/features/selection-input/components/ui-file-upload-input/types.ts`
+- Create: `src/features/selection-input/components/ui-file-upload-input/UiFileUploadInput.stories.tsx`
 - Create: `tests/unit/ui-calendar-multi-select.test.tsx`
 - Create: `tests/unit/ui-radio-group.test.tsx`
 - Create: `tests/unit/ui-file-upload-input.test.tsx`
-- Modify: `src/components/index.ts`
+- Modify: `src/features/selection-input/index.ts`
+- Modify: `src/components/index.ts` (re-export via feature domain entry)
 
 **Step 1: Implement components with reuse-first policy**
 
@@ -356,8 +360,10 @@ bunx jest tests/unit/ui-file-upload-input.test.tsx --verbose
 **Step 5: Commit**
 
 ```bash
-git add src/shared/ui/ui-calendar-multi-select src/shared/ui/ui-radio-group \
-  src/shared/ui/ui-file-upload-input src/components/index.ts \
+git add src/features/selection-input/components/ui-calendar-multi-select \
+  src/features/selection-input/components/ui-radio-group \
+  src/features/selection-input/components/ui-file-upload-input \
+  src/features/selection-input/index.ts src/components/index.ts \
   tests/unit/ui-calendar-multi-select.test.tsx \
   tests/unit/ui-radio-group.test.tsx \
   tests/unit/ui-file-upload-input.test.tsx \
@@ -368,11 +374,12 @@ git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 ### Task 7.5: Epic 2 Story 2.5 - Pagination Delivery
 
 **Files:**
-- Create: `src/shared/ui/ui-pagination/index.tsx`
-- Create: `src/shared/ui/ui-pagination/types.ts`
-- Create: `src/shared/ui/ui-pagination/UiPagination.stories.tsx`
+- Create: `src/features/selection-input/components/ui-pagination/index.tsx`
+- Create: `src/features/selection-input/components/ui-pagination/types.ts`
+- Create: `src/features/selection-input/components/ui-pagination/UiPagination.stories.tsx`
 - Create: `tests/unit/ui-pagination.test.tsx`
-- Modify: `src/components/index.ts`
+- Modify: `src/features/selection-input/index.ts`
+- Modify: `src/components/index.ts` (re-export via feature domain entry)
 - Modify: `specs/planning-artifacts/component-provenance.md`
 
 **Step 1: Implement `UiPagination` with reuse-first policy**
@@ -392,7 +399,8 @@ bunx jest tests/unit/ui-pagination.test.tsx --verbose
 **Step 4: Commit**
 
 ```bash
-git add src/shared/ui/ui-pagination src/components/index.ts \
+git add src/features/selection-input/components/ui-pagination \
+  src/features/selection-input/index.ts src/components/index.ts \
   tests/unit/ui-pagination.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: deliver epic 2 pagination module"
@@ -410,7 +418,8 @@ Ensure all Epic 2 components have stories and tests linked, including `UiPaginat
 
 **Step 2: Validate export completeness**
 
-Confirm all Epic 2 components are available from `src/components/index.ts`.
+Confirm all Epic 2 components are available from `src/features/selection-input/index.ts`
+and re-exported from `src/components/index.ts`.
 
 **Step 3: Record evidence**
 
@@ -427,17 +436,18 @@ git commit -m "docs: close epic 2 quality gates and evidence tracking"
 ### Task 9: Epic 3 Stories 3.1 to 3.4 - Data Rows and Card Workflows
 
 **Files:**
-- Create: `src/shared/ui/ui-item-row/**`
-- Create: `src/shared/ui/ui-items-list/**`
-- Create: `src/shared/ui/ui-task-card/**`
-- Create: `src/shared/ui/ui-profile-select-card/**`
-- Create: `src/shared/ui/ui-integration-card/**`
+- Create: `src/features/data-cards/components/ui-item-row/**`
+- Create: `src/features/data-cards/components/ui-items-list/**`
+- Create: `src/features/data-cards/components/ui-task-card/**`
+- Create: `src/features/data-cards/components/ui-profile-select-card/**`
+- Create: `src/features/data-cards/components/ui-integration-card/**`
 - Create: `tests/unit/ui-item-row.test.tsx`
 - Create: `tests/unit/ui-items-list.test.tsx`
 - Create: `tests/unit/ui-task-card.test.tsx`
 - Create: `tests/unit/ui-profile-select-card.test.tsx`
 - Create: `tests/unit/ui-integration-card.test.tsx`
-- Modify: `src/components/index.ts`
+- Modify: `src/features/data-cards/index.ts`
+- Modify: `src/components/index.ts` (re-export via feature domain entry)
 
 **Step 1: Reuse existing components from `crm`/`website`**
 
@@ -464,9 +474,13 @@ bunx jest tests/unit/ui-integration-card.test.tsx --verbose
 **Step 5: Commit**
 
 ```bash
-git add src/shared/ui/ui-item-row src/shared/ui/ui-items-list src/shared/ui/ui-task-card \
-  src/shared/ui/ui-profile-select-card src/shared/ui/ui-integration-card \
-  src/components/index.ts tests/unit/ui-item-row.test.tsx \
+git add src/features/data-cards/components/ui-item-row \
+  src/features/data-cards/components/ui-items-list \
+  src/features/data-cards/components/ui-task-card \
+  src/features/data-cards/components/ui-profile-select-card \
+  src/features/data-cards/components/ui-integration-card \
+  src/features/data-cards/index.ts src/components/index.ts \
+  tests/unit/ui-item-row.test.tsx \
   tests/unit/ui-items-list.test.tsx tests/unit/ui-task-card.test.tsx \
   tests/unit/ui-profile-select-card.test.tsx \
   tests/unit/ui-integration-card.test.tsx \
@@ -477,19 +491,20 @@ git commit -m "feat: deliver epic 3 data rows and card workflows"
 ### Task 10: Epic 3 Stories 3.5 and 3.6 - Micro-Components + Quality Closure
 
 **Files:**
-- Create: `src/shared/ui/ui-filter-chip/**`
-- Create: `src/shared/ui/ui-pin-input/**`
-- Create: `src/shared/ui/ui-payment-option-card/**`
-- Create: `src/shared/ui/ui-action-icon-bar/**`
-- Create: `src/shared/ui/ui-status-badge/**`
-- Create: `src/shared/ui/ui-notification-badge/**`
+- Create: `src/features/micro-components/components/ui-filter-chip/**`
+- Create: `src/features/micro-components/components/ui-pin-input/**`
+- Create: `src/features/micro-components/components/ui-payment-option-card/**`
+- Create: `src/features/micro-components/components/ui-action-icon-bar/**`
+- Create: `src/features/micro-components/components/ui-status-badge/**`
+- Create: `src/features/micro-components/components/ui-notification-badge/**`
 - Create: `tests/unit/ui-filter-chip.test.tsx`
 - Create: `tests/unit/ui-pin-input.test.tsx`
 - Create: `tests/unit/ui-payment-option-card.test.tsx`
 - Create: `tests/unit/ui-action-icon-bar.test.tsx`
 - Create: `tests/unit/ui-status-badge.test.tsx`
 - Create: `tests/unit/ui-notification-badge.test.tsx`
-- Modify: `src/components/index.ts`
+- Modify: `src/features/micro-components/index.ts`
+- Modify: `src/components/index.ts` (re-export via feature domain entry)
 - Create: `specs/implementation-artifacts/epic-3-dod.md`
 
 **Step 1: Implement micro-components with shared conventions**
@@ -518,10 +533,14 @@ bunx jest tests/unit/ui-notification-badge.test.tsx --verbose
 **Step 5: Commit**
 
 ```bash
-git add src/shared/ui/ui-filter-chip src/shared/ui/ui-pin-input \
-  src/shared/ui/ui-payment-option-card src/shared/ui/ui-action-icon-bar \
-  src/shared/ui/ui-status-badge src/shared/ui/ui-notification-badge \
-  src/components/index.ts tests/unit/ui-filter-chip.test.tsx \
+git add src/features/micro-components/components/ui-filter-chip \
+  src/features/micro-components/components/ui-pin-input \
+  src/features/micro-components/components/ui-payment-option-card \
+  src/features/micro-components/components/ui-action-icon-bar \
+  src/features/micro-components/components/ui-status-badge \
+  src/features/micro-components/components/ui-notification-badge \
+  src/features/micro-components/index.ts src/components/index.ts \
+  tests/unit/ui-filter-chip.test.tsx \
   tests/unit/ui-pin-input.test.tsx \
   tests/unit/ui-payment-option-card.test.tsx \
   tests/unit/ui-action-icon-bar.test.tsx \
@@ -535,11 +554,12 @@ git commit -m "feat: complete epic 3 micro-components and quality closure"
 ### Task 11: Epic 4 Stories 4.1 to 4.3 - Skeleton Baseline, Primitive, and Composed Variants
 
 **Files:**
-- Create/Modify: `src/shared/ui/ui-skeleton/**`
-- Create/Modify: `src/shared/ui/ui-skeleton-composed/**`
+- Create/Modify: `src/features/skeleton/components/ui-skeleton/**`
+- Create/Modify: `src/features/skeleton/components/ui-skeleton-composed/**`
 - Create: `tests/unit/ui-skeleton.test.tsx`
 - Create: `tests/unit/ui-skeleton-composed.test.tsx`
-- Modify: `src/components/index.ts`
+- Modify: `src/features/skeleton/index.ts`
+- Modify: `src/components/index.ts` (re-export via feature domain entry)
 - Modify: `specs/planning-artifacts/component-provenance.md`
 
 **Step 1: Copy skeleton baseline from `crm`**
@@ -564,8 +584,10 @@ bunx jest tests/unit/ui-skeleton-composed.test.tsx --verbose
 **Step 5: Commit**
 
 ```bash
-git add src/shared/ui/ui-skeleton src/shared/ui/ui-skeleton-composed \
-  src/components/index.ts tests/unit/ui-skeleton.test.tsx \
+git add src/features/skeleton/components/ui-skeleton \
+  src/features/skeleton/components/ui-skeleton-composed \
+  src/features/skeleton/index.ts src/components/index.ts \
+  tests/unit/ui-skeleton.test.tsx \
   tests/unit/ui-skeleton-composed.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: deliver epic 4 skeleton baseline and variants with crm parity"
