@@ -35,7 +35,8 @@
 
 1. Execute this plan in the full toolkit source checkout containing:
    - `src/components`
-   - `src/test/testing-library`
+   - `tests/unit`
+   - `tests/integration`
    - `.storybook`
    - `package.json`
 2. Ensure local source repos for reuse are available and readable:
@@ -146,7 +147,7 @@ git commit -m "docs: map board scope to crm/website/new provenance sources"
 - Modify: `src/components/UiCheckbox/**`
 - Modify: `src/components/UiLink/**`
 - Modify: `src/components/index.ts`
-- Create/Modify: `src/test/testing-library/UiExportsCoverage.test.tsx`
+- Create/Modify: `tests/unit/UiExportsCoverage.test.tsx`
 
 **Step 1: Add/normalize shared contract typing where relevant**
 
@@ -163,7 +164,7 @@ Validate that expected exports exist and fail on missing exports.
 **Step 4: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiExportsCoverage.test.tsx --verbose
+bunx jest tests/unit/UiExportsCoverage.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -171,7 +172,7 @@ bunx jest src/test/testing-library/UiExportsCoverage.test.tsx --verbose
 ```bash
 git add src/components/UiButton src/components/UiInput src/components/UiCheckbox \
   src/components/UiLink src/components/index.ts \
-  src/test/testing-library/UiExportsCoverage.test.tsx
+  tests/unit/UiExportsCoverage.test.tsx
 git commit -m "feat: align core control contracts and export baseline"
 ```
 
@@ -182,10 +183,10 @@ git commit -m "feat: align core control contracts and export baseline"
 - Modify: `src/components/UiInput/**`
 - Modify: `src/components/UiCheckbox/**`
 - Modify: `src/components/UiLink/**`
-- Modify: `src/test/testing-library/UiButton.test.tsx`
-- Modify: `src/test/testing-library/UiInput.test.tsx`
-- Modify: `src/test/testing-library/UiCheckbox.test.tsx`
-- Modify: `src/test/testing-library/UiLink.test.tsx`
+- Modify: `tests/unit/UiButton.test.tsx`
+- Modify: `tests/unit/UiInput.test.tsx`
+- Modify: `tests/unit/UiCheckbox.test.tsx`
+- Modify: `tests/unit/UiLink.test.tsx`
 
 **Step 1: Implement missing state parity**
 
@@ -206,20 +207,20 @@ Use `crm` behavior as source of truth; record any justified deviations in proven
 **Step 4: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiButton.test.tsx --verbose
-bunx jest src/test/testing-library/UiInput.test.tsx --verbose
-bunx jest src/test/testing-library/UiCheckbox.test.tsx --verbose
-bunx jest src/test/testing-library/UiLink.test.tsx --verbose
+bunx jest tests/unit/UiButton.test.tsx --verbose
+bunx jest tests/unit/UiInput.test.tsx --verbose
+bunx jest tests/unit/UiCheckbox.test.tsx --verbose
+bunx jest tests/unit/UiLink.test.tsx --verbose
 ```
 
 **Step 5: Commit**
 
 ```bash
 git add src/components/UiButton src/components/UiInput src/components/UiCheckbox \
-  src/components/UiLink src/test/testing-library/UiButton.test.tsx \
-  src/test/testing-library/UiInput.test.tsx \
-  src/test/testing-library/UiCheckbox.test.tsx \
-  src/test/testing-library/UiLink.test.tsx \
+  src/components/UiLink tests/unit/UiButton.test.tsx \
+  tests/unit/UiInput.test.tsx \
+  tests/unit/UiCheckbox.test.tsx \
+  tests/unit/UiLink.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: complete core state parity and accessibility consistency"
 ```
@@ -249,10 +250,10 @@ Mark Epic 1 rows and link evidence.
 
 ```bash
 bun run storybook-build
-bunx jest src/test/testing-library/UiButton.test.tsx \
-  src/test/testing-library/UiInput.test.tsx \
-  src/test/testing-library/UiCheckbox.test.tsx \
-  src/test/testing-library/UiLink.test.tsx --verbose
+bunx jest tests/unit/UiButton.test.tsx \
+  tests/unit/UiInput.test.tsx \
+  tests/unit/UiCheckbox.test.tsx \
+  tests/unit/UiLink.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -276,9 +277,9 @@ git commit -m "test: close epic 1 quality gates with story and test evidence"
 - Create: `src/components/ui-multi-select/index.tsx`
 - Create: `src/components/ui-multi-select/types.ts`
 - Create: `src/components/ui-multi-select/UiMultiSelect.stories.tsx`
-- Create: `src/test/testing-library/UiSearchInput.test.tsx`
-- Create: `src/test/testing-library/UiSelectWithSearch.test.tsx`
-- Create: `src/test/testing-library/UiMultiSelect.test.tsx`
+- Create: `tests/unit/UiSearchInput.test.tsx`
+- Create: `tests/unit/UiSelectWithSearch.test.tsx`
+- Create: `tests/unit/UiMultiSelect.test.tsx`
 - Modify: `src/components/index.ts`
 
 **Step 1: Reuse implementations from `crm` and `website`**
@@ -296,9 +297,9 @@ Cover render, selection/search interaction, and disabled/error behavior.
 **Step 4: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiSearchInput.test.tsx --verbose
-bunx jest src/test/testing-library/UiSelectWithSearch.test.tsx --verbose
-bunx jest src/test/testing-library/UiMultiSelect.test.tsx --verbose
+bunx jest tests/unit/UiSearchInput.test.tsx --verbose
+bunx jest tests/unit/UiSelectWithSearch.test.tsx --verbose
+bunx jest tests/unit/UiMultiSelect.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -306,9 +307,9 @@ bunx jest src/test/testing-library/UiMultiSelect.test.tsx --verbose
 ```bash
 git add src/components/ui-search-input src/components/ui-select-with-search \
   src/components/ui-multi-select src/components/index.ts \
-  src/test/testing-library/UiSearchInput.test.tsx \
-  src/test/testing-library/UiSelectWithSearch.test.tsx \
-  src/test/testing-library/UiMultiSelect.test.tsx \
+  tests/unit/UiSearchInput.test.tsx \
+  tests/unit/UiSelectWithSearch.test.tsx \
+  tests/unit/UiMultiSelect.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: deliver epic 2 search/select foundation and multi-select"
 ```
@@ -325,9 +326,9 @@ git commit -m "feat: deliver epic 2 search/select foundation and multi-select"
 - Create: `src/components/ui-file-upload-input/index.tsx`
 - Create: `src/components/ui-file-upload-input/types.ts`
 - Create: `src/components/ui-file-upload-input/UiFileUploadInput.stories.tsx`
-- Create: `src/test/testing-library/UiCalendarMultiSelect.test.tsx`
-- Create: `src/test/testing-library/UiRadioGroup.test.tsx`
-- Create: `src/test/testing-library/UiFileUploadInput.test.tsx`
+- Create: `tests/unit/UiCalendarMultiSelect.test.tsx`
+- Create: `tests/unit/UiRadioGroup.test.tsx`
+- Create: `tests/unit/UiFileUploadInput.test.tsx`
 - Modify: `src/components/index.ts`
 
 **Step 1: Implement components with reuse-first policy**
@@ -345,9 +346,9 @@ Include keyboard behavior for calendar and radio where relevant.
 **Step 4: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiCalendarMultiSelect.test.tsx --verbose
-bunx jest src/test/testing-library/UiRadioGroup.test.tsx --verbose
-bunx jest src/test/testing-library/UiFileUploadInput.test.tsx --verbose
+bunx jest tests/unit/UiCalendarMultiSelect.test.tsx --verbose
+bunx jest tests/unit/UiRadioGroup.test.tsx --verbose
+bunx jest tests/unit/UiFileUploadInput.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -355,9 +356,9 @@ bunx jest src/test/testing-library/UiFileUploadInput.test.tsx --verbose
 ```bash
 git add src/components/ui-calendar-multi-select src/components/ui-radio-group \
   src/components/ui-file-upload-input src/components/index.ts \
-  src/test/testing-library/UiCalendarMultiSelect.test.tsx \
-  src/test/testing-library/UiRadioGroup.test.tsx \
-  src/test/testing-library/UiFileUploadInput.test.tsx \
+  tests/unit/UiCalendarMultiSelect.test.tsx \
+  tests/unit/UiRadioGroup.test.tsx \
+  tests/unit/UiFileUploadInput.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 ```
@@ -368,7 +369,7 @@ git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 - Create: `src/components/ui-pagination/index.tsx`
 - Create: `src/components/ui-pagination/types.ts`
 - Create: `src/components/ui-pagination/UiPagination.stories.tsx`
-- Create: `src/test/testing-library/UiPagination.test.tsx`
+- Create: `tests/unit/UiPagination.test.tsx`
 - Modify: `src/components/index.ts`
 - Modify: `specs/planning-artifacts/component-provenance.md`
 
@@ -383,14 +384,14 @@ Document primary pagination states and test core interactions and disabled behav
 **Step 3: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiPagination.test.tsx --verbose
+bunx jest tests/unit/UiPagination.test.tsx --verbose
 ```
 
 **Step 4: Commit**
 
 ```bash
 git add src/components/ui-pagination src/components/index.ts \
-  src/test/testing-library/UiPagination.test.tsx \
+  tests/unit/UiPagination.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: deliver epic 2 pagination module"
 ```
@@ -429,11 +430,11 @@ git commit -m "docs: close epic 2 quality gates and evidence tracking"
 - Create: `src/components/ui-task-card/**`
 - Create: `src/components/ui-profile-select-card/**`
 - Create: `src/components/ui-integration-card/**`
-- Create: `src/test/testing-library/UiItemRow.test.tsx`
-- Create: `src/test/testing-library/UiItemsList.test.tsx`
-- Create: `src/test/testing-library/UiTaskCard.test.tsx`
-- Create: `src/test/testing-library/UiProfileSelectCard.test.tsx`
-- Create: `src/test/testing-library/UiIntegrationCard.test.tsx`
+- Create: `tests/unit/UiItemRow.test.tsx`
+- Create: `tests/unit/UiItemsList.test.tsx`
+- Create: `tests/unit/UiTaskCard.test.tsx`
+- Create: `tests/unit/UiProfileSelectCard.test.tsx`
+- Create: `tests/unit/UiIntegrationCard.test.tsx`
 - Modify: `src/components/index.ts`
 
 **Step 1: Reuse existing components from `crm`/`website`**
@@ -451,11 +452,11 @@ Cover method/status variants, selectable states, disabled behavior.
 **Step 4: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiItemRow.test.tsx --verbose
-bunx jest src/test/testing-library/UiItemsList.test.tsx --verbose
-bunx jest src/test/testing-library/UiTaskCard.test.tsx --verbose
-bunx jest src/test/testing-library/UiProfileSelectCard.test.tsx --verbose
-bunx jest src/test/testing-library/UiIntegrationCard.test.tsx --verbose
+bunx jest tests/unit/UiItemRow.test.tsx --verbose
+bunx jest tests/unit/UiItemsList.test.tsx --verbose
+bunx jest tests/unit/UiTaskCard.test.tsx --verbose
+bunx jest tests/unit/UiProfileSelectCard.test.tsx --verbose
+bunx jest tests/unit/UiIntegrationCard.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -463,10 +464,10 @@ bunx jest src/test/testing-library/UiIntegrationCard.test.tsx --verbose
 ```bash
 git add src/components/ui-item-row src/components/ui-items-list src/components/ui-task-card \
   src/components/ui-profile-select-card src/components/ui-integration-card \
-  src/components/index.ts src/test/testing-library/UiItemRow.test.tsx \
-  src/test/testing-library/UiItemsList.test.tsx src/test/testing-library/UiTaskCard.test.tsx \
-  src/test/testing-library/UiProfileSelectCard.test.tsx \
-  src/test/testing-library/UiIntegrationCard.test.tsx \
+  src/components/index.ts tests/unit/UiItemRow.test.tsx \
+  tests/unit/UiItemsList.test.tsx tests/unit/UiTaskCard.test.tsx \
+  tests/unit/UiProfileSelectCard.test.tsx \
+  tests/unit/UiIntegrationCard.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: deliver epic 3 data rows and card workflows"
 ```
@@ -480,12 +481,12 @@ git commit -m "feat: deliver epic 3 data rows and card workflows"
 - Create: `src/components/ui-action-icon-bar/**`
 - Create: `src/components/ui-status-badge/**`
 - Create: `src/components/ui-notification-badge/**`
-- Create: `src/test/testing-library/UiFilterChip.test.tsx`
-- Create: `src/test/testing-library/UiPinInput.test.tsx`
-- Create: `src/test/testing-library/UiPaymentOptionCard.test.tsx`
-- Create: `src/test/testing-library/UiActionIconBar.test.tsx`
-- Create: `src/test/testing-library/UiStatusBadge.test.tsx`
-- Create: `src/test/testing-library/UiNotificationBadge.test.tsx`
+- Create: `tests/unit/UiFilterChip.test.tsx`
+- Create: `tests/unit/UiPinInput.test.tsx`
+- Create: `tests/unit/UiPaymentOptionCard.test.tsx`
+- Create: `tests/unit/UiActionIconBar.test.tsx`
+- Create: `tests/unit/UiStatusBadge.test.tsx`
+- Create: `tests/unit/UiNotificationBadge.test.tsx`
 - Modify: `src/components/index.ts`
 - Create: `specs/implementation-artifacts/epic-3-dod.md`
 
@@ -504,12 +505,12 @@ Ensure all components are exported and provenance entries are complete.
 **Step 4: Verify**
 
 ```bash
-bunx jest src/test/testing-library/UiFilterChip.test.tsx --verbose
-bunx jest src/test/testing-library/UiPinInput.test.tsx --verbose
-bunx jest src/test/testing-library/UiPaymentOptionCard.test.tsx --verbose
-bunx jest src/test/testing-library/UiActionIconBar.test.tsx --verbose
-bunx jest src/test/testing-library/UiStatusBadge.test.tsx --verbose
-bunx jest src/test/testing-library/UiNotificationBadge.test.tsx --verbose
+bunx jest tests/unit/UiFilterChip.test.tsx --verbose
+bunx jest tests/unit/UiPinInput.test.tsx --verbose
+bunx jest tests/unit/UiPaymentOptionCard.test.tsx --verbose
+bunx jest tests/unit/UiActionIconBar.test.tsx --verbose
+bunx jest tests/unit/UiStatusBadge.test.tsx --verbose
+bunx jest tests/unit/UiNotificationBadge.test.tsx --verbose
 ```
 
 **Step 5: Commit**
@@ -518,12 +519,12 @@ bunx jest src/test/testing-library/UiNotificationBadge.test.tsx --verbose
 git add src/components/ui-filter-chip src/components/ui-pin-input \
   src/components/ui-payment-option-card src/components/ui-action-icon-bar \
   src/components/ui-status-badge src/components/ui-notification-badge \
-  src/components/index.ts src/test/testing-library/UiFilterChip.test.tsx \
-  src/test/testing-library/UiPinInput.test.tsx \
-  src/test/testing-library/UiPaymentOptionCard.test.tsx \
-  src/test/testing-library/UiActionIconBar.test.tsx \
-  src/test/testing-library/UiStatusBadge.test.tsx \
-  src/test/testing-library/UiNotificationBadge.test.tsx \
+  src/components/index.ts tests/unit/UiFilterChip.test.tsx \
+  tests/unit/UiPinInput.test.tsx \
+  tests/unit/UiPaymentOptionCard.test.tsx \
+  tests/unit/UiActionIconBar.test.tsx \
+  tests/unit/UiStatusBadge.test.tsx \
+  tests/unit/UiNotificationBadge.test.tsx \
   specs/planning-artifacts/component-provenance.md \
   specs/implementation-artifacts/epic-3-dod.md
 git commit -m "feat: complete epic 3 micro-components and quality closure"
@@ -534,8 +535,8 @@ git commit -m "feat: complete epic 3 micro-components and quality closure"
 **Files:**
 - Create/Modify: `src/features/skeleton/components/ui-skeleton/**`
 - Create/Modify: `src/features/skeleton/components/ui-skeleton-composed/**`
-- Create: `src/test/testing-library/UiSkeleton.test.tsx`
-- Create: `src/test/testing-library/UiSkeletonComposed.test.tsx`
+- Create: `tests/unit/UiSkeleton.test.tsx`
+- Create: `tests/unit/UiSkeletonComposed.test.tsx`
 - Modify: `src/components/index.ts`
 - Modify: `specs/planning-artifacts/component-provenance.md`
 
@@ -554,16 +555,16 @@ Implement required composed layouts (widgets, menu, tab bar, controls, table).
 **Step 4: Verify parity + behavior**
 
 ```bash
-bunx jest src/test/testing-library/UiSkeleton.test.tsx --verbose
-bunx jest src/test/testing-library/UiSkeletonComposed.test.tsx --verbose
+bunx jest tests/unit/UiSkeleton.test.tsx --verbose
+bunx jest tests/unit/UiSkeletonComposed.test.tsx --verbose
 ```
 
 **Step 5: Commit**
 
 ```bash
 git add src/features/skeleton/components/ui-skeleton src/features/skeleton/components/ui-skeleton-composed \
-  src/components/index.ts src/test/testing-library/UiSkeleton.test.tsx \
-  src/test/testing-library/UiSkeletonComposed.test.tsx \
+  src/components/index.ts tests/unit/UiSkeleton.test.tsx \
+  tests/unit/UiSkeletonComposed.test.tsx \
   specs/planning-artifacts/component-provenance.md
 git commit -m "feat: deliver epic 4 skeleton baseline and variants with crm parity"
 ```
