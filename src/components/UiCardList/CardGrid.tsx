@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { CSSProperties } from 'react';
+import React, { CSSProperties } from 'react';
 
 import UiCardItem from '../UiCardItem';
 

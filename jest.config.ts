@@ -7,12 +7,18 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: ['<rootDir>/src/test/**/*.test.tsx'],
+  moduleNameMapper: {
+    '^.+\\.css$': '<rootDir>/src/test/mocks/styleMock.ts',
+    '^.+\\.svg$': '<rootDir>/src/test/mocks/svgMock.ts',
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': [
       'esbuild-jest',
       {
+        jsx: 'automatic',
         sourcemap: true,
         loaders: {
           '.test.ts': 'tsx',

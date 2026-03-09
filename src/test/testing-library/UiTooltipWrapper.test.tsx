@@ -1,9 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent, { UserEvent } from '@testing-library/user-event';
-import React from 'react';
+import userEvent from '@testing-library/user-event';
+import * as React from 'react';
 
 import WrapperUiTooltip from '../../components/UiTooltip/TooltipWrapper';
-import { UiTooltipProps } from '../../components/UiTooltip/types';
 
 const triggerText: string = 'Trigger';
 const tooltipContent: string = 'Tooltip Text';
@@ -15,8 +14,9 @@ jest.mock('@mui/material', () => ({
 }));
 
 describe('WrapperUiTooltip', () => {
-  const setup: (props?: UiTooltipProps) => void = () =>
+  const setup: () => void = () => {
     render(<WrapperUiTooltip title={tooltipContent}>{triggerText}</WrapperUiTooltip>);
+  };
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -45,7 +45,7 @@ describe('WrapperUiTooltip', () => {
   });
 
   it('open and clone tooltip', async () => {
-    const user: UserEvent = userEvent.setup();
+    const user: { click: (element: Element) => Promise<void> } = userEvent.setup();
     setup();
 
     const trigger: HTMLElement = screen.getByText(triggerText);

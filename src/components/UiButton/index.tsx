@@ -1,4 +1,5 @@
 import { Button, ThemeProvider } from '@mui/material';
+import React from 'react';
 
 import { theme } from './theme';
 import { UiButtonProps } from './types';

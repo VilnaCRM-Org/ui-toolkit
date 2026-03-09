@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import React from 'react';
 
 import UiCardItem from '../../components/UiCardItem';
 import CardContent from '../../components/UiCardItem/CardContent';

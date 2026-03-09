@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import React from 'react';
 
 import { socialLinks } from './constants';
 import { DefaultFooter } from './DefaultFooter';

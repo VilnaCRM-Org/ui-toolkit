@@ -5,12 +5,16 @@ import { UiTypography } from '@/components/';
 
 import styles from './styles';
 
+const defaultEmailAddress: string = 'info@vilnacrm.com';
+
 function VilnaCRMEmail(): React.ReactElement {
+  const email: string = process.env.NEXT_PUBLIC_VILNACRM_GMAIL ?? defaultEmailAddress;
+
   return (
     <Box sx={styles.emailWrapper}>
       <UiTypography variant="medium15" sx={styles.emailText}>
-        <Link href="mailto:info@vilnacrm.com" sx={styles.emailLink}>
-          {process.env.NEXT_PUBLIC_VILNACRM_GMAIL}
+        <Link href={`mailto:${email}`} sx={styles.emailLink}>
+          {email}
         </Link>
       </UiTypography>
     </Box>

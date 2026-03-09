@@ -58,3 +58,7 @@ next-env.d.ts
 
 # memlab
 /src/test/memory-leak/results
+
+# local workspace
+/.next
+/_bmad

@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import React from 'react';
 
 import CardGrid from './CardGrid';
 import CardSwiper from './CardSwiper';

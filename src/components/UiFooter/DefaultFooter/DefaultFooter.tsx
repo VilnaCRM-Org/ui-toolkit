@@ -1,5 +1,5 @@
 import { Box, Stack } from '@mui/material';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Logo from '@/assets/svg/Logo.svg';
