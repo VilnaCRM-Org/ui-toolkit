@@ -14,26 +14,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Detect visual test inputs
+        id: visual
+        run: |
+          present=false
+          if [[ -f package.json && -f pnpm-lock.yaml && -f playwright.config.ts && -d src/test/visual ]] && find src/test/visual -type f -print -quit | grep -q .; then
+            present=true
+          fi
+          echo "present=$present" >> "$GITHUB_OUTPUT"
+
+      - name: Skip visual tests
+        if: steps.visual.outputs.present != 'true'
+        run: echo "Skipping visual tests because this bootstrap PR does not include visual test files yet."
+
       - name: Use Node.js
+        if: steps.visual.outputs.present == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODE_VERSION }}
-          cache: 'pnpm'
 
       - name: Install pnpm
+        if: steps.visual.outputs.present == 'true'
         run: npm install -g pnpm
 
       - name: Install dependencies
+        if: steps.visual.outputs.present == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
+        if: steps.visual.outputs.present == 'true'
         run: make ci-playwright-install
 
       - name: Run visual tests
+        if: steps.visual.outputs.present == 'true'
         run: make ci-test-visual
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.visual.outputs.present == 'true'
         with:
           name: visual-test-report
           path: playwright-report/

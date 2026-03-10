@@ -21,7 +21,21 @@ jobs:
         with:
           ref: 'main'
 
+      - name: Detect release manifest
+        id: manifest
+        run: |
+          if [[ -f package.json ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip prerelease preview
+        if: steps.manifest.outputs.present != 'true'
+        run: echo "Skipping prerelease preview because main does not contain package.json yet."
+
       - name: Conventional Changelog Action
+        if: steps.manifest.outputs.present == 'true'
         id: changelog
         uses: TriPSs/conventional-changelog-action@v3
         with:
@@ -29,13 +43,6 @@ jobs:
           output-file: 'false'
           version-file: 'package.json'
           pre-release: 'true'
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.changelog.outputs.tag }}
-          release_name: ${{ steps.changelog.outputs.tag }}
-          body: ${{ steps.changelog.outputs.clean_changelog }}
+          git-push: 'false'
+          skip-commit: 'true'
+          skip-tag: 'true'

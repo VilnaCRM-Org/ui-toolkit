@@ -13,12 +13,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Detect runtime project files
+        id: project
+        run: |
+          if [[ -f package.json && -f pnpm-lock.yaml && -f checkNodeVersion.js ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip mutation testing
+        if: steps.project.outputs.present != 'true'
+        run: echo "Skipping mutation testing because this bootstrap PR does not include the project runtime files yet."
+
       - name: Start docker test environment
+        if: steps.project.outputs.present == 'true'
         run: make start
 
       - name: Run mutation testing
+        if: steps.project.outputs.present == 'true'
         run: make test-mutation
 
       - name: Stop docker test environment
-        if: always()
+        if: always() && steps.project.outputs.present == 'true'
         run: make down

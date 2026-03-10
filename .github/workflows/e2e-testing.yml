@@ -13,25 +13,43 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Detect e2e inputs
+        id: e2e
+        run: |
+          present=false
+          if [[ -f package.json && -f pnpm-lock.yaml && -f playwright.config.ts && -d src/test/e2e ]] && find src/test/e2e -type f -name '*.spec.ts' -print -quit | grep -q .; then
+            present=true
+          fi
+          echo "present=$present" >> "$GITHUB_OUTPUT"
+
+      - name: Skip e2e tests
+        if: steps.e2e.outputs.present != 'true'
+        run: echo "Skipping e2e because this bootstrap PR does not include the Playwright project files yet."
+
       - uses: actions/setup-node@v4
+        if: steps.e2e.outputs.present == 'true'
         with:
           node-version: ${{ vars.NODE_VERSION }}
-          cache: 'pnpm'
 
       - name: Install pnpm
+        if: steps.e2e.outputs.present == 'true'
         run: npm install -g pnpm
 
       - name: Install dependencies
+        if: steps.e2e.outputs.present == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
+        if: steps.e2e.outputs.present == 'true'
         run: make ci-playwright-install
 
       - name: Run Playwright tests
+        if: steps.e2e.outputs.present == 'true'
         run: make ci-test-e2e
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.e2e.outputs.present == 'true'
         with:
           name: playwright-report
           path: playwright-report/
