@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Detect TypeScript sources
         id: sources
@@ -43,25 +43,25 @@ jobs:
 
       - name: Cache CodeQL databases
         if: steps.sources.outputs.present == 'true'
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
-          path: ${{ runner.workspace }}/codeql_databases
+          path: ${{ github.workspace }}/codeql_databases
           key: ${{ runner.os }}-codeql-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-codeql-
 
       - name: Initialize CodeQL
         if: steps.sources.outputs.present == 'true'
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
       - name: Autobuild
         if: steps.sources.outputs.present == 'true'
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
         if: steps.sources.outputs.present == 'true'
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: '/language:${{matrix.language}}'
