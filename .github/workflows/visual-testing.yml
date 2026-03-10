@@ -1,0 +1,40 @@
+name: Visual Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  visual-test:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: make ci-playwright-install
+
+      - name: Run visual tests
+        run: make ci-test-visual
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-test-report
+          path: playwright-report/
+          retention-days: 30

@@ -1,0 +1,24 @@
+name: Mutation Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  mutation-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start docker test environment
+        run: make start
+
+      - name: Run mutation testing
+        run: make test-mutation
+
+      - name: Stop docker test environment
+        if: always()
+        run: make down

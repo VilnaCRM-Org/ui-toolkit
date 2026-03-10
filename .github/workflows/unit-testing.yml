@@ -1,0 +1,23 @@
+name: unit testing
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start docker test environment
+        run: make start
+
+      - name: Run unit tests
+        run: make test-unit
+
+      - name: Stop docker test environment
+        if: always()
+        run: make down

@@ -1,0 +1,32 @@
+name: codecov
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  codecov:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start docker test environment
+        run: make start
+
+      - name: Run unit tests
+        run: make test-unit
+
+      - name: Export coverage
+        run: make copy-coverage
+
+      - name: Stop docker test environment
+        if: always()
+        run: make down
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
