@@ -27,14 +27,17 @@ jobs:
         if: steps.e2e.outputs.present != 'true'
         run: echo "Skipping e2e because this bootstrap PR does not include the Playwright project files yet."
 
+      - name: Install pnpm
+        if: steps.e2e.outputs.present == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
       - uses: actions/setup-node@v4
         if: steps.e2e.outputs.present == 'true'
         with:
           node-version: ${{ vars.NODE_VERSION }}
-
-      - name: Install pnpm
-        if: steps.e2e.outputs.present == 'true'
-        run: npm install -g pnpm
+          cache: 'pnpm'
 
       - name: Install dependencies
         if: steps.e2e.outputs.present == 'true'

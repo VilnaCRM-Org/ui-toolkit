@@ -27,15 +27,18 @@ jobs:
         if: steps.visual.outputs.present != 'true'
         run: echo "Skipping visual tests because this bootstrap PR does not include visual test files yet."
 
+      - name: Install pnpm
+        if: steps.visual.outputs.present == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
       - name: Use Node.js
         if: steps.visual.outputs.present == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODE_VERSION }}
-
-      - name: Install pnpm
-        if: steps.visual.outputs.present == 'true'
-        run: npm install -g pnpm
+          cache: 'pnpm'
 
       - name: Install dependencies
         if: steps.visual.outputs.present == 'true'

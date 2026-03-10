@@ -1,7 +1,6 @@
 services:
   nodejs:
     build: .
-    command: ['sh', '-lc', 'while :; do sleep 3600; done']
     restart: unless-stopped
     ports:
       - '3000:3000'

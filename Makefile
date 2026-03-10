@@ -18,7 +18,12 @@ GIT = git
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
-.PHONY: $(filter-out node_modules,$(MAKECMDGOALS))
+.PHONY: help build lint-next lint-tsc lint-md format-check git-hooks-install \
+	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
+	test-unit copy-coverage test-mutation test-memory-leak lighthouse-desktop \
+	lighthouse-mobile install update ci-playwright-install ci-test-e2e \
+	ci-test-visual ci-test-memory-leak up down sh ps logs new-logs start stop \
+	build-k6-docker load-tests
 
 # Variables
 REPORT_FILENAME ?= default_value
