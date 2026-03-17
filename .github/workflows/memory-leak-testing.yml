@@ -18,7 +18,7 @@ jobs:
       - name: Detect memory leak inputs
         id: memlab
         run: |
-          if [[ -f package.json && -f pnpm-lock.yaml && -f src/test/memory-leak/runMemlabTests.js ]]; then
+          if [[ -f package.json && -f bun.lock && -f src/test/memory-leak/runMemlabTests.js ]]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
@@ -28,22 +28,13 @@ jobs:
         if: steps.memlab.outputs.present != 'true'
         run: echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."
 
-      - name: Install pnpm
+      - name: Install Bun
         if: steps.memlab.outputs.present == 'true'
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-
-      - name: Set up Node.js
-        if: steps.memlab.outputs.present == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ vars.NODE_VERSION }}
-          cache: 'pnpm'
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
         if: steps.memlab.outputs.present == 'true'
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Run memory leak tests
         if: steps.memlab.outputs.present == 'true'
