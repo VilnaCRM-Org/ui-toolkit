@@ -10,9 +10,13 @@ RUN apk add --no-cache \
     make=4.4.1-r2 \
     python3=3.12.12-r0 \
     && addgroup -S app \
-    && adduser -S -G app app
+    && adduser -S -G app -h /home/app app \
+    && mkdir -p /home/app \
+    && chown app:app /home/app
 
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
+
+ENV HOME=/home/app
 
 WORKDIR /app
 
