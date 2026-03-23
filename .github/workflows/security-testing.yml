@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ github.workspace }}/codeql_databases
-          key: ${{ runner.os }}-codeql-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-codeql-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-codeql-
 

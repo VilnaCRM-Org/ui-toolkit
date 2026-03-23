@@ -27,13 +27,9 @@ jobs:
         if: steps.visual.outputs.present != 'true'
         run: echo "Skipping visual tests because this bootstrap PR does not include visual test files yet."
 
-      - name: Install Bun
-        if: steps.visual.outputs.present == 'true'
-        uses: oven-sh/setup-bun@v2
-
       - name: Install dependencies
         if: steps.visual.outputs.present == 'true'
-        run: bun install --frozen-lockfile
+        run: make ci-install
 
       - name: Install Playwright Browsers
         if: steps.visual.outputs.present == 'true'

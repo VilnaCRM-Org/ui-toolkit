@@ -28,13 +28,9 @@ jobs:
         if: steps.memlab.outputs.present != 'true'
         run: echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."
 
-      - name: Install Bun
-        if: steps.memlab.outputs.present == 'true'
-        uses: oven-sh/setup-bun@v2
-
       - name: Install dependencies
         if: steps.memlab.outputs.present == 'true'
-        run: bun install --frozen-lockfile
+        run: make ci-install
 
       - name: Run memory leak tests
         if: steps.memlab.outputs.present == 'true'

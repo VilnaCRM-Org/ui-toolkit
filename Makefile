@@ -22,7 +22,7 @@ GIT = git
 .PHONY: help build lint-next lint-tsc lint-md format-check git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit copy-coverage test-mutation test-memory-leak lighthouse-desktop \
-	lighthouse-mobile install update ci-playwright-install ci-test-e2e \
+	lighthouse-mobile install update ci-install ci-playwright-install ci-test-e2e \
 	ci-test-visual ci-test-memory-leak up down sh ps logs new-logs start stop \
 	build-k6-docker load-tests
 
@@ -89,6 +89,10 @@ install: ## Install dependencies inside the docker container.
 
 update: ## Update dependencies inside the docker container.
 	$(BUN) update
+
+ci-install: ## Install Bun and project dependencies on the CI runner.
+	npm install -g bun
+	bun install --frozen-lockfile
 
 ci-playwright-install: ## Install Playwright browsers on the GitHub runner.
 	$(HOST_BUN_X) playwright install --with-deps
