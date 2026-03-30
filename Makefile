@@ -2,19 +2,17 @@
 PROJECT = frontend-ssr-template
 K6 = $(DOCKER) run -v ./src/test/load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 
-# Executables: local only
-BUN_BIN = bun
+# Executables
 DOCKER = docker
 DOCKER_COMPOSE = docker compose
 
-# Executables
+# Docker helpers
+RUN_BUN = $(DOCKER_COMPOSE) run --rm bun
+RUN_BUN_SH = $(DOCKER_COMPOSE) run --rm --entrypoint sh bun -lc
 EXEC_BUN = $(DOCKER_COMPOSE) exec -T bun
-BUN = $(EXEC_BUN) bun
+BUN = $(RUN_BUN) bun
 BUN_RUN = $(BUN) run
 BUN_X = $(BUN) x
-HOST_BUN = bun
-HOST_BUN_X = bun x
-GIT = git
 
 # Misc
 .DEFAULT_GOAL = help
@@ -90,36 +88,41 @@ install: ## Install dependencies inside the docker container.
 update: ## Update dependencies inside the docker container.
 	$(BUN) update
 
-ci-install: ## Install Bun and project dependencies on the CI runner.
-	npm install -g bun
-	bun install --frozen-lockfile
+ci-install: ## Install project dependencies inside a Docker container.
+	$(RUN_BUN) bun install --frozen-lockfile
 
-ci-playwright-install: ## Install Playwright browsers on the GitHub runner.
-	$(HOST_BUN_X) playwright install --with-deps
+ci-playwright-install: ## Install Playwright browsers inside a Docker container.
+	$(RUN_BUN) bun x playwright install --with-deps
 
-ci-test-e2e: ## Start Storybook on the GitHub runner and run e2e tests.
-	@set -e; \
-	nohup $(HOST_BUN) run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
-	pid=$$!; \
-	trap 'kill $$pid >/dev/null 2>&1 || true' EXIT; \
-	$(HOST_BUN_X) wait-on --timeout 120000 tcp:127.0.0.1:6006; \
-	$(HOST_BUN_X) playwright test ./src/test/e2e
+ci-test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		bun x playwright test ./src/test/e2e \
+	'
 
-ci-test-visual: ## Start Storybook on the GitHub runner and run visual tests.
-	@set -e; \
-	nohup $(HOST_BUN) run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
-	pid=$$!; \
-	trap 'kill $$pid >/dev/null 2>&1 || true' EXIT; \
-	$(HOST_BUN_X) wait-on --timeout 120000 tcp:127.0.0.1:6006; \
-	$(HOST_BUN_X) playwright test ./src/test/visual --pass-with-no-tests
+ci-test-visual: ## Start Storybook and run visual tests inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		bun x playwright test ./src/test/visual --pass-with-no-tests \
+	'
 
-ci-test-memory-leak: ## Start the app on the GitHub runner and run Memlab.
-	@set -e; \
-	nohup $(HOST_BUN) start >/tmp/ui-toolkit-app.log 2>&1 & \
-	pid=$$!; \
-	trap 'kill $$pid >/dev/null 2>&1 || true' EXIT; \
-	$(HOST_BUN_X) wait-on --timeout 180000 http://127.0.0.1:3000; \
-	MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 $(HOST_BUN) ./src/test/memory-leak/runMemlabTests.js
+ci-test-memory-leak: ## Start the app and run Memlab inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun start >/tmp/ui-toolkit-app.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 180000 http://127.0.0.1:3000; \
+		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
+	'
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build
@@ -128,7 +131,7 @@ down: ## Stop the docker hub.
 	$(DOCKER_COMPOSE) down --remove-orphans
 
 sh: ## Open a shell inside the docker container.
-	@$(EXEC_BUN) sh
+	@$(DOCKER_COMPOSE) run --rm --entrypoint sh bun
 
 ps: ## Show docker compose services.
 	@$(DOCKER_COMPOSE) ps
