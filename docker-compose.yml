@@ -2,3 +2,5 @@ services:
   bun:
     build: .
     restart: unless-stopped
+    ports:
+      - "3000:3000"

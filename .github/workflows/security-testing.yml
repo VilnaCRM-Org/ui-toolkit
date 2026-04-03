@@ -55,6 +55,7 @@ jobs:
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+          db-location: ${{ github.workspace }}/codeql_databases
 
       - name: Autobuild
         if: steps.sources.outputs.present == 'true'

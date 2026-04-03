@@ -1,5 +1,4 @@
 # Parameters
-PROJECT = frontend-ssr-template
 K6 = $(DOCKER) run -v ./src/test/load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 
 # Executables
@@ -23,9 +22,6 @@ BUN_X = $(BUN) x
 	lighthouse-mobile install update ci-install ci-playwright-install ci-test-e2e \
 	ci-test-visual ci-test-memory-leak up down sh ps logs new-logs start stop \
 	build-k6-docker load-tests
-
-# Variables
-REPORT_FILENAME ?= default_value
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
