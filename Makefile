@@ -1,5 +1,5 @@
 # Parameters
-K6 = $(DOCKER) run -v ./src/test/load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
+K6 = $(DOCKER) run -v ./src/test/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 
 # Executables
 DOCKER = docker
