@@ -1,0 +1,47 @@
+name: Visual Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  visual-test:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect visual test inputs
+        id: visual
+        run: |
+          present=false
+          if [[ -f package.json && -f bun.lock && -f playwright.config.ts && -d src/test/visual ]] && find src/test/visual -type f -print -quit | grep -q .; then
+            present=true
+          fi
+          echo "present=$present" >> "$GITHUB_OUTPUT"
+
+      - name: Skip visual tests
+        if: steps.visual.outputs.present != 'true'
+        run: echo "Skipping visual tests because this bootstrap PR does not include visual test files yet."
+
+      - name: Install dependencies
+        if: steps.visual.outputs.present == 'true'
+        run: make install
+
+      - name: Install Playwright Browsers
+        if: steps.visual.outputs.present == 'true'
+        run: make playwright-install
+
+      - name: Run visual tests
+        if: steps.visual.outputs.present == 'true'
+        run: make test-visual
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.visual.outputs.present == 'true'
+        with:
+          name: visual-test-report
+          path: playwright-report/
+          retention-days: 30
