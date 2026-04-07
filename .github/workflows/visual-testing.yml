@@ -29,15 +29,15 @@ jobs:
 
       - name: Install dependencies
         if: steps.visual.outputs.present == 'true'
-        run: make ci-install
+        run: make install
 
       - name: Install Playwright Browsers
         if: steps.visual.outputs.present == 'true'
-        run: make ci-playwright-install
+        run: make playwright-install
 
       - name: Run visual tests
         if: steps.visual.outputs.present == 'true'
-        run: make ci-test-visual
+        run: make test-visual
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.visual.outputs.present == 'true'

@@ -18,10 +18,9 @@ BUN_X = $(BUN) x
 .RECIPEPREFIX +=
 .PHONY: help build lint-next lint-tsc lint-md format-check git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
-	test-unit copy-coverage test-mutation test-memory-leak lighthouse-desktop \
-	lighthouse-mobile install update ci-install ci-playwright-install ci-test-e2e \
-	ci-test-visual ci-test-memory-leak up down sh ps logs new-logs start stop \
-	build-k6-docker load-tests
+	test-unit copy-coverage test-mutation test-memory-leak test-visual \
+	lighthouse-desktop lighthouse-mobile install update playwright-install \
+	up down sh ps logs new-logs start stop build-k6-docker load-tests
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -54,8 +53,15 @@ storybook-build: ## Build Storybook inside the docker container.
 generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
 	$(BUN_RUN) generate-ts-doc
 
-test-e2e: ## Run the package e2e script inside the docker container.
-	$(BUN_RUN) test:e2e
+test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		bun x playwright test ./src/test/e2e \
+	'
 
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
 	$(BUN_RUN) test:e2e-local
@@ -69,8 +75,15 @@ copy-coverage: ## Copy the Jest coverage directory from the docker container.
 test-mutation: ## Run mutation tests inside the docker container.
 	$(BUN_RUN) test:mutation
 
-test-memory-leak: ## Run memory leak tests inside the docker container.
-	$(BUN_RUN) test:memory-leak
+test-memory-leak: ## Start the app and run Memlab inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun start >/tmp/ui-toolkit-app.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 180000 http://127.0.0.1:3000; \
+		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
+	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
 	$(BUN_RUN) lighthouse:desktop
@@ -79,28 +92,15 @@ lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
 	$(BUN_RUN) lighthouse:mobile
 
 install: ## Install dependencies inside the docker container.
-	$(BUN) install
+	$(RUN_BUN) bun install --frozen-lockfile
 
 update: ## Update dependencies inside the docker container.
 	$(BUN) update
 
-ci-install: ## Install project dependencies inside a Docker container.
-	$(RUN_BUN) bun install --frozen-lockfile
-
-ci-playwright-install: ## Install Playwright browsers inside a Docker container.
+playwright-install: ## Install Playwright browsers inside a Docker container.
 	$(RUN_BUN) bun x playwright install --with-deps
 
-ci-test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
-	@$(RUN_BUN_SH) '\
-		set -e; \
-		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
-		pid=$$!; \
-		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
-		bun x playwright test ./src/test/e2e \
-	'
-
-ci-test-visual: ## Start Storybook and run visual tests inside a Docker container.
+test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
 		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
@@ -108,16 +108,6 @@ ci-test-visual: ## Start Storybook and run visual tests inside a Docker containe
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
 		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
 		bun x playwright test ./src/test/visual --pass-with-no-tests \
-	'
-
-ci-test-memory-leak: ## Start the app and run Memlab inside a Docker container.
-	@$(RUN_BUN_SH) '\
-		set -e; \
-		bun start >/tmp/ui-toolkit-app.log 2>&1 & \
-		pid=$$!; \
-		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 180000 http://127.0.0.1:3000; \
-		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
 	'
 
 up: ## Start the docker hub (Bun).

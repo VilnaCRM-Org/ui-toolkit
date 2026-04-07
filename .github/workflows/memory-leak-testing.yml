@@ -30,8 +30,8 @@ jobs:
 
       - name: Install dependencies
         if: steps.memlab.outputs.present == 'true'
-        run: make ci-install
+        run: make install
 
       - name: Run memory leak tests
         if: steps.memlab.outputs.present == 'true'
-        run: make ci-test-memory-leak
+        run: make test-memory-leak

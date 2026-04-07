@@ -29,15 +29,15 @@ jobs:
 
       - name: Install dependencies
         if: steps.e2e.outputs.present == 'true'
-        run: make ci-install
+        run: make install
 
       - name: Install Playwright browsers
         if: steps.e2e.outputs.present == 'true'
-        run: make ci-playwright-install
+        run: make playwright-install
 
       - name: Run Playwright tests
         if: steps.e2e.outputs.present == 'true'
-        run: make ci-test-e2e
+        run: make test-e2e
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.e2e.outputs.present == 'true'
