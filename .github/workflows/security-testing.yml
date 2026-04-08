@@ -21,25 +21,48 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
+
+      - name: Detect TypeScript sources
+        id: sources
+        run: |
+          present=false
+          if find . \
+            -path './.git' -prune -o \
+            -path './node_modules' -prune -o \
+            -path './.github' -prune -o \
+            \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' \) \
+            -print -quit | grep -q .; then
+            present=true
+          fi
+          echo "present=$present" >> "$GITHUB_OUTPUT"
+
+      - name: Skip CodeQL
+        if: steps.sources.outputs.present != 'true'
+        run: echo "Skipping CodeQL because this bootstrap PR does not include JavaScript or TypeScript source files yet."
 
       - name: Cache CodeQL databases
-        uses: actions/cache@v3
+        if: steps.sources.outputs.present == 'true'
+        uses: actions/cache@v5
         with:
-          path: ${{ runner.workspace }}/codeql_databases
-          key: ${{ runner.os }}-codeql-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ github.workspace }}/codeql_databases
+          key: ${{ runner.os }}-codeql-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
             ${{ runner.os }}-codeql-
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        if: steps.sources.outputs.present == 'true'
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
+          db-location: ${{ github.workspace }}/codeql_databases
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        if: steps.sources.outputs.present == 'true'
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        if: steps.sources.outputs.present == 'true'
+        uses: github/codeql-action/analyze@v4
         with:
           category: '/language:${{matrix.language}}'

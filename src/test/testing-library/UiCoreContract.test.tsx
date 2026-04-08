@@ -24,22 +24,20 @@ const inputSharedContractProps: Pick<UiInputProps, 'size' | 'variant'> = {
 
 type AssertAssignable<T extends SxProps<Theme>> = T;
 
-const assertMuiSxContract: <T extends SxProps<Theme>>(
+const assertMuiSxContract: <T extends SxProps<Theme>>(value: T) => AssertAssignable<T> = <
+  T extends SxProps<Theme>,
+>(
   value: T
-) => AssertAssignable<T> = <T extends SxProps<Theme>>(value: T): AssertAssignable<T> => value;
+): AssertAssignable<T> => value;
 
-const assertedButtonSx: NonNullable<UiButtonProps['sx']> = assertMuiSxContract<
-  NonNullable<UiButtonProps['sx']>
->(buttonSxContract);
-const assertedCheckboxSx: NonNullable<UiCheckboxProps['sx']> = assertMuiSxContract<
-  NonNullable<UiCheckboxProps['sx']>
->(checkboxSxContract);
-const assertedInputSx: NonNullable<UiInputProps['sx']> = assertMuiSxContract<
-  NonNullable<UiInputProps['sx']>
->(inputSxContract);
-const assertedLinkSx: NonNullable<UiLinkProps['sx']> = assertMuiSxContract<
-  NonNullable<UiLinkProps['sx']>
->(linkSxContract);
+const assertedButtonSx: NonNullable<UiButtonProps['sx']> =
+  assertMuiSxContract<NonNullable<UiButtonProps['sx']>>(buttonSxContract);
+const assertedCheckboxSx: NonNullable<UiCheckboxProps['sx']> =
+  assertMuiSxContract<NonNullable<UiCheckboxProps['sx']>>(checkboxSxContract);
+const assertedInputSx: NonNullable<UiInputProps['sx']> =
+  assertMuiSxContract<NonNullable<UiInputProps['sx']>>(inputSxContract);
+const assertedLinkSx: NonNullable<UiLinkProps['sx']> =
+  assertMuiSxContract<NonNullable<UiLinkProps['sx']>>(linkSxContract);
 
 describe('Ui core contract', () => {
   it('exports the four core controls from the package entrypoint', () => {

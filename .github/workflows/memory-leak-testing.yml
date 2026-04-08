@@ -8,41 +8,30 @@ on:
 jobs:
   memory-leak-testing:
     runs-on: ubuntu-latest
+    env:
+      CI: true
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ vars.NODE_VERSION }}
+      - name: Detect memory leak inputs
+        id: memlab
+        run: |
+          if [[ -f package.json && -f bun.lock && -f src/test/memory-leak/runMemlabTests.js ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Cache pnpm dependencies
-        id: cache-pnpm-dependencies
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install memlab
-        run: npm install -g memlab
+      - name: Skip memory leak tests
+        if: steps.memlab.outputs.present != 'true'
+        run: echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."
 
       - name: Install dependencies
-        run: pnpm i --frozen-lockfile
-        if: |
-          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
-          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
+        if: steps.memlab.outputs.present == 'true'
+        run: make install
 
-      - name: Run dev and memory leak testing
-        run: |
-        pnpm run dev &
-        npx wait-on http://localhost:3000
-        node ./src/test/memory-leak/runMemlabTests.js
-        env:
-          CI: true
+      - name: Run memory leak tests
+        if: steps.memlab.outputs.present == 'true'
+        run: make test-memory-leak

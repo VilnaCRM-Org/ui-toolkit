@@ -1,64 +1,70 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp/
 .pnp.js
 
 # testing
-/coverage
+coverage/
+
+# next.js
+.next/
+out/
 
 # production
-/build
+build/
 
 # misc
 .DS_Store
 *.pem
 
-# debug
+# debug logs
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
 # local env files
 .env*.local
 
 # vercel
-.vercel
+.vercel/
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-./tsconfig.tsbuildinfo
 
-/.idea
-.vsco
+# IDE files
+.idea/
+.vscode/
 
-#lighthouse
-.lighthouseci/
-/lhci-reports-desktop
-/lhci-reports-mobile
+# bmad
+/_bmad/
 
-.vscode
-
-./storybook-static
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-
-# stryker temp files
+# testing artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+reports/
 .stryker-tmp
-/reports/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+storybook-static/
+
+# lighthouse
+.lighthouseci/
+lhci-reports-desktop/
+lhci-reports-mobile/
 
 # k6 config
-/src/test/load/config.json
-/src/test/load/results
+src/test/load/config.json
+src/test/load/results
 
 # memlab
-/src/test/memory-leak/results
-
-# local workspace
-/.next
-/_bmad
+src/test/memory-leak/results

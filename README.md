@@ -33,24 +33,24 @@ on the software availability and distribution.
 
 You can clone this repository locally or use Github functionality "Use this template"
 
-Install [node.js](https://nodejs.org/en/) 20 version or higher and [pnpm](https://pnpm.io/)
+Install [node.js](https://nodejs.org/en/) 20 version or higher and [Bun](https://bun.sh/)
 
-Use pnpm install for installing all dependencies and pnpm run dev for running application
+Use `bun install` for installing all dependencies. Run project workflows through `make`.
 
 ## Using
 
 The list of possibilities
 
 ```bash
-pnpm run dev - starts application
-pnpm run build - build application
-pnpm lint:next - static next lint
-pnpm lint:tsc - static TypeScript lint
-pnpm test:e2e - end-to-end testing
-pnpm test:e2e:local - open GUI with list of end-to-end test
-pnpm test:unit - unit testing
-pnpm lighthouse:desktop - lighthouse desktop testing
-pnpm lighthouse:mobile - lighthouse mobile tesitng
+make build - build application
+make lint - run all linters
+make lint-next - ESLint
+make lint-tsc - static TypeScript lint
+make test-e2e - end-to-end testing
+make test-e2e-local - open Playwright test runner
+make test-unit - unit testing
+make lighthouse-desktop - lighthouse desktop testing
+make lighthouse-mobile - lighthouse mobile testing
 ```
 
 ## Documentation

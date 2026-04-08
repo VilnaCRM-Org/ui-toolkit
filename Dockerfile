@@ -1,18 +1,23 @@
-FROM node:20-alpine3.17
+FROM oven/bun:1.3.5@sha256:e90cdbaf9ccdb3d4bd693aa335c3310a6004286a880f62f79b18f9b1312a8ec3
 
-RUN apk add --no-cache python3 make g++  \
-    && npm install -g pnpm
+SHELL ["/bin/sh", "-lc"]
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      bash \
+      g++ \
+      make \
+      nodejs \
+      npm \
+      python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY package*.json ./
-
-COPY checkNodeVersion.js ./
-
-RUN pnpm install
-
 COPY . .
 
-EXPOSE 3000
+RUN if [ -f package.json ]; then \
+      bun install --frozen-lockfile; \
+    fi
 
-CMD ["pnpm", "run", "dev"]
+CMD ["sh", "-lc", "while :; do sleep 3600; done"]

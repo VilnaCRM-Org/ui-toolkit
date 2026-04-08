@@ -62,7 +62,7 @@ so that I can integrate toolkit components predictably across company projects.
   - `tests/unit/UiInput.test.tsx`
   - `tests/unit/UiCheckbox.test.tsx`
   - `tests/unit/UiLink.test.tsx`
-  [Source: specs/planning-artifacts/architecture.md#requirements-to-structure-mapping]
+    [Source: specs/planning-artifacts/architecture.md#requirements-to-structure-mapping]
 - Do not opportunistically migrate legacy `UiPascalCase` folders during this story. The migration path is intentionally deferred; Story 1.1 is about contract and export integrity only. [Source: specs/planning-artifacts/architecture.md#naming-patterns]
 - Public exports remain centralized in `src/components/index.ts` until a planned migration says otherwise. Internal component files are not public API. [Source: specs/planning-artifacts/architecture.md#structure-patterns] [Source: specs/planning-artifacts/architecture.md#architectural-boundaries]
 
@@ -153,10 +153,10 @@ Codex GPT-5 (Amelia persona)
 - Added Jest module mappings and test mocks for CSS/SVG assets, plus minimal React import/mock compatibility fixes required for the current unit-test transform pipeline.
 - Added a default fallback for `NEXT_PUBLIC_VILNACRM_GMAIL` so the existing footer email test remains deterministic when the environment variable is absent.
 - Verification evidence:
-- `pnpm run lint:tsc` passed.
-- `pnpm run lint:next` exited successfully with pre-existing warnings only.
-- `pnpm exec jest --verbose --runInBand` passed with `19` test suites and `52` tests.
-- Residual warning-only issues remain outside Story 1.1 scope: React `act(...)` noise around `UiTooltipWrapper`, nested `<p>` warnings in card/tooltip composition, uncontrolled-to-controlled warnings in `UiTextFieldForm`, and existing ESLint warnings reported by `next lint`.
+- `make lint-tsc` passed.
+- `make lint-next` exited successfully with pre-existing warnings only.
+- `bunx jest --verbose --runInBand` passed with `19` test suites and `52` tests.
+- Residual warning-only issues remain outside Story 1.1 scope: React `act(...)` noise around `UiTooltipWrapper`, nested `<p>` warnings in card/tooltip composition, uncontrolled-to-controlled warnings in `UiTextFieldForm`, and existing ESLint warnings reported by the make-based ESLint flow.
 
 ### File List
 

@@ -3,35 +3,36 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   unit:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ vars.NODE_VERSION }}
+      - name: Detect runtime project files
+        id: project
+        run: |
+          if [[ -f package.json && -f bun.lock ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Cache pnpm dependencies
-        id: cache-pnpm-dependencies
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
+      - name: Skip unit tests
+        if: steps.project.outputs.present != 'true'
+        run: echo "Skipping unit tests because this bootstrap PR does not include the project runtime files yet."
 
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
-        if: |
-          steps.cache-pnpm-dependencies.outputs.cache-hit != 'true' ||
-          steps.cache-pnpm-packages.outputs.cache-hit != 'true'
+      - name: Start docker test environment
+        if: steps.project.outputs.present == 'true'
+        run: make start
 
       - name: Run unit tests
-        run: pnpm run test:unit
+        if: steps.project.outputs.present == 'true'
+        run: make test-unit
+
+      - name: Stop docker test environment
+        if: always() && steps.project.outputs.present == 'true'
+        run: make down

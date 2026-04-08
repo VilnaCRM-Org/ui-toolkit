@@ -1,99 +1,138 @@
 # Parameters
-PROJECT	= frontend-ssr-template
-K6 = $(DOCKER) run -v ./src/test/load:/loadTests --net=host --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
-
-# Executables: local only
-PNPM_BIN		= pnpm
-DOCKER			= docker
-DOCKER_COMPOSE	= docker compose
+K6 = $(DOCKER) run -v ./src/test/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 
 # Executables
-EXEC_NODEJS	= $(DOCKER_COMPOSE) exec nodejs
-PNPM      	= $(EXEC_NODEJS) pnpm
-PNPM_RUN    = $(PNPM) run
-GIT         = git
+DOCKER = docker
+DOCKER_COMPOSE = docker compose
+
+# Docker helpers
+RUN_BUN = $(DOCKER_COMPOSE) run --rm bun
+RUN_BUN_SH = $(DOCKER_COMPOSE) run --rm --entrypoint sh bun -lc
+EXEC_BUN = $(DOCKER_COMPOSE) exec -T bun
+BUN = $(RUN_BUN) bun
+BUN_RUN = $(BUN) run
+BUN_X = $(BUN) x
 
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
-.PHONY: $(filter-out node_modules,$(MAKECMDGOALS))
-
-# Variables
-REPORT_FILENAME ?= default_value
+.PHONY: help build lint lint-next lint-tsc lint-md format-check git-hooks-install \
+	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
+	test-unit copy-coverage test-mutation test-memory-leak test-visual \
+	lighthouse-desktop lighthouse-mobile install update playwright-install \
+	up down sh ps logs new-logs start stop build-k6-docker load-tests
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
-	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-20s\033[0m %s\n", $$1, $$2}'
 
-build: ## A tool build the project
-	$(PNPM_RUN) build
+build: ## Build the project inside the docker container.
+	$(RUN_BUN) node ./build.config.mjs
 
-lint-next: ## This command executes ESLint
-	$(PNPM_RUN) lint:next
+lint: lint-next lint-tsc lint-md format-check ## Run all linters inside the docker container.
 
-lint-tsc: ## This command executes Typescript linter
-	$(PNPM_RUN) lint:tsc
+lint-next: ## Run ESLint inside the docker container.
+	$(BUN_X) eslint src pages --ext .js,.jsx,.ts,.tsx
 
-lint-md: ## This command executes Markdown linter
-	$(PNPM_RUN) lint:markdown
+lint-tsc: ## Run the TypeScript linter inside the docker container.
+	$(BUN_X) tsc --newLine LF
 
-git-hooks-install: ## Install git hooks
-	$(PNPM_RUN) prepare
+lint-md: ## Run the Markdown linter inside the docker container.
+	$(RUN_BUN_SH) 'bun x markdownlint "**/*.md"'
 
-storybook-start: ## Start Storybook UI. Storybook is a frontend workshop for building UI components and pages in isolation.
-	$(PNPM_RUN) storybook
+format-check: ## Check Prettier formatting inside the docker container.
+	$(BUN_X) prettier . --check
 
-storybook-build: ## Build Storybook UI. Storybook is a frontend workshop for building UI components and pages in isolation.
-	$(PNPM_RUN) build-storybook
+git-hooks-install: ## Install git hooks.
+	$(BUN_X) husky install
 
-generate-ts-doc: ## This command generates documentation from the typescript files.
-	$(PNPM_RUN) doc
+storybook-start: ## Start Storybook inside the docker container.
+	$(BUN_X) storybook dev -p 6006
 
-test-e2e: ## This command executes cypress tests.
-	$(PNPM_RUN) test:e2e
+storybook-build: ## Build Storybook inside the docker container.
+	$(BUN_X) storybook build
 
-test-e2e-local: ## This command opens management UI for cypress tests.
-	$(PNPM_RUN) test:e2e:local
+generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
+	$(BUN_X) api-extractor run --local --verbose
 
-test-unit: ## This command executes unit tests using Jest library.
-	$(PNPM_RUN) test:unit
+test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun x storybook dev -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		bun x playwright test ./src/test/e2e \
+	'
 
-test-memory-leak: ## This command executes memory leaks tests using Memlab library.
-	$(PNPM_RUN) test:memory-leak
+test-e2e-local: ## Open the local Playwright runner inside the docker container.
+	$(BUN_X) playwright test ./src/test/e2e
 
-lighthouse-desktop: ## This command executes lighthouse tests for desktop.
-	$(PNPM_RUN) lighthouse:desktop
+test-unit: ## Run Jest unit tests inside the docker container.
+	$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose
 
-lighthouse-mobile: ## This command executes lighthouse tests for mobile.
-	$(PNPM_RUN) lighthouse:mobile
+copy-coverage: ## Copy the Jest coverage directory from the docker container.
+	$(DOCKER_COMPOSE) cp bun:/app/coverage ./coverage
 
-install: ## Install node modules according to the current pnpm-lock.yaml file
-	$(PNPM) install
+test-mutation: ## Run mutation tests inside the docker container.
+	$(BUN_X) stryker run
 
-update: ## Update node modules according to the current package.json file
-	$(PNPM) update
+test-memory-leak: ## Start the app and run Memlab inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		(bunx next build && bunx serve@latest out) >/tmp/ui-toolkit-app.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 180000 http://127.0.0.1:3000; \
+		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
+	'
 
-up: ## Start the docker hub (Nodejs)
-	$(DOCKER_COMPOSE) up -d
+lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
+	$(BUN_X) lhci autorun
 
-down: ## Stop the docker hub
+lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
+	$(BUN_X) lhci autorun
+
+install: ## Install dependencies inside the docker container.
+	$(RUN_BUN) bun install --frozen-lockfile
+
+update: ## Update dependencies inside the docker container.
+	$(BUN) update
+
+playwright-install: ## Install Playwright browsers inside a Docker container.
+	$(RUN_BUN) bun x playwright install --with-deps
+
+test-visual: ## Start Storybook and run visual tests inside a Docker container.
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		bun x storybook dev -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		pid=$$!; \
+		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
+		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		bun x playwright test ./src/test/visual --pass-with-no-tests \
+	'
+
+up: ## Start the docker hub (Bun).
+	$(DOCKER_COMPOSE) up -d --build
+
+down: ## Stop the docker hub.
 	$(DOCKER_COMPOSE) down --remove-orphans
 
-sh: ## Log to the docker container
-	@$(EXEC_NODEJS) sh
+sh: ## Open a shell inside the docker container.
+	@$(DOCKER_COMPOSE) run --rm --entrypoint sh bun
 
-ps: ## Log to the docker container
+ps: ## Show docker compose services.
 	@$(DOCKER_COMPOSE) ps
 
-logs: ## Show all logs
+logs: ## Show all docker compose logs.
 	@$(DOCKER_COMPOSE) logs --follow
 
-new-logs: ## Show live logs
+new-logs: ## Show live docker compose logs without history.
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
-start: up ## Start docker
+start: up ## Start docker.
 
-stop: ## Stop docker
+stop: ## Stop docker services.
 	$(DOCKER_COMPOSE) stop
 
 build-k6-docker:
