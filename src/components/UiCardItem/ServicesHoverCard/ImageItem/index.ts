@@ -1,1 +1,3 @@
-export { default as ImageItem } from './ImageItem';
+import ImageItem from './ImageItem';
+
+export default ImageItem;

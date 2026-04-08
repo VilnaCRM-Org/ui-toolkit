@@ -25,7 +25,7 @@ function CardSwiper({ cardList }: CardList): React.ReactElement {
     };
 
     const observer: MutationObserver = new MutationObserver((mutationsList: MutationRecord[]) => {
-      mutationsList.forEach((mutation: MutationRecord) => {
+      mutationsList.forEach((mutation: MutationRecord): void => {
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach((node: Node): void => {
             if (node instanceof Element && isToolTip(node)) {
@@ -45,7 +45,7 @@ function CardSwiper({ cardList }: CardList): React.ReactElement {
       observer.observe(target, config);
     }
 
-    return () => observer.disconnect();
+    return (): void => observer.disconnect();
   }, []);
 
   const gridMobile: CSSProperties =

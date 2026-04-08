@@ -3,7 +3,7 @@ import { Theme, createTheme } from '@mui/material';
 import breakpointsTheme from '@/components/UiBreakpoints';
 import colorTheme from '@/components/UiColorTheme';
 
-export const theme: Theme = createTheme({
+const theme: Theme = createTheme({
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
@@ -71,3 +71,5 @@ export const theme: Theme = createTheme({
     },
   },
 });
+
+export default theme;

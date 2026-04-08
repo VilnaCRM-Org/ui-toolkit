@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import Logo from '@/assets/svg/Logo.svg';
 import UiTypography from '@/components/UiTypography';
 
-import { PrivacyPolicy } from '../PrivacyPolicy';
+import PrivacyPolicy from '../PrivacyPolicy';
 import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
 import { SocialMedia } from '../types';
-import { VilnaCRMEmail } from '../VilnaCRMEmail';
+import VilnaCRMEmail from '../VilnaCRMEmail';
 
 import styles from './styles';
 

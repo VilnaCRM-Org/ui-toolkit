@@ -1,7 +1,7 @@
 import { Link, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { theme } from './theme';
+import theme from './theme';
 import { UiLinkProps } from './types';
 
 function UiLink({ children, href, target, sx }: UiLinkProps): React.ReactElement {

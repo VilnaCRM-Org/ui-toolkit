@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import UiCardList from '../UiCardList';
-import { CardList } from '../UiCardList/types';
+import type { CardList } from '../UiCardList/types';
 
 import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from './constants';
 
@@ -12,12 +12,9 @@ const meta: Meta<typeof UiCardList> = {
 };
 
 export default meta;
-
-function CardItem(args: CardList): React.ReactElement {
-  return <UiCardList {...args} />;
-}
-
-type Story = StoryObj<typeof CardItem>;
+type Story = StoryObj<typeof meta> & {
+  args: CardList;
+};
 
 export const CardItemLarge: Story = {
   args: {

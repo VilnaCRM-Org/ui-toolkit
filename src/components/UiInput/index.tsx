@@ -1,7 +1,7 @@
 import { TextField, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { theme } from './theme';
+import theme from './theme';
 import { UiInputProps } from './types';
 
 const DISPLAY_NAME: string = 'UiInput';

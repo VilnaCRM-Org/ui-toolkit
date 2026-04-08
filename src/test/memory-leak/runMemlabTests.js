@@ -9,23 +9,32 @@ const testsDir = './tests';
 const workDir = './src/test/memory-leak/results';
 const consoleMode = 'VERBOSE';
 
-(async function () {
+async function runScenario(testFilePath) {
+  const scenario = require(testFilePath);
+
+  const { runResult } = await run({
+    scenario,
+    consoleMode,
+    workDir,
+  });
+
+  const analyzer = new StringAnalysis();
+  await analyze(runResult, analyzer);
+
+  runResult.cleanup();
+}
+
+async function runMemlabTests() {
   const testFilePaths = fs
     .readdirSync(`${memoryLeakDir}/${testsDir}`)
     .map(test => `${testsDir}/${test}`);
 
-  for (const testFilePath of testFilePaths) {
-    const scenario = require(testFilePath);
+  await testFilePaths.reduce(
+    (previousRun, testFilePath) => previousRun.then(() => runScenario(testFilePath)),
+    Promise.resolve()
+  );
+}
 
-    const { runResult } = await run({
-      scenario,
-      consoleMode,
-      workDir,
-    });
-
-    const analyzer = new StringAnalysis();
-    await analyze(runResult, analyzer);
-
-    runResult.cleanup();
-  }
-})();
+runMemlabTests().catch(error => {
+  throw error;
+});

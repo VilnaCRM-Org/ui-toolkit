@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import UiTooltip from '../UiTooltip';
 import UiTypography from '../UiTypography';
 
-import { ServicesHoverCard } from './ServicesHoverCard';
+import ServicesHoverCard from './ServicesHoverCard';
 import styles from './styles';
 import { CardContentProps } from './types';
 

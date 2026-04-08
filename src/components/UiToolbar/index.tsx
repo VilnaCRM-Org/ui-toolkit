@@ -1,7 +1,7 @@
 import { Toolbar, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { theme } from './theme';
+import theme from './theme';
 
 function UiToolbar({ children }: { children: React.ReactNode }): React.ReactElement {
   return (

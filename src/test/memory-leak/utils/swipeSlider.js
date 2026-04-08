@@ -17,7 +17,11 @@ function calculateCoordinates(boundingBox, direction) {
 }
 
 async function horizontalDragAndDrop(page, coordinates, iterationsNumber) {
-  for (let iteration = 0; iteration < iterationsNumber; iteration += 1) {
+  async function runIteration(iteration) {
+    if (iteration >= iterationsNumber) {
+      return;
+    }
+
     await page.mouse.move(coordinates.startX, coordinates.startY);
     await page.mouse.down();
 
@@ -25,7 +29,10 @@ async function horizontalDragAndDrop(page, coordinates, iterationsNumber) {
     await page.mouse.up();
 
     await page.waitForTimeout(500);
+    await runIteration(iteration + 1);
   }
+
+  await runIteration(0);
 }
 
 module.exports = swipeSlider;

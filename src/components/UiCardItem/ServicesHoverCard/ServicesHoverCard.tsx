@@ -6,7 +6,7 @@ import { UiTypography } from '@/components/';
 
 import { imageList } from '../constants';
 
-import { ImageItem } from './ImageItem';
+import ImageItem from './ImageItem';
 import styles from './styles';
 
 function ServicesHoverCard(): React.ReactElement {

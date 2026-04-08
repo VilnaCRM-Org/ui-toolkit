@@ -1,1 +1,3 @@
-export { default as ServicesHoverCard } from './ServicesHoverCard';
+import ServicesHoverCard from './ServicesHoverCard';
+
+export default ServicesHoverCard;

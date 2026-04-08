@@ -1,1 +1,3 @@
-export { default as VilnaCRMEmail } from './VilnaCRMGmail';
+import VilnaCRMEmail from './VilnaCRMGmail';
+
+export default VilnaCRMEmail;

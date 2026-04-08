@@ -1,1 +1,3 @@
-export { default as DefaultFooter } from './DefaultFooter';
+import DefaultFooter from './DefaultFooter';
+
+export default DefaultFooter;

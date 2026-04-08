@@ -21,7 +21,7 @@ const config: StorybookConfig = {
   docs: {
     autodocs: 'tag',
   },
-  webpackFinal: async (config) => {
+  webpackFinal: async config => {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
@@ -29,7 +29,7 @@ const config: StorybookConfig = {
     };
     config.module = config.module ?? { rules: [] };
     config.module.rules = [
-      ...(config.module.rules ?? []).filter((rule) => {
+      ...(config.module.rules ?? []).filter(rule => {
         if (!rule || typeof rule !== 'object' || !('test' in rule)) {
           return true;
         }

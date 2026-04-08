@@ -1,3 +1,5 @@
+import swipeSlider from '../memory-leak/utils/swipeSlider';
+
 type BoundingBox = {
   x: number;
   y: number;
@@ -18,13 +20,6 @@ type PageHandle = {
   };
   waitForTimeout: (timeout: number) => Promise<void>;
 };
-
-const swipeSlider: (
-  page: PageHandle,
-  selector: string,
-  iterationsNumber: number,
-  direction?: 'left' | 'right'
-) => Promise<void> = require('../memory-leak/utils/swipeSlider');
 
 describe('swipeSlider', () => {
   it('performs the configured number of drag cycles', async () => {

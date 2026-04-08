@@ -5,7 +5,7 @@ import LinkedinFooterIcon from '@/assets/svg/social-icons/linked-in.svg';
 
 import { SocialMedia } from './types';
 
-export const socialLinks: SocialMedia[] = [
+const socialLinks: SocialMedia[] = [
   {
     id: 'Instagram-link',
     icon: InstagramFooterIcon,
@@ -35,3 +35,5 @@ export const socialLinks: SocialMedia[] = [
     ariaLabel: 'footer.aria_labels.linkedin',
   },
 ];
+
+export default socialLinks;

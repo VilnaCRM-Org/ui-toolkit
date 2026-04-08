@@ -1,7 +1,7 @@
 import { Stack } from '@mui/material';
 import { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import UiButton from '../UiButton';
 
@@ -14,10 +14,6 @@ const meta: Meta<typeof UiTextFieldForm> = {
   component: UiTextFieldForm,
   tags: ['autodocs'],
   argTypes: {
-    name: {
-      control: { type: 'text' },
-      defaultValue: 'FullName',
-    },
     type: {
       control: { type: 'radio' },
       options: ['text', 'email', 'password'],
@@ -42,9 +38,12 @@ const meta: Meta<typeof UiTextFieldForm> = {
 
 export default meta;
 
-type Story = StoryObj<typeof UiTextFieldForm>;
+type TextFieldFormStoryArgs = Omit<CustomTextField<{ FullName: string }>, 'control' | 'name'>;
+type Story = StoryObj<typeof UiTextFieldForm> & {
+  args: TextFieldFormStoryArgs;
+};
 
-function TextFieldFormStory<T extends FieldValues>(args: CustomTextField<T>): React.ReactElement {
+function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
   const { handleSubmit, control } = useForm<{ FullName: string }>({
     mode: 'onTouched',
   });
@@ -71,7 +70,14 @@ function TextFieldFormStory<T extends FieldValues>(args: CustomTextField<T>): Re
 }
 
 export const TextFieldForm: Story = {
-  render: args => <TextFieldFormStory {...args} />,
+  render: args => (
+    <TextFieldFormStory
+      type={args.type}
+      rules={args.rules}
+      placeholder={args.placeholder}
+      fullWidth={args.fullWidth}
+    />
+  ),
   args: {
     rules: {
       required: t('This field is required'),

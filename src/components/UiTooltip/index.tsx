@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { theme } from './theme';
+import theme from './theme';
 import WrapperUiTooltip from './TooltipWrapper';
 import { UiTooltipProps } from './types';
 
