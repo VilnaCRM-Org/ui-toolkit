@@ -14,6 +14,7 @@ import styles from './styles';
 
 function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
   const { t } = useTranslation();
+  const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
 
   const currentDate: Date = useMemo(() => new Date(), []);
   const currentYear: number = useMemo(() => currentDate.getFullYear(), [currentDate]);
@@ -28,7 +29,7 @@ function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.R
             alignItems="center"
             sx={styles.topContent}
           >
-            <img src={Logo.src} alt={t('footer.logo_alt')} width={143} height={48} loading="lazy" />
+            <img src={logoUrl} alt={t('footer.logo_alt')} width={143} height={48} loading="lazy" />
             <PrivacyPolicy />
           </Stack>
         </Box>

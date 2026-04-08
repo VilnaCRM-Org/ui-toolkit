@@ -58,10 +58,14 @@ generate-ts-doc: ## Generate TypeScript documentation inside the docker containe
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		bun x storybook dev -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		bun x playwright install --with-deps >/tmp/ui-toolkit-playwright-install.log 2>&1; \
+		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		if ! bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; then \
+			cat /tmp/ui-toolkit-storybook.log; \
+			exit 1; \
+		fi; \
 		bun x playwright test ./src/test/e2e \
 	'
 
@@ -69,9 +73,19 @@ test-e2e-local: ## Open the local Playwright runner inside the docker container.
 	$(BUN_X) playwright test ./src/test/e2e
 
 test-unit: ## Run Jest unit tests inside the docker container.
-	$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -n "$$container_id" ]; then \
+		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
+	else \
+		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
+	fi
 
 copy-coverage: ## Copy the Jest coverage directory from the docker container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; start docker before copying coverage"; \
+		exit 1; \
+	fi; \
 	$(DOCKER_COMPOSE) cp bun:/app/coverage ./coverage
 
 test-mutation: ## Run mutation tests inside the docker container.
@@ -83,7 +97,10 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 		(bunx next build && bunx serve@latest out) >/tmp/ui-toolkit-app.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 180000 http://127.0.0.1:3000; \
+		if ! bun x wait-on --timeout 180000 http://127.0.0.1:3000; then \
+			cat /tmp/ui-toolkit-app.log; \
+			exit 1; \
+		fi; \
 		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
 	'
 
@@ -105,10 +122,14 @@ playwright-install: ## Install Playwright browsers inside a Docker container.
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		bun x storybook dev -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		bun x playwright install --with-deps >/tmp/ui-toolkit-playwright-install.log 2>&1; \
+		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		if ! bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; then \
+			cat /tmp/ui-toolkit-storybook.log; \
+			exit 1; \
+		fi; \
 		bun x playwright test ./src/test/visual --pass-with-no-tests \
 	'
 

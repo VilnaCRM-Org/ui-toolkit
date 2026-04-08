@@ -53,8 +53,6 @@ describe('UiInput', () => {
   });
 
   it('should be a non-empty string', () => {
-    const DISPLAY_NAME: string = 'UiInput';
-    expect(typeof DISPLAY_NAME).toBe('string');
-    expect(DISPLAY_NAME).not.toBe('');
+    expect(UiInput.displayName).toBe('UiInput');
   });
 });

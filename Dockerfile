@@ -9,6 +9,7 @@ RUN apt-get update \
       make \
       nodejs \
       npm \
+      procps \
       python3 \
     && rm -rf /var/lib/apt/lists/*
 

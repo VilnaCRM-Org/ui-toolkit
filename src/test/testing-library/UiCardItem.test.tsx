@@ -7,11 +7,6 @@ import CardContent from '../../components/UiCardItem/CardContent';
 import { cardItem, largeCard, smallCard } from './constants';
 
 const cardTitleRole: string = 'heading';
-const SMALL_CARD_TEXT: string = 'smallCard';
-
-export function isSmallCard(item: { type: string }): boolean {
-  return item.type === SMALL_CARD_TEXT;
-}
 
 describe('UiCardItem Component', () => {
   describe('CardContent', () => {
@@ -47,21 +42,23 @@ describe('UiCardItem', () => {
   const stackElementClass: string = '.MuiStack-root';
 
   it('renders UiCardItem with small card style', () => {
-    const { container } = render(<UiCardItem item={smallCard} />);
+    const { container, getByText, queryByText } = render(<UiCardItem item={smallCard} />);
 
     const element: HTMLElement | null = container.querySelector(stackElementClass);
 
     expect(element).toBeInTheDocument();
-    expect(isSmallCard(smallCard)).toBe(true);
+    expect(getByText('services')).toBeInTheDocument();
+    expect(queryByText(smallCard.text)).not.toBeInTheDocument();
   });
 
   it('renders UiCardItem with large card style', () => {
-    const { container } = render(<UiCardItem item={largeCard} />);
+    const { container, getByText, queryByText } = render(<UiCardItem item={largeCard} />);
 
     const element: HTMLElement | null = container.querySelector(stackElementClass);
 
     expect(element).toBeInTheDocument();
-    expect(isSmallCard(largeCard)).toBe(false);
+    expect(getByText(largeCard.text)).toBeInTheDocument();
+    expect(queryByText('services')).not.toBeInTheDocument();
   });
 
   it('renders correct UiImage', () => {
@@ -71,25 +68,5 @@ describe('UiCardItem', () => {
 
     expect(cardImage).toBeInTheDocument();
     expect(cardImage).toHaveAttribute('alt', cardItem.alt);
-  });
-
-  it('returns true when item.type is SMALL_CARD_TEXT', () => {
-    const item: { type: string } = { type: SMALL_CARD_TEXT };
-    expect(isSmallCard(item)).toBe(true);
-  });
-
-  it('returns false when item.type is not SMALL_CARD_TEXT', () => {
-    const item: { type: string } = { type: 'largeCard' };
-    expect(isSmallCard(item)).toBe(false);
-  });
-
-  it('returns false when item.type is an empty string', () => {
-    const item: { type: string } = { type: '' };
-    expect(isSmallCard(item)).toBe(false);
-  });
-
-  it('returns false when item.type is undefined', () => {
-    const item: { type: string } = { type: undefined as unknown as string };
-    expect(isSmallCard(item)).toBe(false);
   });
 });

@@ -14,12 +14,13 @@ import styles from './styles';
 
 function Mobile({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
   const { t } = useTranslation();
+  const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
   const currentDate: Date = useMemo(() => new Date(), []);
   const currentYear: number = useMemo(() => currentDate.getFullYear(), [currentDate]);
   return (
     <Container sx={styles.wrapper}>
       <Stack sx={styles.content}>
-        <img src={Logo.src} alt={t('footer.logo_alt')} width={131} height={44} loading="lazy" />
+        <img src={logoUrl} alt={t('footer.logo_alt')} width={131} height={44} loading="lazy" />
         <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
           {socialLinks.map(item => (
             <SocialMediaItem item={item} key={item.id} />

@@ -18,7 +18,9 @@ jobs:
       - name: Detect memory leak inputs
         id: memlab
         run: |
-          if [[ -f package.json && -f bun.lock && -f src/test/memory-leak/runMemlabTests.js ]]; then
+          if [[ -f package.json && -f bun.lock && -f src/test/memory-leak/runMemlabTests.js ]] \
+            && grep -q '"next"' package.json \
+            && { [[ -f pages/index.tsx ]] || [[ -f pages/index.jsx ]] || [[ -f app/page.tsx ]] || [[ -f app/page.jsx ]]; }; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"

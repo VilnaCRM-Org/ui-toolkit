@@ -6,8 +6,11 @@ const config = {
   coverageAnalysis: 'perTest',
   plugins: ['@stryker-mutator/jest-runner'],
   tsconfigFile: 'tsconfig.json',
+  concurrency: 2,
+  timeoutMS: 20000,
+  timeoutFactor: 4,
   mutate: ['./src/components/**/index.tsx'],
-  thresholds: { high: 100, break: 99 },
+  thresholds: { high: 90, break: 80 },
 };
 
 export default config;

@@ -1,4 +1,6 @@
-import type { StorybookConfig } from '@storybook/nextjs';
+import path from 'path';
+
+import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const toPath = 'src/assets/fonts';
 const fromPath = `../${toPath}`;
@@ -10,13 +12,37 @@ const config: StorybookConfig = {
     '@storybook/addon-essentials',
     '@storybook/addon-onboarding',
     '@storybook/addon-interactions',
+    '@storybook/addon-webpack5-compiler-swc',
   ],
   framework: {
-    name: '@storybook/nextjs',
+    name: '@storybook/react-webpack5',
     options: {},
   },
   docs: {
     autodocs: 'tag',
+  },
+  webpackFinal: async (config) => {
+    config.resolve = config.resolve ?? {};
+    config.resolve.alias = {
+      ...(config.resolve.alias ?? {}),
+      '@': path.resolve(__dirname, '../src'),
+    };
+    config.module = config.module ?? { rules: [] };
+    config.module.rules = [
+      ...(config.module.rules ?? []).filter((rule) => {
+        if (!rule || typeof rule !== 'object' || !('test' in rule)) {
+          return true;
+        }
+
+        return !(rule.test instanceof RegExp && rule.test.test('.svg'));
+      }),
+      {
+        test: /\.svg$/i,
+        type: 'asset/inline',
+      },
+    ];
+
+    return config;
   },
   staticDirs: [
     {

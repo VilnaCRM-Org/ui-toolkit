@@ -2,6 +2,8 @@ import Check from '@/assets/svg/check.svg';
 
 import colorTheme from '../UiColorTheme';
 
+const checkIconUrl: string = typeof Check === 'string' ? Check : Check.src;
+
 export default {
   checkboxWrapper: {
     display: 'grid',
@@ -22,7 +24,7 @@ export default {
       '&:checked': {
         backgroundColor: colorTheme.palette.primary.main,
         border: 'none',
-        backgroundImage: `url(${Check.src})`,
+        backgroundImage: `url(${checkIconUrl})`,
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
       },
@@ -50,7 +52,7 @@ export default {
       '&:checked': {
         backgroundColor: colorTheme.palette.primary.main,
         border: 'none',
-        backgroundImage: `url(${Check.src})`,
+        backgroundImage: `url(${checkIconUrl})`,
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
       },
