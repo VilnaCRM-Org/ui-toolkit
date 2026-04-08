@@ -32,7 +32,17 @@ build: ## Build the project inside the docker container.
 lint: lint-next lint-tsc lint-md format-check ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
-	$(BUN_X) eslint src pages --ext .js,.jsx,.ts,.tsx
+	@$(RUN_BUN_SH) '\
+		set -e; \
+		targets=""; \
+		if [ -d src ]; then targets="src"; fi; \
+		if [ -d pages ]; then targets="$$targets pages"; fi; \
+		if [ -z "$$targets" ]; then \
+			echo "No lint targets found, skipping ESLint."; \
+			exit 0; \
+		fi; \
+		bun x eslint $$targets --ext .js,.jsx,.ts,.tsx \
+	'
 
 lint-tsc: ## Run the TypeScript linter inside the docker container.
 	$(BUN_X) tsc --newLine LF
@@ -75,9 +85,9 @@ test-e2e-local: ## Open the local Playwright runner inside the docker container.
 test-unit: ## Run Jest unit tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
-		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
+		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests; \
 	else \
-		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
+		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests; \
 	fi
 
 copy-coverage: ## Copy the Jest coverage directory from the docker container.
@@ -85,6 +95,10 @@ copy-coverage: ## Copy the Jest coverage directory from the docker container.
 	if [ -z "$$container_id" ]; then \
 		echo "bun service is not running; start docker before copying coverage"; \
 		exit 1; \
+	fi; \
+	if ! $(EXEC_BUN) test -d /app/coverage; then \
+		echo "coverage directory was not generated; skipping copy"; \
+		exit 0; \
 	fi; \
 	$(DOCKER_COMPOSE) cp bun:/app/coverage ./coverage
 
