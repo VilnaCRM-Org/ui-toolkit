@@ -40,7 +40,16 @@ class LocalizationGenerator {
     const localizationObj = featureFolders.reduce((acc, folder) => {
       const parsedLocalizationFromFolder = this.getLocalizationFromFolder(folder);
 
-      return { ...acc, ...parsedLocalizationFromFolder };
+      for (const [language, { translation }] of Object.entries(parsedLocalizationFromFolder)) {
+        acc[language] = {
+          translation: {
+            ...(acc[language]?.translation ?? {}),
+            ...translation,
+          },
+        };
+      }
+
+      return acc;
     }, {});
 
     const filePath = path.join(

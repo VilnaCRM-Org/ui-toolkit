@@ -13,7 +13,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
-    baseURL: process.env.NEXT_PUBLIC_WEBSITE_URL,
+    baseURL: process.env.REACT_APP_STORYBOOK_URL,
   },
   projects: [
     {

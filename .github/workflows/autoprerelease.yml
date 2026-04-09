@@ -35,7 +35,7 @@ jobs:
       - name: Conventional Changelog Action
         if: steps.manifest.outputs.present == 'true'
         id: changelog
-        uses: TriPSs/conventional-changelog-action@v3
+        uses: TriPSs/conventional-changelog-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: 'false'
