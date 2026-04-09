@@ -16,7 +16,7 @@ BUN_X = $(BUN) x
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
-.PHONY: help build lint-next lint-tsc lint-md format-check git-hooks-install \
+.PHONY: help build lint lint-next lint-tsc lint-md format-check git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install \
@@ -27,69 +27,88 @@ help:
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-20s\033[0m %s\n", $$1, $$2}'
 
 build: ## Build the project inside the docker container.
-	$(BUN_RUN) build
+	$(RUN_BUN) node ./build.config.mjs
 
-lint-next: ## Run the Next.js linter inside the docker container.
-	$(BUN_RUN) lint:next
+lint: lint-next lint-tsc lint-md format-check ## Run all linters inside the docker container.
+
+lint-next: ## Run ESLint inside the docker container.
+	$(BUN_X) eslint src pages --ext .js,.jsx,.ts,.tsx
 
 lint-tsc: ## Run the TypeScript linter inside the docker container.
-	$(BUN_RUN) lint:tsc
+	$(BUN_X) tsc --newLine LF
 
 lint-md: ## Run the Markdown linter inside the docker container.
-	$(BUN_RUN) lint:md
+	$(RUN_BUN_SH) 'bun x markdownlint "**/*.md"'
 
 format-check: ## Check Prettier formatting inside the docker container.
 	$(BUN_X) prettier . --check
 
 git-hooks-install: ## Install git hooks.
-	$(BUN_RUN) prepare
+	$(BUN_X) husky install
 
 storybook-start: ## Start Storybook inside the docker container.
-	$(BUN_RUN) storybook-start
+	$(BUN_X) storybook dev -p 6006
 
 storybook-build: ## Build Storybook inside the docker container.
-	$(BUN_RUN) storybook-build
+	$(BUN_X) storybook build
 
 generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
-	$(BUN_RUN) generate-ts-doc
+	$(BUN_X) api-extractor run --local --verbose
 
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		bun x playwright install --with-deps >/tmp/ui-toolkit-playwright-install.log 2>&1; \
+		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		if ! bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; then \
+			cat /tmp/ui-toolkit-storybook.log; \
+			exit 1; \
+		fi; \
 		bun x playwright test ./src/test/e2e \
 	'
 
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
-	$(BUN_RUN) test:e2e-local
+	$(BUN_X) playwright test ./src/test/e2e
 
 test-unit: ## Run Jest unit tests inside the docker container.
-	$(BUN_RUN) test:unit
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -n "$$container_id" ]; then \
+		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
+	else \
+		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
+	fi
 
 copy-coverage: ## Copy the Jest coverage directory from the docker container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; start docker before copying coverage"; \
+		exit 1; \
+	fi; \
 	$(DOCKER_COMPOSE) cp bun:/app/coverage ./coverage
 
 test-mutation: ## Run mutation tests inside the docker container.
-	$(BUN_RUN) test:mutation
+	$(BUN_X) stryker run
 
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		bun start >/tmp/ui-toolkit-app.log 2>&1 & \
+		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 3000 >/tmp/ui-toolkit-app.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 180000 http://127.0.0.1:3000; \
+		if ! bun x wait-on --timeout 180000 http://127.0.0.1:3000; then \
+			cat /tmp/ui-toolkit-app.log; \
+			exit 1; \
+		fi; \
 		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
 	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
-	$(BUN_RUN) lighthouse:desktop
+	$(BUN_X) lhci autorun
 
 lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
-	$(BUN_RUN) lighthouse:mobile
+	$(BUN_X) lhci autorun
 
 install: ## Install dependencies inside the docker container.
 	$(RUN_BUN) bun install --frozen-lockfile
@@ -103,10 +122,14 @@ playwright-install: ## Install Playwright browsers inside a Docker container.
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		bun run storybook-start >/tmp/ui-toolkit-storybook.log 2>&1 & \
+		bun x playwright install --with-deps >/tmp/ui-toolkit-playwright-install.log 2>&1; \
+		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
-		bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; \
+		if ! bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; then \
+			cat /tmp/ui-toolkit-storybook.log; \
+			exit 1; \
+		fi; \
 		bun x playwright test ./src/test/visual --pass-with-no-tests \
 	'
 
