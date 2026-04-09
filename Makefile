@@ -94,7 +94,7 @@ test-mutation: ## Run mutation tests inside the docker container.
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		(bunx next build && bunx serve@latest out) >/tmp/ui-toolkit-app.log 2>&1 & \
+		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 3000 >/tmp/ui-toolkit-app.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
 		if ! bun x wait-on --timeout 180000 http://127.0.0.1:3000; then \

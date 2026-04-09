@@ -6,19 +6,19 @@ import VilnaCRMEmail from '../../components/UiFooter/VilnaCRMEmail';
 import { mockEmail } from './constants';
 
 describe('VilnaCRMEmail component', () => {
-  const originalEmail: string | undefined = process.env.NEXT_PUBLIC_VILNACRM_GMAIL;
+  const originalEmail: string | undefined = process.env.REACT_APP_VILNACRM_GMAIL;
 
   afterEach(() => {
     if (originalEmail === undefined) {
-      delete process.env.NEXT_PUBLIC_VILNACRM_GMAIL;
+      delete process.env.REACT_APP_VILNACRM_GMAIL;
       return;
     }
 
-    process.env.NEXT_PUBLIC_VILNACRM_GMAIL = originalEmail;
+    process.env.REACT_APP_VILNACRM_GMAIL = originalEmail;
   });
 
   it('renders email address correctly', () => {
-    delete process.env.NEXT_PUBLIC_VILNACRM_GMAIL;
+    delete process.env.REACT_APP_VILNACRM_GMAIL;
 
     const { getByText } = render(<VilnaCRMEmail />);
 
@@ -28,7 +28,7 @@ describe('VilnaCRMEmail component', () => {
 
   it('uses the configured email for both text and mailto href', () => {
     const configuredEmail: string = 'support@example.com';
-    process.env.NEXT_PUBLIC_VILNACRM_GMAIL = configuredEmail;
+    process.env.REACT_APP_VILNACRM_GMAIL = configuredEmail;
 
     const { getByRole } = render(<VilnaCRMEmail />);
 
