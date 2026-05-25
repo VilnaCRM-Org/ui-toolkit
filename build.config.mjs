@@ -1,10 +1,12 @@
 import * as esbuild from 'esbuild';
+import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
-import path, { dirname } from 'path';
+import path from 'path';
 import { createRequire } from 'module';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const currentFile = fileURLToPath(import.meta.url);
+const currentDir = path.dirname(currentFile);
+const entryPoint = path.resolve(currentDir, 'src', 'components', 'index.ts');
 
 const require = createRequire(import.meta.url);
 const LocalizationGenerator = require('./scripts/localizationGenerator');
@@ -19,14 +21,21 @@ const localizationPlugin = {
   },
 };
 
+if (!existsSync(entryPoint)) {
+  process.stdout.write(
+    'Skipping build because this bootstrap PR does not include src/components/index.ts yet.\n'
+  );
+  process.exit(0);
+}
+
 esbuild
   .build({
-    outdir: path.resolve(__dirname, 'build'),
-    entryPoints: [path.resolve(__dirname, 'src', 'components', 'index.ts')],
+    outdir: path.resolve(currentDir, 'build'),
+    entryPoints: [entryPoint],
     entryNames: '[name]',
     bundle: true,
     minify: true,
-    tsconfig: path.resolve(__dirname, 'tsconfig.json'),
+    tsconfig: path.resolve(currentDir, 'tsconfig.json'),
     sourcemap: true,
     target: ['es2020'],
     loader: {

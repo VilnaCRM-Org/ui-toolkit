@@ -28,19 +28,24 @@ const config: StorybookConfig = {
       '@': path.resolve(__dirname, '../src'),
     };
     config.module = config.module ?? { rules: [] };
-    config.module.rules = [
-      ...(config.module.rules ?? []).filter(rule => {
-        if (!rule || typeof rule !== 'object' || !('test' in rule)) {
-          return true;
-        }
+    config.module.rules = (config.module.rules ?? []).map(rule => {
+      if (!rule || typeof rule !== 'object' || !('test' in rule)) {
+        return rule;
+      }
 
-        return !(rule.test instanceof RegExp && rule.test.test('.svg'));
-      }),
-      {
-        test: /\.svg$/i,
-        type: 'asset/inline',
-      },
-    ];
+      if (!(rule.test instanceof RegExp) || !rule.test.test('.svg')) {
+        return rule;
+      }
+
+      return {
+        ...rule,
+        exclude: /\.svg$/i,
+      };
+    });
+    config.module.rules.push({
+      test: /\.svg$/i,
+      type: 'asset/inline',
+    });
 
     return config;
   },

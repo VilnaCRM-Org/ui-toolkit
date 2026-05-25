@@ -12,7 +12,8 @@ A clear and concise description of what the issue is about.
 
 ### Tasks
 
-Include specific tasks in the order they need to be done. Include links to specific lines of code where the job should happen.
+Include specific tasks in the order they need to be done.
+Include links to specific lines of code where the job should happen.
 
 - [ ] Task 1
 - [ ] Task 2
@@ -20,7 +21,8 @@ Include specific tasks in the order they need to be done. Include links to speci
 
 ### Acceptance Criteria
 
-Include specific criteria for how to prove that this issue will be done
+Include specific criteria for how to prove
+that this issue will be done.
 
 - [ ] Task 1
 - [ ] Task 2

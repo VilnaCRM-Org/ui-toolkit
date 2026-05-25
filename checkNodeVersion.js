@@ -1,10 +1,16 @@
 const semver = require('semver');
 const { engines } = require('./package.json');
 
-const version = engines.node;
+const version = engines?.node;
+
+if (!version) {
+  process.stderr.write('The package.json engines.node field is missing.\n');
+  process.exit(1);
+}
+
 if (!semver.satisfies(process.version, version)) {
-  console.log(
-    `Required node version ${version} not satisfied with current version ${process.version}.`
+  process.stderr.write(
+    `Required node version ${version} not satisfied with current version ${process.version}.\n`
   );
   process.exit(1);
 }

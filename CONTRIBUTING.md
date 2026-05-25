@@ -63,7 +63,7 @@ If you find an issue to work on, you are welcome to open a PR with a fix.
 ### Commit your update
 
 Commit the changes once you are happy with them.
-Don't forget to self-review to speed up the review process:zap:.
+Don't forget to self-review to speed up the review process :zap:.
 
 Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
@@ -91,6 +91,6 @@ When you're finished with the changes, create a pull request, also known as a PR
 
 ### Your PR is merged
 
-Congratulations :tada::tada: The our team thanks you :sparkles:.
+Congratulations :tada::tada: Our team thanks you :sparkles:.
 
-Now that you are part of the php service template community.
+Now that you are part of the ui-toolkit community.

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 const LocalizationGenerator = require('../../localizationGenerator');
 
@@ -27,6 +28,10 @@ function mockedWriteFileSync() {
   return jest.spyOn(fs, 'writeFileSync');
 }
 
+function mockedMkdirSync() {
+  return jest.spyOn(fs, 'mkdirSync');
+}
+
 jest.mock('fs');
 
 describe('LocalizationGenerator', () => {
@@ -42,6 +47,19 @@ describe('LocalizationGenerator', () => {
       const result = generator.getFeatureFolders();
 
       expect(result).toEqual(['folder1', 'folder2']);
+    });
+
+    test('should return an empty array when the feature directory is missing', () => {
+      const error = new Error('missing features');
+      error.code = 'ENOENT';
+
+      mockedReaddirSync().mockImplementationOnce(() => {
+        throw error;
+      });
+
+      const generator = new LocalizationGenerator();
+
+      expect(generator.getFeatureFolders()).toEqual([]);
     });
   });
 
@@ -61,6 +79,19 @@ describe('LocalizationGenerator', () => {
 
       expect(result).toEqual(LOCALIZATION_OBJ);
     });
+
+    test('should return an empty object when a feature has no i18n directory', () => {
+      const error = new Error('missing i18n');
+      error.code = 'ENOENT';
+
+      mockedReaddirSync().mockImplementationOnce(() => {
+        throw error;
+      });
+
+      const generator = new LocalizationGenerator();
+
+      expect(generator.getLocalizationFromFolder('folder-without-i18n')).toEqual({});
+    });
   });
 
   describe('writeLocalizationFile', () => {
@@ -68,11 +99,13 @@ describe('LocalizationGenerator', () => {
       const filePath = 'scripts/test/unit/localization.json';
       const fileContent = JSON.stringify({ greeting: 'Hello' });
 
+      const mockMkdirSync = mockedMkdirSync();
       const mockWriteFileSync = mockedWriteFileSync();
 
       const generator = new LocalizationGenerator();
       generator.writeLocalizationFile(fileContent, filePath);
 
+      expect(mockMkdirSync).toHaveBeenCalledWith(path.dirname(filePath), { recursive: true });
       expect(mockWriteFileSync).toHaveBeenCalledWith(filePath, fileContent);
     });
 

@@ -5,7 +5,7 @@ const resources = require('./i18n/localization.json');
 i18n.use(initReactI18next).init({
   lng: 'en',
   resources,
-  fallbackLng: process.env.REACT_APP_FALLBACK_LANGUAGE,
+  fallbackLng: process.env.REACT_APP_FALLBACK_LANGUAGE || 'en',
   interpolation: {
     escapeValue: false,
   },

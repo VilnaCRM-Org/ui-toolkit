@@ -21,14 +21,8 @@
   },
   "include": [
     "./src",
-    "./pages",
     "./scripts",
-    "next-env.d.ts",
-    "/*.ts",
-    "/.tsx",
-    "playwrite",
-    "src/components/UiFooter/.stories.tsx",
-    "memoryLeak"
+    "next-env.d.ts"
   ],
   "exclude": ["node_modules"],
   "extends": "./tsconfig.paths.json"

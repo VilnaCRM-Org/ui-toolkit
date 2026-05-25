@@ -20,7 +20,6 @@ MD006: true
 MD007:
   indent: 2
   start_indented: false
-  start_indent: 2
 
 MD009:
   br_spaces: 2

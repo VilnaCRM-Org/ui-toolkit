@@ -40,14 +40,14 @@ class LocalizationGenerator {
     const localizationObj = featureFolders.reduce((acc, folder) => {
       const parsedLocalizationFromFolder = this.getLocalizationFromFolder(folder);
 
-      for (const [language, { translation }] of Object.entries(parsedLocalizationFromFolder)) {
+      Object.entries(parsedLocalizationFromFolder).forEach(([language, { translation }]) => {
         acc[language] = {
           translation: {
             ...(acc[language]?.translation ?? {}),
             ...translation,
           },
         };
-      }
+      });
 
       return acc;
     }, {});
@@ -63,9 +63,17 @@ class LocalizationGenerator {
   }
 
   getFeatureFolders() {
-    const featureDirectories = fs.readdirSync(this.featurePath, {
-      withFileTypes: true,
-    });
+    let featureDirectories = [];
+
+    try {
+      featureDirectories = fs.readdirSync(this.featurePath, {
+        withFileTypes: true,
+      });
+    } catch (error) {
+      if (error.code === 'ENOENT') return [];
+
+      throw error;
+    }
 
     return featureDirectories
       .filter(directory => directory.isDirectory())
@@ -73,9 +81,17 @@ class LocalizationGenerator {
   }
 
   getLocalizationFromFolder(folder) {
-    const localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
-      withFileTypes: true,
-    });
+    let localizationFiles = [];
+
+    try {
+      localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
+        withFileTypes: true,
+      });
+    } catch (error) {
+      if (error.code === 'ENOENT') return {};
+
+      throw error;
+    }
 
     return localizationFiles.reduce((localizations, file) => {
       if (!file.isFile()) return localizations;
@@ -101,6 +117,7 @@ class LocalizationGenerator {
 
   // eslint-disable-next-line class-methods-use-this
   writeLocalizationFile(fileContent, filePath) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, fileContent);
   }
 }
