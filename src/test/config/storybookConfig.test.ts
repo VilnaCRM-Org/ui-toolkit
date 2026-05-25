@@ -19,9 +19,7 @@ describe('storybook staticDirs', () => {
         return;
       }
 
-      expect(
-        fs.existsSync(path.resolve(__dirname, '../../../.storybook', entry.from))
-      ).toBe(true);
+      expect(fs.existsSync(path.resolve(__dirname, '../../../.storybook', entry.from))).toBe(true);
     });
   });
 });
