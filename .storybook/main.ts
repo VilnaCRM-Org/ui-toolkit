@@ -2,9 +2,23 @@ import fs from 'fs';
 import path from 'path';
 
 import type { StorybookConfig } from '@storybook/react-webpack5';
+import type { RuleSetCondition } from 'webpack';
 
 const toPath = 'src/assets/fonts';
 const fromPath = `../${toPath}`;
+const svgExclude = /\.svg$/i;
+
+function mergeExclude(exclude?: RuleSetCondition): RuleSetCondition {
+  if (!exclude) {
+    return svgExclude;
+  }
+
+  if (Array.isArray(exclude)) {
+    return [...exclude, svgExclude];
+  }
+
+  return [exclude, svgExclude];
+}
 
 const staticDirs = [
   {
@@ -79,11 +93,11 @@ const config: StorybookConfig = {
 
       return {
         ...rule,
-        exclude: /\.svg$/i,
+        exclude: mergeExclude(rule.exclude),
       };
     });
     config.module.rules.push({
-      test: /\.svg$/i,
+      test: svgExclude,
       type: 'asset/inline',
     });
 

@@ -96,22 +96,30 @@ class LocalizationGenerator {
     return localizationFiles.reduce((localizations, file) => {
       if (!file.isFile()) return localizations;
 
-      const [language, fileType] = file.name.split('.');
+      const fileType = path.extname(file.name).replace('.', '');
 
       if (fileType !== this.jsonFileType) return localizations;
 
-      const localizationContent = fs.readFileSync(
-        this.pathToI18nFile.replace('{folder}', folder).replace('{file.name}', file.name),
-        'utf8'
-      );
-      const parsedLocalization = JSON.parse(localizationContent);
+      const language = file.name.slice(0, -(fileType.length + 1));
 
-      return {
-        ...localizations,
-        [language]: {
-          translation: parsedLocalization,
-        },
-      };
+      try {
+        const localizationFilePath = this.pathToI18nFile
+          .replace('{folder}', folder)
+          .replace('{file.name}', file.name);
+        const localizationContent = fs.readFileSync(localizationFilePath, 'utf8');
+        const parsedLocalization = JSON.parse(localizationContent);
+
+        return {
+          ...localizations,
+          [language]: {
+            translation: parsedLocalization,
+          },
+        };
+      } catch (error) {
+        console.error(`Skipping localization file ${folder}/${file.name}: ${error.message}`);
+
+        return localizations;
+      }
     }, {});
   }
 

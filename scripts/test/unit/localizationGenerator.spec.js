@@ -10,6 +10,7 @@ const FEATURE_FOLDERS = [
 
 const MOCK_FILE_EN = { name: 'en.json', isFile: () => true };
 const MOCK_FILE_FR = { name: 'fr.json', isFile: () => true };
+const MOCK_FILE_EN_EXTRA = { name: 'en.extra.json', isFile: () => true };
 
 const LOCALIZATION_OBJ = {
   en: { translation: { greeting: 'Hello' } },
@@ -30,6 +31,10 @@ function mockedWriteFileSync() {
 
 function mockedMkdirSync() {
   return jest.spyOn(fs, 'mkdirSync');
+}
+
+function mockedConsoleError() {
+  return jest.spyOn(console, 'error').mockImplementation(() => {});
 }
 
 jest.mock('fs');
@@ -80,6 +85,17 @@ describe('LocalizationGenerator', () => {
       expect(result).toEqual(LOCALIZATION_OBJ);
     });
 
+    test('should use the full filename before the extension as the language key', () => {
+      mockedReaddirSync().mockReturnValueOnce([MOCK_FILE_EN_EXTRA]);
+      mockedReadFileSync().mockReturnValueOnce(JSON.stringify({ greeting: 'Hello' }));
+
+      const generator = new LocalizationGenerator();
+
+      expect(generator.getLocalizationFromFolder('folder1')).toEqual({
+        'en.extra': { translation: { greeting: 'Hello' } },
+      });
+    });
+
     test('should return an empty object when a feature has no i18n directory', () => {
       const error = new Error('missing i18n');
       error.code = 'ENOENT';
@@ -91,6 +107,21 @@ describe('LocalizationGenerator', () => {
       const generator = new LocalizationGenerator();
 
       expect(generator.getLocalizationFromFolder('folder-without-i18n')).toEqual({});
+    });
+
+    test('should log a contextual error and skip files that cannot be parsed', () => {
+      mockedReaddirSync().mockReturnValueOnce([MOCK_FILE_EN, MOCK_FILE_FR]);
+      mockedReadFileSync()
+        .mockReturnValueOnce('{')
+        .mockReturnValueOnce(JSON.stringify({ greeting: 'Bonjour' }));
+      const consoleError = mockedConsoleError();
+
+      const generator = new LocalizationGenerator();
+
+      expect(generator.getLocalizationFromFolder('folder1')).toEqual({
+        fr: { translation: { greeting: 'Bonjour' } },
+      });
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('folder1/en.json'));
     });
   });
 

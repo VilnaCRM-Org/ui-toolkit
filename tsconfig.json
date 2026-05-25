@@ -19,7 +19,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["./src", "./scripts", "next-env.d.ts"],
+  "include": ["./src", "./scripts", "./*.ts", "./.storybook/**/*", "next-env.d.ts"],
   "exclude": ["node_modules"],
   "extends": "./tsconfig.paths.json"
 }

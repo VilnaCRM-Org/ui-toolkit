@@ -14,9 +14,14 @@ const LocalizationGenerator = require('./scripts/localizationGenerator');
 const localizationPlugin = {
   name: 'localization-plugin',
   setup(build) {
-    build.onStart(() => {
-      const localizationGenerator = new LocalizationGenerator();
-      localizationGenerator.generateLocalizationFile();
+    build.onStart(async () => {
+      try {
+        const localizationGenerator = new LocalizationGenerator();
+        localizationGenerator.generateLocalizationFile();
+      } catch (error) {
+        console.error('Localization generation failed during build startup.', error);
+        throw error;
+      }
     });
   },
 };
@@ -50,4 +55,7 @@ esbuild
       'process.env.NODE_ENV': '"production"',
     },
   })
-  .catch(() => process.exit(1));
+  .catch(error => {
+    console.error('esbuild failed.', error);
+    process.exit(1);
+  });

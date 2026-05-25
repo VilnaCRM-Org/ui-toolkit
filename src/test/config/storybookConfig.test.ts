@@ -23,3 +23,25 @@ describe('storybook staticDirs', () => {
     });
   });
 });
+
+describe('storybook webpackFinal', () => {
+  test('preserves existing exclude entries when excluding svg files', async () => {
+    const rule = {
+      test: /\.svg$/i,
+      exclude: /\.png$/i,
+    };
+
+    const config = await storybookConfig.webpackFinal?.(
+      {
+        module: { rules: [rule] },
+      },
+      {} as Parameters<NonNullable<typeof storybookConfig.webpackFinal>>[1]
+    );
+
+    expect(config?.module?.rules).toHaveLength(2);
+    expect(config?.module?.rules?.[0]).toEqual({
+      ...rule,
+      exclude: [/\.png$/i, /\.svg$/i],
+    });
+  });
+});
