@@ -1,5 +1,13 @@
-const fs = require('fs');
 const path = require('path');
+
+jest.mock('fs', () => ({
+  readdirSync: jest.fn(),
+  readFileSync: jest.fn(),
+  writeFileSync: jest.fn(),
+  mkdirSync: jest.fn(),
+}));
+
+const fs = require('fs');
 
 const LocalizationGenerator = require('../../localizationGenerator');
 
@@ -18,26 +26,24 @@ const LOCALIZATION_OBJ = {
 };
 
 function mockedReaddirSync() {
-  return jest.spyOn(fs, 'readdirSync');
+  return fs.readdirSync;
 }
 
 function mockedReadFileSync() {
-  return jest.spyOn(fs, 'readFileSync');
+  return fs.readFileSync;
 }
 
 function mockedWriteFileSync() {
-  return jest.spyOn(fs, 'writeFileSync');
+  return fs.writeFileSync;
 }
 
 function mockedMkdirSync() {
-  return jest.spyOn(fs, 'mkdirSync');
+  return fs.mkdirSync;
 }
 
-function mockedConsoleError() {
-  return jest.spyOn(console, 'error').mockImplementation(() => {});
+function mockedStderrWrite() {
+  return jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
 }
-
-jest.mock('fs');
 
 describe('LocalizationGenerator', () => {
   afterEach(() => {
@@ -114,14 +120,14 @@ describe('LocalizationGenerator', () => {
       mockedReadFileSync()
         .mockReturnValueOnce('{')
         .mockReturnValueOnce(JSON.stringify({ greeting: 'Bonjour' }));
-      const consoleError = mockedConsoleError();
+      const stderrWrite = mockedStderrWrite();
 
       const generator = new LocalizationGenerator();
 
       expect(generator.getLocalizationFromFolder('folder1')).toEqual({
         fr: { translation: { greeting: 'Bonjour' } },
       });
-      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('folder1/en.json'));
+      expect(stderrWrite).toHaveBeenCalledWith(expect.stringContaining('folder1/en.json'));
     });
   });
 

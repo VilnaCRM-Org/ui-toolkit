@@ -15,6 +15,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.1",
     "react-i18next": "^14.1.0",
+    "semver": "^7.5.4",
     "terser-webpack-plugin": "^5.3.10"
   },
   "devDependencies": {
@@ -74,7 +75,6 @@
     "markdownlint-cli": "^0.39.0",
     "memlab": "^1.1.43",
     "prettier": "^3.2.4",
-    "semver": "^7.5.4",
     "storybook": "^8.0.0",
     "swiper": "^11.0.5",
     "ts-jest": "^29.1.2",

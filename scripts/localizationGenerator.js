@@ -116,7 +116,9 @@ class LocalizationGenerator {
           },
         };
       } catch (error) {
-        console.error(`Skipping localization file ${folder}/${file.name}: ${error.message}`);
+        process.stderr.write(
+          `Skipping localization file ${folder}/${file.name}: ${error.message}\n`
+        );
 
         return localizations;
       }
