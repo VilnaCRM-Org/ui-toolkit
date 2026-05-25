@@ -6,7 +6,11 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
-  testMatch: ['<rootDir>/src/test/**/*.test.ts', '<rootDir>/src/test/**/*.test.tsx'],
+  testMatch: [
+    '<rootDir>/src/test/**/*.test.ts',
+    '<rootDir>/src/test/**/*.test.tsx',
+    '<rootDir>/scripts/test/unit/**/*.spec.js',
+  ],
   moduleNameMapper: {
     '^.+\\.css$': '<rootDir>/src/test/mocks/styleMock.ts',
     '^.+\\.svg$': '<rootDir>/src/test/mocks/svgMock.ts',

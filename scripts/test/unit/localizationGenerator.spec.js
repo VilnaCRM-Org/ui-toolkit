@@ -110,7 +110,7 @@ describe('LocalizationGenerator', () => {
     });
 
     it('should throw an error if file write fails', () => {
-      mockedWriteFileSync().mockImplementation(() => {
+      mockedWriteFileSync().mockImplementationOnce(() => {
         throw new Error('File write error');
       });
 
@@ -122,6 +122,29 @@ describe('LocalizationGenerator', () => {
       expect(() => {
         generator.writeLocalizationFile(fileContent, filePath);
       }).toThrow('File write error');
+    });
+  });
+
+  describe('generateLocalizationFile', () => {
+    test('should write the generated localization to the root i18n folder', () => {
+      mockedReaddirSync()
+        .mockReturnValueOnce(FEATURE_FOLDERS)
+        .mockReturnValueOnce([MOCK_FILE_EN])
+        .mockReturnValueOnce([MOCK_FILE_FR]);
+
+      mockedReadFileSync()
+        .mockReturnValueOnce(JSON.stringify({ greeting: 'Hello' }))
+        .mockReturnValueOnce(JSON.stringify({ greeting: 'Bonjour' }));
+
+      const mockWriteFileSync = mockedWriteFileSync();
+      const generator = new LocalizationGenerator();
+
+      generator.generateLocalizationFile();
+
+      expect(mockWriteFileSync).toHaveBeenCalledWith(
+        path.join(path.dirname(__dirname), '..', '..', 'i18n', 'localization.json'),
+        JSON.stringify(LOCALIZATION_OBJ)
+      );
     });
   });
 });

@@ -27,7 +27,7 @@ class LocalizationGenerator {
     this.jsonFileType = jsonFileType;
     this.localizationFile = localizationFile;
 
-    this.pathToWriteLocalization = `pages/${i18nPath}`;
+    this.pathToWriteLocalization = i18nPath;
     this.pathToI18nFolder = `${featurePath}/{folder}/${i18nPath}`;
     this.pathToI18nFile = `${featurePath}/{folder}/${i18nPath}/{file.name}`;
   }

@@ -1,9 +1,49 @@
+import fs from 'fs';
 import path from 'path';
 
 import type { StorybookConfig } from '@storybook/react-webpack5';
 
 const toPath = 'src/assets/fonts';
 const fromPath = `../${toPath}`;
+
+const staticDirs = [
+  {
+    from: `${fromPath}/Golos/GolosText-Black.ttf`,
+    to: `${toPath}/Golos/GolosText-Black.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-Bold.ttf`,
+    to: `${toPath}/Golos/GolosText-Bold.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-ExtraBold.ttf`,
+    to: `${toPath}/Golos/GolosText-ExtraBold.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-Medium.ttf`,
+    to: `${toPath}/Golos/GolosText-Medium.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-Regular.ttf`,
+    to: `${toPath}/Golos/GolosText-Regular.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-SemiBold.ttf`,
+    to: `${toPath}/Golos/GolosText-SemiBold.ttf`,
+  },
+  {
+    from: `${fromPath}/Inter/Inter-Bold.ttf`,
+    to: `${toPath}/Inter/Inter-Bold.ttf`,
+  },
+  {
+    from: `${fromPath}/Inter/Inter-Medium.ttf`,
+    to: `${toPath}/Inter/Inter-Medium.ttf`,
+  },
+  {
+    from: `${fromPath}/Inter/Inter-Regular.ttf`,
+    to: `${toPath}/Inter/Inter-Regular.ttf`,
+  },
+].filter(entry => fs.existsSync(path.resolve(__dirname, entry.from)));
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
@@ -49,43 +89,6 @@ const config: StorybookConfig = {
 
     return config;
   },
-  staticDirs: [
-    {
-      from: `${fromPath}/Golos/GolosText-Black.ttf`,
-      to: `${toPath}/Golos/GolosText-Black.ttf`,
-    },
-    {
-      from: `${fromPath}/Golos/GolosText-Bold.ttf`,
-      to: `${toPath}/Golos/GolosText-Bold.ttf`,
-    },
-    {
-      from: `${fromPath}/Golos/GolosText-ExtraBold.ttf`,
-      to: `${toPath}/Golos/GolosText-ExtraBold.ttf`,
-    },
-    {
-      from: `${fromPath}/Golos/GolosText-Medium.ttf`,
-      to: `${toPath}/Golos/GolosText-Medium.ttf`,
-    },
-    {
-      from: `${fromPath}/Golos/GolosText-Regular.ttf`,
-      to: `${toPath}/Golos/GolosText-Regular.ttf`,
-    },
-    {
-      from: `${fromPath}/Golos/GolosText-SemiBold.ttf`,
-      to: `${toPath}/Golos/GolosText-SemiBold.ttf`,
-    },
-    {
-      from: `${fromPath}/Inter/Inter-Bold.ttf`,
-      to: `${toPath}/Inter/Inter-Bold.ttf`,
-    },
-    {
-      from: `${fromPath}/Inter/Inter-Medium.ttf`,
-      to: `${toPath}/Inter/Inter-Medium.ttf`,
-    },
-    {
-      from: `${fromPath}/Inter/Inter-Regular.ttf`,
-      to: `${toPath}/Inter/Inter-Regular.ttf`,
-    },
-  ],
+  staticDirs,
 };
 export default config;
