@@ -23,8 +23,8 @@ function mockedReadFileSync() {
   return jest.spyOn(fs, 'readFileSync');
 }
 
-function mockedWriteFile() {
-  return jest.spyOn(fs, 'writeFile');
+function mockedWriteFileSync() {
+  return jest.spyOn(fs, 'writeFileSync');
 }
 
 jest.mock('fs');
@@ -68,21 +68,17 @@ describe('LocalizationGenerator', () => {
       const filePath = 'scripts/test/unit/localization.json';
       const fileContent = JSON.stringify({ greeting: 'Hello' });
 
-      const mockWriteFile = mockedWriteFile();
+      const mockWriteFileSync = mockedWriteFileSync();
 
       const generator = new LocalizationGenerator();
       generator.writeLocalizationFile(fileContent, filePath);
 
-      expect(mockWriteFile).toHaveBeenCalledWith(filePath, fileContent, expect.any(Function));
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      fs.unlink(filePath, _ => {});
+      expect(mockWriteFileSync).toHaveBeenCalledWith(filePath, fileContent);
     });
 
     it('should throw an error if file write fails', () => {
-      fs.writeFile = jest.fn((filePath, fileContent, callback) => {
-        const error = new Error('File write error');
-        callback(error);
+      mockedWriteFileSync().mockImplementation(() => {
+        throw new Error('File write error');
       });
 
       const generator = new LocalizationGenerator();

@@ -13,7 +13,7 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
     ignoreHTTPSErrors: true,
-    baseURL: process.env.REACT_APP_STORYBOOK_URL,
+    baseURL: process.env.REACT_APP_STORYBOOK_URL || 'http://127.0.0.1:6006',
   },
   projects: [
     {

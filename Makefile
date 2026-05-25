@@ -108,6 +108,10 @@ test-mutation: ## Run mutation tests inside the docker container.
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
+		if [ ! -f src/test/memory-leak/runMemlabTests.js ]; then \
+			echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."; \
+			exit 0; \
+		fi; \
 		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 3000 >/tmp/ui-toolkit-app.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \

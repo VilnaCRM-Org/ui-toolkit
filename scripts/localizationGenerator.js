@@ -101,11 +101,7 @@ class LocalizationGenerator {
 
   // eslint-disable-next-line class-methods-use-this
   writeLocalizationFile(fileContent, filePath) {
-    fs.writeFile(filePath, fileContent, err => {
-      if (err) {
-        throw new Error(err);
-      }
-    });
+    fs.writeFileSync(filePath, fileContent);
   }
 }
 
