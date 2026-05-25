@@ -5,7 +5,8 @@ import storybookConfig from '../../../.storybook/main';
 
 describe('storybook staticDirs', () => {
   test('only references static assets that exist in the repository', () => {
-    const staticDirs = storybookConfig.staticDirs ?? [];
+    const staticDirs: NonNullable<typeof storybookConfig.staticDirs> =
+      storybookConfig.staticDirs ?? [];
 
     staticDirs.forEach(entry => {
       if (typeof entry === 'string') {
