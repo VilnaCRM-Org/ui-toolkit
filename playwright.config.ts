@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ignoreHTTPSErrors = process.env.PLAYWRIGHT_IGNORE_HTTPS_ERRORS === 'true';
+const ignoreHTTPSErrors: boolean = process.env.PLAYWRIGHT_IGNORE_HTTPS_ERRORS === 'true';
 
 export default defineConfig({
   testMatch: ['**/*.spec.ts'],
