@@ -384,7 +384,7 @@ git add src/features/selection-input/components/ui-calendar-multi-select \
 git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 ```
 
-### Task 7.5: Epic 2 Story 2.5 - Pagination Delivery
+### Task 8: Epic 2 Story 2.5 - Pagination Delivery
 
 **Files:**
 
@@ -420,7 +420,7 @@ git add src/features/selection-input/components/ui-pagination \
 git commit -m "feat: deliver epic 2 pagination module"
 ```
 
-### Task 8: Epic 2 Story 2.6 - Quality Gate Closure
+### Task 9: Epic 2 Story 2.6 - Quality Gate Closure
 
 **Files:**
 
@@ -448,7 +448,7 @@ git add specs/planning-artifacts/board-coverage-checklist.md \
 git commit -m "docs: close epic 2 quality gates and evidence tracking"
 ```
 
-### Task 9: Epic 3 Stories 3.1 to 3.4 - Data Rows and Card Workflows
+### Task 10: Epic 3 Stories 3.1 to 3.4 - Data Rows and Card Workflows
 
 **Files:**
 
@@ -504,7 +504,7 @@ git add src/features/data-cards/components/ui-item-row \
 git commit -m "feat: deliver epic 3 data rows and card workflows"
 ```
 
-### Task 10: Epic 3 Stories 3.5 and 3.6 - Micro-Components + Quality Closure
+### Task 11: Epic 3 Stories 3.5 and 3.6 - Micro-Components + Quality Closure
 
 **Files:**
 
@@ -568,7 +568,7 @@ git add src/features/micro-components/components/ui-filter-chip \
 git commit -m "feat: complete epic 3 micro-components and quality closure"
 ```
 
-### Task 11: Epic 4 Stories 4.1 to 4.3 - Skeleton Baseline, Primitive, and Composed Variants
+### Task 12: Epic 4 Stories 4.1 to 4.3 - Skeleton Baseline, Primitive, and Composed Variants
 
 **Files:**
 
@@ -611,7 +611,7 @@ git add src/features/skeleton/components/ui-skeleton \
 git commit -m "feat: deliver epic 4 skeleton baseline and variants with crm parity"
 ```
 
-### Task 12: Epic 4 Story 4.4 - Skeleton Quality Gate Closure
+### Task 13: Epic 4 Story 4.4 - Skeleton Quality Gate Closure
 
 **Files:**
 
@@ -634,7 +634,7 @@ git add specs/planning-artifacts/board-coverage-checklist.md \
 git commit -m "docs: close epic 4 skeleton parity and quality gates"
 ```
 
-### Task 13: Epic 5 Stories 5.1 to 5.4 - Adoption Readiness and Governance Closure
+### Task 14: Epic 5 Stories 5.1 to 5.4 - Adoption Readiness and Governance Closure
 
 **Files:**
 
@@ -677,7 +677,7 @@ git add specs/planning-artifacts/board-coverage-checklist.md \
 git commit -m "docs: finalize epic 5 adoption readiness governance"
 ```
 
-### Task 14: Final Verification and Release Gate
+### Task 15: Final Verification and Release Gate
 
 **Files:**
 

@@ -116,7 +116,9 @@ class LocalizationGenerator {
           },
         };
       } catch (error) {
-        error.message = `Failed to parse localization file ${folder}/${file.name}: ${error.message}`;
+        error.message =
+          `Failed to parse localization file ${folder}/${file.name}: ` +
+          error.message;
         throw error;
       }
     }, {});

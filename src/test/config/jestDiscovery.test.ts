@@ -1,3 +1,3 @@
 test('discovers plain .test.ts files under src/test', () => {
-  expect(true).toBe(true);
+  expect(__filename).toMatch(/src\/test\/config\/jestDiscovery\.test\.ts$/);
 });

@@ -56,7 +56,7 @@ If you find an issue to work on, you are welcome to open a PR with a fix.
     so that you can make your changes without affecting the original project until
     you're ready to merge them.
 
-1. Install or update to **Docker** and **Docker compose**. For more information, see [the README](README.md).
+1. Install or update to **Docker** and **Docker Compose**. For more information, see [the README](README.md).
 
 2. Create a working branch and start with your changes!
 

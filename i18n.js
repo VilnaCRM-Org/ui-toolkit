@@ -7,7 +7,9 @@ i18n.use(initReactI18next).init({
   resources,
   fallbackLng: process.env.REACT_APP_FALLBACK_LANGUAGE || 'en',
   interpolation: {
-    escapeValue: false,
+    // Keep interpolation escaping enabled because toolkit strings may be reused
+    // outside React JSX-only rendering paths.
+    escapeValue: true,
   },
 });
 

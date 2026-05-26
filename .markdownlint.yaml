@@ -110,7 +110,21 @@ MD038: true
 MD039: true
 
 MD040:
-  allowed_languages: ['bash']
+  allowed_languages:
+    [
+      'bash',
+      'javascript',
+      'js',
+      'typescript',
+      'ts',
+      'jsx',
+      'tsx',
+      'json',
+      'html',
+      'css',
+      'yaml',
+      'yml',
+    ]
   language_only: false
 
 MD041: false

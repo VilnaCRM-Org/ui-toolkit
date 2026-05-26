@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const ignoreHTTPSErrors = process.env.PLAYWRIGHT_IGNORE_HTTPS_ERRORS === 'true';
+
 export default defineConfig({
   testMatch: ['**/*.spec.ts'],
   fullyParallel: true,
@@ -12,7 +14,8 @@ export default defineConfig({
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
-    ignoreHTTPSErrors: true,
+    // Only relax TLS validation for explicit local/dev runs.
+    ignoreHTTPSErrors,
     baseURL: process.env.REACT_APP_STORYBOOK_URL || 'http://127.0.0.1:6006',
   },
   projects: [
