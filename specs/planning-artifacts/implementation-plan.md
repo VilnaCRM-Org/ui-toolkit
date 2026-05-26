@@ -47,6 +47,7 @@
 ### Task 1: Bootstrap Governance Artifacts
 
 **Files:**
+
 - Create: `specs/planning-artifacts/component-provenance.md`
 - Create: `specs/planning-artifacts/board-coverage-checklist.md`
 - Create: `specs/implementation-artifacts/release-readiness-report.md`
@@ -55,6 +56,7 @@
 **Step 1: Create provenance registry skeleton**
 
 Add table columns:
+
 - `component`
 - `board`
 - `source (crm|website|new)`
@@ -65,6 +67,7 @@ Add table columns:
 **Step 2: Create board coverage checklist**
 
 Add every scope item from Boards A-D with status fields:
+
 - `implemented`
 - `story-id`
 - `storybook`
@@ -75,6 +78,7 @@ Add every scope item from Boards A-D with status fields:
 **Step 3: Create release-readiness report template**
 
 Add sections for:
+
 - Epic closure status
 - FR/NFR evidence links
 - Blocking issues
@@ -83,6 +87,7 @@ Add sections for:
 **Step 4: Create story DoD template**
 
 Capture:
+
 - changed files
 - tests run
 - stories added/updated
@@ -102,6 +107,7 @@ git commit -m "chore: bootstrap governance artifacts for ui-toolkit completion"
 ### Task 2: Inventory Existing Components and Map Reuse Sources
 
 **Files:**
+
 - Modify: `specs/planning-artifacts/component-provenance.md`
 - Modify: `specs/planning-artifacts/board-coverage-checklist.md`
 
@@ -123,6 +129,7 @@ Run equivalent component listings in both repositories and map candidates to req
 **Step 3: Decide source per component**
 
 For each required component:
+
 - pick `crm` for behavior baseline whenever available
 - use `website` only for missing visual variants
 - mark `new` only when neither source has viable implementation
@@ -142,6 +149,7 @@ git commit -m "docs: map board scope to crm/website/new provenance sources"
 ### Task 3: Epic 1 Story 1.1 - Core Contract and Export Baseline
 
 **Files:**
+
 - Modify: `src/components/UiButton/**`
 - Modify: `src/components/UiInput/**`
 - Modify: `src/components/UiCheckbox/**`
@@ -179,6 +187,7 @@ git commit -m "feat: align core control contracts and export baseline"
 ### Task 4: Epic 1 Stories 1.2 and 1.3 - State Parity + Accessibility Consistency
 
 **Files:**
+
 - Modify: `src/components/UiButton/**`
 - Modify: `src/components/UiInput/**`
 - Modify: `src/components/UiCheckbox/**`
@@ -191,6 +200,7 @@ git commit -m "feat: align core control contracts and export baseline"
 **Step 1: Implement missing state parity**
 
 Cover required states:
+
 - button: rest, hover, active, disabled
 - input: rest, hover, active, disabled, error
 - checkbox: rest/checked/disabled combinations
@@ -228,6 +238,7 @@ git commit -m "feat: complete core state parity and accessibility consistency"
 ### Task 5: Epic 1 Story 1.4 - Quality Gate Closure
 
 **Files:**
+
 - Modify: `src/components/UiButton/*.stories.tsx`
 - Modify: `src/components/UiInput/*.stories.tsx`
 - Modify: `src/components/UiCheckbox/*.stories.tsx`
@@ -270,6 +281,7 @@ git commit -m "test: close epic 1 quality gates with story and test evidence"
 **Canonical module locations for Tasks 6-11:** `src/features/<domain>/components/<component>`
 
 **Files:**
+
 - Create: `src/features/selection-input/components/ui-search-input/index.tsx`
 - Create: `src/features/selection-input/components/ui-search-input/types.ts`
 - Create: `src/features/selection-input/components/ui-search-input/UiSearchInput.stories.tsx`
@@ -322,6 +334,7 @@ git commit -m "feat: deliver epic 2 search/select foundation and multi-select"
 ### Task 7: Epic 2 Stories 2.3, 2.4, and 2.4A - Calendar Multi-Select + Radio/File Upload
 
 **Files:**
+
 - Create: `src/features/selection-input/components/ui-calendar-multi-select/index.tsx`
 - Create: `src/features/selection-input/components/ui-calendar-multi-select/types.ts`
 - Create: `src/features/selection-input/components/ui-calendar-multi-select/UiCalendarMultiSelect.stories.tsx`
@@ -371,9 +384,10 @@ git add src/features/selection-input/components/ui-calendar-multi-select \
 git commit -m "feat: complete epic 2 calendar, radio, and file-upload workflows"
 ```
 
-### Task 7.5: Epic 2 Story 2.5 - Pagination Delivery
+### Task 8: Epic 2 Story 2.5 - Pagination Delivery
 
 **Files:**
+
 - Create: `src/features/selection-input/components/ui-pagination/index.tsx`
 - Create: `src/features/selection-input/components/ui-pagination/types.ts`
 - Create: `src/features/selection-input/components/ui-pagination/UiPagination.stories.tsx`
@@ -406,9 +420,10 @@ git add src/features/selection-input/components/ui-pagination \
 git commit -m "feat: deliver epic 2 pagination module"
 ```
 
-### Task 8: Epic 2 Story 2.6 - Quality Gate Closure
+### Task 9: Epic 2 Story 2.6 - Quality Gate Closure
 
 **Files:**
+
 - Modify: `specs/planning-artifacts/board-coverage-checklist.md`
 - Create: `specs/implementation-artifacts/epic-2-dod.md`
 
@@ -433,9 +448,10 @@ git add specs/planning-artifacts/board-coverage-checklist.md \
 git commit -m "docs: close epic 2 quality gates and evidence tracking"
 ```
 
-### Task 9: Epic 3 Stories 3.1 to 3.4 - Data Rows and Card Workflows
+### Task 10: Epic 3 Stories 3.1 to 3.4 - Data Rows and Card Workflows
 
 **Files:**
+
 - Create: `src/features/data-cards/components/ui-item-row/**`
 - Create: `src/features/data-cards/components/ui-items-list/**`
 - Create: `src/features/data-cards/components/ui-task-card/**`
@@ -488,9 +504,10 @@ git add src/features/data-cards/components/ui-item-row \
 git commit -m "feat: deliver epic 3 data rows and card workflows"
 ```
 
-### Task 10: Epic 3 Stories 3.5 and 3.6 - Micro-Components + Quality Closure
+### Task 11: Epic 3 Stories 3.5 and 3.6 - Micro-Components + Quality Closure
 
 **Files:**
+
 - Create: `src/features/micro-components/components/ui-filter-chip/**`
 - Create: `src/features/micro-components/components/ui-pin-input/**`
 - Create: `src/features/micro-components/components/ui-payment-option-card/**`
@@ -551,9 +568,10 @@ git add src/features/micro-components/components/ui-filter-chip \
 git commit -m "feat: complete epic 3 micro-components and quality closure"
 ```
 
-### Task 11: Epic 4 Stories 4.1 to 4.3 - Skeleton Baseline, Primitive, and Composed Variants
+### Task 12: Epic 4 Stories 4.1 to 4.3 - Skeleton Baseline, Primitive, and Composed Variants
 
 **Files:**
+
 - Create/Modify: `src/features/skeleton/components/ui-skeleton/**`
 - Create/Modify: `src/features/skeleton/components/ui-skeleton-composed/**`
 - Create: `tests/unit/ui-skeleton.test.tsx`
@@ -593,9 +611,10 @@ git add src/features/skeleton/components/ui-skeleton \
 git commit -m "feat: deliver epic 4 skeleton baseline and variants with crm parity"
 ```
 
-### Task 12: Epic 4 Story 4.4 - Skeleton Quality Gate Closure
+### Task 13: Epic 4 Story 4.4 - Skeleton Quality Gate Closure
 
 **Files:**
+
 - Modify: `specs/planning-artifacts/board-coverage-checklist.md`
 - Create: `specs/implementation-artifacts/epic-4-dod.md`
 
@@ -615,9 +634,10 @@ git add specs/planning-artifacts/board-coverage-checklist.md \
 git commit -m "docs: close epic 4 skeleton parity and quality gates"
 ```
 
-### Task 13: Epic 5 Stories 5.1 to 5.4 - Adoption Readiness and Governance Closure
+### Task 14: Epic 5 Stories 5.1 to 5.4 - Adoption Readiness and Governance Closure
 
 **Files:**
+
 - Modify: `specs/planning-artifacts/board-coverage-checklist.md`
 - Modify: `specs/planning-artifacts/component-provenance.md`
 - Modify: `src/components/index.ts` (if missing exports remain)
@@ -639,6 +659,7 @@ No required component missing from entrypoint exports.
 **Step 4: Complete governance report**
 
 Summarize:
+
 - coverage closure
 - provenance compliance
 - export integrity
@@ -656,9 +677,10 @@ git add specs/planning-artifacts/board-coverage-checklist.md \
 git commit -m "docs: finalize epic 5 adoption readiness governance"
 ```
 
-### Task 14: Final Verification and Release Gate
+### Task 15: Final Verification and Release Gate
 
 **Files:**
+
 - Modify: `specs/implementation-artifacts/release-readiness-report.md`
 - Modify: `package.json`
 - Modify: `CHANGELOG.md` (and/or `.changeset/**`, `bun.lock`) during version management
@@ -695,6 +717,7 @@ git commit -m "chore: bump ui-toolkit version to <new-version>"
 **Step 2: Confirm release exit criteria**
 
 Checklist must be true:
+
 - board coverage fully closed
 - stories exist for new/enhanced components
 - unit tests pass

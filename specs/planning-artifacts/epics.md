@@ -86,22 +86,27 @@ Each delivery story must record source, reuse rationale, and reference IDs in PR
 ## Epic List
 
 ### Epic 1: Core Controls and Contract Foundation
+
 Deliver stable, production-ready foundational controls and consistent contracts so product teams can build interactive UI without custom rework.
 **FRs covered:** FR4, FR7, FR8
 
 ### Epic 2: Selection, Search, and Input Workflows
+
 Enable users to search, select, and submit values through reusable input-selection components that support company app workflows.
 **FRs covered:** FR5, FR7, FR8
 
 ### Epic 3: Data Presentation and Cards
+
 Enable users to understand and act on structured information via reusable item rows, lists, and card patterns.
 **FRs covered:** FR5, FR7, FR8
 
 ### Epic 4: Skeleton Loading Experience Parity
+
 Provide trusted loading experiences by delivering skeleton primitives and composed variants with exact CRM animation parity.
 **FRs covered:** FR5, FR6, FR8
 
 ### Epic 5: Production Adoption Readiness
+
 Make the toolkit safely adoptable across company projects by closing coverage, provenance, export, and release-gate governance.
 **FRs covered:** FR1, FR2, FR3, FR8 (plus consolidated traceability references for FR4, FR5, FR6, and FR7 delivered in Epics 1-4)
 

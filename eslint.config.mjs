@@ -31,7 +31,7 @@ export default [
     extends: ['eslint:recommended', 'airbnb', 'airbnb/hooks', 'prettier'],
     overrides: [
       {
-        files: ['**/*.ts', '**/*.tsx', '**/*.spec.js', '**/*.spec.jsx'],
+        files: ['**/*.ts', '**/*.tsx'],
         parser: '@typescript-eslint/parser',
         settings: {
           react: { version: 'detect' },

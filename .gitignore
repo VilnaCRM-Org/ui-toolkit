@@ -24,6 +24,7 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -41,7 +42,6 @@ next-env.d.ts
 /_bmad/
 
 # testing artifacts
-coverage/
 test-results/
 playwright-report/
 blob-report/
@@ -49,12 +49,7 @@ playwright/.cache/
 reports/
 .stryker-tmp
 
-# next.js
-.next/
-out/
-
 # production
-build/
 storybook-static/
 
 # lighthouse

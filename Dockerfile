@@ -11,6 +11,8 @@ RUN apt-get update \
       npm \
       procps \
       python3 \
+    && groupadd --system appuser \
+    && useradd --system --gid appuser --create-home --home-dir /home/appuser appuser \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -19,6 +21,9 @@ COPY . .
 
 RUN if [ -f package.json ]; then \
       bun install --frozen-lockfile; \
-    fi
+    fi \
+    && chown -R appuser:appuser /app
+
+USER appuser
 
 CMD ["sh", "-lc", "while :; do sleep 3600; done"]
