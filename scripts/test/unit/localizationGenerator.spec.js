@@ -41,10 +41,6 @@ function mockedMkdirSync() {
   return fs.mkdirSync;
 }
 
-function mockedStderrWrite() {
-  return jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
-}
-
 describe('LocalizationGenerator', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -115,19 +111,13 @@ describe('LocalizationGenerator', () => {
       expect(generator.getLocalizationFromFolder('folder-without-i18n')).toEqual({});
     });
 
-    test('should log a contextual error and skip files that cannot be parsed', () => {
+    test('should throw a contextual error when a localization file cannot be parsed', () => {
       mockedReaddirSync().mockReturnValueOnce([MOCK_FILE_EN, MOCK_FILE_FR]);
-      mockedReadFileSync()
-        .mockReturnValueOnce('{')
-        .mockReturnValueOnce(JSON.stringify({ greeting: 'Bonjour' }));
-      const stderrWrite = mockedStderrWrite();
+      mockedReadFileSync().mockReturnValueOnce('{');
 
       const generator = new LocalizationGenerator();
 
-      expect(generator.getLocalizationFromFolder('folder1')).toEqual({
-        fr: { translation: { greeting: 'Bonjour' } },
-      });
-      expect(stderrWrite).toHaveBeenCalledWith(expect.stringContaining('folder1/en.json'));
+      expect(() => generator.getLocalizationFromFolder('folder1')).toThrow(/folder1\/en\.json/);
     });
   });
 

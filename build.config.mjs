@@ -19,7 +19,9 @@ const localizationPlugin = {
         const localizationGenerator = new LocalizationGenerator();
         localizationGenerator.generateLocalizationFile();
       } catch (error) {
-        console.error('Localization generation failed during build startup.', error);
+        process.stderr.write(
+          `Localization generation failed during build startup: ${error.message ?? error}\n`
+        );
         throw error;
       }
     });
@@ -56,6 +58,6 @@ esbuild
     },
   })
   .catch(error => {
-    console.error('esbuild failed.', error);
+    process.stderr.write(`esbuild failed: ${error.message ?? error}\n`);
     process.exit(1);
   });

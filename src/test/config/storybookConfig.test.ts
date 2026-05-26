@@ -24,18 +24,23 @@ describe('storybook staticDirs', () => {
   });
 });
 
+type WebpackFinalFn = NonNullable<typeof storybookConfig.webpackFinal>;
+type WebpackFinalConfig = Parameters<WebpackFinalFn>[0];
+type WebpackFinalReturn = Awaited<ReturnType<WebpackFinalFn>>;
+type WebpackRule = { test: RegExp; exclude: RegExp };
+
 describe('storybook webpackFinal', () => {
   test('preserves existing exclude entries when excluding svg files', async () => {
-    const rule = {
+    const rule: WebpackRule = {
       test: /\.svg$/i,
       exclude: /\.png$/i,
     };
 
-    const config = await storybookConfig.webpackFinal?.(
+    const config: WebpackFinalReturn | undefined = await storybookConfig.webpackFinal?.(
       {
         module: { rules: [rule] },
-      },
-      {} as Parameters<NonNullable<typeof storybookConfig.webpackFinal>>[1]
+      } as WebpackFinalConfig,
+      {} as Parameters<WebpackFinalFn>[1]
     );
 
     expect(config?.module?.rules).toHaveLength(2);

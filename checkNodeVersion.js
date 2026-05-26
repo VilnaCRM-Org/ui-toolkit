@@ -1,4 +1,4 @@
-const satisfies = require('semver/functions/satisfies');
+const { satisfies } = require('semver');
 const { engines } = require('./package.json');
 
 const version = engines?.node;

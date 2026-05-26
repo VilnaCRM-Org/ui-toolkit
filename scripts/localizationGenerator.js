@@ -116,11 +116,8 @@ class LocalizationGenerator {
           },
         };
       } catch (error) {
-        process.stderr.write(
-          `Skipping localization file ${folder}/${file.name}: ${error.message}\n`
-        );
-
-        return localizations;
+        error.message = `Failed to parse localization file ${folder}/${file.name}: ${error.message}`;
+        throw error;
       }
     }, {});
   }
