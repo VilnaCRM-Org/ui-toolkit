@@ -12,9 +12,10 @@ function UiTypography({
   id,
   role,
 }: UiTypographyProps): React.ReactElement {
+  const componentProp: { component?: React.ElementType } = component ? { component } : {};
   return (
     <ThemeProvider theme={theme}>
-      <Typography sx={sx} component={component || 'p'} variant={variant} id={id} role={role}>
+      <Typography sx={sx} {...componentProp} variant={variant} id={id} role={role}>
         {children}
       </Typography>
     </ThemeProvider>

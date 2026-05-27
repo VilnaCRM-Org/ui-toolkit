@@ -8,7 +8,7 @@ const theme: Theme = createTheme({
           padding: 0,
           margin: 0,
           justifyContent: 'space-between',
-          '@media (min-width: 425px)': {
+          '@media (min-width: 426px)': {
             padding: '0 2rem',
             width: '100%',
             margin: '0 auto',

@@ -115,7 +115,7 @@ export const theme: Theme = createTheme({
             },
             '&:disabled': {
               background: colorTheme.palette.brandGray.main,
-              boxShadoiw: 'none',
+              boxShadow: 'none',
               border: 'none',
               img: {
                 opacity: '0.2',

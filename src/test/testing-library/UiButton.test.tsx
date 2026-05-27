@@ -37,22 +37,8 @@ describe('UiButton', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  describe('UiButton component', () => {
-    it('renders with given text', () => {
-      const { getByText } = render(<UiButton>Click me</UiButton>);
-      expect(getByText('Click me')).toBeInTheDocument();
-    });
-
-    it('calls onClick handler when clicked', () => {
-      const onClickMock: () => void = jest.fn();
-      const { getByText } = render(<UiButton onClick={onClickMock}>Click me</UiButton>);
-      fireEvent.click(getByText('Click me'));
-      expect(onClickMock).toHaveBeenCalled();
-    });
-
-    it('disables button when disabled prop is true', () => {
-      const { getByText } = render(<UiButton disabled>Disabled Button</UiButton>);
-      expect(getByText('Disabled Button')).toBeDisabled();
-    });
+  it('disables the button when disabled prop is true', () => {
+    const { getByRole } = render(<UiButton disabled>{testText}</UiButton>);
+    expect(getByRole('button', { name: testText })).toBeDisabled();
   });
 });

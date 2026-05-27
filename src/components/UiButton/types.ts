@@ -1,4 +1,5 @@
 import { SxProps, Theme } from '@mui/material';
+import React from 'react';
 
 /**
  * Shared contract support:
@@ -10,7 +11,7 @@ export interface UiButtonProps {
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   fullWidth?: boolean;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   type?: 'button' | 'submit' | 'reset';
   children?: React.ReactNode | string;
   sx?: SxProps<Theme>;

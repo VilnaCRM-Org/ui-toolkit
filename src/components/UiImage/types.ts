@@ -1,5 +1,7 @@
+import { SxProps, Theme } from '@mui/material';
+
 export interface UiImageProps {
-  sx?: React.CSSProperties;
+  sx?: SxProps<Theme>;
   src: { src: string } | string;
   alt: string;
 }

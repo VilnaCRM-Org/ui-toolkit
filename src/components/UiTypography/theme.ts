@@ -1,5 +1,5 @@
 import { Theme, createTheme } from '@mui/material';
-import { CSSProperties } from '@mui/material/styles/createMixins';
+import { CSSProperties } from 'react';
 
 import colorTheme from '../UiColorTheme';
 
@@ -8,7 +8,7 @@ const hStyles: CSSProperties = {
   fontWeight: '700',
   lineHeight: 'normal',
   fontFamily: 'Golos Text',
-  letterSpacing: '',
+  letterSpacing: 'normal',
 };
 
 const theme: Theme = createTheme({
