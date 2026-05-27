@@ -26,6 +26,8 @@ describe('UiButton', () => {
     const button: HTMLElement = getByRole('button', { name: testText });
     expect(button).toBeEnabled();
     expect(button).toBeInTheDocument();
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).toHaveAttribute('name', 'my-button');
   });
 
   it('calls the onClick handler when the button is clicked', () => {
