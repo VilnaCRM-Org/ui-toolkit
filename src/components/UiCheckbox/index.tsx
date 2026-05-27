@@ -8,13 +8,18 @@ function UiCheckbox({ label, sx, onChange, error, disabled }: UiCheckboxProps): 
   return (
     <FormControlLabel
       sx={sx}
+      disabled={disabled}
       control={
         <Box
           component="span"
-          onChange={onChange}
           sx={error ? styles.checkboxWrapperError : styles.checkboxWrapper}
         >
-          <input type="checkbox" className="PrivateSwitchBase-input" disabled={disabled} />
+          <input
+            type="checkbox"
+            className="PrivateSwitchBase-input"
+            disabled={disabled}
+            onChange={onChange}
+          />
         </Box>
       }
       label={label}

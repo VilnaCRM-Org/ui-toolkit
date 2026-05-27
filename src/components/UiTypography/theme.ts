@@ -66,6 +66,7 @@ const theme: Theme = createTheme({
       color: colorTheme.palette.grey300.main,
     },
     medium15: {
+      fontFamily: 'Inter',
       fontWeight: '500',
       fontSize: '0.9375rem',
       lineHeight: '1.125rem',
