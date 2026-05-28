@@ -2,7 +2,7 @@ const ScenarioBuilder = require('../utils/ScenarioBuilder');
 
 const scenarioBuilder = new ScenarioBuilder();
 
-const servicesButtonSelector = 'span.css-1rp615p-MuiTypography-root';
+const servicesButtonSelector = '[aria-label="Services"]';
 const tooltipSelector = '.MuiTooltip-popper';
 
 const coordinateX = 100;

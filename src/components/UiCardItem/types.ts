@@ -1,5 +1,5 @@
 export type CardItem = {
-  type: string;
+  type: 'smallCard' | 'largeCard';
   id: string;
   imageSrc: string;
   title: string;

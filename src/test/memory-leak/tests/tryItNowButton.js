@@ -10,7 +10,7 @@ const coordinateY = 0;
 async function action(page) {
   await page.click(signUpButtonSelector);
 
-  await page.waitForTimeout(2000);
+  await page.waitForFunction(() => window.location.hash === '#signUp');
 }
 
 async function back(page) {
@@ -22,7 +22,7 @@ async function back(page) {
     coordinateY
   );
 
-  await page.waitForTimeout(2000);
+  await page.waitForFunction(() => window.scrollX === 0 && window.scrollY === 0);
 }
 
 module.exports = scenarioBuilder.createScenario({ action, back });

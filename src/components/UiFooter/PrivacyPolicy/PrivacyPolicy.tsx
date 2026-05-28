@@ -13,7 +13,8 @@ function PrivacyPolicy(): React.ReactElement {
     <Stack direction="row" alignItems="center" sx={styles.wrapper}>
       <Link
         target="_blank"
-        sx={styles.privacy}
+        rel="noopener noreferrer"
+        sx={styles.link}
         href="https://github.com/VilnaCRM-Org/website/blob/main/README.md"
       >
         <UiTypography variant="medium16" sx={styles.textColor}>
@@ -22,7 +23,8 @@ function PrivacyPolicy(): React.ReactElement {
       </Link>
       <Link
         target="_blank"
-        sx={styles.usage_policy}
+        rel="noopener noreferrer"
+        sx={styles.link}
         href="https://github.com/VilnaCRM-Org/website/blob/main/README.md"
       >
         <UiTypography variant="medium16" sx={styles.textColor}>

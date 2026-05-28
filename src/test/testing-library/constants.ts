@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-import { CardItem } from '@/components/UiCardList/types';
+import { CardItem, CardType, NonEmptyCardList } from '@/components/UiCardList/types';
 import { SocialMedia } from '@/components/UiFooter/types';
 
 export const testId: string = faker.string.uuid();
@@ -14,7 +14,7 @@ export const testPlaceholder: string = faker.lorem.word(8);
 export const testUrl: string = faker.internet.url();
 export const mockEmail: string = 'info@vilnacrm.com';
 
-export const typeOfCard: string = 'smallCard';
+export const typeOfCard: CardType = 'smallCard';
 
 export const cardItem: CardItem = {
   id: testId,
@@ -41,7 +41,7 @@ export const largeCard: CardItem = {
   imageSrc: testImg,
 };
 
-export const cardList: CardItem[] = [
+export const cardList: NonEmptyCardList = [
   {
     id: testId,
     title: testTitle,
@@ -51,7 +51,7 @@ export const cardList: CardItem[] = [
     imageSrc: testImg,
   },
 ];
-export const smallCardList: CardItem[] = [
+export const smallCardList: NonEmptyCardList = [
   {
     id: testId,
     title: testTitle,
@@ -61,7 +61,7 @@ export const smallCardList: CardItem[] = [
     imageSrc: testImg,
   },
 ];
-export const largeCardList: CardItem[] = [
+export const largeCardList: NonEmptyCardList = [
   {
     id: testId,
     title: testTitle,

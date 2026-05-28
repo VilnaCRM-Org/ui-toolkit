@@ -17,7 +17,7 @@ const socialLinks: SocialMedia[] = [
     id: 'GitHub-link',
     icon: GitHubFooterIcon,
     alt: 'footer.alt_images.github',
-    linkHref: ' https://github.com/VilnaCRM-Org',
+    linkHref: 'https://github.com/VilnaCRM-Org',
     ariaLabel: 'footer.aria_labels.github',
   },
   {

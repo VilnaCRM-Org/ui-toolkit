@@ -1,5 +1,5 @@
 import { Box, Stack } from '@mui/material';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Logo from '@/assets/svg/Logo.svg';
@@ -16,8 +16,7 @@ function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.R
   const { t } = useTranslation();
   const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
 
-  const currentDate: Date = useMemo(() => new Date(), []);
-  const currentYear: number = useMemo(() => currentDate.getFullYear(), [currentDate]);
+  const currentYear: number = new Date().getFullYear();
 
   return (
     <Stack sx={styles.footerWrapper}>

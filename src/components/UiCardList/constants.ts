@@ -9,9 +9,9 @@ import Ruby from '@/assets/svg/Gemstones/ruby.svg';
 import SmallDiamond from '@/assets/svg/Gemstones/smallDiamond.svg';
 import SmallRuby from '@/assets/svg/Gemstones/smallRuby.svg';
 
-import { CardItem } from './types';
+import { NonEmptyCardList } from './types';
 
-export const LARGE_CARDLIST_ARRAY: CardItem[] = [
+export const LARGE_CARDLIST_ARRAY: NonEmptyCardList = [
   {
     type: 'largeCard',
     id: 'card-item-1',
@@ -63,7 +63,7 @@ export const LARGE_CARDLIST_ARRAY: CardItem[] = [
   },
 ];
 
-export const SMALL_CARDLIST_ARRAY: CardItem[] = [
+export const SMALL_CARDLIST_ARRAY: NonEmptyCardList = [
   {
     type: 'smallCard',
     id: 'item_1',

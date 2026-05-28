@@ -8,11 +8,11 @@ type BoundingBox = {
 };
 
 type SliderHandle = {
-  boundingBox: () => Promise<BoundingBox>;
+  boundingBox: () => Promise<BoundingBox | null>;
 };
 
 type PageHandle = {
-  $: (selector: string) => Promise<SliderHandle>;
+  $: (selector: string) => Promise<SliderHandle | null>;
   mouse: {
     move: (x: number, y: number, options?: { steps: number }) => Promise<void>;
     down: () => Promise<void>;

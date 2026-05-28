@@ -4,18 +4,22 @@ const ScenarioBuilder = require('../utils/ScenarioBuilder');
 
 const scenarioBuilder = new ScenarioBuilder();
 
-const fullNameInputSelector = 'input[id=":R6j59al2m:"]';
-const emailInputSelector = 'input[id=":R6l59al2m:"]';
-const passwordInputSelector = 'input[id=":R6n59al2m:"]';
-const privacyCheckboxSelector = 'input[type="checkbox"]';
+const fullNameInputSelector = 'input[name="FullName"]';
+const emailInputSelector = 'input[name="Email"]';
+const passwordInputSelector = 'input[name="Password"]';
+const privacyCheckboxSelector = 'input[type="checkbox"][name="Privacy"]';
 
 const fakeFullName = faker.person.fullName();
 const fakeEmail = faker.internet.email();
 const fakePassword = faker.internet.password();
 
-const clickSettings = { clickCount: 3 };
-
-const backspace = 'Backspace';
+async function clearInput(page, selector) {
+  await page.focus(selector);
+  await page.keyboard.down('Control');
+  await page.keyboard.press('KeyA');
+  await page.keyboard.up('Control');
+  await page.keyboard.press('Backspace');
+}
 
 async function action(page) {
   await page.type(fullNameInputSelector, fakeFullName);
@@ -25,18 +29,9 @@ async function action(page) {
 }
 
 async function back(page) {
-  const fullNameInput = await page.$(fullNameInputSelector);
-  const emailInput = await page.$(emailInputSelector);
-  const passwordInput = await page.$(passwordInputSelector);
-
-  await fullNameInput.click(clickSettings);
-  await page.keyboard.press(backspace);
-
-  await emailInput.click(clickSettings);
-  await page.keyboard.press(backspace);
-
-  await passwordInput.click(clickSettings);
-  await page.keyboard.press(backspace);
+  await clearInput(page, fullNameInputSelector);
+  await clearInput(page, emailInputSelector);
+  await clearInput(page, passwordInputSelector);
 
   await page.click(privacyCheckboxSelector);
 }

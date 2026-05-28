@@ -11,7 +11,12 @@ function SocialMediaItem({ item }: { item: SocialMedia }): React.ReactElement {
 
   return (
     <Box sx={styles.navLink}>
-      <Link href={item.linkHref} aria-label={t(item.ariaLabel)} target="_blank">
+      <Link
+        href={item.linkHref}
+        aria-label={t(item.ariaLabel)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         <img src={item.icon} alt={t(item.alt)} width={20} height={20} />
       </Link>
     </Box>

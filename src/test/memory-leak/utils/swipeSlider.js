@@ -1,12 +1,3 @@
-async function swipeSlider(page, selector, iterationsNumber, direction = 'left') {
-  const slider = await page.$(selector);
-  const boundingBox = await slider.boundingBox();
-
-  const coordinates = calculateCoordinates(boundingBox, direction);
-
-  await horizontalDragAndDrop(page, coordinates, iterationsNumber);
-}
-
 function calculateCoordinates(boundingBox, direction) {
   const startX = direction === 'left' ? boundingBox.x + boundingBox.width - 10 : boundingBox.x + 10;
   const endX = direction === 'left' ? boundingBox.x + 10 : boundingBox.x + boundingBox.width - 10;
@@ -33,6 +24,21 @@ async function horizontalDragAndDrop(page, coordinates, iterationsNumber) {
   }
 
   await runIteration(0);
+}
+
+async function swipeSlider(page, selector, iterationsNumber, direction = 'left') {
+  const slider = await page.$(selector);
+  if (!slider) {
+    throw new Error(`Slider element not found for selector: ${selector}`);
+  }
+  const boundingBox = await slider.boundingBox();
+  if (!boundingBox) {
+    throw new Error(`Unable to get bounding box for slider: ${selector}`);
+  }
+
+  const coordinates = calculateCoordinates(boundingBox, direction);
+
+  await horizontalDragAndDrop(page, coordinates, iterationsNumber);
 }
 
 module.exports = swipeSlider;

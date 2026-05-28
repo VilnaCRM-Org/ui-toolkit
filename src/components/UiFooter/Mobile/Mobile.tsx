@@ -1,5 +1,5 @@
 import { Box, Container, Stack } from '@mui/material';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Logo from '@/assets/svg/Logo.svg';
@@ -15,8 +15,7 @@ import styles from './styles';
 function Mobile({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
   const { t } = useTranslation();
   const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
-  const currentDate: Date = useMemo(() => new Date(), []);
-  const currentYear: number = useMemo(() => currentDate.getFullYear(), [currentDate]);
+  const currentYear: number = new Date().getFullYear();
   return (
     <Container sx={styles.wrapper}>
       <Stack sx={styles.content}>
