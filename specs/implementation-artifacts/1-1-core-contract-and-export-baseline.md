@@ -85,7 +85,7 @@ so that I can integrate toolkit components predictably across company projects.
   - a targeted automated check that fails when a required core control export is missing from `src/components/index.ts`
   - unit coverage for any public contract typing or prop-surface logic changed in core controls
   - the repo’s relevant typecheck or lint command, if configured in the full checkout
-- Existing project testing standards are Jest plus Testing Library for unit coverage, with unit specs under `tests/unit`. [Source: specs/planning-artifacts/architecture.md#integration-test-conventions]
+- Existing project testing standards are Jest plus Testing Library for unit coverage, with unit specs under `src/test/testing-library`. [Source: specs/planning-artifacts/architecture.md#integration-test-conventions]
 - Story completion is blocked unless the new/updated tests exist and actually pass. [Source: specs/planning-artifacts/epics.md#story-11-core-contract-and-export-baseline] [Source: specs/planning-artifacts/prd.md#78-quality-gates]
 
 ### Current Checkout Intelligence

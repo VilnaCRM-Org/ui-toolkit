@@ -2,7 +2,7 @@
 # project: ui-toolkit
 # project_key: NOKEY
 # tracking_system: file-system
-# story_location: /home/dima/Desktop/ui-toolkit/specs/implementation-artifacts
+# story_location: ./specs/implementation-artifacts
 #
 # STATUS DEFINITIONS:
 # ==================
@@ -37,7 +37,7 @@ generated: 2026-03-09T18:52:20+02:00
 project: ui-toolkit
 project_key: NOKEY
 tracking_system: file-system
-story_location: /home/dima/Desktop/ui-toolkit/specs/implementation-artifacts
+story_location: ./specs/implementation-artifacts
 
 development_status:
   epic-1: in-progress
