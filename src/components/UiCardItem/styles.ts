@@ -69,6 +69,12 @@ export default {
     fontWeight: '700',
   },
 
+  servicesLink: {
+    color: 'inherit',
+    fontWeight: 'inherit',
+    textDecorationColor: 'inherit',
+  },
+
   largeWrapper: {
     p: '1.5rem',
     borderRadius: '0.75rem',

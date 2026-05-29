@@ -1,3 +1,4 @@
+import { Link } from '@mui/material';
 import React from 'react';
 import { Trans } from 'react-i18next';
 
@@ -31,7 +32,9 @@ function CardContent({ item, isSmallCard }: CardContentProps): React.ReactElemen
               sx={styles.hoveredCard}
               title={<ServicesHoverCard />}
             >
-              <UiTypography variant="bodyText16">services</UiTypography>
+              <Link href="/" sx={styles.servicesLink}>
+                <UiTypography variant="bodyText16">services</UiTypography>
+              </Link>
             </UiTooltip>
           </Trans>
         ) : (
