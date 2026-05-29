@@ -10,7 +10,7 @@ class ScenarioBuilder {
   }
 
   createScenario(scenarioOptions) {
-    const scenario = { url: this.url, ...scenarioOptions };
+    const scenario = { ...scenarioOptions, url: this.url };
 
     return scenario;
   }

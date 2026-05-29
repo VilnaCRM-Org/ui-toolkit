@@ -25,18 +25,31 @@ function isPortAvailable(port) {
   });
 }
 
-async function findAvailablePort(startPort = DEFAULT_STORYBOOK_PORT, portChecker = isPortAvailable) {
-  let port = normalizeStartPort(startPort);
-
-  while (!(await portChecker(port))) {
-    port += 1;
-
-    if (port > MAX_PORT) {
-      throw new RangeError(`Could not find a free port starting from ${startPort}`);
+function findAvailablePortFrom(port, portChecker, initialPort) {
+  return portChecker(port).then(isAvailable => {
+    if (isAvailable) {
+      return port;
     }
-  }
 
-  return port;
+    if (port >= MAX_PORT) {
+      throw new RangeError(`Could not find a free port starting from ${initialPort}`);
+    }
+
+    return findAvailablePortFrom(port + 1, portChecker, initialPort);
+  });
+}
+
+async function findAvailablePort(
+  startPort = DEFAULT_STORYBOOK_PORT,
+  portChecker = isPortAvailable
+) {
+  const normalizedStartPort = normalizeStartPort(startPort);
+
+  return findAvailablePortFrom(normalizedStartPort, portChecker, startPort);
+}
+
+function writeError(message) {
+  process.stderr.write(`${message}\n`);
 }
 
 async function main() {
@@ -44,7 +57,7 @@ async function main() {
   const resolvedPort = await findAvailablePort(requestedPort);
 
   if (resolvedPort !== requestedPort) {
-    console.error(`Port ${requestedPort} is already in use; using ${resolvedPort} instead.`);
+    writeError(`Port ${requestedPort} is already in use; using ${resolvedPort} instead.`);
   }
 
   process.stdout.write(`${resolvedPort}`);
@@ -52,7 +65,7 @@ async function main() {
 
 if (require.main === module) {
   main().catch(error => {
-    console.error(error instanceof Error ? error.message : String(error));
+    writeError(error instanceof Error ? error.message : String(error));
     process.exit(1);
   });
 }

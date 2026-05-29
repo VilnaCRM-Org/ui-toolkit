@@ -10,10 +10,7 @@ function UiCheckbox({ label, sx, onChange, error, disabled }: UiCheckboxProps): 
       sx={sx}
       disabled={disabled}
       control={
-        <Box
-          component="span"
-          sx={error ? styles.checkboxWrapperError : styles.checkboxWrapper}
-        >
+        <Box component="span" sx={error ? styles.checkboxWrapperError : styles.checkboxWrapper}>
           <input
             type="checkbox"
             className="PrivateSwitchBase-input"

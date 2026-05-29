@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 
 function readStorybookStartRecipe(): string {
-  const makefilePath = path.resolve(__dirname, '../../../Makefile');
-  const makefileContents = fs.readFileSync(makefilePath, 'utf8');
-  const recipeMatch = makefileContents.match(
+  const makefilePath: string = path.resolve(__dirname, '../../../Makefile');
+  const makefileContents: string = fs.readFileSync(makefilePath, 'utf8');
+  const recipeMatch: RegExpMatchArray | null = makefileContents.match(
     /^storybook-start:.*\n((?:\t.*\n)+)/m
   );
 
@@ -23,7 +23,7 @@ describe('Makefile storybook-start target', () => {
   test('starts Storybook in non-interactive Docker mode with an automatically resolved host port', () => {
     expect(readMakefileContents()).toContain('STORYBOOK_PORT ?= 6006');
 
-    const recipe = readStorybookStartRecipe();
+    const recipe: string = readStorybookStartRecipe();
 
     expect(recipe).toContain(
       'host_port=$$(STORYBOOK_PORT=$(STORYBOOK_PORT) node ./scripts/resolveStorybookHostPort.js)'

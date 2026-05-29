@@ -15,14 +15,14 @@ describe('storybook staticDirs', () => {
 
     configuredStaticDirs.forEach((entry: (typeof configuredStaticDirs)[number]) => {
       if (typeof entry === 'string') {
-        const resolvedDir = path.resolve(__dirname, '../../../.storybook', entry);
+        const resolvedDir: string = path.resolve(__dirname, '../../../.storybook', entry);
 
         expect(fs.existsSync(resolvedDir)).toBe(true);
         expect(fs.statSync(resolvedDir).isDirectory()).toBe(true);
         return;
       }
 
-      const resolvedDir = path.resolve(__dirname, '../../../.storybook', entry.from);
+      const resolvedDir: string = path.resolve(__dirname, '../../../.storybook', entry.from);
 
       expect(fs.existsSync(resolvedDir)).toBe(true);
       expect(fs.statSync(resolvedDir).isDirectory()).toBe(true);
