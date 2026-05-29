@@ -10,33 +10,36 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import { CardList } from './types';
 
-function isToolTip(node: Element): boolean {
-  return node.role === 'tooltip' && node.classList.contains('base-Popper-root');
+const TOOLTIP_SELECTOR: string = '[role="tooltip"].base-Popper-root';
+
+function isToolTip(node: Node): boolean {
+  return node instanceof Element && node.matches(TOOLTIP_SELECTOR);
 }
 
-function applyPointerEvents(
-  nodes: NodeList,
-  swiper: HTMLElement | null,
-  value: 'none' | 'auto'
-): void {
+function mutationTouchesToolTip(mutation: MutationRecord): boolean {
+  if (mutation.type !== 'childList') {
+    return false;
+  }
+  return (
+    Array.from(mutation.addedNodes).some(isToolTip) ||
+    Array.from(mutation.removedNodes).some(isToolTip)
+  );
+}
+
+// Recompute from the live DOM rather than toggling per add/remove, so overlapping
+// tooltip mutations can't leave pointer-events in the wrong state.
+function syncPointerEvents(swiper: HTMLElement | null): void {
   if (!swiper) {
     return;
   }
-  nodes.forEach((node: Node): void => {
-    if (node instanceof Element && isToolTip(node)) {
-      swiper.style.setProperty('pointer-events', value);
-    }
-  });
+  const hasToolTip: boolean = document.querySelector(TOOLTIP_SELECTOR) !== null;
+  swiper.style.setProperty('pointer-events', hasToolTip ? 'none' : 'auto');
 }
 
 function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | null): void {
-  mutationsList.forEach((mutation: MutationRecord): void => {
-    if (mutation.type !== 'childList') {
-      return;
-    }
-    applyPointerEvents(mutation.addedNodes, swiper, 'none');
-    applyPointerEvents(mutation.removedNodes, swiper, 'auto');
-  });
+  if (mutationsList.some(mutationTouchesToolTip)) {
+    syncPointerEvents(swiper);
+  }
 }
 
 function CardSwiper({ cardList }: CardList): React.ReactElement {

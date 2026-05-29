@@ -1,13 +1,6 @@
-export type CardType = 'smallCard' | 'largeCard';
+import { CardItem, CardType } from '../UiCardItem/types';
 
-export type CardItem = {
-  type: CardType;
-  id: string;
-  imageSrc: string;
-  title: string;
-  text: string;
-  alt: string;
-};
+export type { CardItem, CardType };
 
 export type NonEmptyCardList = [CardItem, ...CardItem[]];
 
