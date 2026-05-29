@@ -26,7 +26,7 @@ function isPortAvailable(port) {
 }
 
 function findAvailablePortFrom(port, portChecker, initialPort) {
-  return portChecker(port).then(isAvailable => {
+  return Promise.resolve(portChecker(port)).then(isAvailable => {
     if (isAvailable) {
       return port;
     }

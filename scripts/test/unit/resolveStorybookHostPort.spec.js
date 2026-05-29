@@ -18,4 +18,11 @@ describe('findAvailablePort', () => {
     await expect(findAvailablePort(6010, isPortAvailable)).resolves.toBe(6010);
     expect(isPortAvailable).toHaveBeenCalledWith(6010);
   });
+
+  test('supports synchronous port checker functions', async () => {
+    const isPortAvailable = jest.fn(port => port >= 6008);
+
+    await expect(findAvailablePort(6006, isPortAvailable)).resolves.toBe(6008);
+    expect(isPortAvailable.mock.calls).toEqual([[6006], [6007], [6008]]);
+  });
 });
