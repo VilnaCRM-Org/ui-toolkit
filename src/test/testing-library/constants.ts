@@ -1,17 +1,15 @@
-import { faker } from '@faker-js/faker';
-
 import { CardItem, CardType, NonEmptyCardList } from '@/components/UiCardList/types';
 import { SocialMedia } from '@/components/UiFooter/types';
 
-export const testId: string = faker.string.uuid();
-export const testTitle: string = faker.lorem.word(6);
-export const testText: string = faker.lorem.word(6);
-export const testImg: string = faker.image.avatar();
-export const testInitials: string = faker.person.fullName();
-export const testEmail: string = faker.internet.email();
-export const testPassword: string = faker.internet.password();
-export const testPlaceholder: string = faker.lorem.word(8);
-export const testUrl: string = faker.internet.url();
+export const testId: string = '00000000-0000-4000-8000-000000000000';
+export const testTitle: string = 'sample title';
+export const testText: string = 'sample text';
+export const testImg: string = 'https://example.com/avatar.png';
+export const testInitials: string = 'John Doe';
+export const testEmail: string = 'test@example.com';
+export const testPassword: string = 'TestPassword123!';
+export const testPlaceholder: string = 'sample placeholder';
+export const testUrl: string = 'https://example.com';
 export const mockEmail: string = 'info@vilnacrm.com';
 
 export const typeOfCard: CardType = 'smallCard';

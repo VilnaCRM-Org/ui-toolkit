@@ -36,12 +36,18 @@ describe('WrapperUiTooltip', () => {
     expect(tooltip).toBeInTheDocument();
   });
 
-  it('closes the tooltip on click away', () => {
+  it('closes the tooltip on click away', async () => {
+    const user: { click: (element: Element) => Promise<void> } = userEvent.setup();
     setup();
     const trigger: HTMLElement = screen.getByText(triggerText);
-    fireEvent.click(trigger);
-    const tooltip: HTMLElement = screen.getByText(tooltipContent);
-    expect(tooltip).toBeInTheDocument();
+    await user.click(trigger);
+    expect(screen.getByText(tooltipContent)).toBeInTheDocument();
+
+    await user.click(document.body);
+
+    await waitFor(() => {
+      expect(screen.queryByRole(tooltipRole)).not.toBeInTheDocument();
+    });
   });
 
   it('open and clone tooltip', async () => {

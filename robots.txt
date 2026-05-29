@@ -9,4 +9,4 @@ Disallow: /hidden/
 Allow: /
 
 # Sitemap location
-Sitemap: https://uk-deploy.vercel.app/
+Sitemap: https://vilnacrm.com/sitemap.xml

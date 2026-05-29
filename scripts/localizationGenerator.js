@@ -27,7 +27,7 @@ class LocalizationGenerator {
     this.jsonFileType = jsonFileType;
     this.localizationFile = localizationFile;
 
-    this.pathToWriteLocalization = `pages/${i18nPath}`;
+    this.pathToWriteLocalization = i18nPath;
     this.pathToI18nFolder = `${featurePath}/{folder}/${i18nPath}`;
     this.pathToI18nFile = `${featurePath}/{folder}/${i18nPath}/{file.name}`;
   }
@@ -40,7 +40,16 @@ class LocalizationGenerator {
     const localizationObj = featureFolders.reduce((acc, folder) => {
       const parsedLocalizationFromFolder = this.getLocalizationFromFolder(folder);
 
-      return { ...acc, ...parsedLocalizationFromFolder };
+      Object.entries(parsedLocalizationFromFolder).forEach(([language, { translation }]) => {
+        acc[language] = {
+          translation: {
+            ...(acc[language]?.translation ?? {}),
+            ...translation,
+          },
+        };
+      });
+
+      return acc;
     }, {});
 
     const filePath = path.join(
@@ -54,9 +63,17 @@ class LocalizationGenerator {
   }
 
   getFeatureFolders() {
-    const featureDirectories = fs.readdirSync(this.featurePath, {
-      withFileTypes: true,
-    });
+    let featureDirectories = [];
+
+    try {
+      featureDirectories = fs.readdirSync(this.featurePath, {
+        withFileTypes: true,
+      });
+    } catch (error) {
+      if (error.code === 'ENOENT') return [];
+
+      throw error;
+    }
 
     return featureDirectories
       .filter(directory => directory.isDirectory())
@@ -64,39 +81,52 @@ class LocalizationGenerator {
   }
 
   getLocalizationFromFolder(folder) {
-    const localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
-      withFileTypes: true,
-    });
+    let localizationFiles = [];
+
+    try {
+      localizationFiles = fs.readdirSync(this.pathToI18nFolder.replace('{folder}', folder), {
+        withFileTypes: true,
+      });
+    } catch (error) {
+      if (error.code === 'ENOENT') return {};
+
+      throw error;
+    }
 
     return localizationFiles.reduce((localizations, file) => {
       if (!file.isFile()) return localizations;
 
-      const [language, fileType] = file.name.split('.');
+      const fileType = path.extname(file.name).replace('.', '');
 
       if (fileType !== this.jsonFileType) return localizations;
 
-      const localizationContent = fs.readFileSync(
-        this.pathToI18nFile.replace('{folder}', folder).replace('{file.name}', file.name),
-        'utf8'
-      );
-      const parsedLocalization = JSON.parse(localizationContent);
+      const language = file.name.slice(0, -(fileType.length + 1));
 
-      return {
-        ...localizations,
-        [language]: {
-          translation: parsedLocalization,
-        },
-      };
+      try {
+        const localizationFilePath = this.pathToI18nFile
+          .replace('{folder}', folder)
+          .replace('{file.name}', file.name);
+        const localizationContent = fs.readFileSync(localizationFilePath, 'utf8');
+        const parsedLocalization = JSON.parse(localizationContent);
+
+        return {
+          ...localizations,
+          [language]: {
+            translation: parsedLocalization,
+          },
+        };
+      } catch (error) {
+        const fileLabel = `${folder}/${file.name}`;
+        error.message = `Failed to parse localization file ${fileLabel}: ${error.message}`;
+        throw error;
+      }
     }, {});
   }
 
   // eslint-disable-next-line class-methods-use-this
   writeLocalizationFile(fileContent, filePath) {
-    fs.writeFile(filePath, fileContent, err => {
-      if (err) {
-        throw new Error(err);
-      }
-    });
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, fileContent);
   }
 }
 

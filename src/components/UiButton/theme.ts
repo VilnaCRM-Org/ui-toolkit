@@ -3,7 +3,7 @@ import { Interpolation, Theme, createTheme } from '@mui/material';
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';
 
-export const containedStyles: Interpolation<{ theme: Theme }> = {
+const baseButtonStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
   fontSize: '0.938rem',
@@ -11,8 +11,12 @@ export const containedStyles: Interpolation<{ theme: Theme }> = {
   fontWeight: '500',
   lineHeight: '1.125',
   letterSpacing: '0',
-  backgroundColor: colorTheme.palette.primary.main,
   borderRadius: '3.563rem',
+};
+
+export const containedStyles: Interpolation<{ theme: Theme }> = {
+  ...baseButtonStyles,
+  backgroundColor: colorTheme.palette.primary.main,
   '&:hover': {
     backgroundColor: colorTheme.palette.containedButtonHover.main,
   },
@@ -26,17 +30,10 @@ export const containedStyles: Interpolation<{ theme: Theme }> = {
 };
 
 export const outlinedStyles: Interpolation<{ theme: Theme }> = {
-  textTransform: 'none',
-  textDecoration: 'none',
-  fontSize: '0.938rem',
-  fontFamily: 'Golos Text',
-  fontWeight: '500',
-  lineHeight: '1.125',
-  letterSpacing: '0',
+  ...baseButtonStyles,
   color: colorTheme.palette.darkSecondary.main,
   backgroundColor: colorTheme.palette.white.main,
   border: `1px solid ${colorTheme.palette.grey300.main}`,
-  borderRadius: '3.563rem',
   '&:hover': {
     backgroundColor: colorTheme.palette.grey500.main,
     border: '1px solid rgba(0,0,0,0)',
@@ -115,7 +112,7 @@ export const theme: Theme = createTheme({
             },
             '&:disabled': {
               background: colorTheme.palette.brandGray.main,
-              boxShadoiw: 'none',
+              boxShadow: 'none',
               border: 'none',
               img: {
                 opacity: '0.2',

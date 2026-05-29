@@ -31,10 +31,6 @@ jobs:
         if: steps.visual.outputs.present == 'true'
         run: make install
 
-      - name: Install Playwright Browsers
-        if: steps.visual.outputs.present == 'true'
-        run: make playwright-install
-
       - name: Run visual tests
         if: steps.visual.outputs.present == 'true'
         run: make test-visual

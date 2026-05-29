@@ -21,10 +21,24 @@ export default function WrapperUiTooltip({
   const closeTooltip: () => void = () => setOpen(false);
   const toggleTooltip: () => void = () => setOpen(!open);
 
+  const handleKeyDown: (event: React.KeyboardEvent<HTMLSpanElement>) => void = event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleTooltip();
+    }
+  };
+
   return (
     <ClickAwayListener onClickAway={closeTooltip}>
       <Tooltip open={open} title={title} placement={placement} arrow={arrow} sx={sx}>
-        <Typography component="span" onClick={toggleTooltip}>
+        <Typography
+          component="span"
+          role="button"
+          tabIndex={0}
+          aria-expanded={open}
+          onClick={toggleTooltip}
+          onKeyDown={handleKeyDown}
+        >
           {children}
         </Typography>
       </Tooltip>

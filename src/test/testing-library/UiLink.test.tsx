@@ -13,10 +13,4 @@ describe('UiLink', () => {
     expect(linkElement).toBeInTheDocument();
     expect(linkElement).toHaveAttribute('href', testHref);
   });
-
-  it('applies the theme provided to the Link', () => {
-    const { getByText } = render(<UiLink href={testUrl}>{testText}</UiLink>);
-    const linkElement: HTMLElement = getByText(testText);
-    expect(linkElement).toBeInTheDocument();
-  });
 });

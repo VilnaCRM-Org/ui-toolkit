@@ -15,6 +15,8 @@ describe('UiTypography', () => {
 
     const typography: HTMLElement = getByText(testText);
     expect(typography).toBeInTheDocument();
+    expect(typography.tagName).toBe('A');
+    expect(typography.className).toMatch(/MuiTypography-h1/);
   });
 
   it('should render the Typography component with the default props', () => {

@@ -71,12 +71,7 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
 
 export const TextFieldForm: Story = {
   render: args => (
-    <TextFieldFormStory
-      type={args.type}
-      rules={args.rules}
-      placeholder={args.placeholder}
-      fullWidth={args.fullWidth}
-    />
+    <TextFieldFormStory {...(args as unknown as TextFieldFormStoryArgs)} />
   ),
   args: {
     rules: {

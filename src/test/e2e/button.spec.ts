@@ -7,7 +7,7 @@ async function checkButtonVisibility(
   storyPath: string,
   buttonText: string
 ): Promise<void> {
-  await page.goto(`http://localhost:6006/?path=/story/${storyPath}`);
+  await page.goto(`/?path=/story/${storyPath}`);
   const button: Locator = page.getByText(buttonText);
   await expect(button).toBeVisible();
 }

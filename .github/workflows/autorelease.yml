@@ -17,23 +17,37 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: 'main'
+          persist-credentials: false
+
+      - name: Detect release manifest
+        id: check_manifest
+        run: |
+          if [[ -f package.json ]]; then
+            echo "manifest_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "manifest_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip release preparation
+        if: steps.check_manifest.outputs.manifest_exists != 'true'
+        run: echo "Skipping release because package.json is not present on this branch."
 
       - name: Conventional Changelog Action
+        if: steps.check_manifest.outputs.manifest_exists == 'true'
         id: changelog
-        uses: TriPSs/conventional-changelog-action@v4
+        uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f
         with:
-          github-token: ${{ secrets.REPO_GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: 'CHANGELOG.md'
           version-file: 'package.json'
 
       - name: Create Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.changelog.outputs.tag }}
           release_name: ${{ steps.changelog.outputs.tag }}

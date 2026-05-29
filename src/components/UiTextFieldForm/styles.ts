@@ -3,8 +3,7 @@ import colorTheme from '../UiColorTheme';
 
 export default {
   errorText: {
-    top: '100%',
-    position: 'absolute',
+    marginTop: '0.25rem',
     paddingBottom: '10px',
     color: colorTheme.palette.error.main,
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {

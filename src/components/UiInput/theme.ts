@@ -61,9 +61,10 @@ const theme: Theme = createTheme({
                 lineHeight: '1.125rem',
               },
             },
-            '&.Mui-disabled': {
+            '&:disabled': {
               backgroundColor: colorTheme.palette.brandGray.main,
               color: colorTheme.palette.grey300.main,
+              WebkitTextFillColor: colorTheme.palette.grey300.main,
             },
           },
         },

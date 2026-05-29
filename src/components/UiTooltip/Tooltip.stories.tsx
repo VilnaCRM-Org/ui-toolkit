@@ -11,7 +11,7 @@ const meta: Meta<typeof UiTooltip> = {
     children: {
       type: 'string',
       name: 'children',
-      description: 'Text of the button',
+      description: 'Trigger content for the tooltip',
     },
     placement: {
       type: 'string',

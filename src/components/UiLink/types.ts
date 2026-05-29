@@ -9,5 +9,6 @@ export interface UiLinkProps {
   children: React.ReactNode;
   href: string;
   target?: string;
+  rel?: string;
   sx?: SxProps<Theme>;
 }
