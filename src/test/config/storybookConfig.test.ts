@@ -4,7 +4,7 @@ import path from 'path';
 import storybookConfig from '../../../.storybook/main';
 
 describe('storybook staticDirs', () => {
-  test('only references static assets that exist in the repository', () => {
+  test('only references static directories that exist in the repository', () => {
     const configuredStaticDirs: typeof storybookConfig.staticDirs = storybookConfig.staticDirs;
 
     expect(Array.isArray(configuredStaticDirs)).toBe(true);
@@ -15,11 +15,17 @@ describe('storybook staticDirs', () => {
 
     configuredStaticDirs.forEach((entry: (typeof configuredStaticDirs)[number]) => {
       if (typeof entry === 'string') {
-        expect(fs.existsSync(path.resolve(__dirname, '../../../.storybook', entry))).toBe(true);
+        const resolvedDir = path.resolve(__dirname, '../../../.storybook', entry);
+
+        expect(fs.existsSync(resolvedDir)).toBe(true);
+        expect(fs.statSync(resolvedDir).isDirectory()).toBe(true);
         return;
       }
 
-      expect(fs.existsSync(path.resolve(__dirname, '../../../.storybook', entry.from))).toBe(true);
+      const resolvedDir = path.resolve(__dirname, '../../../.storybook', entry.from);
+
+      expect(fs.existsSync(resolvedDir)).toBe(true);
+      expect(fs.statSync(resolvedDir).isDirectory()).toBe(true);
     });
   });
 });

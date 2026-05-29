@@ -1,13 +1,14 @@
 # Parameters
 K6 = $(DOCKER) run -v ./src/test/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
+STORYBOOK_PORT ?= 6006
 
 # Executables
 DOCKER = docker
 DOCKER_COMPOSE = docker compose
 
 # Docker helpers
-RUN_BUN = $(DOCKER_COMPOSE) run --rm bun
-RUN_BUN_SH = $(DOCKER_COMPOSE) run --rm --entrypoint sh bun -lc
+RUN_BUN = $(DOCKER_COMPOSE) run --rm --build bun
+RUN_BUN_SH = $(DOCKER_COMPOSE) run --rm --build --entrypoint sh bun -lc
 EXEC_BUN = $(DOCKER_COMPOSE) exec -T bun
 BUN = $(RUN_BUN) bun
 BUN_RUN = $(BUN) run
@@ -57,7 +58,9 @@ git-hooks-install: ## Install git hooks.
 	$(BUN_X) husky install
 
 storybook-start: ## Start Storybook inside the docker container.
-	$(BUN_X) storybook dev -p 6006
+	@host_port=$$(STORYBOOK_PORT=$(STORYBOOK_PORT) node ./scripts/resolveStorybookHostPort.js); \
+		echo "Storybook available at http://127.0.0.1:$$host_port"; \
+		$(DOCKER_COMPOSE) run --rm --build --publish $$host_port:6006 bun bun x storybook dev --ci --host 0.0.0.0 -p 6006
 
 storybook-build: ## Build Storybook inside the docker container.
 	$(BUN_X) storybook build

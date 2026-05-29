@@ -7,6 +7,7 @@ import type { RuleSetCondition } from 'webpack';
 const toPath = 'src/assets/fonts';
 const fromPath = `../${toPath}`;
 const svgExclude = /\.svg$/i;
+const fontDirectories = ['Golos', 'Inter'] as const;
 
 function mergeExclude(exclude?: RuleSetCondition): RuleSetCondition {
   if (!exclude) {
@@ -20,44 +21,16 @@ function mergeExclude(exclude?: RuleSetCondition): RuleSetCondition {
   return [exclude, svgExclude];
 }
 
-const staticDirs = [
-  {
-    from: `${fromPath}/Golos/GolosText-Black.ttf`,
-    to: `${toPath}/Golos/GolosText-Black.ttf`,
-  },
-  {
-    from: `${fromPath}/Golos/GolosText-Bold.ttf`,
-    to: `${toPath}/Golos/GolosText-Bold.ttf`,
-  },
-  {
-    from: `${fromPath}/Golos/GolosText-ExtraBold.ttf`,
-    to: `${toPath}/Golos/GolosText-ExtraBold.ttf`,
-  },
-  {
-    from: `${fromPath}/Golos/GolosText-Medium.ttf`,
-    to: `${toPath}/Golos/GolosText-Medium.ttf`,
-  },
-  {
-    from: `${fromPath}/Golos/GolosText-Regular.ttf`,
-    to: `${toPath}/Golos/GolosText-Regular.ttf`,
-  },
-  {
-    from: `${fromPath}/Golos/GolosText-SemiBold.ttf`,
-    to: `${toPath}/Golos/GolosText-SemiBold.ttf`,
-  },
-  {
-    from: `${fromPath}/Inter/Inter-Bold.ttf`,
-    to: `${toPath}/Inter/Inter-Bold.ttf`,
-  },
-  {
-    from: `${fromPath}/Inter/Inter-Medium.ttf`,
-    to: `${toPath}/Inter/Inter-Medium.ttf`,
-  },
-  {
-    from: `${fromPath}/Inter/Inter-Regular.ttf`,
-    to: `${toPath}/Inter/Inter-Regular.ttf`,
-  },
-].filter(entry => fs.existsSync(path.resolve(__dirname, entry.from)));
+const staticDirs = fontDirectories
+  .map(fontDirectory => ({
+    from: `${fromPath}/${fontDirectory}`,
+    to: `${toPath}/${fontDirectory}`,
+  }))
+  .filter(entry => {
+    const resolvedDir = path.resolve(__dirname, entry.from);
+
+    return fs.existsSync(resolvedDir) && fs.statSync(resolvedDir).isDirectory();
+  });
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
