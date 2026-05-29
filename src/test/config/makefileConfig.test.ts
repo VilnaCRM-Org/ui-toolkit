@@ -20,7 +20,7 @@ function readMakefileContents(): string {
 }
 
 describe('Makefile storybook-start target', () => {
-  test('starts Storybook in non-interactive Docker mode with an automatically resolved host port', () => {
+  test('starts Storybook in Docker with an automatically resolved host port', () => {
     expect(readMakefileContents()).toContain('STORYBOOK_PORT ?= 6006');
 
     const recipe: string = readStorybookStartRecipe();
