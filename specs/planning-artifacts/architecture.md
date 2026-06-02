@@ -395,7 +395,7 @@ ui-toolkit/
 ├── build.config.mjs
 ├── .eslintrc.js
 ├── tests/
-│   ├── unit/                                        # Jest + Testing Library; `*.test.ts(x)` for single-module logic
+│   ├── unit/                                        # Jest + Testing Library; `*.test.ts(x)` and `*.spec.js` for single-module logic
 │   ├── integration/                                 # Jest + React Testing Library; `*.integration.test.ts(x)` for multi-module/external-resource interactions
 │   ├── e2e/
 │   ├── visual/
@@ -412,10 +412,7 @@ ui-toolkit/
 │       ├── autorelease.yml
 │       └── autoprerelease.yml
 ├── scripts/
-│   ├── localizationGenerator.js
-│   └── test/
-│       └── unit/
-│           └── localizationGenerator.spec.js
+│   └── localizationGenerator.js
 ├── specs/
 │   ├── planning-artifacts/
 │   │   ├── prd.md
@@ -427,6 +424,11 @@ ui-toolkit/
 ├── src/
 │   ├── app/
 │   │   └── providers/                               # Storybook/dev-harness provider wrappers only
+│   ├── test/
+│   │   ├── config/
+│   │   ├── mocks/
+│   │   └── unit/
+│   │       └── localizationGenerator.spec.js
 │   ├── features/
 │   │   ├── core-controls/
 │   │   │   ├── components/

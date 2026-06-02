@@ -9,7 +9,7 @@ const config: Config = {
   testMatch: [
     '<rootDir>/src/test/**/*.test.ts',
     '<rootDir>/src/test/**/*.test.tsx',
-    '<rootDir>/scripts/test/unit/**/*.spec.js',
+    '<rootDir>/src/test/unit/**/*.spec.js',
   ],
   moduleNameMapper: {
     '^.+\\.css$': '<rootDir>/src/test/mocks/styleMock.ts',
