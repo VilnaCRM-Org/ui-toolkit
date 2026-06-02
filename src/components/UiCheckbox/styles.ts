@@ -4,7 +4,7 @@ import Check from '@/assets/svg/check.svg';
 
 import colorTheme from '../UiColorTheme';
 
-const checkIconUrl: string = typeof Check === 'string' ? Check : Check.src;
+const checkIconUrl: string = Check;
 
 type StyleObject = CSSProperties & { [pseudoSelector: string]: StyleObject | string | number };
 

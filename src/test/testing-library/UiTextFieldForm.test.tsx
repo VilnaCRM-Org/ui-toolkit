@@ -46,4 +46,27 @@ describe('UiTextFieldForm', () => {
 
     expect(uiInput).toHaveValue(testText);
   });
+
+  it('forwards supported input props to UiInput', () => {
+    function DisabledFieldWrapper(): React.ReactElement {
+      const { control } = useForm();
+
+      return (
+        <UiTextFieldForm
+          control={control}
+          name="testField"
+          placeholder={testPlaceholder}
+          id="disabled-field"
+          disabled
+        />
+      );
+    }
+
+    render(<DisabledFieldWrapper />);
+
+    const uiInput: HTMLElement = screen.getByRole('textbox');
+
+    expect(uiInput).toHaveAttribute('id', 'disabled-field');
+    expect(uiInput).toBeDisabled();
+  });
 });
