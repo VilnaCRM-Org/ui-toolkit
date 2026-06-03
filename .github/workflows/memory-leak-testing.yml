@@ -8,6 +8,8 @@ on:
 jobs:
   memory-leak-testing:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       CI: true
 
