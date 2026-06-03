@@ -20,7 +20,7 @@ jobs:
         id: visual
         run: |
           present=false
-          if [[ -f package.json && -f bun.lock && -f playwright.config.ts && -d tests/visual ]] && find tests/visual -type f -print -quit | grep -q .; then
+          if [[ -f package.json && -f bun.lock && -f playwright.config.ts && -d tests/visual ]] && find tests/visual -type f -name '*.spec.ts' -print -quit | grep -q .; then
             present=true
           fi
           echo "present=$present" >> "$GITHUB_OUTPUT"
