@@ -8,5 +8,7 @@ on:
 jobs:
   yamlfmt:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: norwd/fmtya@v1
