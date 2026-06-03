@@ -1,5 +1,5 @@
 # Parameters
-K6 = $(DOCKER) run -v ./src/test/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
+K6 = $(DOCKER) run -v ./tests/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 
 # Executables
 DOCKER = docker
@@ -37,6 +37,7 @@ lint-next: ## Run ESLint inside the docker container.
 		targets=""; \
 		if [ -d src ]; then targets="src"; fi; \
 		if [ -d pages ]; then targets="$$targets pages"; fi; \
+		if [ -d tests ]; then targets="$$targets tests"; fi; \
 		if [ -z "$$targets" ]; then \
 			echo "No lint targets found, skipping ESLint."; \
 			exit 0; \
@@ -76,11 +77,11 @@ test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
 			cat /tmp/ui-toolkit-storybook.log; \
 			exit 1; \
 		fi; \
-		bun x playwright test ./src/test/e2e \
+		bun x playwright test ./tests/e2e \
 	'
 
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
-	$(BUN_X) playwright test ./src/test/e2e
+	$(BUN_X) playwright test ./tests/e2e
 
 test-unit: ## Run Jest unit tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
@@ -108,7 +109,7 @@ test-mutation: ## Run mutation tests inside the docker container.
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		if [ ! -f src/test/memory-leak/runMemlabTests.js ]; then \
+		if [ ! -f tests/memory-leak/runMemlabTests.js ]; then \
 			echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."; \
 			exit 0; \
 		fi; \
@@ -119,7 +120,7 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 			cat /tmp/ui-toolkit-app.log; \
 			exit 1; \
 		fi; \
-		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
+		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js \
 	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
@@ -148,7 +149,7 @@ test-visual: ## Start Storybook and run visual tests inside a Docker container.
 			cat /tmp/ui-toolkit-storybook.log; \
 			exit 1; \
 		fi; \
-		bun x playwright test ./src/test/visual --pass-with-no-tests \
+		bun x playwright test ./tests/visual --pass-with-no-tests \
 	'
 
 up: ## Start the docker hub (Bun).
@@ -175,7 +176,7 @@ stop: ## Stop docker services.
 	$(DOCKER_COMPOSE) stop
 
 build-k6-docker:
-	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
+	$(DOCKER) build -t k6 -f ./tests/load/Dockerfile .
 
 load-tests: build-k6-docker
 	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js

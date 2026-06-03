@@ -132,7 +132,7 @@ export default [
         },
       },
       {
-        files: ['src/test/memory-leak/**/*.js'],
+        files: ['tests/memory-leak/**/*.js'],
         extends: [
           'eslint:recommended',
           'plugin:import/errors',
