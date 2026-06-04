@@ -87,15 +87,18 @@ Web frontend component library within an existing React + TypeScript workspace.
 ### Starter Options Considered
 
 1. Existing repository baseline (no re-bootstrap)
+
 - Best fit for current project state and minimizes migration risk.
 - Preserves current contracts, test suites, Storybook setup, and release cadence.
 
 2. `create-tsdown` React starter (greenfield library-first)
+
 - Good option for a brand-new component library.
 - Modern library bundling defaults and templates.
 - Not selected due to migration overhead for this already-established codebase.
 
 3. Bun + Storybook + Bulletproof React structure adaptation
+
 - Strong option for a library-first workflow with Bun package/runtime consistency.
 - Not selected as a re-bootstrap path because this workstream extends an existing repository baseline.
 
@@ -138,6 +141,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Decision Priority Analysis
 
 **Critical Decisions (Block Implementation):**
+
 - Data Architecture: no persistent data layer; UI-library-only runtime model.
 - Component Interface Model: props + callbacks only for UI component interaction; no backend API-contract layer.
 - Distribution Model: public npm registry as the official package distribution path.
@@ -146,10 +150,12 @@ Established lint/test/storybook command surface and team-familiar workflows.
 - Contract Enforcement: mandatory per-component checklist (exports, state matrix, accessibility, Storybook/tests, provenance note).
 
 **Important Decisions (Shape Architecture):**
+
 - Reuse governance from PRD remains active: `crm` canonical behavior, `website` visual/variant gap-fill.
 - Existing repository baseline retained (no re-bootstrap).
 
 **Deferred Decisions (Post-MVP):**
+
 - Any adapter/hook integration abstractions for app-specific backend coupling.
 - Any internal metadata service beyond file-based governance artifacts.
 
@@ -209,12 +215,14 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Decision Impact Analysis
 
 **Implementation Sequence:**
+
 1. Define and enforce quality checklist as definition-of-done.
 2. Implement/upgrade components using reuse-first policy.
 3. Validate state matrix, tests, stories, exports per component.
 4. Package and publish through public npm registry with versioned release gates.
 
 **Cross-Component Dependencies:**
+
 - Contract checklist influences every component implementation and release eligibility.
 - API communication model constrains prop design across all modules.
 - Distribution model constrains versioning, changelog discipline, and CI release behavior.
@@ -230,17 +238,20 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Naming Patterns
 
 **Code Naming Conventions:**
+
 - Component folders/files use kebab-case.
 - Component exported symbol names remain `UiPascalCase`.
 - Variables/functions use camelCase.
 - Type/interface names use PascalCase.
 
 **Examples:**
+
 - Folder: `src/components/ui-button/`
 - File: `src/components/ui-button/index.tsx`
 - Export: `export default function UiButton(...)`
 
 **Transition Rule (Required due to current repo state):**
+
 - Existing `UiPascalCase` folders remain valid until migration tasks are explicitly planned.
 - New components follow kebab-case from this point forward.
 - Do not rename legacy folders opportunistically inside feature tasks.
@@ -248,6 +259,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Structure Patterns
 
 **Project Organization:**
+
 - Follow Bulletproof React structure boundaries for new work:
   - `src/app/providers` for Storybook/dev-harness provider composition only
   - `src/features/<domain>/components` for domain-driven components
@@ -258,6 +270,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 - Public exports remain centralized in the package entry boundary (`src/components/index.ts` until migration is complete).
 
 **File Structure Patterns (per new component):**
+
 - `src/features/<domain>/components/<kebab-name>/index.tsx`
 - `src/features/<domain>/components/<kebab-name>/types.ts`
 - `src/features/<domain>/components/<kebab-name>/<Name>.stories.tsx`
@@ -275,6 +288,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Format Patterns
 
 **Public Component Contract:**
+
 - Shared base props for interactive components where relevant:
   - `value`
   - `onChange`
@@ -286,6 +300,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
 - Exceptions must be documented in component-level notes and reflected in stories/tests.
 
 **Data Exchange Formats:**
+
 - Props/events use TypeScript-typed shapes.
 - Event callback payloads should favor native React event signatures unless a value-first API is explicitly chosen and documented.
 - No backend transport payload formats are defined in this library architecture.
@@ -293,11 +308,13 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Communication Patterns
 
 **Component Communication:**
+
 - Props + callbacks only.
 - No global event bus pattern in library architecture.
 - No hidden cross-component side effects through shared mutable state.
 
 **State Management Pattern:**
+
 - Components are async-stateless.
 - Consumer applications own loading, retry, and async error flows.
 - Library exposes visual/control props (`loading`, `error`, `disabled`) when needed.
@@ -305,17 +322,20 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Process Patterns
 
 **Error Handling Patterns:**
+
 - Library components render deterministic error visuals from props.
 - No internal domain error mapping logic.
 - Accessibility and disabled behavior consistency are mandatory across components.
 
 **Loading State Patterns:**
+
 - Loading UI is visual-only and externally driven by consumers.
 - Components must not start network calls or retry loops internally.
 
 ### Provenance & Governance Patterns
 
 **Source Provenance Tracking:**
+
 - Maintain a central registry:
   - `specs/planning-artifacts/component-provenance.md`
 - For each component, record:
@@ -324,6 +344,7 @@ Established lint/test/storybook command surface and team-familiar workflows.
   - notes on behavior/visual alignment decisions
 
 **Quality Enforcement Checklist (Mandatory per component):**
+
 - Export present in `src/components/index.ts`
 - Required state matrix covered
 - Accessibility baseline checks included
@@ -334,23 +355,27 @@ Established lint/test/storybook command surface and team-familiar workflows.
 ### Enforcement Guidelines
 
 **All AI Agents MUST:**
+
 - Follow naming and structure patterns exactly for new components.
 - Apply shared prop contract policy and document exceptions.
 - Complete quality checklist before considering a component done.
 - Update provenance registry for each delivered/enhanced component.
 
 **Pattern Enforcement:**
+
 - Enforce via PR checklist + CI gates (tests/type checks/export checks).
 - Pattern violations are documented in the relevant implementation artifact and corrected before release tagging.
 
 ### Pattern Examples
 
 **Good Examples:**
+
 - New component created under kebab-case path with co-located story and centralized test.
 - Component exposes standardized `disabled/error/variant/size/sx` and documents any exception.
 - Provenance updated with `crm` canonical behavior and `website` visual gap-fill note.
 
 **Anti-Patterns:**
+
 - Introducing a global event bus for component interactions.
 - Embedding async fetch/retry in library UI components.
 - Shipping component changes without export update, checklist completion, or provenance entry.
@@ -370,7 +395,8 @@ ui-toolkit/
 ├── build.config.mjs
 ├── .eslintrc.js
 ├── tests/
-│   ├── unit/                                        # Jest + Testing Library; `*.test.ts(x)` for single-module logic
+│   ├── unit/                                        # Jest + Testing Library; `*.test.ts(x)` and `*.spec.js` for single-module logic
+│   │   └── localizationGenerator.spec.js
 │   ├── integration/                                 # Jest + React Testing Library; `*.integration.test.ts(x)` for multi-module/external-resource interactions
 │   ├── e2e/
 │   ├── visual/
@@ -387,10 +413,7 @@ ui-toolkit/
 │       ├── autorelease.yml
 │       └── autoprerelease.yml
 ├── scripts/
-│   ├── localizationGenerator.js
-│   └── test/
-│       └── unit/
-│           └── localizationGenerator.spec.js
+│   └── localizationGenerator.js
 ├── specs/
 │   ├── planning-artifacts/
 │   │   ├── prd.md
@@ -402,6 +425,9 @@ ui-toolkit/
 ├── src/
 │   ├── app/
 │   │   └── providers/                               # Storybook/dev-harness provider wrappers only
+│   ├── test/
+│   │   ├── config/
+│   │   ├── mocks/
 │   ├── features/
 │   │   ├── core-controls/
 │   │   │   ├── components/
@@ -466,6 +492,7 @@ ui-toolkit/
 ```
 
 **Lockfile Policy (Bun v1.2+):**
+
 - Required lockfile format is text-based `bun.lock` (legacy `bun.lockb` is not allowed on active branches).
 - Migration command:
 
@@ -474,6 +501,7 @@ bun install --save-text-lockfile --frozen-lockfile --lockfile-only
 ```
 
 **`src/app` Scope Constraint:**
+
 - `src/app/providers` is limited to provider wrappers used by Storybook/dev harnesses (for example `ThemeProvider` composition).
 - Do not add app-level `routes/` or `stores/` to this library architecture.
 - `src/app` must not contain async orchestration, backend coupling, or product application logic.
@@ -481,40 +509,48 @@ bun install --save-text-lockfile --frozen-lockfile --lockfile-only
 ### Architectural Boundaries
 
 **API Boundaries:**
+
 - Public component API is exported only through `src/components/index.ts`.
 - Internal component files are non-public implementation details.
 - No backend API surface is owned by this repository.
 
 **Component Boundaries:**
+
 - Component communication is props + callbacks only.
 - No global event-bus architecture.
 - Async orchestration (fetch/retry/session) stays in consumer apps (`crm`, `website`).
 
 **Service Boundaries:**
+
 - No application service layer in toolkit scope.
 - Integration logic belongs to consuming applications, not library components.
 
 **Data Boundaries:**
+
 - No persistent data layer (no DB schema/migrations/caching tier).
 - Data contracts exist as TypeScript props and test/story fixtures only.
 
 ### Requirements to Structure Mapping
 
 **FR-01 Board Coverage Completeness**
+
 - Component implementation: `src/features/*`, `src/shared/ui/*`, and exported entry boundary
 - Coverage governance artifacts: `specs/planning-artifacts/*`
 - Validation surfaces: stories in component folders + tests in `tests/unit`
 
 **FR-02 Reuse-First Compliance**
+
 - Provenance registry: `specs/planning-artifacts/component-provenance.md`
 - Source alignment notes per component entry (`crm`/`website`/`new`)
 
 **FR-03 Canonical Behavior Alignment**
+
 - Behavioral baseline encoded in component implementations and tests:
   - `src/features/*`, `src/shared/ui/*`
   - `tests/unit/*`
 
 **FR-04 Existing Control State Parity**
+
 - Existing controls:
   - `src/components/UiButton/`
   - `src/components/UiInput/`
@@ -527,20 +563,24 @@ bun install --save-text-lockfile --frozen-lockfile --lockfile-only
   - `tests/unit/UiLink.test.tsx`
 
 **FR-05 Missing Module Delivery**
+
 - New modules under Bulletproof feature/shared paths with kebab-case naming
 - Matching tests in `tests/unit/`
 
 **FR-06 Skeleton Parity**
+
 - Skeleton implementation:
   - `src/features/skeleton/components/ui-skeleton/`
   - `src/features/skeleton/components/ui-skeleton-composed/`
 - Parity verification tests in `tests/unit/`
 
 **FR-07 API Contract Consistency**
+
 - Prop/type definitions in each component `types.ts` (UI component interfaces only)
 - Public export discipline in `src/components/index.ts`
 
 **FR-08 Quality Gates**
+
 - Stories co-located in component folders
 - Unit tests centralized under `tests/unit/`
 - CI gates in `.github/workflows/` aligned to `website`/`crm` matrices
@@ -548,14 +588,17 @@ bun install --save-text-lockfile --frozen-lockfile --lockfile-only
 ### Integration Points
 
 **Internal Communication:**
+
 - Props down, callbacks up, typed event payloads.
 - Shared UI patterns through MUI theme/config and common prop contract rules.
 
 **External Integrations:**
+
 - Distribution via public npm registry.
 - Consumer projects (`crm`, `website`, others) and external adopters import published package surface.
 
 **Data Flow:**
+
 - Consumer app state drives component props.
 - Components emit interaction callbacks to consumer handlers.
 - No repository-owned external data fetch lifecycle.
@@ -587,31 +630,38 @@ bun install --save-text-lockfile --frozen-lockfile --lockfile-only
 ### File Organization Patterns
 
 **Configuration Files:**
+
 - Root-level build/lint/test config files remain authoritative.
 
 **Source Organization:**
+
 - Bulletproof React boundaries are primary (`src/features`, `src/shared`, `src/app`).
 - `src/components` remains as package export boundary during migration.
 - Legacy `UiPascalCase` remains until explicit migration.
 - New components use kebab-case folders/files.
 
 **Test Organization:**
+
 - Unit tests centralized in root `tests/unit`.
 - Integration, E2E, visual, and memory-leak checks are mapped under root `tests/*`.
 
 **Asset Organization:**
+
 - Static visual assets in `src/assets`.
 - Component-local style/type/theme files stay near implementation.
 
 ### Development Workflow Integration
 
 **Development Server Structure:**
+
 - Storybook and local dev scripts operate against Bulletproof domains (`src/features`, `src/shared`) and shared config.
 
 **Build Process Structure:**
+
 - Bun-driven build scripts and TypeScript/Jest/Playwright pipelines validate exported library surface and the full CI matrix.
 
 **Deployment Structure:**
+
 - CI workflow publishes versioned package to public npm registry after full quality gates pass.
 
 ## Architecture Validation Results
@@ -652,14 +702,17 @@ Naming, structure, contract, communication, and process patterns are specified w
 ### Gap Analysis Results
 
 **Critical Gaps:**
+
 - None.
 
 **Important Gaps:**
+
 - `specs/planning-artifacts/component-provenance.md` is defined but not yet created.
 - Compatibility matrix is now defined in this document and must be mirrored in release-gate automation (validation + documentation checks) before publish.
 - CI publish gate is defined conceptually but requires concrete workflow-level checklist.
 
 **Nice-to-Have Gaps:**
+
 - Add a migration playbook for eventual legacy `UiPascalCase` → kebab-case folder convergence.
 
 ### Validation Issues Addressed
@@ -672,24 +725,28 @@ Naming, structure, contract, communication, and process patterns are specified w
 ### Architecture Completeness Checklist
 
 **✅ Requirements Analysis**
+
 - [x] Project context thoroughly analyzed
 - [x] Scale and complexity assessed
 - [x] Technical constraints identified
 - [x] Cross-cutting concerns mapped
 
 **✅ Architectural Decisions**
+
 - [x] Critical decisions documented
 - [x] Technology stack baseline specified
 - [x] Integration patterns defined
 - [x] Security scope boundaries defined
 
 **✅ Implementation Patterns**
+
 - [x] Naming conventions established
 - [x] Structure patterns defined
 - [x] Communication patterns specified
 - [x] Process patterns documented
 
 **✅ Project Structure**
+
 - [x] Complete directory structure defined
 - [x] Component boundaries established
 - [x] Integration points mapped
@@ -701,21 +758,25 @@ Naming, structure, contract, communication, and process patterns are specified w
 **Confidence Level:** High
 
 **Key Strengths:**
+
 - Strong scope discipline for a shared internal UI library.
 - Clear cross-repo reuse governance (`crm` canonical behavior).
 - Practical enforcement model (tests, stories, exports, provenance).
 
 **Areas for Future Enhancement:**
+
 - Planned legacy folder naming migration path.
 
 ### Implementation Handoff
 
 **AI Agent Guidelines:**
+
 - Follow architectural decisions and patterns exactly.
 - Treat checklist completion as definition-of-done.
 - Keep component behavior deterministic and async-stateless.
 
 **First Implementation Priority:**
 Create governance artifact + bootstrap enforcement:
+
 1. Create `specs/planning-artifacts/component-provenance.md`
 2. Implement export/checklist scaffolding for first new component slice.

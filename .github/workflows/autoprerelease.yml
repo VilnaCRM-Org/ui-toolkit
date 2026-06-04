@@ -1,8 +1,8 @@
 name: generate changelog and create pre release
 
 on:
-  pull_request:
-    branches:
+  push:
+    branches-ignore:
       - main
     paths-ignore:
       - 'package.json'
@@ -17,7 +17,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
 
       - name: Detect release manifest
         id: manifest
@@ -35,7 +37,7 @@ jobs:
       - name: Conventional Changelog Action
         if: steps.manifest.outputs.present == 'true'
         id: changelog
-        uses: TriPSs/conventional-changelog-action@v3
+        uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: 'false'

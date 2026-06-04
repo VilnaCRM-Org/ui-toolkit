@@ -8,6 +8,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       CI: true
 
@@ -18,7 +20,7 @@ jobs:
         id: e2e
         run: |
           present=false
-          if [[ -f package.json && -f bun.lock && -f playwright.config.ts && -d src/test/e2e ]] && find src/test/e2e -type f -name '*.spec.ts' -print -quit | grep -q .; then
+          if [[ -f package.json && -f bun.lock && -f playwright.config.ts && -d tests/e2e ]] && find tests/e2e -type f -name '*.spec.ts' -print -quit | grep -q .; then
             present=true
           fi
           echo "present=$present" >> "$GITHUB_OUTPUT"
@@ -30,10 +32,6 @@ jobs:
       - name: Install dependencies
         if: steps.e2e.outputs.present == 'true'
         run: make install
-
-      - name: Install Playwright browsers
-        if: steps.e2e.outputs.present == 'true'
-        run: make playwright-install
 
       - name: Run Playwright tests
         if: steps.e2e.outputs.present == 'true'

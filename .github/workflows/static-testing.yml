@@ -7,6 +7,8 @@ on:
 jobs:
   static:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -29,7 +31,7 @@ jobs:
         if: steps.project.outputs.present == 'true'
         run: make start
 
-      - name: Run next linter
+      - name: Run ESLint
         if: steps.project.outputs.present == 'true'
         run: make lint-next
 

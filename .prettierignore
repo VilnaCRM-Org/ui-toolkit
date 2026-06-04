@@ -1,0 +1,8 @@
+# Ignore artifacts:
+build
+coverage
+.next
+.lighthouseci
+out
+storybook-static
+.github

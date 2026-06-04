@@ -24,6 +24,7 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -39,3 +40,26 @@ next-env.d.ts
 
 # bmad
 /_bmad/
+
+# testing artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+reports/
+.stryker-tmp
+
+# production
+storybook-static/
+
+# lighthouse
+.lighthouseci/
+lhci-reports-desktop/
+lhci-reports-mobile/
+
+# k6 config
+src/test/load/config.json
+src/test/load/results
+
+# memlab
+src/test/memory-leak/results
