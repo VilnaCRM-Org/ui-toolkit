@@ -52,7 +52,7 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
 
   return (
     <form onSubmit={handleSubmit(() => {})}>
-      <Stack direction="row" alignItems="center" gap="1rem">
+      <Stack direction="row" sx={{ alignItems: 'center', gap: '1rem' }}>
         <UiTextFieldForm
           control={control}
           rules={rules}

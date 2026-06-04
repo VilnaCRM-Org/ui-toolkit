@@ -34,15 +34,12 @@ lint: lint-next lint-tsc lint-md format-check ## Run all linters inside the dock
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		targets=""; \
-		if [ -d src ]; then targets="src"; fi; \
-		if [ -d pages ]; then targets="$$targets pages"; fi; \
-		if [ -d tests ]; then targets="$$targets tests"; fi; \
+		targets=$$(find src scripts tests -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \) 2>/dev/null); \
 		if [ -z "$$targets" ]; then \
 			echo "No lint targets found, skipping ESLint."; \
 			exit 0; \
 		fi; \
-		bun x eslint $$targets --ext .js,.jsx,.ts,.tsx \
+		bun x eslint $$targets \
 	'
 
 lint-tsc: ## Run the TypeScript linter inside the docker container.
@@ -124,10 +121,10 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
-	$(BUN_X) lhci autorun
+	$(BUN_X) lhci autorun --collect.settings.preset=desktop
 
 lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
-	$(BUN_X) lhci autorun
+	$(BUN_X) lhci autorun --collect.settings.formFactor=mobile
 
 install: ## Install dependencies inside the docker container.
 	$(RUN_BUN) bun install --frozen-lockfile

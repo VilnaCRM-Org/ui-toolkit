@@ -1,9 +1,12 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { StorybookConfig } from '@storybook/react-webpack5';
 import type { RuleSetCondition } from 'webpack';
 
+const storybookDir =
+  typeof __dirname === 'string' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 const toPath = 'src/assets/fonts';
 const fromPath = `../${toPath}`;
 const svgExclude = /\.svg$/i;
@@ -57,29 +60,24 @@ const staticDirs = [
     from: `${fromPath}/Inter/Inter-Regular.ttf`,
     to: `${toPath}/Inter/Inter-Regular.ttf`,
   },
-].filter(entry => fs.existsSync(path.resolve(__dirname, entry.from)));
+].filter(entry => fs.existsSync(path.resolve(storybookDir, entry.from)));
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
     '@storybook/addon-links',
-    '@storybook/addon-essentials',
     '@storybook/addon-onboarding',
-    '@storybook/addon-interactions',
     '@storybook/addon-webpack5-compiler-swc',
   ],
   framework: {
     name: '@storybook/react-webpack5',
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
   webpackFinal: async config => {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
-      '@': path.resolve(__dirname, '../src'),
+      '@': path.resolve(storybookDir, '../src'),
     };
     config.module = config.module ?? { rules: [] };
     config.module.rules = (config.module.rules ?? []).map(rule => {

@@ -32,6 +32,14 @@ const UiInput: React.ForwardRefExoticComponent<
         sx={sx}
         placeholder={placeholder}
         inputRef={ref}
+        slotProps={{
+          htmlInput: {
+            onInput: onInput
+              ? (event: React.FormEvent<HTMLInputElement>): void =>
+                  onInput(event as unknown as React.ChangeEvent<HTMLInputElement>)
+              : undefined,
+          },
+        }}
         error={error}
         size={size}
         variant={variant}
@@ -41,7 +49,6 @@ const UiInput: React.ForwardRefExoticComponent<
         value={value}
         fullWidth={fullWidth}
         disabled={disabled}
-        onInput={onInput}
         id={id}
       />
     </ThemeProvider>

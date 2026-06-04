@@ -16,7 +16,7 @@ describe('UiLink', () => {
   });
 
   it('inherits parent MuiLink theme defaults', () => {
-    const theme = createTheme({
+    const theme: ReturnType<typeof createTheme> = createTheme({
       components: {
         MuiLink: {
           defaultProps: {
