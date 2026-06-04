@@ -7,13 +7,13 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: [
-    '<rootDir>/src/test/**/*.test.ts',
-    '<rootDir>/src/test/**/*.test.tsx',
-    '<rootDir>/scripts/test/unit/**/*.spec.js',
+    '<rootDir>/tests/**/*.test.ts',
+    '<rootDir>/tests/**/*.test.tsx',
+    '<rootDir>/tests/unit/**/*.spec.js',
   ],
   moduleNameMapper: {
-    '^.+\\.css$': '<rootDir>/src/test/mocks/styleMock.ts',
-    '^.+\\.svg$': '<rootDir>/src/test/mocks/svgMock.ts',
+    '^.+\\.css$': '<rootDir>/tests/unit/mocks/styleMock.ts',
+    '^.+\\.svg$': '<rootDir>/tests/unit/mocks/svgMock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testEnvironment: 'jsdom',

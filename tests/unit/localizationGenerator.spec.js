@@ -9,7 +9,7 @@ jest.mock('fs', () => ({
 
 const fs = require('fs');
 
-const LocalizationGenerator = require('../../localizationGenerator');
+const LocalizationGenerator = require('../../scripts/localizationGenerator');
 
 const FEATURE_FOLDERS = [
   { name: 'folder1', isDirectory: () => true },
@@ -123,7 +123,7 @@ describe('LocalizationGenerator', () => {
 
   describe('writeLocalizationFile', () => {
     test('should write the localization file', () => {
-      const filePath = 'scripts/test/unit/localization.json';
+      const filePath = 'tests/unit/localization.json';
       const fileContent = JSON.stringify({ greeting: 'Hello' });
 
       const mockMkdirSync = mockedMkdirSync();
@@ -144,7 +144,7 @@ describe('LocalizationGenerator', () => {
       const generator = new LocalizationGenerator();
 
       const fileContent = JSON.stringify({ key: 'value' });
-      const filePath = 'scripts/test/unit/localization.json';
+      const filePath = 'tests/unit/localization.json';
 
       expect(() => {
         generator.writeLocalizationFile(fileContent, filePath);
@@ -169,7 +169,7 @@ describe('LocalizationGenerator', () => {
       generator.generateLocalizationFile();
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(
-        path.join(path.dirname(__dirname), '..', '..', 'i18n', 'localization.json'),
+        path.resolve(__dirname, '..', '..', 'i18n', 'localization.json'),
         JSON.stringify(LOCALIZATION_OBJ)
       );
     });
