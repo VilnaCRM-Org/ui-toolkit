@@ -34,12 +34,22 @@ lint: lint-next lint-tsc lint-md format-check ## Run all linters inside the dock
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		targets=$$(find src scripts tests -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \) 2>/dev/null); \
+		targets=""; \
+		for dir in src scripts tests; do \
+			if [ -d "$$dir" ]; then \
+				targets="$$targets $$dir"; \
+			fi; \
+		done; \
 		if [ -z "$$targets" ]; then \
 			echo "No lint targets found, skipping ESLint."; \
 			exit 0; \
 		fi; \
-		bun x eslint $$targets \
+		files=$$(find $$targets -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \)); \
+		if [ -z "$$files" ]; then \
+			echo "No lint files found, skipping ESLint."; \
+			exit 0; \
+		fi; \
+		bun x eslint $$files \
 	'
 
 lint-tsc: ## Run the TypeScript linter inside the docker container.

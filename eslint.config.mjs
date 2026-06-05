@@ -258,10 +258,10 @@ export default [
     },
   },
 
-  prettier,
-
   {
     files: sourceGlobs,
     rules: formattingRules,
   },
+
+  prettier,
 ];
