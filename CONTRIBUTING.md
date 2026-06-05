@@ -60,6 +60,12 @@ If you find an issue to work on, you are welcome to open a PR with a fix.
 
 2. Create a working branch and start with your changes!
 
+When you add or change a public Make target:
+
+- keep `tests/bats/make-target-coverage.tsv` in sync with the current Makefile target list
+- add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
+  exercises the target end to end
+
 ### Commit your update
 
 Commit the changes once you are happy with them.

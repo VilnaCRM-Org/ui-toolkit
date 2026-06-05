@@ -47,9 +47,29 @@ make lint-tsc - static TypeScript lint
 make test-e2e - end-to-end testing
 make test-e2e-local - open Playwright test runner
 make test-unit - unit testing
+make test-bats - shell-level regression coverage for Makefile targets and helper flows
 make lighthouse-desktop - lighthouse desktop testing
 make lighthouse-mobile - lighthouse mobile testing
 ```
+
+### Bats Shell Coverage
+
+Use the Bats suite for fast regression coverage of `Makefile` shell behavior without running the
+full browser or mutation stacks:
+
+```bash
+make test-bats
+```
+
+For CI-friendly output:
+
+```bash
+make test-bats BATS_FORMATTER=tap
+```
+
+When you add or change a public Make target, update `tests/bats/make-target-coverage.tsv` in the
+same change. Either add or adjust direct Bats coverage for uncovered shell behavior, or point the
+manifest at the pull-request workflow that already exercises the target.
 
 ## Documentation
 
