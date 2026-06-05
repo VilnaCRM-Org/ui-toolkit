@@ -4,11 +4,11 @@ import { containedButtonText, outlinedButtonText, socialButtonText } from './con
 
 async function checkButtonVisibility(
   page: Page,
-  storyPath: string,
+  storyId: string,
   buttonText: string
 ): Promise<void> {
-  await page.goto(`/?path=/story/${storyPath}`);
-  const button: Locator = page.getByText(buttonText);
+  await page.goto(`/iframe.html?id=${storyId}`);
+  const button: Locator = page.getByRole('button', { name: buttonText });
   await expect(button).toBeVisible();
 }
 

@@ -1,0 +1,32 @@
+FROM oven/bun:1.3.14@sha256:e10577f0db68676a7024391c6e5cb4b879ebd17188ab750cf10024a6d700e5c4
+
+SHELL ["/bin/sh", "-lc"]
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      bash \
+      g++ \
+      make \
+      nodejs \
+      npm \
+      procps \
+      python3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system appuser \
+    && useradd --system --gid appuser --create-home --home-dir /home/appuser appuser
+
+WORKDIR /app
+
+COPY . .
+
+RUN if [ -f package.json ]; then \
+      bun install --frozen-lockfile; \
+    fi \
+    && bun x playwright install --with-deps \
+    && chown -R appuser:appuser /app /ms-playwright
+
+USER appuser
+
+CMD ["sh", "-lc", "while :; do sleep 3600; done"]
