@@ -1,7 +1,7 @@
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-import { UiInput } from '../../components';
+import { UiInput } from '../../src/components';
 
 import { testText, testEmail, testPlaceholder } from './constants';
 
@@ -32,6 +32,17 @@ describe('UiInput', () => {
     const inputElement: HTMLElement = getByRole('textbox');
     fireEvent.blur(inputElement);
     expect(mockOnBlur).toHaveBeenCalled();
+  });
+
+  it('calls the onInput function when the input value changes', () => {
+    const mockOnInput: (event: React.ChangeEvent<HTMLInputElement>) => void = jest.fn();
+    const { getByRole } = render(<UiInput onInput={mockOnInput} />);
+    const inputElement: HTMLElement = getByRole('textbox');
+
+    fireEvent.input(inputElement, { target: { value: testText } });
+
+    expect(mockOnInput).toHaveBeenCalledTimes(1);
+    expect(inputElement).toHaveValue(testText);
   });
 
   it('applies the correct styles based on the error prop', () => {

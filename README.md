@@ -40,7 +40,7 @@ make lighthouse-mobile
 - `src/components`: exported UI components, themes, and stories
 - `src/index.ts`: library entrypoint
 - `.storybook`: Storybook configuration
-- `src/test` and `tests`: automated test coverage
+- `tests`: automated test coverage
 - `scripts`: repository helper scripts used by build/test workflows
 
 ## Notes

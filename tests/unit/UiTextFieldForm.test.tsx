@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { UiTextFieldForm } from '../../components';
+import { UiTextFieldForm } from '../../src/components';
 
 import { testPlaceholder, testText } from './constants';
 
@@ -16,7 +16,13 @@ describe('UiTextFieldForm', () => {
         <UiTextFieldForm
           control={control}
           name="testField"
-          rules={{ required: true, minLength: 5 }}
+          rules={{
+            required: 'This field is required',
+            minLength: {
+              value: 5,
+              message: 'Must be at least 5 characters',
+            },
+          }}
           placeholder={testPlaceholder}
           type="text"
           fullWidth
@@ -45,6 +51,15 @@ describe('UiTextFieldForm', () => {
     fireEvent.change(uiInput, { target: { value: testText } });
 
     expect(uiInput).toHaveValue(testText);
+  });
+
+  it('renders validation state and error text after an invalid submit', async () => {
+    render(<TestWrapper />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+
+    expect(await screen.findByText('This field is required')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
   });
 
   it('forwards supported input props to UiInput', () => {
