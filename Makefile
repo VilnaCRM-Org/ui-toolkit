@@ -74,19 +74,10 @@ generate-ts-doc: ## Generate TypeScript documentation inside the docker containe
 	$(BUN_X) api-extractor run --local --verbose
 
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
-	@set -e; \
-		$(DOCKER_COMPOSE) build playwright; \
-		$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true; \
-		$(DOCKER_COMPOSE) up -d --build storybook; \
-		trap "$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true" EXIT; \
-		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 tcp:storybook:6006"; then \
-			$(DOCKER_COMPOSE) logs storybook; \
-			exit 1; \
-		fi; \
-		$(DOCKER_COMPOSE) run --rm playwright bun x playwright test ./tests/e2e
+	sh ./scripts/runStorybookPlaywright.sh ./tests/e2e
 
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
-	$(DOCKER_COMPOSE) run --rm playwright bun x playwright test ./tests/e2e
+	$(DOCKER_COMPOSE) run --rm --build playwright bun x playwright test ./tests/e2e
 
 test-unit: ## Run Jest unit tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
@@ -144,16 +135,7 @@ playwright-install: ## Build the Playwright runner image with browsers and syste
 	$(DOCKER_COMPOSE) build playwright
 
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
-	@set -e; \
-		$(DOCKER_COMPOSE) build playwright; \
-		$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true; \
-		$(DOCKER_COMPOSE) up -d --build storybook; \
-		trap "$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true" EXIT; \
-		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 tcp:storybook:6006"; then \
-			$(DOCKER_COMPOSE) logs storybook; \
-			exit 1; \
-		fi; \
-		$(DOCKER_COMPOSE) run --rm playwright bun x playwright test ./tests/visual --pass-with-no-tests
+	sh ./scripts/runStorybookPlaywright.sh ./tests/visual --pass-with-no-tests
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build
