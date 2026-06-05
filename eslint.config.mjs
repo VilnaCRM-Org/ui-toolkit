@@ -166,7 +166,7 @@ export default [
   },
 
   { ...tsPlugin.configs['flat/eslint-recommended'], files: typedGlobs },
-  ...tsPlugin.configs['flat/recommended'].map((config) => ({
+  ...tsPlugin.configs['flat/recommended'].map(config => ({
     ...config,
     files: typedGlobs,
   })),
@@ -242,7 +242,7 @@ export default [
     },
   },
 
-  ...storybook.configs['flat/recommended'].map((config) => ({
+  ...storybook.configs['flat/recommended'].map(config => ({
     ...config,
     files: storyGlobs,
     rules: {

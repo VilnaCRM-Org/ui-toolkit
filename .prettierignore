@@ -6,3 +6,4 @@ coverage
 out
 storybook-static
 .github
+.playwright-mcp
