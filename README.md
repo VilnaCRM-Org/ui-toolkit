@@ -35,6 +35,25 @@ make lighthouse-desktop
 make lighthouse-mobile
 ```
 
+### Bats Shell Coverage
+
+Use the Bats suite for fast regression coverage of `Makefile` shell behavior without running the
+full browser or mutation stacks:
+
+```bash
+make test-bats
+```
+
+For CI-friendly output:
+
+```bash
+make test-bats BATS_FORMATTER=tap
+```
+
+When you add or change a public Make target, update `tests/bats/make-target-coverage.tsv` in the
+same change. Either add or adjust direct Bats coverage for uncovered shell behavior, or point the
+manifest at the pull-request workflow that already exercises the target.
+
 ## Project Layout
 
 - `src/components`: exported UI components, themes, and stories

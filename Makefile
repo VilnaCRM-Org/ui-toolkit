@@ -1,5 +1,6 @@
 # Parameters
 K6 = $(DOCKER) run -v ./tests/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
+BATS_FORMATTER ?= pretty
 
 # Executables
 DOCKER = docker
@@ -19,7 +20,7 @@ BUN_X = $(BUN) x
 .PHONY: help build lint lint-next lint-tsc lint-md format-check git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit copy-coverage test-mutation test-memory-leak test-visual \
-	lighthouse-desktop lighthouse-mobile install update playwright-install \
+	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start stop build-k6-docker load-tests
 
 help:
@@ -133,6 +134,9 @@ update: ## Update dependencies inside the docker container.
 
 playwright-install: ## Build the Playwright runner image with browsers and system dependencies.
 	$(DOCKER_COMPOSE) build playwright
+
+test-bats: ## Run Bats coverage for Makefile shell flows and coverage contracts inside the docker container.
+	$(DOCKER_COMPOSE) run --rm --build bun bun x bats --formatter $(BATS_FORMATTER) -r tests/bats
 
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	sh ./scripts/runStorybookPlaywright.sh ./tests/visual --pass-with-no-tests

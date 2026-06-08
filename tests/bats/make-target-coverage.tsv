@@ -1,0 +1,35 @@
+target	coverage	evidence	details
+build	bats	tests/bats/makefile_targets.bats	Validated as the Docker-backed project build entrypoint.
+build-k6-docker	bats	tests/bats/makefile_targets.bats	Validated as the Docker image build step for local k6 runs.
+copy-coverage	bats	tests/bats/makefile_targets.bats	Validated for the missing-container, missing-coverage, and copy-success branches.
+down	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that tear down the Docker environment.
+format-check	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
+generate-ts-doc	bats	tests/bats/makefile_targets.bats	Validated as the API Extractor documentation entrypoint.
+git-hooks-install	bats	tests/bats/makefile_targets.bats	Validated as the Husky installation command.
+help	bats	tests/bats/makefile_targets.bats	Validated through the help output contract and `test-bats` discoverability.
+install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency install entrypoint used before browser-style jobs.
+lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.
+lighthouse-mobile	bats	tests/bats/makefile_targets.bats	Validated as the mobile Lighthouse shell entrypoint.
+lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the static testing workflow's individual lint targets.
+lint-md	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
+lint-next	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
+lint-tsc	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
+load-tests	bats	tests/bats/makefile_targets.bats	Validated as the combined k6 image build and homepage load-run entrypoint.
+logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose follow-logs command.
+new-logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose tail-from-now logs command.
+playwright-install	bats	tests/bats/makefile_targets.bats	Validated as the Playwright browser installation command.
+ps	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose status command.
+sh	bats	tests/bats/makefile_targets.bats	Validated as the Docker shell entrypoint.
+start	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that boot the Docker environment.
+stop	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose stop command.
+storybook-build	bats	tests/bats/makefile_targets.bats	Validated as the Storybook production build command.
+storybook-start	bats	tests/bats/makefile_targets.bats	Validated as the Storybook dev-server command.
+test-bats	ci	.github/workflows/bats-testing.yml	Executed directly by the dedicated Bats pull-request workflow.
+test-e2e	bats	tests/bats/makefile_targets.bats	Validated as the inline Storybook, Playwright install, readiness, and E2E shell flow.
+test-e2e-local	bats	tests/bats/makefile_targets.bats	Validated as the local Playwright runner entrypoint.
+test-memory-leak	bats	tests/bats/makefile_targets.bats	Validated as the inline Memlab shell flow, including the bootstrap skip guard.
+test-mutation	ci	.github/workflows/mutation-testing.yml	Executed directly by the mutation testing workflow.
+test-unit	bats	tests/bats/makefile_targets.bats	Validated for both the running-container and fresh-container branches.
+test-visual	bats	tests/bats/makefile_targets.bats	Validated as the inline Storybook, Playwright install, readiness, and visual shell flow.
+up	ci	.github/workflows/static-testing.yml	Exercised transitively by workflows that call `make start`, which depends on `up`.
+update	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency update command.

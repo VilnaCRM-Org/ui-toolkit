@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
   storybook:
     build: .
-    command: ["sh", "-lc", "CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006"]
+    command: ['sh', '-lc', 'CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006']
   playwright:
     build:
       context: .
