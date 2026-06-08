@@ -1,21 +1,19 @@
 import { Grid } from '@mui/material';
-import React, { CSSProperties } from 'react';
-
-import UiCardItem from '../UiCardItem';
+import { CSSProperties } from 'react';
 
 import styles from './styles';
-import { CardList } from './types';
+import { UiCardListProps } from './types';
+import UiCardItem from './UiCardItem';
 
-function CardGrid({ cardList }: CardList): React.ReactElement {
+export default function CardGrid({ cardList }: UiCardListProps): JSX.Element {
   const grid: CSSProperties =
-    cardList[0].type === 'smallCard' ? styles.smallGrid : styles.largeGrid;
+    cardList[0]?.type === 'smallCard' ? styles.smallGrid : styles.largeGrid;
 
   return (
     <Grid sx={grid}>
-      {cardList.map(item => (
+      {cardList.map((item) => (
         <UiCardItem key={item.id} item={item} />
       ))}
     </Grid>
   );
 }
-export default CardGrid;

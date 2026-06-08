@@ -4,7 +4,14 @@ import React from 'react';
 import styles from './styles';
 import { UiCheckboxProps } from './types';
 
-function UiCheckbox({ label, sx, onChange, error, disabled }: UiCheckboxProps): React.ReactElement {
+function UiCheckbox({
+  label,
+  sx,
+  onChange,
+  error,
+  disabled,
+  checked,
+}: UiCheckboxProps): React.ReactElement {
   return (
     <FormControlLabel
       sx={sx}
@@ -15,7 +22,9 @@ function UiCheckbox({ label, sx, onChange, error, disabled }: UiCheckboxProps): 
             type="checkbox"
             className="PrivateSwitchBase-input"
             disabled={disabled}
+            checked={checked}
             onChange={onChange}
+            aria-invalid={error ? 'true' : undefined}
           />
         </Box>
       }

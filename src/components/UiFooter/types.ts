@@ -1,7 +1,16 @@
-export interface SocialMedia {
+import type { ReactElement, ReactNode } from 'react';
+
+export type UiFooterSocialLink = {
   id: string;
-  icon: string;
-  alt: string;
-  linkHref: string;
-  ariaLabel: string;
-}
+  href: string;
+  label: string;
+  icon?: ReactElement | string;
+};
+
+export type UiFooterProps = {
+  logo?: ReactNode;
+  privacyContent?: ReactNode;
+  emailContent?: ReactNode;
+  socialLinks: UiFooterSocialLink[];
+  copyrightLabel: string;
+};

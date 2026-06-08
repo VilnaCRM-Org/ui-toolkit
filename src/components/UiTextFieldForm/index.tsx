@@ -1,43 +1,61 @@
 import React from 'react';
-import { Controller, FieldValues } from 'react-hook-form';
+import { Controller, ControllerFieldState, ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
 
 import UiInput from '../UiInput';
-import UiTypography from '../UiTypography';
-
-import styles from './styles';
 import { CustomTextField } from './types';
+
+type RenderArgs<T extends FieldValues> = {
+  field: ControllerRenderProps<T, Path<T>>;
+  fieldState: ControllerFieldState;
+};
+
+function createRenderField<T extends FieldValues>(
+  inputProps: Omit<CustomTextField<T>, 'control' | 'defaultValue' | 'name' | 'rules'>
+): (args: RenderArgs<T>) => JSX.Element {
+  return function renderField({
+    field: { ref, value, ...field },
+    fieldState: { error },
+  }: RenderArgs<T>): JSX.Element {
+    return (
+      <UiInput
+        {...inputProps}
+        {...field}
+        ref={ref}
+        value={value ?? ''}
+        error={!!error}
+        helperText={error?.message ?? inputProps.helperText}
+      />
+    );
+  };
+}
 
 function UiTextFieldForm<T extends FieldValues>({
   control,
   rules,
-  placeholder,
-  type,
+  defaultValue,
   name,
-  fullWidth,
-}: CustomTextField<T>): React.ReactElement {
+  ...inputProps
+}: CustomTextField<T>): JSX.Element {
+  const renderField = createRenderField<T>(inputProps);
+
+  if (defaultValue !== undefined) {
+    return (
+      <Controller
+        control={control}
+        defaultValue={defaultValue}
+        name={name}
+        rules={rules}
+        render={renderField}
+      />
+    );
+  }
+
   return (
     <Controller
       control={control}
       name={name}
       rules={rules}
-      render={({ field, fieldState: { error } }) => (
-        <>
-          <UiInput
-            type={type}
-            placeholder={placeholder}
-            onChange={e => field.onChange(e)}
-            onBlur={field.onBlur}
-            value={field.value}
-            error={!!error}
-            fullWidth={fullWidth}
-          />
-          {error && (
-            <UiTypography variant="medium14" sx={styles.errorText}>
-              {error.message}
-            </UiTypography>
-          )}
-        </>
-      )}
+      render={renderField}
     />
   );
 }

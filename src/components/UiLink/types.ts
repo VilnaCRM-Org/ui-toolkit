@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { SxProps, Theme } from '@mui/material';
 
 /**
@@ -6,7 +7,7 @@ import { SxProps, Theme } from '@mui/material';
  * - exceptions: value, onChange, disabled, error, size, variant
  */
 export interface UiLinkProps {
-  children: React.ReactNode;
+  children: ReactNode;
   href: string;
   target?: string;
   rel?: string;

@@ -3,77 +3,61 @@ import React, { CSSProperties, useEffect, useRef } from 'react';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import UiCardItem from '../UiCardItem';
-
 import styles from './styles';
+import { UiCardListProps } from './types';
+import UiCardItem from './UiCardItem';
+
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { CardList } from './types';
 
-const TOOLTIP_SELECTOR: string = '[role="tooltip"].base-Popper-root';
-
-function isToolTip(node: Node): boolean {
-  return node instanceof Element && node.matches(TOOLTIP_SELECTOR);
-}
-
-function mutationTouchesToolTip(mutation: MutationRecord): boolean {
-  if (mutation.type !== 'childList') {
-    return false;
-  }
-  return (
-    Array.from(mutation.addedNodes).some(isToolTip) ||
-    Array.from(mutation.removedNodes).some(isToolTip)
-  );
-}
-
-// Recompute from the live DOM rather than toggling per add/remove, so overlapping
-// tooltip mutations can't leave pointer-events in the wrong state.
-function syncPointerEvents(swiper: HTMLElement | null): void {
-  if (!swiper) {
-    return;
-  }
-  const hasToolTip: boolean = document.querySelector(TOOLTIP_SELECTOR) !== null;
-  swiper.style.setProperty('pointer-events', hasToolTip ? 'none' : 'auto');
-}
-
-function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | null): void {
-  if (mutationsList.some(mutationTouchesToolTip)) {
-    syncPointerEvents(swiper);
-  }
-}
-
-function CardSwiper({ cardList }: CardList): React.ReactElement {
-  const swiperRef: React.RefObject<HTMLElement> = useRef(null);
+export default function CardSwiper({ cardList }: UiCardListProps): JSX.Element {
+  const swiperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const target: HTMLElement | null = document.querySelector('body');
+    const target = document.querySelector('body');
 
-    const observer: MutationObserver = new MutationObserver((mutationsList: MutationRecord[]) =>
-      handleMutations(mutationsList, swiperRef.current)
-    );
+    function isToolTip(node: Element): boolean {
+      return node.role === 'tooltip' && node.classList.contains('base-Popper-root');
+    }
+
+    const observer = new MutationObserver((mutationsList) => {
+      mutationsList.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node instanceof Element && isToolTip(node) && swiperRef.current) {
+              swiperRef.current.style.pointerEvents = 'none';
+            }
+          });
+          mutation.removedNodes.forEach((node) => {
+            if (node instanceof Element && isToolTip(node) && swiperRef.current) {
+              swiperRef.current.style.pointerEvents = 'auto';
+            }
+          });
+        }
+      });
+    });
 
     if (target) {
       observer.observe(target, { childList: true });
     }
 
-    return (): void => observer.disconnect();
+    return () => observer.disconnect();
   }, []);
 
   const gridMobile: CSSProperties =
-    cardList[0].type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
+    cardList[0]?.type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
 
   return (
     <Grid sx={gridMobile} ref={swiperRef as React.RefObject<HTMLDivElement>}>
       <Swiper
-        pagination={{
-          clickable: true,
-        }}
+        pagination={{ clickable: true }}
         modules={[Pagination]}
         spaceBetween={12}
         slidesPerView={1.04}
         loop
+        className="swiper-wrapper"
       >
-        {cardList.map(item => (
+        {cardList.map((item) => (
           <SwiperSlide key={item.id}>
             <UiCardItem item={item} />
           </SwiperSlide>
@@ -82,5 +66,3 @@ function CardSwiper({ cardList }: CardList): React.ReactElement {
     </Grid>
   );
 }
-
-export default CardSwiper;
