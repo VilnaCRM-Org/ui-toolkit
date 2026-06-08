@@ -29,7 +29,14 @@ describe('components index', () => {
   it('re-exports the shared theme modules and components', () => {
     expect(publicComponents.UiBreakpoints.breakpoints.values.sm).toBe(640);
     expect(publicComponents.UiColorTheme.palette.primary.main).toBe('#1EAEFF');
-    expect(publicComponents.UiButton).toBeDefined();
-    expect(publicComponents.UiTooltip).toBeDefined();
+    expect(publicComponents.UiButton).not.toBeNull();
+    expect(
+      typeof publicComponents.UiButton === 'function' || typeof publicComponents.UiButton === 'object'
+    ).toBe(true);
+    expect(publicComponents.UiTooltip).not.toBeNull();
+    expect(
+      typeof publicComponents.UiTooltip === 'function' ||
+        typeof publicComponents.UiTooltip === 'object'
+    ).toBe(true);
   });
 });

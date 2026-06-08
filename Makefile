@@ -32,7 +32,7 @@ run-storybook-playwright:
 		$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true; \
 		$(DOCKER_COMPOSE) up -d --build storybook; \
 		trap "$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true" EXIT; \
-		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 tcp:storybook:6006"; then \
+		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html"; then \
 			$(DOCKER_COMPOSE) logs storybook; \
 			exit 1; \
 		fi; \

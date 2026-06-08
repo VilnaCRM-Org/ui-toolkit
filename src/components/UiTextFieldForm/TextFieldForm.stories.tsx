@@ -70,7 +70,7 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
 }
 
 export const TextFieldForm: Story = {
-  render: args => <TextFieldFormStory {...(args as unknown as TextFieldFormStoryArgs)} />,
+  render: args => <TextFieldFormStory {...(args as TextFieldFormStoryArgs)} />,
   args: {
     rules: {
       required: t('This field is required'),

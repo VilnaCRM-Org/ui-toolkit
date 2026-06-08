@@ -5,11 +5,15 @@ import { UiCheckbox } from '../../src/components';
 
 import { testText } from './constants';
 
-const mockOnChange: () => void = jest.fn();
+const mockOnChange = jest.fn();
 
 const borderStyle: string = 'border: 1px solid #DC3939';
 
 describe('UiCheckbox', () => {
+  beforeEach(() => {
+    mockOnChange.mockClear();
+  });
+
   it('renders the checkbox with the provided label', () => {
     const { getByLabelText } = render(<UiCheckbox label={testText} onChange={mockOnChange} />);
     const checkboxLabel: HTMLElement = getByLabelText(testText);
@@ -24,6 +28,7 @@ describe('UiCheckbox', () => {
   });
 
   it('disables the checkbox when the disabled prop is true', () => {
+    expect(mockOnChange).not.toHaveBeenCalled();
     const { getByRole } = render(<UiCheckbox disabled onChange={mockOnChange} label={testText} />);
     const checkboxInput: HTMLElement = getByRole('checkbox');
     expect(checkboxInput).toBeDisabled();

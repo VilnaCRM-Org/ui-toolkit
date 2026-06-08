@@ -38,8 +38,8 @@ logs|docker compose logs --follow|
 new-logs|docker compose logs --tail=0 --follow|
 stop|docker compose stop|
 build-k6-docker|docker build -t k6 -f ./tests/load/Dockerfile .|
-lighthouse-desktop|docker compose run --rm bun bun x lhci autorun|
-lighthouse-mobile|docker compose run --rm bun bun x lhci autorun|
+lighthouse-desktop|docker compose run --rm bun bun x lhci autorun|--collect.settings.preset=desktop
+lighthouse-mobile|docker compose run --rm bun bun x lhci autorun|--collect.settings.formFactor=mobile
 EOF
 }
 
@@ -49,7 +49,7 @@ EOF
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose build playwright'
   assert_log_contains 'docker compose up -d --build storybook'
-  assert_log_contains 'docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 tcp:storybook:6006'
+  assert_log_contains 'docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html'
   assert_log_contains 'docker compose run --rm playwright bun x playwright test ./tests/e2e'
 }
 
@@ -65,8 +65,8 @@ EOF
     assert_log_contains "$expected_three"
     [ -z "$expected_four" ] || assert_log_contains "$expected_four"
   done <<'EOF'
-test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 tcp:storybook:6006|docker compose run --rm playwright bun x playwright test ./tests/e2e
-test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 tcp:storybook:6006|docker compose run --rm playwright bun x playwright test ./tests/visual --pass-with-no-tests
+test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
+test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --pass-with-no-tests
 test-memory-leak|if [ ! -f tests/memory-leak/runMemlabTests.js ]; then|Skipping memory leak tests because this bootstrap PR does not include the app test files yet.|bun x storybook dev --ci --host 0.0.0.0 -p 3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js
 EOF
 }
