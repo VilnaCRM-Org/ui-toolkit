@@ -29,8 +29,8 @@ git-hooks-install|docker compose run --rm bun bun x husky install|
 storybook-start|docker compose run --rm bun bun x storybook dev -p 6006|
 storybook-build|docker compose run --rm bun bun x storybook build|
 generate-ts-doc|docker compose run --rm bun bun x api-extractor run --local --verbose|
-playwright-install|docker compose run --rm bun bun x playwright install --with-deps|
-test-e2e-local|docker compose run --rm bun bun x playwright test ./tests/e2e|
+playwright-install|docker compose build playwright|
+test-e2e-local|docker compose run --rm --build playwright bun x playwright test ./tests/e2e|
 update|docker compose run --rm bun bun update|
 sh|docker compose run --rm --entrypoint sh bun|
 ps|docker compose ps|
@@ -43,7 +43,17 @@ lighthouse-mobile|docker compose run --rm bun bun x lhci autorun|
 EOF
 }
 
-@test "browser-style and memory targets preserve their expected inline shell flows" {
+@test "run-storybook-playwright preserves the shared docker compose flow" {
+  reset_command_log
+  run_make_target_with_env run-storybook-playwright PLAYWRIGHT_TEST_TARGET=./tests/e2e
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose build playwright'
+  assert_log_contains 'docker compose up -d --build storybook'
+  assert_log_contains 'docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 tcp:storybook:6006'
+  assert_log_contains 'docker compose run --rm playwright bun x playwright test ./tests/e2e'
+}
+
+@test "storybook-backed and memory targets preserve their current shell flows" {
   while IFS='|' read -r target expected_one expected_two expected_three expected_four; do
     [ -n "$target" ] || continue
 
@@ -55,8 +65,8 @@ EOF
     assert_log_contains "$expected_three"
     [ -z "$expected_four" ] || assert_log_contains "$expected_four"
   done <<'EOF'
-test-e2e|bun x playwright install --with-deps|bun x storybook dev --ci --host 0.0.0.0 -p 6006|bun x wait-on --timeout 120000 tcp:127.0.0.1:6006|bun x playwright test ./tests/e2e
-test-visual|bun x playwright install --with-deps|bun x storybook dev --ci --host 0.0.0.0 -p 6006|bun x wait-on --timeout 120000 tcp:127.0.0.1:6006|bun x playwright test ./tests/visual --pass-with-no-tests
+test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 tcp:storybook:6006|docker compose run --rm playwright bun x playwright test ./tests/e2e
+test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 tcp:storybook:6006|docker compose run --rm playwright bun x playwright test ./tests/visual --pass-with-no-tests
 test-memory-leak|if [ ! -f tests/memory-leak/runMemlabTests.js ]; then|Skipping memory leak tests because this bootstrap PR does not include the app test files yet.|bun x storybook dev --ci --host 0.0.0.0 -p 3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js
 EOF
 }
