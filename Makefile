@@ -21,7 +21,22 @@ BUN_X = $(BUN) x
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
-	up down sh ps logs new-logs start stop build-k6-docker load-tests
+	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright
+
+PLAYWRIGHT_TEST_ARGS =
+
+run-storybook-playwright:
+	@test -n "$(PLAYWRIGHT_TEST_TARGET)"
+	@set -eu; \
+		$(DOCKER_COMPOSE) build playwright; \
+		$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true; \
+		$(DOCKER_COMPOSE) up -d --build storybook; \
+		trap "$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true" EXIT; \
+		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 tcp:storybook:6006"; then \
+			$(DOCKER_COMPOSE) logs storybook; \
+			exit 1; \
+		fi; \
+		$(DOCKER_COMPOSE) run --rm playwright bun x playwright test $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -74,8 +89,9 @@ storybook-build: ## Build Storybook inside the docker container.
 generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
 	$(BUN_X) api-extractor run --local --verbose
 
+test-e2e: PLAYWRIGHT_TEST_TARGET = ./tests/e2e
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
-	sh ./scripts/runStorybookPlaywright.sh ./tests/e2e
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)"
 
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
 	$(DOCKER_COMPOSE) run --rm --build playwright bun x playwright test ./tests/e2e
@@ -138,8 +154,10 @@ playwright-install: ## Build the Playwright runner image with browsers and syste
 test-bats: ## Run Bats coverage for Makefile shell flows and coverage contracts inside the docker container.
 	$(DOCKER_COMPOSE) run --rm --build bun bun x bats --formatter $(BATS_FORMATTER) -r tests/bats
 
+test-visual: PLAYWRIGHT_TEST_TARGET = ./tests/visual
+test-visual: PLAYWRIGHT_TEST_ARGS = --pass-with-no-tests
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
-	sh ./scripts/runStorybookPlaywright.sh ./tests/visual --pass-with-no-tests
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build

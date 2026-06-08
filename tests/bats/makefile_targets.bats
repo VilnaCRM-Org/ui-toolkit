@@ -61,6 +61,21 @@ test-memory-leak|if [ ! -f tests/memory-leak/runMemlabTests.js ]; then|Skipping 
 EOF
 }
 
+@test "storybook-backed playwright targets honor DOCKER_COMPOSE overrides" {
+  while IFS='|' read -r target expected_command; do
+    [ -n "$target" ] || continue
+
+    reset_command_log
+    run_make_target "$target" 'DOCKER_COMPOSE=docker compose -f docker-compose.override.yml'
+    [ "$status" -eq 0 ]
+    assert_log_contains "$expected_command"
+    assert_log_not_contains 'docker compose build playwright'
+  done <<'EOF'
+test-e2e|docker compose -f docker-compose.override.yml build playwright
+test-visual|docker compose -f docker-compose.override.yml build playwright
+EOF
+}
+
 @test "load-tests builds the k6 image and runs the homepage scenario" {
   run_make_target load-tests
   [ "$status" -eq 0 ]
