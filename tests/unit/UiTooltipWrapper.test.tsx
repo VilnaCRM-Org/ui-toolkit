@@ -37,7 +37,7 @@ describe('WrapperUiTooltip', () => {
   });
 
   it('closes the tooltip on click away', async () => {
-    const user = userEvent.setup();
+    const user: { click: (element: Element) => Promise<void> } = userEvent.setup();
     setup();
     const trigger: HTMLElement = screen.getByText(triggerText);
     await user.click(trigger);

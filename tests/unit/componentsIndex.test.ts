@@ -31,7 +31,8 @@ describe('components index', () => {
     expect(publicComponents.UiColorTheme.palette.primary.main).toBe('#1EAEFF');
     expect(publicComponents.UiButton).not.toBeNull();
     expect(
-      typeof publicComponents.UiButton === 'function' || typeof publicComponents.UiButton === 'object'
+      typeof publicComponents.UiButton === 'function' ||
+        typeof publicComponents.UiButton === 'object'
     ).toBe(true);
     expect(publicComponents.UiTooltip).not.toBeNull();
     expect(

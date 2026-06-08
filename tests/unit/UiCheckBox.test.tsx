@@ -5,7 +5,7 @@ import { UiCheckbox } from '../../src/components';
 
 import { testText } from './constants';
 
-const mockOnChange = jest.fn();
+const mockOnChange: jest.MockedFunction<React.ChangeEventHandler<HTMLInputElement>> = jest.fn();
 
 const borderStyle: string = 'border: 1px solid #DC3939';
 
