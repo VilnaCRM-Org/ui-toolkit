@@ -1,6 +1,8 @@
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';
 
+import { hoveredCard, largeImage, smallImage, smallWrapper } from './sharedCardStyles';
+
 export default {
   smallGrid: {
     display: 'grid',
@@ -68,27 +70,7 @@ export default {
       display: 'block',
     },
   },
-  smallWrapper: {
-    padding: '2.5rem 2rem 2.5rem 1.563rem',
-    borderRadius: '0.75rem',
-    border: `1px solid ${colorTheme.palette.grey500.main}`,
-    maxHeight: '20.75rem',
-    alignItems: 'start',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl - 1}px)`]: {
-      padding: '2.125rem 1.875rem 2.125rem 1.563rem',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: '2.813rem',
-      maxHeight: '11.375rem',
-    },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      flexDirection: 'column',
-      padding: '1rem 1.125rem 0rem 1rem',
-      gap: '1rem',
-      alignItems: 'start',
-      minHeight: '15.125rem',
-    },
-  },
+  smallWrapper,
   smallTitle: {
     paddingTop: '2rem',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
@@ -109,20 +91,8 @@ export default {
       marginTop: '0.75rem',
     },
   },
-  smallImage: {
-    width: '5rem',
-    height: '5rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      width: '3.125rem',
-      height: '3.125rem',
-    },
-  },
-  hoveredCard: {
-    cursor: 'pointer',
-    color: colorTheme.palette.primary.main,
-    textDecoration: 'underline',
-    fontWeight: '700',
-  },
+  smallImage,
+  hoveredCard,
   largeWrapper: {
     padding: '1.5rem',
     borderRadius: '0.75rem',
@@ -153,12 +123,5 @@ export default {
       lineHeight: '1.563rem',
     },
   },
-  largeImage: {
-    width: '4.375rem',
-    height: '4.375rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
-      width: '3.125rem',
-      height: '3.125rem',
-    },
-  },
+  largeImage,
 };
