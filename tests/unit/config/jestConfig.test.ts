@@ -6,4 +6,10 @@ describe('jest config', () => {
       expect.arrayContaining(['<rootDir>/tests/unit/**/*.spec.js'])
     );
   });
+
+  test('discovers TypeScript unit tests under tests', () => {
+    expect(jestConfig.testMatch).toEqual(
+      expect.arrayContaining(['<rootDir>/tests/**/*.test.ts', '<rootDir>/tests/**/*.test.tsx'])
+    );
+  });
 });
