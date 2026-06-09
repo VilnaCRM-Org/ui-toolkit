@@ -30,9 +30,6 @@ COPY scripts ./scripts
 COPY src ./src
 COPY tests ./tests
 
-# Copied resources stay root-owned (read-only to pwuser). pwuser owns only the
-# workdir entry — so Playwright can create/clean its report/results dirs — and
-# the bun cache; the copied application files themselves remain non-writable.
 RUN bun install --frozen-lockfile \
     && mkdir -p /home/pwuser/.bun-cache \
     && chown -R pwuser:pwuser /home/pwuser/.bun-cache \
