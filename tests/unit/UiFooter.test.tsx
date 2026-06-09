@@ -34,12 +34,7 @@ describe('UiFooter', () => {
   });
 
   it('renders provided social links', () => {
-    render(
-      <UiFooter
-        copyrightLabel="Example Company"
-        socialLinks={socialLinks}
-      />
-    );
+    render(<UiFooter copyrightLabel="Example Company" socialLinks={socialLinks} />);
 
     expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
       'href',
@@ -54,6 +49,8 @@ describe('UiFooter', () => {
   it('renders the current year with the copyright label', () => {
     render(<UiFooter copyrightLabel="Example Company" socialLinks={socialLinks} />);
 
-    expect(screen.getAllByText(new RegExp(`Example Company, ${new Date().getFullYear()}`))).toHaveLength(2);
+    expect(
+      screen.getAllByText(new RegExp(`Example Company, ${new Date().getFullYear()}`))
+    ).toHaveLength(2);
   });
 });

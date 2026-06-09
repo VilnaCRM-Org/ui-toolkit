@@ -35,10 +35,7 @@ describe('UiForm', () => {
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith(
-        { email: 'person@example.com' },
-        expect.anything()
-      )
+      expect(onSubmit).toHaveBeenCalledWith({ email: 'person@example.com' }, expect.anything())
     );
   });
 

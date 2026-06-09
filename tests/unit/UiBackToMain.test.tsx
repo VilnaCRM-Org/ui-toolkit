@@ -20,11 +20,7 @@ describe('UiBackToMain', () => {
   });
 
   it('renders a custom icon when provided', () => {
-    render(
-      <UiBackToMain
-        icon={<span data-testid="custom-back-icon">icon</span>}
-      />
-    );
+    render(<UiBackToMain icon={<span data-testid="custom-back-icon">icon</span>} />);
 
     expect(screen.getByTestId('custom-back-icon')).toBeInTheDocument();
   });

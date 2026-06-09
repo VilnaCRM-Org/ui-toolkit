@@ -27,7 +27,7 @@ type Wrap = <T extends object>(baseSx: T) => (T | typeof STATIC_SX)[];
 
 const buildWrap =
   (disableAnimation: boolean): Wrap =>
-  (baseSx) =>
+  baseSx =>
     disableAnimation ? [baseSx, STATIC_SX] : [baseSx];
 
 function TitleBlock({ wrap }: { wrap: Wrap }): React.ReactElement {
@@ -55,7 +55,7 @@ function FieldRows({
 }): React.ReactElement {
   return (
     <>
-      {[1, 2, 3].map((id) => (
+      {[1, 2, 3].map(id => (
         <Box key={id} sx={id === 3 ? styles.lastFieldContainer : styles.fieldContainer}>
           <UiSkeletonText
             id={`auth-skeleton-field-label-${id}`}
@@ -72,7 +72,7 @@ function FieldRows({
 function SocialBlocks({ wrap }: { wrap: Wrap }): React.ReactElement {
   return (
     <Box sx={styles.socialContainer}>
-      {SOCIAL_BUTTONS.map((button) => (
+      {SOCIAL_BUTTONS.map(button => (
         <UiSkeletonBlock
           id={`auth-skeleton-social-${button.id}`}
           key={button.id}

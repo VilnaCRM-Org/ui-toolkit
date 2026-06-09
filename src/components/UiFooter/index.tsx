@@ -14,7 +14,7 @@ function FooterSocialLinks({
 }): React.ReactElement {
   return (
     <Stack direction="row" sx={styles.socialLinks}>
-      {socialLinks.map((link) => (
+      {socialLinks.map(link => (
         <UiLink key={link.id} href={link.href} aria-label={link.label}>
           {link.icon ?? link.label}
         </UiLink>

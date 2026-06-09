@@ -64,7 +64,7 @@ export default {
   },
   swiperContainerSmallScreen: {
     display: 'none',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
+    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm - 0.02}px)`]: {
       display: 'block',
     },
   },

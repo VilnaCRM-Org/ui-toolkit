@@ -17,7 +17,7 @@ export default function CardContent({
 }: {
   item: UiCardItemData;
   isSmallCard: boolean;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <>
       <UiTypography
@@ -34,9 +34,14 @@ export default function CardContent({
         {item.tooltipTitle && item.tooltipLabel ? (
           <>
             {renderContent(item.text)}{' '}
-            <UiTooltip placement="bottom" arrow sx={styles.hoveredCard} title={item.tooltipTitle}>
+            <UiTooltip
+              placement="bottom"
+              arrow
+              sx={styles.hoveredCard}
+              title={renderContent(item.tooltipTitle)}
+            >
               <UiTypography variant="bodyText16" component="span">
-                {item.tooltipLabel}
+                {renderContent(item.tooltipLabel)}
               </UiTypography>
             </UiTooltip>
           </>

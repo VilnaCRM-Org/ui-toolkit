@@ -10,13 +10,15 @@ const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>(
   ({ InputProps, onInput, slotProps, ...rest }, ref) => {
-    const inputSlotProps = typeof slotProps?.input === 'function' ? undefined : slotProps?.input;
-    const mergedSlotProps = InputProps
+    const mergedSlotProps: UiInputProps['slotProps'] = InputProps
       ? {
           ...slotProps,
-          input: {
-            ...inputSlotProps,
-            ...InputProps,
+          input: ownerState => {
+            const base =
+              typeof slotProps?.input === 'function'
+                ? slotProps.input(ownerState)
+                : slotProps?.input;
+            return { ...base, ...InputProps };
           },
         }
       : slotProps;

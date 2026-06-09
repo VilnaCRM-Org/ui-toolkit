@@ -21,7 +21,7 @@ export const formSection = {
   paddingLeft: '0.375rem',
   paddingRight: '0.375rem',
   paddingBottom: '1.5rem',
-  fontFamily: 'Golos',
+  fontFamily: 'Golos Text',
   backgroundColor: '#FBFBFB',
   [`@media (min-width:${breakpointsTheme.breakpoints.values.md}px)`]: {
     paddingTop: '8.4375rem',

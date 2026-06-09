@@ -35,7 +35,10 @@ const expectedPublicExports: string[] = [
 
 describe('components index', () => {
   it('exports the expected public surface', () => {
-    expect(Object.keys(publicComponents).sort()).toEqual([...expectedPublicExports].sort());
+    const byName: (a: string, b: string) => number = (a, b) => a.localeCompare(b);
+    expect(Object.keys(publicComponents).sort(byName)).toEqual(
+      [...expectedPublicExports].sort(byName)
+    );
   });
 
   it('re-exports the shared theme modules and components', () => {

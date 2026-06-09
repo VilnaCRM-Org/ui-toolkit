@@ -11,7 +11,7 @@ export default function CardGrid({ cardList }: UiCardListProps): JSX.Element {
 
   return (
     <Grid sx={grid}>
-      {cardList.map((item) => (
+      {cardList.map(item => (
         <UiCardItem key={item.id} item={item} />
       ))}
     </Grid>

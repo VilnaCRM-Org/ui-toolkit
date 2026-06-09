@@ -20,15 +20,15 @@ export default function CardSwiper({ cardList }: UiCardListProps): JSX.Element {
       return node.role === 'tooltip' && node.classList.contains('base-Popper-root');
     }
 
-    const observer = new MutationObserver((mutationsList) => {
-      mutationsList.forEach((mutation) => {
+    const observer = new MutationObserver(mutationsList => {
+      mutationsList.forEach(mutation => {
         if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach((node) => {
+          mutation.addedNodes.forEach(node => {
             if (node instanceof Element && isToolTip(node) && swiperRef.current) {
               swiperRef.current.style.pointerEvents = 'none';
             }
           });
-          mutation.removedNodes.forEach((node) => {
+          mutation.removedNodes.forEach(node => {
             if (node instanceof Element && isToolTip(node) && swiperRef.current) {
               swiperRef.current.style.pointerEvents = 'auto';
             }
@@ -57,7 +57,7 @@ export default function CardSwiper({ cardList }: UiCardListProps): JSX.Element {
         loop
         className="swiper-wrapper"
       >
-        {cardList.map((item) => (
+        {cardList.map(item => (
           <SwiperSlide key={item.id}>
             <UiCardItem item={item} />
           </SwiperSlide>

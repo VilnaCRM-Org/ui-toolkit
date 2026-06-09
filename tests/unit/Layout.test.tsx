@@ -6,10 +6,7 @@ import { Layout } from '../../src/components';
 describe('Layout', () => {
   it('renders header, children, and footer in order', () => {
     const { container } = render(
-      <Layout
-        header={<header data-testid="header" />}
-        footer={<footer data-testid="footer" />}
-      >
+      <Layout header={<header data-testid="header" />} footer={<footer data-testid="footer" />}>
         <main data-testid="content">Content</main>
       </Layout>
     );
