@@ -1,7 +1,7 @@
 import { render, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-import { UiCheckbox } from '../../components';
+import { UiCheckbox } from '../../src/components';
 
 import { testText } from './constants';
 
@@ -37,5 +37,19 @@ describe('UiCheckbox', () => {
     const checkboxInput: HTMLElement = getByRole('checkbox');
     expect(checkboxLabel).toBeInTheDocument();
     expect(checkboxInput).toHaveStyle(borderStyle);
+  });
+
+  it('supports controlled checked state', () => {
+    const { getByRole, rerender } = render(
+      <UiCheckbox checked onChange={mockOnChange} label={testText} />
+    );
+
+    let checkboxInput = getByRole('checkbox') as HTMLInputElement;
+    expect(checkboxInput.checked).toBe(true);
+
+    rerender(<UiCheckbox checked={false} onChange={mockOnChange} label={testText} />);
+
+    checkboxInput = getByRole('checkbox') as HTMLInputElement;
+    expect(checkboxInput.checked).toBe(false);
   });
 });

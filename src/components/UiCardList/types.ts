@@ -1,9 +1,20 @@
-import { CardItem, CardType } from '../UiCardItem/types';
+import type { ReactNode } from 'react';
 
-export type { CardItem, CardType };
+export type UiCardItemData = {
+  type: 'smallCard' | 'largeCard';
+  id: string;
+  imageSrc: string;
+  title: string | ReactNode;
+  text: string | ReactNode;
+  alt: string;
+  tooltipTitle?: ReactNode;
+  tooltipLabel?: ReactNode;
+};
 
-export type NonEmptyCardList = [CardItem, ...CardItem[]];
+export interface UiCardListProps {
+  cardList: UiCardItemData[];
+}
 
-export interface CardList {
-  cardList: NonEmptyCardList;
+export interface UiCardItemProps {
+  item: UiCardItemData;
 }

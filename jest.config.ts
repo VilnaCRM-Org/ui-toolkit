@@ -7,6 +7,8 @@ const config: Config = {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: [
+    '<rootDir>/tests/unit/**/*.test.ts',
+    '<rootDir>/tests/unit/**/*.test.tsx',
     '<rootDir>/src/test/**/*.test.ts',
     '<rootDir>/src/test/**/*.test.tsx',
     '<rootDir>/scripts/test/unit/**/*.spec.js',

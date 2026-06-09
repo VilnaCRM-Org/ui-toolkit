@@ -1,16 +1,42 @@
-import { Link, ThemeProvider } from '@mui/material';
+import { Box, Link, ThemeProvider } from '@mui/material';
 import React from 'react';
 
 import theme from './theme';
 import { UiLinkProps } from './types';
 
-function UiLink({ children, href, target, rel, sx }: UiLinkProps): React.ReactElement {
+const visuallyHidden: React.CSSProperties = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
+function UiLink({
+  children,
+  href,
+  target,
+  rel,
+  sx,
+  newTabLabel = '(opens in new tab)',
+}: UiLinkProps): React.ReactElement {
+  const opensInNewTab: boolean = target === '_blank';
   const computedRel: string | undefined =
-    rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined);
+    rel ?? (opensInNewTab ? 'noopener noreferrer' : undefined);
+
   return (
     <ThemeProvider theme={theme}>
       <Link href={href} target={target} rel={computedRel} sx={sx}>
         {children}
+        {opensInNewTab && newTabLabel ? (
+          <Box component="span" sx={visuallyHidden}>
+            {` ${newTabLabel}`}
+          </Box>
+        ) : null}
       </Link>
     </ThemeProvider>
   );

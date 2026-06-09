@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { UiTypography } from '../../components';
+import { UiTypography } from '../../src/components';
 
 import { testText } from './constants';
 
@@ -38,5 +38,17 @@ describe('UiTypography', () => {
     const element: HTMLElement | null = container.querySelector('h1');
     expect(element).toBeInTheDocument();
     expect(element).toHaveTextContent('Test Text');
+  });
+
+  it('forwards htmlFor when rendered as a label', () => {
+    const { getByText } = render(
+      <UiTypography component="label" htmlFor="email-field">
+        {testText}
+      </UiTypography>
+    );
+
+    const label: HTMLElement = getByText(testText);
+    expect(label.tagName).toBe('LABEL');
+    expect(label).toHaveAttribute('for', 'email-field');
   });
 });

@@ -9,43 +9,36 @@ const DISPLAY_NAME: string = 'UiInput';
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>(
-  (
-    {
-      sx,
-      placeholder,
-      error,
-      size,
-      variant,
-      onBlur,
-      type,
-      fullWidth,
-      value,
-      onChange,
-      disabled,
-      onInput,
-      id,
-    },
-    ref
-  ) => (
-    <ThemeProvider theme={theme}>
-      <TextField
-        sx={sx}
-        placeholder={placeholder}
-        inputRef={ref}
-        error={error}
-        size={size}
-        variant={variant}
-        type={type}
-        onChange={onChange}
-        onBlur={onBlur}
-        value={value}
-        fullWidth={fullWidth}
-        disabled={disabled}
-        onInput={onInput}
-        id={id}
-      />
-    </ThemeProvider>
-  )
+  ({ InputProps, onInput, slotProps, ...rest }, ref) => {
+    const mergedSlotProps: UiInputProps['slotProps'] = InputProps
+      ? {
+          ...slotProps,
+          input: ownerState => {
+            const base =
+              typeof slotProps?.input === 'function'
+                ? slotProps.input(ownerState)
+                : slotProps?.input;
+            return { ...base, ...InputProps };
+          },
+        }
+      : slotProps;
+
+    return (
+      <ThemeProvider theme={theme}>
+        <TextField
+          {...rest}
+          inputRef={ref}
+          slotProps={mergedSlotProps}
+          onInput={
+            onInput
+              ? (event: React.FormEvent<HTMLDivElement>): void =>
+                  onInput(event as unknown as React.ChangeEvent<HTMLInputElement>)
+              : undefined
+          }
+        />
+      </ThemeProvider>
+    );
+  }
 );
 
 UiInput.displayName = DISPLAY_NAME;

@@ -13,11 +13,17 @@ const theme: Theme = createTheme({
             borderColor: colorTheme.palette.grey300.main,
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            border: `1px solid ${colorTheme.palette.grey300.main}`,
+            border: `1px solid ${colorTheme.palette.grey250.main}`,
+          },
+          '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: colorTheme.palette.strokeDanger.main,
           },
           '&.Mui-disabled': {
             backgroundColor: colorTheme.palette.brandGray.main,
             color: colorTheme.palette.grey300.main,
+          },
+          '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+            borderWidth: 0,
           },
         },
         notchedOutline: {
@@ -66,6 +72,22 @@ const theme: Theme = createTheme({
               color: colorTheme.palette.grey300.main,
               WebkitTextFillColor: colorTheme.palette.grey300.main,
             },
+          },
+        },
+      },
+    },
+
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          '&.Mui-error': {
+            margin: '0.25rem 0 0 0',
+            fontFamily: 'Inter',
+            fontWeight: '500',
+            fontSize: '0.875rem',
+            lineHeight: '1.125rem',
+            letterSpacing: 0,
+            color: colorTheme.palette.error.main,
           },
         },
       },
