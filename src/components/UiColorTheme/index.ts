@@ -10,6 +10,12 @@ export const sharedPalette = {
   error: {
     main: '#DC3939',
   },
+  strokeDanger: {
+    main: '#DF7878',
+  },
+  success: {
+    main: '#38B386',
+  },
   white: {
     main: '#FFF',
   },

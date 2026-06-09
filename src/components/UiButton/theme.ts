@@ -9,7 +9,7 @@ const baseButtonStyles: Interpolation<{ theme: Theme }> = {
   fontSize: '0.938rem',
   fontFamily: 'Golos Text',
   fontWeight: '500',
-  lineHeight: '1.125',
+  lineHeight: '1.125rem',
   letterSpacing: '0',
   borderRadius: '3.563rem',
 };
@@ -74,7 +74,7 @@ export const theme: Theme = createTheme({
         },
         {
           props: { variant: 'outlined', size: 'small' },
-          style: { ...outlinedStyles, padding: '1rem 1.438rem' },
+          style: { ...outlinedStyles, padding: '1rem 1.5rem' },
         },
         {
           props: { variant: 'outlined', size: 'medium' },
@@ -99,7 +99,7 @@ export const theme: Theme = createTheme({
             gap: '0.563rem',
             border: `1px solid ${colorTheme.palette.brandGray.main}`,
             background: colorTheme.palette.white.main,
-            color: colorTheme.palette.grey200.main,
+            color: colorTheme.palette.darkPrimary.main,
             '&:hover': {
               background: colorTheme.palette.white.main,
               boxShadow: '0px 4px 7px 0px rgba(116, 134, 151, 0.17)',

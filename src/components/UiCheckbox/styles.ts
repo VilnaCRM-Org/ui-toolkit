@@ -1,58 +1,53 @@
-import { CSSProperties } from 'react';
-
 import Check from '@/assets/svg/check.svg';
 
 import colorTheme from '../UiColorTheme';
 
 const checkIconUrl: string = typeof Check === 'string' ? Check : Check.src;
 
-type StyleObject = CSSProperties & { [pseudoSelector: string]: StyleObject | string | number };
-
-const baseInputStyles: StyleObject = {
-  WebkitAppearance: 'none',
-  appearance: 'none',
+const boxBase = {
+  display: 'block',
   width: '1.5rem',
   height: '1.5rem',
   borderRadius: '0.5rem',
-  background: colorTheme.palette.white.main,
-  '&:checked': {
-    backgroundColor: colorTheme.palette.primary.main,
-    border: 'none',
-    backgroundImage: `url(${checkIconUrl})`,
-    backgroundPosition: 'center center',
-    backgroundRepeat: 'no-repeat',
-  },
-  '&:disabled': {
-    cursor: 'default',
-    backgroundColor: colorTheme.palette.grey500.main,
-    border: 'none',
-  },
+  boxSizing: 'border-box',
+  backgroundColor: colorTheme.palette.white.main,
+} as const;
+
+const checkedBox = {
+  border: 'none',
+  backgroundColor: colorTheme.palette.primary.main,
+  backgroundImage: `url(${checkIconUrl})`,
+  backgroundPosition: 'center center',
+  backgroundRepeat: 'no-repeat',
 };
 
-const baseWrapperStyles: StyleObject = {
-  display: 'grid',
+const baseCheckbox = {
+  padding: 0,
   marginRight: '0.813rem',
-  padding: '0',
+  '& .ui-checkbox-box--checked': checkedBox,
+  '&:hover:not(.Mui-disabled) .ui-checkbox-box': {
+    cursor: 'pointer',
+    borderColor: colorTheme.palette.primary.main,
+  },
+  '&.Mui-disabled .ui-checkbox-box': {
+    cursor: 'default',
+    border: 'none',
+    backgroundColor: colorTheme.palette.grey500.main,
+  },
 };
 
 export default {
-  checkboxWrapper: {
-    ...baseWrapperStyles,
-    input: {
-      ...baseInputStyles,
+  checkbox: {
+    ...baseCheckbox,
+    '& .ui-checkbox-box': {
+      ...boxBase,
       border: `1px solid ${colorTheme.palette.grey400.main}`,
-      '&:hover': {
-        cursor: 'pointer',
-        border: `1px solid ${colorTheme.palette.primary.main}`,
-      },
     },
   },
-
-  checkboxWrapperError: {
-    ...baseWrapperStyles,
-    input: {
-      ...baseInputStyles,
-      cursor: 'pointer',
+  checkboxError: {
+    ...baseCheckbox,
+    '& .ui-checkbox-box': {
+      ...boxBase,
       border: `1px solid ${colorTheme.palette.error.main}`,
     },
   },

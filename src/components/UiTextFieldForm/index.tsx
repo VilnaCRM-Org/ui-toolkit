@@ -1,5 +1,11 @@
 import React from 'react';
-import { Controller, ControllerFieldState, ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
+import {
+  Controller,
+  ControllerFieldState,
+  ControllerRenderProps,
+  FieldValues,
+  Path,
+} from 'react-hook-form';
 
 import UiInput from '../UiInput';
 import { CustomTextField } from './types';
@@ -11,11 +17,11 @@ type RenderArgs<T extends FieldValues> = {
 
 function createRenderField<T extends FieldValues>(
   inputProps: Omit<CustomTextField<T>, 'control' | 'defaultValue' | 'name' | 'rules'>
-): (args: RenderArgs<T>) => JSX.Element {
+): (args: RenderArgs<T>) => React.ReactElement {
   return function renderField({
     field: { ref, value, ...field },
     fieldState: { error },
-  }: RenderArgs<T>): JSX.Element {
+  }: RenderArgs<T>): React.ReactElement {
     return (
       <UiInput
         {...inputProps}
@@ -35,7 +41,7 @@ function UiTextFieldForm<T extends FieldValues>({
   defaultValue,
   name,
   ...inputProps
-}: CustomTextField<T>): JSX.Element {
+}: CustomTextField<T>): React.ReactElement {
   const renderField = createRenderField<T>(inputProps);
 
   if (defaultValue !== undefined) {
@@ -50,14 +56,7 @@ function UiTextFieldForm<T extends FieldValues>({
     );
   }
 
-  return (
-    <Controller
-      control={control}
-      name={name}
-      rules={rules}
-      render={renderField}
-    />
-  );
+  return <Controller control={control} name={name} rules={rules} render={renderField} />;
 }
 
 export default UiTextFieldForm;
