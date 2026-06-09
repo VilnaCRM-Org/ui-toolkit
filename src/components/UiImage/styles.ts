@@ -1,4 +1,6 @@
-export default {
+import { SxProps, Theme } from '@mui/material';
+
+const styles: { wrapper: SxProps<Theme> } = {
   wrapper: {
     img: {
       width: '100%',
@@ -7,3 +9,5 @@ export default {
     },
   },
 };
+
+export default styles;
