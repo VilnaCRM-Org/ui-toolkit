@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/playwright:v1.59.1-jammy
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+ENV BUN_INSTALL=/usr/local
+ENV BUN_INSTALL_CACHE_DIR=/home/pwuser/.bun-cache
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       curl \
@@ -10,30 +13,31 @@ RUN apt-get update \
       procps \
       python3 \
       unzip \
+    && curl --retry 5 --retry-delay 2 -fsSL https://bun.sh/install | bash -s "bun-v1.3.5" \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /app \
-    && chown pwuser:pwuser /app
-
-ENV BUN_INSTALL=/home/pwuser/.bun
-ENV PATH="/home/pwuser/.bun/bin:${PATH}"
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+COPY package.json bun.lock ./
+COPY build.config.mjs checkNodeVersion.js commitlint.config.js eslint.config.mjs i18n.js ./
+COPY jest.config.ts jest.setup.ts playwright.config.ts stryker.config.mjs ./
+COPY tsconfig.json tsconfig.paths.json ./
+COPY .env.example ./
+COPY .storybook ./.storybook
+COPY i18n ./i18n
+COPY scripts ./scripts
+COPY src ./src
+COPY tests ./tests
+
+# Copied resources stay root-owned (read-only to pwuser). pwuser owns only the
+# workdir entry — so Playwright can create/clean its report/results dirs — and
+# the bun cache; the copied application files themselves remain non-writable.
+RUN bun install --frozen-lockfile \
+    && mkdir -p /home/pwuser/.bun-cache \
+    && chown -R pwuser:pwuser /home/pwuser/.bun-cache \
+    && chown pwuser:pwuser /app
+
 USER pwuser
-
-RUN curl --retry 5 --retry-delay 2 -fsSL https://bun.sh/install | bash -s "bun-v1.3.5"
-
-COPY --chown=pwuser:pwuser package.json bun.lock ./
-COPY --chown=pwuser:pwuser build.config.mjs checkNodeVersion.js commitlint.config.js eslint.config.mjs i18n.js ./
-COPY --chown=pwuser:pwuser jest.config.ts jest.setup.ts playwright.config.ts stryker.config.mjs ./
-COPY --chown=pwuser:pwuser tsconfig.json tsconfig.paths.json ./
-COPY --chown=pwuser:pwuser .env.example ./
-COPY --chown=pwuser:pwuser .storybook ./.storybook
-COPY --chown=pwuser:pwuser i18n ./i18n
-COPY --chown=pwuser:pwuser scripts ./scripts
-COPY --chown=pwuser:pwuser src ./src
-COPY --chown=pwuser:pwuser tests ./tests
-
-RUN bun install --frozen-lockfile
 
 CMD ["bash", "-lc", "while :; do sleep 3600; done"]
