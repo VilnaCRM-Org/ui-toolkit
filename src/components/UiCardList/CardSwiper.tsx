@@ -1,5 +1,5 @@
-import { Grid } from '@mui/material';
-import React, { CSSProperties, useEffect, useRef } from 'react';
+import { Grid, SxProps, Theme } from '@mui/material';
+import React, { useEffect, useRef } from 'react';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
@@ -59,7 +59,7 @@ function CardSwiper({ cardList }: Readonly<CardList>): React.ReactElement {
     return (): void => observer.disconnect();
   }, []);
 
-  const gridMobile: CSSProperties =
+  const gridMobile: SxProps<Theme> =
     cardList[0].type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
 
   return (

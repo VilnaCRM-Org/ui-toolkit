@@ -10,7 +10,7 @@ const defaultFooterClass: string = '.MuiContainer-root';
 const logoAlt: string = 'Vilna logo';
 const copyright: RegExp = /Copyright/;
 
-describe('DefaultFooter', () => {
+describe('Mobile', () => {
   it('should render the component correctly', () => {
     const { container, getByAltText, getByText } = render(
       <Mobile socialLinks={mockedSocialLinks} />

@@ -30,6 +30,10 @@ export default function Layout({
   metaDescription,
 }: Readonly<LayoutProps>): React.ReactElement {
   React.useEffect(() => {
+    const previousTitle: string = document.title;
+    const previousDescription: string | null =
+      document.querySelector('meta[name="description"]')?.getAttribute('content') ?? null;
+
     if (pageTitle) {
       document.title = pageTitle;
     }
@@ -37,6 +41,20 @@ export default function Layout({
     if (metaDescription) {
       upsertMetaDescription(metaDescription);
     }
+
+    return (): void => {
+      if (pageTitle) {
+        document.title = previousTitle;
+      }
+
+      if (metaDescription) {
+        if (previousDescription !== null) {
+          upsertMetaDescription(previousDescription);
+        } else {
+          document.querySelector('meta[name="description"]')?.remove();
+        }
+      }
+    };
   }, [metaDescription, pageTitle]);
 
   return (

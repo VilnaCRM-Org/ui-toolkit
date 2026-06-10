@@ -1,10 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { Layout } from '../../src/components';
 
 describe('Layout', () => {
   afterEach(() => {
+    // Unmount first so Layout's effect cleanup restores title/description,
+    // then strip any leftover metadata for a deterministic next test.
+    cleanup();
     document.head.querySelectorAll('meta[name="description"]').forEach(node => node.remove());
     document.title = '';
   });

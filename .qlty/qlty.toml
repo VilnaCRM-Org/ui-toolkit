@@ -65,7 +65,7 @@ match.rules = [
   "eslint:global-require",
   "eslint:import/no-dynamic-require",
 ]
-match.file_patterns = ["src/test/memory-leak/**"]
+match.file_patterns = ["tests/memory-leak/**"]
 set.ignored = true
 
 [smells]

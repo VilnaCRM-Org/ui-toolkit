@@ -35,7 +35,7 @@ describe('CardGrid component', () => {
     expect(computedStyles).toHaveProperty('gridTemplateColumns');
   });
 
-  it('renders with largeGrid style when cardList[0].type is largeGrid', () => {
+  it('renders with largeCard style when cardList[0].type is largeCard', () => {
     const { container } = render(React.createElement(CardGrid, { cardList: largeCardList }));
 
     const gridElement: ChildNode | null = container.firstChild;

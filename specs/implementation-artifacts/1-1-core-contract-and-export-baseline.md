@@ -19,7 +19,7 @@ so that I can integrate toolkit components predictably across company projects.
 ## Tasks / Subtasks
 
 - [x] Verify Story 1.1 execution preconditions and baseline files exist (AC: 1, 2, 3)
-  - [x] Confirm this is the full toolkit implementation checkout with `src/components/UiButton`, `src/components/UiInput`, `src/components/UiCheckbox`, `src/components/UiLink`, `src/components/index.ts`, `.storybook`, `package.json`, and the repo’s actual unit-test location (`src/test/testing-library`; planned artifacts referenced `tests/unit`).
+  - [x] Confirm this is the full toolkit implementation checkout with `src/components/UiButton`, `src/components/UiInput`, `src/components/UiCheckbox`, `src/components/UiLink`, `src/components/index.ts`, `.storybook`, `package.json`, and the repo’s actual unit-test location (`tests/unit`).
   - [x] If the implementation tree is missing, stop immediately and sync the real toolkit source checkout before changing code; do not create placeholder component code in the planning-only workspace.
   - [x] Capture the current public prop surface for `UiButton`, `UiInput`, `UiCheckbox`, and `UiLink` before modifying contracts.
 - [x] Align core control contract typing without breaking published behavior (AC: 1, 3)
@@ -85,7 +85,7 @@ so that I can integrate toolkit components predictably across company projects.
   - a targeted automated check that fails when a required core control export is missing from `src/components/index.ts`
   - unit coverage for any public contract typing or prop-surface logic changed in core controls
   - the repo’s relevant typecheck or lint command, if configured in the full checkout
-- Existing project testing standards are Jest plus Testing Library for unit coverage, with unit specs under `src/test/testing-library`. [Source: specs/planning-artifacts/architecture.md#integration-test-conventions]
+- Existing project testing standards are Jest plus Testing Library for unit coverage, with unit specs under `tests/unit`. [Source: specs/planning-artifacts/architecture.md#integration-test-conventions]
 - Story completion is blocked unless the new/updated tests exist and actually pass. [Source: specs/planning-artifacts/epics.md#story-11-core-contract-and-export-baseline] [Source: specs/planning-artifacts/prd.md#78-quality-gates]
 
 ### Current Checkout Intelligence
@@ -93,7 +93,7 @@ so that I can integrate toolkit components predictably across company projects.
 - This story artifact originated from planning-only workspace assumptions, but the current
   working checkout on branch `7-make-ui-toolkit` is the real toolkit source tree. It contains
   `src/`, `.storybook/`, `package.json`, and executable unit tests under
-  `src/test/testing-library`; the planning-only inventory below describes the earlier planning
+  `tests/unit`; the planning-only inventory below describes the earlier planning
   repository state, not the checkout where implementation and tests were run.
 - The implementation plan explicitly says Story execution must happen in the full toolkit source checkout and must stop if the source tree is missing. Treat that as a hard gate before TDD begins. [Source: specs/planning-artifacts/implementation-plan.md#execution-preconditions]
 - Recent git history is planning-focused only: `d1ebee0 specs: plan UI toolkit completion (PRD, architecture, epics)`, `ee44f87 feat(#3): add dependabot workflow (#4)`, `654a5bc Initial commit`. There is no recent component-implementation history in this checkout to mine for established prop patterns.
@@ -136,7 +136,7 @@ Codex GPT-5 (Amelia persona)
 ### Debug Log References
 
 - 2026-03-09: Story created from planning artifacts after initializing sprint tracking.
-- 2026-03-09: Verified branch `7-make-ui-toolkit` contains the real toolkit source tree; planning artifacts were stale about unit-test location, which is `src/test/testing-library` rather than `tests/unit`.
+- 2026-03-09: Verified branch `7-make-ui-toolkit` contains the real toolkit source tree; the repo’s unit-test location is `tests/unit`, matching the planning artifacts.
 - 2026-03-09: All implementation edits and verification recorded in this Dev Agent Record were
   executed in this checkout on branch `7-make-ui-toolkit`, not in the earlier planning-only
   repository snapshot.
@@ -146,10 +146,10 @@ Codex GPT-5 (Amelia persona)
 
 ### Completion Notes List
 
-- Verified actual checkout variance: story planning assumed `tests/unit`, but the executable repo uses `src/test/testing-library`.
+- Verified the executable repo uses `tests/unit` for unit specs, consistent with the story planning.
 - Normalized shared contract typing on `UiButton`, `UiInput`, `UiCheckbox`, and `UiLink` by moving `sx` to `SxProps<Theme>` and documenting invalid shared-field exceptions in adjacent type comments.
 - Extended `UiInput` public props with `size` and `variant`, forwarded both to MUI `TextField`, and kept existing consumer behavior backward compatible.
-- Added `src/test/testing-library/UiCoreContract.test.tsx` to enforce package exports and the `UiInput` contract regression in CI.
+- Added `tests/unit/UiCoreContract.test.tsx` to enforce package exports and the `UiInput` contract regression in CI.
 - Added Jest module mappings and test mocks for CSS/SVG assets, plus minimal React import/mock compatibility fixes required for the current unit-test transform pipeline.
 - Added a default fallback for `NEXT_PUBLIC_VILNACRM_GMAIL` so the existing footer email test remains deterministic when the environment variable is absent.
 - Verification evidence:
@@ -180,16 +180,16 @@ Codex GPT-5 (Amelia persona)
 - src/components/UiLink/types.ts
 - src/components/UiTextFieldForm/index.tsx
 - src/components/UiToolbar/index.tsx
-- src/test/mocks/styleMock.ts
-- src/test/mocks/svgMock.ts
-- src/test/testing-library/UiButton.test.tsx
-- src/test/testing-library/UiCardGrid.test.tsx
-- src/test/testing-library/UiCardItem.test.tsx
-- src/test/testing-library/UiCardList.test.tsx
-- src/test/testing-library/UiCoreContract.test.tsx
-- src/test/testing-library/UiFooterEmail.test.tsx
-- src/test/testing-library/UiImage.test.tsx
-- src/test/testing-library/UiTooltipWrapper.test.tsx
+- tests/unit/mocks/styleMock.ts
+- tests/unit/mocks/svgMock.ts
+- tests/unit/UiButton.test.tsx
+- tests/unit/UiCardGrid.test.tsx
+- tests/unit/UiCardItem.test.tsx
+- tests/unit/UiCardList.test.tsx
+- tests/unit/UiCoreContract.test.tsx
+- tests/unit/UiFooterEmail.test.tsx
+- tests/unit/UiImage.test.tsx
+- tests/unit/UiTooltipWrapper.test.tsx
 
 ## Change Log
 
