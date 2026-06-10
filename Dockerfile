@@ -1,9 +1,8 @@
-FROM oven/bun:1.3.5@sha256:e90cdbaf9ccdb3d4bd693aa335c3310a6004286a880f62f79b18f9b1312a8ec3
+FROM oven/bun:1.3.14-alpine@sha256:5acc90a93e91ff07bf72aa90a7c9f0fa189765aec90b47bdbf2152d2196383c0
 
 SHELL ["/bin/sh", "-lc"]
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
       bash \
       g++ \
       make \
@@ -11,9 +10,8 @@ RUN apt-get update \
       npm \
       procps \
       python3 \
-    && groupadd --system appuser \
-    && useradd --system --gid appuser --create-home --home-dir /home/appuser appuser \
-    && rm -rf /var/lib/apt/lists/*
+    && addgroup -S appuser \
+    && adduser -S -G appuser -h /home/appuser appuser
 
 WORKDIR /app
 

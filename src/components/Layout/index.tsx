@@ -9,14 +9,14 @@ type LayoutProps = {
 };
 
 function upsertMetaDescription(content: string): void {
-  const existing = document.querySelector('meta[name="description"]');
+  const existing: HTMLMetaElement | null = document.querySelector('meta[name="description"]');
 
   if (existing) {
     existing.setAttribute('content', content);
     return;
   }
 
-  const meta = document.createElement('meta');
+  const meta: HTMLMetaElement = document.createElement('meta');
   meta.setAttribute('name', 'description');
   meta.setAttribute('content', content);
   document.head.appendChild(meta);

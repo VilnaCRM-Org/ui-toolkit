@@ -15,6 +15,7 @@ build/
 
 # misc
 .DS_Store
+.qlty/
 *.pem
 
 # debug logs
@@ -58,12 +59,8 @@ lhci-reports-desktop/
 lhci-reports-mobile/
 
 # k6 config
-src/test/load/config.json
-src/test/load/results
+tests/load/config.json
+tests/load/results
 
 # memlab
-src/test/memory-leak/results
-
-# qlty (track the shared config only; ignore local cache and tooling)
-.qlty/*
-!.qlty/qlty.toml
+tests/memory-leak/results

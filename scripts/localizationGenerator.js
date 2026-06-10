@@ -123,7 +123,6 @@ class LocalizationGenerator {
     }, {});
   }
 
-  // eslint-disable-next-line class-methods-use-this
   writeLocalizationFile(fileContent, filePath) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, fileContent);

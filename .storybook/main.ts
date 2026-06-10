@@ -1,13 +1,15 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type { StorybookConfig } from '@storybook/react-webpack5';
 import type { RuleSetCondition } from 'webpack';
 
+const storybookDir =
+  typeof __dirname === 'string' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 const toPath = 'src/assets/fonts';
 const fromPath = `../${toPath}`;
 const svgExclude = /\.svg$/i;
-const fontDirectories = ['Golos', 'Inter'] as const;
 
 function mergeExclude(exclude?: RuleSetCondition): RuleSetCondition {
   if (!exclude) {
@@ -21,38 +23,62 @@ function mergeExclude(exclude?: RuleSetCondition): RuleSetCondition {
   return [exclude, svgExclude];
 }
 
-const staticDirs = fontDirectories
-  .map(fontDirectory => ({
-    from: `${fromPath}/${fontDirectory}`,
-    to: `${toPath}/${fontDirectory}`,
-  }))
-  .filter(entry => {
-    const resolvedDir = path.resolve(__dirname, entry.from);
-
-    return fs.existsSync(resolvedDir) && fs.statSync(resolvedDir).isDirectory();
-  });
+const staticDirs = [
+  {
+    from: `${fromPath}/Golos/GolosText-Black.ttf`,
+    to: `${toPath}/Golos/GolosText-Black.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-Bold.ttf`,
+    to: `${toPath}/Golos/GolosText-Bold.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-ExtraBold.ttf`,
+    to: `${toPath}/Golos/GolosText-ExtraBold.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-Medium.ttf`,
+    to: `${toPath}/Golos/GolosText-Medium.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-Regular.ttf`,
+    to: `${toPath}/Golos/GolosText-Regular.ttf`,
+  },
+  {
+    from: `${fromPath}/Golos/GolosText-SemiBold.ttf`,
+    to: `${toPath}/Golos/GolosText-SemiBold.ttf`,
+  },
+  {
+    from: `${fromPath}/Inter/Inter-Bold.ttf`,
+    to: `${toPath}/Inter/Inter-Bold.ttf`,
+  },
+  {
+    from: `${fromPath}/Inter/Inter-Medium.ttf`,
+    to: `${toPath}/Inter/Inter-Medium.ttf`,
+  },
+  {
+    from: `${fromPath}/Inter/Inter-Regular.ttf`,
+    to: `${toPath}/Inter/Inter-Regular.ttf`,
+  },
+].filter(entry => fs.existsSync(path.resolve(storybookDir, entry.from)));
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
+    '@storybook/addon-docs',
     '@storybook/addon-links',
-    '@storybook/addon-essentials',
     '@storybook/addon-onboarding',
-    '@storybook/addon-interactions',
     '@storybook/addon-webpack5-compiler-swc',
   ],
   framework: {
     name: '@storybook/react-webpack5',
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
   webpackFinal: async config => {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
-      '@': path.resolve(__dirname, '../src'),
+      '@': path.resolve(storybookDir, '../src'),
     };
     config.module = config.module ?? { rules: [] };
     config.module.rules = (config.module.rules ?? []).map(rule => {

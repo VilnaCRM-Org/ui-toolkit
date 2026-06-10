@@ -45,7 +45,7 @@ NFR6: Maintain deterministic, async-stateless component behavior with consumer-o
 - Existing repository baseline is retained; no starter re-bootstrap is required.
 - Public API boundary is enforced via `src/components/index.ts` exports.
 - New component folders/files follow kebab-case naming; existing legacy `UiPascalCase` folders remain until explicit migration.
-- Stories are co-located with components; unit tests remain centralized in `src/test/testing-library`.
+- Stories are co-located with components; unit tests remain centralized in `tests/unit`.
 - Source provenance must be tracked centrally at `specs/planning-artifacts/component-provenance.md` with `crm|website|new` source labels and rationale.
 - Distribution path is public npm package registry with semver-governed releases.
 - Public npm promotion requires a blocking Epic 5 licensing/IP governance gate before release approval.

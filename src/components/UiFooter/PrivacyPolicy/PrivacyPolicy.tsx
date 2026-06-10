@@ -27,7 +27,7 @@ function PrivacyPolicy(): React.ReactElement {
   );
 
   return (
-    <Stack direction="row" alignItems="center" sx={styles.wrapper}>
+    <Stack direction="row" sx={{ ...styles.wrapper, alignItems: 'center' }}>
       <Link target="_blank" rel="noopener noreferrer" sx={styles.link} href={privacyPolicyUrl}>
         <UiTypography variant="medium16" sx={styles.textColor}>
           {t('footer.privacy')}

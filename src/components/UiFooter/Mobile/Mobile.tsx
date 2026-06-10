@@ -20,7 +20,7 @@ function Mobile({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactEle
     <Container sx={styles.wrapper}>
       <Stack sx={styles.content}>
         <img src={logoUrl} alt={t('footer.logo_alt')} width={131} height={44} loading="lazy" />
-        <Stack direction="row" alignItems="center" sx={styles.listWrapper}>
+        <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
           {socialLinks.map(item => (
             <SocialMediaItem item={item} key={item.id} />
           ))}

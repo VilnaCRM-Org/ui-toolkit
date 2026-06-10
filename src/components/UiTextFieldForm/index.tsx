@@ -14,6 +14,7 @@ function UiTextFieldForm<T extends FieldValues>({
   type,
   name,
   fullWidth,
+  ...inputProps
 }: CustomTextField<T>): React.ReactElement {
   return (
     <Controller
@@ -23,11 +24,12 @@ function UiTextFieldForm<T extends FieldValues>({
       render={({ field, fieldState: { error } }) => (
         <>
           <UiInput
+            {...inputProps}
             type={type}
             placeholder={placeholder}
-            onChange={e => field.onChange(e)}
+            onChange={field.onChange}
             onBlur={field.onBlur}
-            value={field.value}
+            value={field.value ?? ''}
             error={!!error}
             fullWidth={fullWidth}
           />

@@ -1,7 +1,11 @@
-import { TextFieldProps } from '@mui/material';
 import { Control, FieldValues, Path, RegisterOptions } from 'react-hook-form';
 
-export interface CustomTextField<T extends FieldValues> extends TextFieldProps<'standard'> {
+import { UiInputProps } from '../UiInput/types';
+
+export interface CustomTextField<T extends FieldValues> extends Omit<
+  UiInputProps,
+  'error' | 'onBlur' | 'onChange' | 'ref' | 'value'
+> {
   control: Control<T>;
   rules?: Omit<
     RegisterOptions<T, Path<T>>,
@@ -9,6 +13,4 @@ export interface CustomTextField<T extends FieldValues> extends TextFieldProps<'
   >;
   name: Path<T>;
   placeholder: string;
-  type?: string;
-  fullWidth?: boolean;
 }

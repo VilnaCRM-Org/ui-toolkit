@@ -1,30 +1,33 @@
-export declare module '@mui/material/styles' {
+import type { CSSProperties } from 'react';
+
+declare module '@mui/material/styles' {
   interface TypographyVariants {
-    medium16: React.CSSProperties;
-    medium15: ReactDOM.CSSProperties;
-    medium14: React.CSSProperties;
-    regular16: React.CSSProperties;
-    bodyText18: React.CSSProperties;
-    bodyText16: React.CSSProperties;
-    bold22: React.CSSProperties;
-    demi18: React.CSSProperties;
-    button: React.CSSProperties;
-    mobileText: React.CSSProperties;
+    medium16: CSSProperties;
+    medium15: CSSProperties;
+    medium14: CSSProperties;
+    regular16: CSSProperties;
+    bodyText18: CSSProperties;
+    bodyText16: CSSProperties;
+    bold22: CSSProperties;
+    demi18: CSSProperties;
+    button: CSSProperties;
+    mobileText: CSSProperties;
   }
   interface TypographyVariantsOptions {
-    medium16?: React.CSSProperties;
-    medium15?: React.CSSProperties;
-    medium14?: React.CSSProperties;
-    regular16?: React.CSSProperties;
-    bodyText18?: React.CSSProperties;
-    bodyText16?: React.CSSProperties;
-    bold22?: React.CSSProperties;
-    demi18?: React.CSSProperties;
-    button?: React.CSSProperties;
-    mobileText?: React.CSSProperties;
+    medium16?: CSSProperties;
+    medium15?: CSSProperties;
+    medium14?: CSSProperties;
+    regular16?: CSSProperties;
+    bodyText18?: CSSProperties;
+    bodyText16?: CSSProperties;
+    bold22?: CSSProperties;
+    demi18?: CSSProperties;
+    button?: CSSProperties;
+    mobileText?: CSSProperties;
   }
 }
-export declare module '@mui/material/Typography' {
+
+declare module '@mui/material/Typography' {
   interface TypographyPropsVariantOverrides {
     medium16: true;
     medium15: true;
@@ -42,47 +45,47 @@ export declare module '@mui/material/Typography' {
 declare module '@mui/material/styles' {
   interface Palette {
     darkPrimary: Palette['primary'];
-    darkSecondary: Palette['secondary'];
-    white: Palette['white'];
-    brandGray: Palette['brandGray'];
-    grey200: Palette['grey200'];
-    grey250: Palette['grey250'];
-    grey300: Palette['grey300'];
-    grey400: Palette['grey400'];
-    grey500: Palette['grey500'];
-    backgroundGrey100: Palette['backgroundGrey100'];
-    backgroundGrey200: Palette['backgroundGrey200'];
-    backgroundGrey300: Palette['backgroundGrey300'];
-    containedButtonHover: Palette['containedButtonHover'];
-    containedButtonActive: Palette['containedButtonActive'];
-    notchDeskBefore: Palette['notchDeskBefore'];
-    notchDeskAfter: Palette['notchDeskAfter'];
-    notchMobileBefore: Palette['notchMobileBefore'];
-    notchMobileAfter: Palette['notchMobileAfter'];
-    textLinkHover?: Palette['textLinkHover'];
-    textLinkActive?: Palette['textLinkActive'];
+    darkSecondary: Palette['primary'];
+    white: Palette['primary'];
+    brandGray: Palette['primary'];
+    grey200: Palette['primary'];
+    grey250: Palette['primary'];
+    grey300: Palette['primary'];
+    grey400: Palette['primary'];
+    grey500: Palette['primary'];
+    backgroundGrey100: Palette['primary'];
+    backgroundGrey200: Palette['primary'];
+    backgroundGrey300: Palette['primary'];
+    containedButtonHover: Palette['primary'];
+    containedButtonActive: Palette['primary'];
+    notchDeskBefore: Palette['primary'];
+    notchDeskAfter: Palette['primary'];
+    notchMobileBefore: Palette['primary'];
+    notchMobileAfter: Palette['primary'];
+    textLinkHover: Palette['primary'];
+    textLinkActive: Palette['primary'];
   }
 
   interface PaletteOptions {
     darkPrimary?: PaletteOptions['primary'];
-    darkSecondary?: PaletteOptions['secondary'];
-    white?: PaletteOptions['white'];
-    brandGray?: PaletteOptions['brandGray'];
-    grey200?: PaletteOptions['grey200'];
-    grey250?: PaletteOptions['grey250'];
-    grey300?: PaletteOptions['grey300'];
-    grey400?: PaletteOptions['grey400'];
-    grey500?: PaletteOptions['grey500'];
-    backgroundGrey100?: PaletteOptions['backgroundGrey100'];
-    backgroundGrey200?: PaletteOptions['backgroundGrey200'];
-    backgroundGrey300?: PaletteOptions['backgroundGrey300'];
-    containedButtonHover?: PaletteOptions['containedButtonHover'];
-    containedButtonActive?: PaletteOptions['containedButtonActive'];
-    notchDeskBefore?: PaletteOptions['notchDeskBefore'];
-    notchDeskAfter?: PaletteOptions['notchDeskAfter'];
-    notchMobileBefore?: PaletteOptions['notchMobileBefore'];
-    notchMobileAfter?: PaletteOptions['notchMobileAfter'];
-    textLinkHover?: PaletteOptions['textLinkHover'];
-    textLinkActive?: PaletteOptions['textLinkActive'];
+    darkSecondary?: PaletteOptions['primary'];
+    white?: PaletteOptions['primary'];
+    brandGray?: PaletteOptions['primary'];
+    grey200?: PaletteOptions['primary'];
+    grey250?: PaletteOptions['primary'];
+    grey300?: PaletteOptions['primary'];
+    grey400?: PaletteOptions['primary'];
+    grey500?: PaletteOptions['primary'];
+    backgroundGrey100?: PaletteOptions['primary'];
+    backgroundGrey200?: PaletteOptions['primary'];
+    backgroundGrey300?: PaletteOptions['primary'];
+    containedButtonHover?: PaletteOptions['primary'];
+    containedButtonActive?: PaletteOptions['primary'];
+    notchDeskBefore?: PaletteOptions['primary'];
+    notchDeskAfter?: PaletteOptions['primary'];
+    notchMobileBefore?: PaletteOptions['primary'];
+    notchMobileAfter?: PaletteOptions['primary'];
+    textLinkHover?: PaletteOptions['primary'];
+    textLinkActive?: PaletteOptions['primary'];
   }
 }

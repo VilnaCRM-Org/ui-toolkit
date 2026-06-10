@@ -43,7 +43,7 @@ function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | 
 }
 
 function CardSwiper({ cardList }: CardList): React.ReactElement {
-  const swiperRef: React.RefObject<HTMLElement> = useRef(null);
+  const swiperRef: React.RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const target: HTMLElement | null = document.querySelector('body');
