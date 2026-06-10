@@ -12,7 +12,7 @@ import VilnaCRMEmail from '../VilnaCRMEmail';
 
 import styles from './styles';
 
-function Mobile({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
+function Mobile({ socialLinks }: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
   const { t } = useTranslation();
   const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
   const currentYear: number = new Date().getFullYear();

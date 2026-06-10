@@ -12,7 +12,9 @@ import VilnaCRMEmail from '../VilnaCRMEmail';
 
 import styles from './styles';
 
-function DefaultFooter({ socialLinks }: { socialLinks: SocialMedia[] }): React.ReactElement {
+function DefaultFooter({
+  socialLinks,
+}: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
   const { t } = useTranslation();
   const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
 

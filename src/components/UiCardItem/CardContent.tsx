@@ -9,7 +9,7 @@ import ServicesHoverCard from './ServicesHoverCard';
 import styles from './styles';
 import { CardContentProps } from './types';
 
-function CardContent({ item, isSmallCard }: CardContentProps): React.ReactElement {
+function CardContent({ item, isSmallCard }: Readonly<CardContentProps>): React.ReactElement {
   return (
     <>
       <UiTypography

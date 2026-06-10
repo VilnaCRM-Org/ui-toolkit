@@ -6,7 +6,7 @@ import { SocialMedia } from '../types';
 
 import styles from './styles';
 
-function SocialMediaItem({ item }: { item: SocialMedia }): React.ReactElement {
+function SocialMediaItem({ item }: Readonly<{ item: SocialMedia }>): React.ReactElement {
   const { t } = useTranslation();
 
   return (

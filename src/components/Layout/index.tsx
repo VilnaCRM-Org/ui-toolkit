@@ -28,7 +28,7 @@ export default function Layout({
   footer = null,
   pageTitle,
   metaDescription,
-}: LayoutProps): React.ReactElement {
+}: Readonly<LayoutProps>): React.ReactElement {
   React.useEffect(() => {
     if (pageTitle) {
       document.title = pageTitle;

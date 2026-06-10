@@ -8,7 +8,7 @@ import CardSwiper from './CardSwiper';
 import styles from './styles';
 import { CardList } from './types';
 
-function UiCardList({ cardList }: CardList): React.ReactElement {
+function UiCardList({ cardList }: Readonly<CardList>): React.ReactElement {
   const isSmallScreen: boolean = useMediaQuery(
     `(max-width: ${breakpointsTheme.breakpoints.values.sm - 0.02}px)`
   );

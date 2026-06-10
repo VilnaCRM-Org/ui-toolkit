@@ -9,7 +9,7 @@ import { SMALL_CARD_TEXT } from './constants';
 import styles from './styles';
 import { UiCardItemProps } from './types';
 
-function UiCardItem({ item }: UiCardItemProps): React.ReactElement {
+function UiCardItem({ item }: Readonly<UiCardItemProps>): React.ReactElement {
   const { t } = useTranslation();
 
   const isSmallCard: boolean = item.type === SMALL_CARD_TEXT;

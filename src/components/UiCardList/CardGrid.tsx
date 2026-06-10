@@ -6,7 +6,7 @@ import UiCardItem from '../UiCardItem';
 import styles from './styles';
 import { CardList } from './types';
 
-function CardGrid({ cardList }: CardList): React.ReactElement {
+function CardGrid({ cardList }: Readonly<CardList>): React.ReactElement {
   const grid: CSSProperties =
     cardList[0].type === 'smallCard' ? styles.smallGrid : styles.largeGrid;
 
