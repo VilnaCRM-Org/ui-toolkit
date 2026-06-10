@@ -1,13 +1,12 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { Layout } from '../../src/components';
 
 describe('Layout', () => {
-  afterEach(() => {
-    // Unmount first so Layout's effect cleanup restores title/description,
-    // then strip any leftover metadata for a deterministic next test.
-    cleanup();
+  beforeEach(() => {
+    // Reset metadata before each test so a prior test's unmount restore
+    // (Layout reverts title/description on cleanup) can't bleed across cases.
     document.head.querySelectorAll('meta[name="description"]').forEach(node => node.remove());
     document.title = '';
   });
