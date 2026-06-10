@@ -77,4 +77,102 @@ describe('Layout', () => {
     expect(document.title).toBe('untouched');
     expect(document.querySelector('meta[name="description"]')).toBeNull();
   });
+
+  it('restores the previous document title when unmounted', () => {
+    document.title = 'Original Title';
+
+    const { unmount } = render(
+      <Layout pageTitle="Toolkit Page">
+        <div />
+      </Layout>
+    );
+
+    expect(document.title).toBe('Toolkit Page');
+
+    unmount();
+
+    expect(document.title).toBe('Original Title');
+  });
+
+  it('restores the previous meta description content when unmounted', () => {
+    const existing: HTMLMetaElement = document.createElement('meta');
+    existing.setAttribute('name', 'description');
+    existing.setAttribute('content', 'original description');
+    document.head.appendChild(existing);
+
+    const { unmount } = render(
+      <Layout metaDescription="temporary description">
+        <div />
+      </Layout>
+    );
+
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'temporary description'
+    );
+
+    unmount();
+
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'original description'
+    );
+  });
+
+  it('removes the created meta description when unmounted and none existed before', () => {
+    const { unmount } = render(
+      <Layout metaDescription="temporary description">
+        <div />
+      </Layout>
+    );
+
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'temporary description'
+    );
+
+    unmount();
+
+    expect(document.querySelector('meta[name="description"]')).toBeNull();
+  });
+
+  it('leaves the document title untouched on unmount when no pageTitle is provided', () => {
+    document.title = 'persisted';
+
+    const { unmount } = render(
+      <Layout metaDescription="some description">
+        <div />
+      </Layout>
+    );
+
+    unmount();
+
+    expect(document.title).toBe('persisted');
+  });
+
+  it('re-applies the title and meta description when the props change', () => {
+    const { rerender } = render(
+      <Layout pageTitle="First Title" metaDescription="first description">
+        <div />
+      </Layout>
+    );
+
+    expect(document.title).toBe('First Title');
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'first description'
+    );
+
+    rerender(
+      <Layout pageTitle="Second Title" metaDescription="second description">
+        <div />
+      </Layout>
+    );
+
+    expect(document.title).toBe('Second Title');
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
+      'content',
+      'second description'
+    );
+  });
 });
