@@ -25,7 +25,7 @@ describe('Layout', () => {
     expect(footer).toBeInTheDocument();
     expect(header.compareDocumentPosition(content)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(content.compareDocumentPosition(footer)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    expect(container.textContent).toContain('Content');
+    expect(container).toHaveTextContent('Content');
   });
 
   it('updates document title and creates the meta description when provided', () => {
