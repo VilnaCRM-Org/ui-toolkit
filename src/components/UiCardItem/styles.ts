@@ -62,17 +62,14 @@ export default {
     },
   },
 
+  // Visible affordance for the "services" disclosure trigger. Applied directly
+  // to the focusable inline span (not the tooltip popper) so the underline/
+  // color cue is present at every breakpoint.
   hoveredCard: {
     cursor: 'pointer',
     color: colorTheme.palette.primary.main,
     textDecoration: 'underline',
     fontWeight: '700',
-  },
-
-  servicesLink: {
-    color: 'inherit',
-    fontWeight: 'inherit',
-    textDecorationColor: 'inherit',
   },
 
   largeWrapper: {

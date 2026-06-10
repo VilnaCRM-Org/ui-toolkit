@@ -40,21 +40,22 @@ describe('UiCardList component', () => {
     jest.clearAllMocks();
   });
 
-  it('does not mount CardSwiper on large screens', () => {
+  it('renders CardGrid and not CardSwiper on large screens', () => {
     mockedUseMediaQuery.mockReturnValue(false);
 
     render(React.createElement(UiCardList, { cardList }));
 
+    expect(screen.getByTestId('card-grid')).toBeInTheDocument();
     expect(screen.queryByTestId('card-swiper')).not.toBeInTheDocument();
     expect(mockedCardSwiper).not.toHaveBeenCalled();
   });
 
-  it('renders CardSwiper on small screens', () => {
+  it('renders CardSwiper and not CardGrid on small screens', () => {
     mockedUseMediaQuery.mockReturnValue(true);
 
     render(React.createElement(UiCardList, { cardList }));
 
-    const cardSwiper: HTMLElement = screen.getByTestId('card-swiper');
-    expect(cardSwiper).toBeInTheDocument();
+    expect(screen.getByTestId('card-swiper')).toBeInTheDocument();
+    expect(screen.queryByTestId('card-grid')).not.toBeInTheDocument();
   });
 });

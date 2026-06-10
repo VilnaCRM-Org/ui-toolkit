@@ -1,4 +1,4 @@
-import { Grid, SxProps, Theme } from '@mui/material';
+import { Box, SxProps, Theme } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -27,7 +27,9 @@ function mutationTouchesToolTip(mutation: MutationRecord): boolean {
 }
 
 // Recompute from the live DOM rather than toggling per add/remove, so overlapping
-// tooltip mutations can't leave pointer-events in the wrong state.
+// tooltip mutations can't leave pointer-events in the wrong state. The tooltip
+// portals to <body> (outside the swiper subtree), so detection is necessarily a
+// document-level query rather than scoped to this instance.
 function syncPointerEvents(swiper: HTMLElement | null): void {
   if (!swiper) {
     return;
@@ -42,8 +44,8 @@ function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | 
   }
 }
 
-function CardSwiper({ cardList }: Readonly<CardList>): React.ReactElement {
-  const swiperRef: React.RefObject<HTMLElement | null> = useRef<HTMLElement | null>(null);
+function CardSwiper({ cardList, headingComponent }: Readonly<CardList>): React.ReactElement {
+  const swiperRef: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const target: HTMLElement | null = document.querySelector('body');
@@ -59,11 +61,13 @@ function CardSwiper({ cardList }: Readonly<CardList>): React.ReactElement {
     return (): void => observer.disconnect();
   }, []);
 
+  // Layout is chosen once from the first item: the card list is expected to be
+  // homogeneous (all small or all large cards).
   const gridMobile: SxProps<Theme> =
     cardList[0].type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
 
   return (
-    <Grid sx={gridMobile} ref={swiperRef as React.RefObject<HTMLDivElement>}>
+    <Box sx={gridMobile} ref={swiperRef}>
       <Swiper
         pagination={{
           clickable: true,
@@ -75,11 +79,11 @@ function CardSwiper({ cardList }: Readonly<CardList>): React.ReactElement {
       >
         {cardList.map(item => (
           <SwiperSlide key={item.id}>
-            <UiCardItem item={item} />
+            <UiCardItem item={item} headingComponent={headingComponent} />
           </SwiperSlide>
         ))}
       </Swiper>
-    </Grid>
+    </Box>
   );
 }
 

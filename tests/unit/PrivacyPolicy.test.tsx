@@ -10,27 +10,27 @@ const defaultUsagePolicyUrl: string =
 
 describe('PrivacyPolicy', () => {
   const originalPrivacyPolicyUrl: string | undefined =
-    process.env.NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL;
+    process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL;
   const originalUsagePolicyUrl: string | undefined =
-    process.env.NEXT_PUBLIC_VILNACRM_USAGE_POLICY_URL;
+    process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL;
 
   afterEach(() => {
     if (originalPrivacyPolicyUrl === undefined) {
-      delete process.env.NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL;
+      delete process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL;
     } else {
-      process.env.NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL = originalPrivacyPolicyUrl;
+      process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL = originalPrivacyPolicyUrl;
     }
 
     if (originalUsagePolicyUrl === undefined) {
-      delete process.env.NEXT_PUBLIC_VILNACRM_USAGE_POLICY_URL;
+      delete process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL;
     } else {
-      process.env.NEXT_PUBLIC_VILNACRM_USAGE_POLICY_URL = originalUsagePolicyUrl;
+      process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL = originalUsagePolicyUrl;
     }
   });
 
   it('uses separate default links for privacy and usage policy', () => {
-    delete process.env.NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL;
-    delete process.env.NEXT_PUBLIC_VILNACRM_USAGE_POLICY_URL;
+    delete process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL;
+    delete process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL;
 
     render(<PrivacyPolicy />);
 
@@ -49,8 +49,8 @@ describe('PrivacyPolicy', () => {
     const configuredPrivacyPolicyUrl: string = 'https://example.com/privacy-policy';
     const configuredUsagePolicyUrl: string = 'https://example.com/usage-policy';
 
-    process.env.NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL = configuredPrivacyPolicyUrl;
-    process.env.NEXT_PUBLIC_VILNACRM_USAGE_POLICY_URL = configuredUsagePolicyUrl;
+    process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL = configuredPrivacyPolicyUrl;
+    process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL = configuredUsagePolicyUrl;
 
     render(<PrivacyPolicy />);
 

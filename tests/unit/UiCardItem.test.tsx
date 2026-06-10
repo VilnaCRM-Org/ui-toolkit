@@ -36,6 +36,37 @@ describe('UiCardItem Component', () => {
       expect(integrateElement).toBeInTheDocument();
       expect(servicesElement).toBeInTheDocument();
     });
+
+    it('renders the services disclosure without nested interactive controls or a nested <p>', () => {
+      const consoleError: jest.SpyInstance = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { queryByRole, getByText } = render(<CardContent item={cardItem} isSmallCard />);
+
+      // No <a> wrapping the trigger (it is the tooltip's role="button" span).
+      expect(queryByRole('link')).not.toBeInTheDocument();
+      expect(getByText(servicesText).tagName).toBe('SPAN');
+
+      // React logs invalid DOM nesting (e.g. <p> inside <p>) via console.error.
+      const nestingErrors: unknown[][] = consoleError.mock.calls.filter(([message]) =>
+        typeof message === 'string'
+          ? /cannot (be a descendant|contain)|validateDOMNesting/i.test(message)
+          : false
+      );
+      expect(nestingErrors).toHaveLength(0);
+
+      consoleError.mockRestore();
+    });
+
+    it('honors a heading element override for the card title', () => {
+      const { getByRole } = render(
+        <CardContent item={cardItem} isSmallCard={false} headingComponent="h2" />
+      );
+
+      const titleElement: HTMLElement = getByRole(cardTitleRole, { level: 2 });
+
+      expect(titleElement.tagName).toBe('H2');
+      expect(titleElement).toHaveTextContent(cardItem.title);
+    });
   });
 });
 describe('UiCardItem', () => {

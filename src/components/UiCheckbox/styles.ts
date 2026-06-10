@@ -1,10 +1,11 @@
 import { CSSProperties } from 'react';
 
 import Check from '@/assets/svg/check.svg';
+import { resolveImageSrc } from '@/types/assets';
 
 import colorTheme from '../UiColorTheme';
 
-const checkIconUrl: string = Check;
+const checkIconUrl: string = resolveImageSrc(Check);
 
 type StyleObject = CSSProperties & { [pseudoSelector: string]: StyleObject | string | number };
 

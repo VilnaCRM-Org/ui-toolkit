@@ -100,11 +100,11 @@ so that I can integrate toolkit components predictably across company projects.
 
 ### Latest Technical Information
 
-- React docs currently identify React `19.2` as the latest major-docs version; the architecture and implementation plan for this project remain pinned to React 18 behavior, so do not introduce React 19-only APIs as part of Story 1.1 unless the actual implementation repo already upgraded. [Source: https://react.dev/versions] [Source: https://react.dev/blog/2025/10/01/react-19-2]
-- MUI’s versions page currently lists `v7.3.8` as the most recent stable release; this project architecture still targets MUI v5 conventions, especially `sx?: SxProps<Theme>`, so Story 1.1 should preserve v5-compatible contract typing unless package metadata says otherwise. [Source: https://mui.com/versions/] [Source: specs/planning-artifacts/prd.md#35-api-consistency-policy]
-- Storybook 10 is current and ESM-only, but the implementation plan still targets Storybook 8. Do not assume Storybook 10 config semantics unless the real checkout’s package metadata confirms that upgrade. [Source: https://storybook.js.org/blog/storybook-10] [Source: specs/planning-artifacts/implementation-plan.md]
-- Bun’s official docs currently advertise `v1.3.10`; the architecture baseline only requires Bun `>=1.2.0`. Avoid relying on Bun 1.3-only features in story automation unless the actual repo lockfile or package metadata confirms them. [Source: https://bun.sh/] [Source: https://bun.sh/docs/installation]
-- TypeScript `5.9` is current in the official release notes, but Story 1.1 only needs strict-mode compatibility with the repo’s current compiler settings; do not upgrade TypeScript within this story unless the repo already carries that migration. [Source: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-9.html]
+- This checkout has already upgraded to React `19.2` (`package.json` `react@^19.2.7`); the original planning artifacts targeted React 18, so treat React-19 APIs as available and keep the contract changes backward compatible with consumers. [Source: package.json] [Source: https://react.dev/versions]
+- This checkout uses MUI `v9` (`@mui/material@^9.0.1`), not the v5 the planning artifacts assumed; keep the shared `sx?: SxProps<Theme>` contract, which remains the supported typing in v9. [Source: package.json] [Source: specs/planning-artifacts/prd.md#35-api-consistency-policy]
+- This checkout uses Storybook `v10` (`storybook@^10.4.2`); the implementation plan referenced Storybook 8, so follow Storybook 10 (ESM-only) config semantics. [Source: package.json] [Source: https://storybook.js.org/blog/storybook-10]
+- Bun’s official docs currently advertise `v1.3.10`; this repo pins `bun@1.3.5` (`package.json` `packageManager`). Avoid relying on Bun features newer than the pinned version. [Source: package.json] [Source: https://bun.sh/]
+- This checkout uses TypeScript `v6` (`typescript@^6.0.3`); Story 1.1 only needs strict-mode compatibility with the repo’s current compiler settings — no further upgrade is required. [Source: package.json]
 
 ### Project Structure Notes
 

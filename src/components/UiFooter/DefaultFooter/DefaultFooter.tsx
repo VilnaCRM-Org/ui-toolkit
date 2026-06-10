@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import Logo from '@/assets/svg/Logo.svg';
 import UiTypography from '@/components/UiTypography';
+import { resolveImageSrc } from '@/types/assets';
 
 import PrivacyPolicy from '../PrivacyPolicy';
 import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
@@ -16,7 +17,7 @@ function DefaultFooter({
   socialLinks,
 }: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
   const { t } = useTranslation();
-  const logoUrl: string = typeof Logo === 'string' ? Logo : Logo.src;
+  const logoUrl: string = resolveImageSrc(Logo);
 
   const currentYear: number = new Date().getFullYear();
 
