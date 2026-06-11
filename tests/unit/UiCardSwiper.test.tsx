@@ -37,7 +37,7 @@ describe('CardSwiper component', () => {
     expect(getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
   });
 
-  it('disables pointer events while a tooltip is open and restores them when it closes', async () => {
+  it('disables pointer events while a tooltip is open and restores on close', async () => {
     const { container } = render(React.createElement(CardSwiper, { cardList: smallCardList }));
     const swiperWrapper: HTMLElement = container.firstChild as HTMLElement;
 

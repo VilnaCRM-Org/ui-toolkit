@@ -19,7 +19,9 @@ function UiCardList({ cardList, headingComponent }: Readonly<CardList>): React.R
   return (
     <>
       <Box sx={styles.gridContainerLargeScreen}>
-        {isSmallScreen ? null : <CardGrid cardList={cardList} headingComponent={headingComponent} />}
+        {isSmallScreen ? null : (
+          <CardGrid cardList={cardList} headingComponent={headingComponent} />
+        )}
       </Box>
       <Box sx={styles.swiperContainerSmallScreen}>
         {isSmallScreen ? (

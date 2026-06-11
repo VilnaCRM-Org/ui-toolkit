@@ -37,8 +37,10 @@ describe('UiCardItem Component', () => {
       expect(servicesElement).toBeInTheDocument();
     });
 
-    it('renders the services disclosure without nested interactive controls or a nested <p>', () => {
-      const consoleError: jest.SpyInstance = jest.spyOn(console, 'error').mockImplementation(() => {});
+    it('renders the services disclosure without nested interactive controls or nested <p>', () => {
+      const consoleError: jest.SpyInstance = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       const { queryByRole, getByText } = render(<CardContent item={cardItem} isSmallCard />);
 
