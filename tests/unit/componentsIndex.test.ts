@@ -1,10 +1,13 @@
 import * as publicComponents from '../../src/components';
 
 const expectedPublicExports: string[] = [
+  'Layout',
   'UiBreakpoints',
   'UiButton',
+  'UiCardList',
   'UiCheckbox',
   'UiColorTheme',
+  'UiFooter',
   'UiImage',
   'UiInput',
   'UiLink',

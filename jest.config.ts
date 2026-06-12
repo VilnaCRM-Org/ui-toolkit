@@ -12,6 +12,8 @@ const config: Config = {
     '<rootDir>/tests/unit/**/*.spec.js',
   ],
   moduleNameMapper: {
+    '^swiper/css.*$': '<rootDir>/tests/unit/mocks/styleMock.ts',
+    '^swiper/(react|modules)$': '<rootDir>/tests/unit/mocks/swiperMock.tsx',
     '^.+\\.css$': '<rootDir>/tests/unit/mocks/styleMock.ts',
     '^.+\\.svg$': '<rootDir>/tests/unit/mocks/svgMock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
