@@ -34,6 +34,9 @@ export default function Layout({
     const previousDescription: string | null =
       document.querySelector('meta[name="description"]')?.getAttribute('content') ?? null;
 
+    // Empty/blank values are intentionally treated as "not provided": blanking
+    // document.title would fail WCAG 2.4.2 (Page Titled) and an empty meta
+    // description tag is undesirable. Clear these by omitting the prop, not ''.
     if (pageTitle) {
       document.title = pageTitle;
     }

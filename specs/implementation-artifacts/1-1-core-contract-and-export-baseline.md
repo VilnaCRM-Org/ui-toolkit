@@ -151,7 +151,7 @@ Codex GPT-5 (Amelia persona)
 - Extended `UiInput` public props with `size` and `variant`, forwarded both to MUI `TextField`, and kept existing consumer behavior backward compatible.
 - Added `tests/unit/UiCoreContract.test.tsx` to enforce package exports and the `UiInput` contract regression in CI.
 - Added Jest module mappings and test mocks for CSS/SVG assets, plus minimal React import/mock compatibility fixes required for the current unit-test transform pipeline.
-- Added a default fallback for `NEXT_PUBLIC_VILNACRM_GMAIL` so the existing footer email test remains deterministic when the environment variable is absent.
+- Added a default fallback for `REACT_APP_VILNACRM_GMAIL` so the existing footer email test remains deterministic when the environment variable is absent.
 - Verification evidence:
 - `make lint-tsc` passed.
 - `make lint-next` exited successfully with pre-existing warnings only.
