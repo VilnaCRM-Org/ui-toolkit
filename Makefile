@@ -182,8 +182,6 @@ start: up ## Start docker.
 stop: ## Stop docker services.
 	$(DOCKER_COMPOSE) stop
 
-build-k6-docker:
-	$(DOCKER) build -t k6 -f ./tests/load/Dockerfile .
-
-load-tests: build-k6-docker
-	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
+load-tests: ## Load tests are intentionally skipped — see tests/load/README.md.
+	@echo "Skipping load tests: ui-toolkit is a component library with no runtime"
+	@echo "HTTP endpoints to load-test. See tests/load/README.md for the rationale."

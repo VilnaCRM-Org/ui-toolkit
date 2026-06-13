@@ -6,6 +6,16 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
+  // Scope coverage to shippable source. Stories, type-only modules, the public
+  // barrel and ambient declarations carry no testable logic. The 100% threshold
+  // (mirroring the CRM) is enabled once Phase-2 unit tests reach it.
+  collectCoverageFrom: [
+    '<rootDir>/src/**/*.{ts,tsx}',
+    '!<rootDir>/src/**/*.stories.tsx',
+    '!<rootDir>/src/**/*.d.ts',
+    '!<rootDir>/src/**/types.ts',
+    '!<rootDir>/src/components/index.ts',
+  ],
   testMatch: [
     '<rootDir>/tests/**/*.test.ts',
     '<rootDir>/tests/**/*.test.tsx',
