@@ -136,6 +136,24 @@ describe('Layout', () => {
     expect(document.querySelector('meta[name="description"]')).toBeNull();
   });
 
+  it('does not throw on unmount when the created meta description was removed externally', () => {
+    const { unmount } = render(
+      <Layout metaDescription="temporary description">
+        <div />
+      </Layout>
+    );
+
+    const created: HTMLMetaElement | null = document.querySelector('meta[name="description"]');
+    expect(created).toHaveAttribute('content', 'temporary description');
+
+    // Simulate an external actor stripping the meta tag before Layout's cleanup
+    // runs, so querySelector returns null and the optional chain short-circuits.
+    created?.remove();
+
+    expect(() => unmount()).not.toThrow();
+    expect(document.querySelector('meta[name="description"]')).toBeNull();
+  });
+
   it('leaves the document title untouched on unmount when no pageTitle is provided', () => {
     document.title = 'persisted';
 

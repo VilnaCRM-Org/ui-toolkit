@@ -79,4 +79,74 @@ describe('UiForm', () => {
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByLabelText('Email')).toHaveValue('reset@example.com'));
   });
+
+  it('renders the title and subtitle headings when both are shown', () => {
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+        subtitle="Use your work email"
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.getByText('Sign in')).toBeInTheDocument();
+    expect(screen.getByText('Use your work email')).toBeInTheDocument();
+  });
+
+  it('omits the title and subtitle when both are hidden', () => {
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+        subtitle="Use your work email"
+        showTitle={false}
+        showSubtitle={false}
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.queryByText('Sign in')).not.toBeInTheDocument();
+    expect(screen.queryByText('Use your work email')).not.toBeInTheDocument();
+  });
+
+  it('shows the loader and disables submit while submitting is forced on', () => {
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+        isSubmitting
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+  });
+
+  it('disables submit when isSubmitDisabled is set without a loader', () => {
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+        isSubmitDisabled
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
 });

@@ -36,6 +36,45 @@ describe('UiLink', () => {
     expect(screen.getByRole('link', { name: testText })).not.toHaveAttribute('rel');
   });
 
+  it('uses an explicit rel prop instead of computing one for same-tab links', () => {
+    render(
+      <UiLink href={testUrl} rel="nofollow">
+        {testText}
+      </UiLink>
+    );
+
+    // The caller-provided rel takes precedence over the (undefined) computed value.
+    expect(screen.getByRole('link', { name: testText })).toHaveAttribute('rel', 'nofollow');
+  });
+
+  it('keeps an explicit rel prop even when the link opens in a new tab', () => {
+    render(
+      <UiLink href={testUrl} target="_blank" rel="nofollow">
+        {testText}
+      </UiLink>
+    );
+
+    // An explicit rel wins over the default 'noopener noreferrer' for new-tab links.
+    expect(screen.getByRole('link', { name: new RegExp(testText) })).toHaveAttribute(
+      'rel',
+      'nofollow'
+    );
+  });
+
+  it('omits the new-tab notice when newTabLabel is an empty string', () => {
+    render(
+      <UiLink href={testUrl} target="_blank" newTabLabel="">
+        {testText}
+      </UiLink>
+    );
+
+    // An empty newTabLabel suppresses the visually-hidden hint, so the accessible
+    // name is exactly the children with no appended notice.
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link.querySelector('span')).toBeNull();
+  });
+
   it('applies base link styles when custom sx is not provided', () => {
     render(<UiLink href={testUrl}>{testText}</UiLink>);
 

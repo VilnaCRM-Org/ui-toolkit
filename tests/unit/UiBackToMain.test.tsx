@@ -1,3 +1,4 @@
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -23,5 +24,35 @@ describe('UiBackToMain', () => {
     render(<UiBackToMain icon={<span data-testid="custom-back-icon">icon</span>} />);
 
     expect(screen.getByTestId('custom-back-icon')).toBeInTheDocument();
+  });
+
+  it('renders within a parent theme whose primary colour resolves', () => {
+    const themed: ReturnType<typeof createTheme> = createTheme({
+      palette: { primary: { main: '#1EAEFF' } },
+    });
+
+    render(
+      <ThemeProvider theme={themed}>
+        <UiBackToMain />
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole('link', { name: 'Back to main' })).toBeInTheDocument();
+  });
+
+  it('falls back to the default outline when the theme primary colour is empty', () => {
+    // createTheme rejects an empty `main` during palette augmentation, so build a
+    // valid theme then blank out primary.main to exercise the falsy ternary branch
+    // in buildBackButton (the hard-coded '#1976d2' outline fallback).
+    const themed: ReturnType<typeof createTheme> = createTheme();
+    themed.palette.primary.main = '';
+
+    render(
+      <ThemeProvider theme={themed}>
+        <UiBackToMain />
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole('link', { name: 'Back to main' })).toBeInTheDocument();
   });
 });

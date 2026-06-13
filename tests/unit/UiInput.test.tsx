@@ -66,4 +66,53 @@ describe('UiInput', () => {
   it('should be a non-empty string', () => {
     expect(UiInput.displayName).toBe('UiInput');
   });
+
+  it('does not wrap slotProps when InputProps is omitted', () => {
+    const { getByRole } = render(
+      <UiInput slotProps={{ input: { 'aria-label': 'plain-input' } }} />
+    );
+    const inputElement: HTMLElement = getByRole('textbox');
+    expect(inputElement).toHaveAttribute('aria-label', 'plain-input');
+  });
+
+  it('merges InputProps onto the input slot when no slotProps are given', () => {
+    const { getByRole } = render(
+      <UiInput InputProps={{ readOnly: true, inputProps: { maxLength: 5 } }} />
+    );
+    const inputElement: HTMLElement = getByRole('textbox');
+    expect(inputElement).toHaveAttribute('readonly');
+    expect(inputElement).toHaveAttribute('maxlength', '5');
+  });
+
+  it('calls a function slotProps.input with owner state and merges InputProps over it', () => {
+    const slotInputFn: jest.Mock = jest.fn(() => ({
+      'aria-label': 'from-fn',
+      'aria-describedby': 'fn-desc',
+    }));
+    const { getByRole } = render(
+      <UiInput
+        InputProps={{ 'aria-label': 'from-input-props' } as never}
+        slotProps={{ input: slotInputFn }}
+      />
+    );
+    const inputElement: HTMLElement = getByRole('textbox');
+
+    expect(slotInputFn).toHaveBeenCalledTimes(1);
+    expect(slotInputFn.mock.calls[0][0]).toBeDefined();
+    expect(inputElement).toHaveAttribute('aria-describedby', 'fn-desc');
+    expect(inputElement).toHaveAttribute('aria-label', 'from-input-props');
+  });
+
+  it('merges InputProps over an object slotProps.input base', () => {
+    const { getByRole } = render(
+      <UiInput
+        InputProps={{ 'aria-label': 'input-props-wins' } as never}
+        slotProps={{ input: { 'aria-label': 'object-base', 'aria-describedby': 'obj-desc' } }}
+      />
+    );
+    const inputElement: HTMLElement = getByRole('textbox');
+
+    expect(inputElement).toHaveAttribute('aria-describedby', 'obj-desc');
+    expect(inputElement).toHaveAttribute('aria-label', 'input-props-wins');
+  });
 });

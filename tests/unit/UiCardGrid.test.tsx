@@ -62,6 +62,12 @@ describe('CardGrid component', () => {
     expect(mockGrid).toHaveBeenCalledWith(expect.objectContaining({ sx: gridStyles.largeGrid }));
   });
 
+  it('falls back to the largeGrid style when the list is empty', () => {
+    render(React.createElement(CardGrid, { cardList: [] }));
+
+    expect(mockGrid).toHaveBeenCalledWith(expect.objectContaining({ sx: gridStyles.largeGrid }));
+  });
+
   it('uses distinct style objects for the small and large branches', () => {
     expect(gridStyles.smallGrid).not.toBe(gridStyles.largeGrid);
   });

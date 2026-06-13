@@ -3,6 +3,7 @@ import React from 'react';
 
 import UiCardItem from '../../src/components/UiCardItem';
 import CardContent from '../../src/components/UiCardItem/CardContent';
+import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from '../../src/components/UiCardItem/constants';
 
 import { cardItem, largeCard, smallCard } from './constants';
 
@@ -101,5 +102,34 @@ describe('UiCardItem', () => {
 
     expect(cardImage).toBeInTheDocument();
     expect(cardImage).toHaveAttribute('alt', cardItem.alt);
+  });
+});
+
+describe('UiCardItem exported fixtures', () => {
+  const cardTitleRole2: string = 'heading';
+
+  it('renders the SMALL_CARD_ITEM fixture as a small card with translated content', () => {
+    expect(SMALL_CARD_ITEM.type).toBe('smallCard');
+
+    const { getByRole, getByText } = render(<UiCardItem item={SMALL_CARD_ITEM} />);
+
+    // Title key resolves via i18n and the small variant uses the bodyText16 body copy.
+    expect(getByRole(cardTitleRole2)).toHaveTextContent('Public API');
+    expect(
+      getByText(/For cases when you did not find the desired ready-made integration/)
+    ).toBeInTheDocument();
+    // alt key resolves to the localized image description.
+    expect(getByRole('img')).toHaveAttribute('alt', 'Image of Ruby');
+  });
+
+  it('renders the LARGE_CARD_ITEM fixture as a large card with translated content', () => {
+    expect(LARGE_CARD_ITEM.type).toBe('largeCard');
+
+    const { getByRole, queryByText } = render(<UiCardItem item={LARGE_CARD_ITEM} />);
+
+    // Large variant renders the title and text keys directly (no "services" trigger).
+    expect(getByRole(cardTitleRole2)).toHaveTextContent('Ready templates');
+    expect(queryByText('services')).not.toBeInTheDocument();
+    expect(getByRole('img')).toHaveAttribute('alt', 'Image card of templates');
   });
 });

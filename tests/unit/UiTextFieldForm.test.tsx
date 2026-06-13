@@ -4,6 +4,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 
 import { UiTextFieldForm } from '../../src/components';
+import breakpointsTheme from '../../src/components/UiBreakpoints';
+import colorTheme from '../../src/components/UiColorTheme';
+import textFieldFormStyles from '../../src/components/UiTextFieldForm/styles';
 
 import { testPlaceholder, testText } from './constants';
 
@@ -147,5 +150,26 @@ describe('UiTextFieldForm', () => {
     render(<InputPropsWrapper />);
 
     expect(screen.getByTestId('field-adornment')).toBeInTheDocument();
+  });
+});
+
+describe('UiTextFieldForm styles', () => {
+  it('applies spacing and the theme error color to the error text', () => {
+    expect(textFieldFormStyles.errorText).toEqual(
+      expect.objectContaining({
+        marginTop: '0.25rem',
+        paddingBottom: '10px',
+        color: colorTheme.palette.error.main,
+      })
+    );
+  });
+
+  it('shrinks the error text font size below the sm breakpoint', () => {
+    const smBreakpoint: number = breakpointsTheme.breakpoints.values.sm;
+    const mediaQuery: string = `@media (max-width: ${smBreakpoint}px)`;
+
+    expect(textFieldFormStyles.errorText).toHaveProperty(mediaQuery, {
+      fontSize: '0.75rem',
+    });
   });
 });
