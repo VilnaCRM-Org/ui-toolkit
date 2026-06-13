@@ -1,4 +1,6 @@
+import type { SxProps } from '@mui/material';
 import Box from '@mui/material/Box';
+import type { Theme } from '@mui/material/styles';
 import React from 'react';
 
 import styles from './styles';
@@ -8,7 +10,9 @@ export default function UiSkeletonInput({
   disableAnimation = false,
   id,
 }: UiSkeletonInputProps): React.ReactElement {
-  const staticSx = disableAnimation ? styles.staticSkeleton : undefined;
+  const staticSx: SxProps<Theme> | undefined = disableAnimation
+    ? styles.staticSkeleton
+    : undefined;
 
   return (
     <Box

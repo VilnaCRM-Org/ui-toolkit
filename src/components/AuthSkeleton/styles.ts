@@ -1,13 +1,14 @@
-import { fieldGapMargins, formSection, formWrapper } from './shared-styles';
+import breakpointsTheme from '../UiBreakpoints';
 import {
   SKELETON_BORDER_COLOR,
   SMALL_MOBILE_BREAKPOINT,
   SMALL_MOBILE_BREAKPOINT_UPPER,
   shadowPulseAnimation,
 } from '../UiSkeletons/base';
-import breakpointsTheme from '../UiBreakpoints';
 
-const AUTH_SKELETON_TINY_BREAKPOINT = '336px';
+import { fieldGapMargins, formSection, formWrapper } from './shared-styles';
+
+const AUTH_SKELETON_TINY_BREAKPOINT: string = '336px';
 
 export default {
   formWrapperPulse: {

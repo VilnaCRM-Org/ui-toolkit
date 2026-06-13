@@ -3,9 +3,9 @@ import type { Theme } from '@mui/material/styles';
 
 import breakpointsTheme from '../UiBreakpoints';
 
-const lgUp = `@media (min-width:${breakpointsTheme.breakpoints.values.lg}px)`;
+const lgUp: string = `@media (min-width:${breakpointsTheme.breakpoints.values.lg}px)`;
 
-const buildSection = (theme: Theme): SxProps<Theme> => ({
+const buildSection: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
   paddingTop: theme.spacing(2),
   paddingBottom: theme.spacing(2),
   backgroundColor: theme.palette.background.default,
@@ -15,7 +15,7 @@ const buildSection = (theme: Theme): SxProps<Theme> => ({
   },
 });
 
-const buildBackButton = (theme: Theme): SxProps<Theme> => ({
+const buildBackButton: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
   padding: 0,
   '&:hover': {
     backgroundColor: 'transparent',
@@ -29,7 +29,7 @@ const buildBackButton = (theme: Theme): SxProps<Theme> => ({
   },
 });
 
-const buildIcon = (theme: Theme): SxProps<Theme> => ({
+const buildIcon: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -38,7 +38,7 @@ const buildIcon = (theme: Theme): SxProps<Theme> => ({
   height: '24px',
 });
 
-const buildBackText = (theme: Theme): SxProps<Theme> => ({
+const buildBackText: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
   marginLeft: theme.spacing(1),
   fontFamily: theme.typography.fontFamily,
   fontWeight: 500,
@@ -52,7 +52,9 @@ const buildBackText = (theme: Theme): SxProps<Theme> => ({
   },
 });
 
-const getBackToMainStyles = (theme: Theme): Record<string, SxProps<Theme>> => ({
+const getBackToMainStyles: (theme: Theme) => Record<string, SxProps<Theme>> = (
+  theme: Theme
+): Record<string, SxProps<Theme>> => ({
   section: buildSection(theme),
   backButton: buildBackButton(theme),
   icon: buildIcon(theme),

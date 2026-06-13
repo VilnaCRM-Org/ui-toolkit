@@ -7,8 +7,6 @@ import { testText } from './constants';
 
 const mockOnChange: () => void = jest.fn();
 
-const borderStyle: string = 'border: 1px solid #DC3939';
-
 describe('UiCheckbox', () => {
   it('renders the checkbox with the provided label', () => {
     const { getByLabelText } = render(<UiCheckbox label={testText} onChange={mockOnChange} />);
@@ -36,7 +34,10 @@ describe('UiCheckbox', () => {
     const checkboxLabel: HTMLElement = getByLabelText(testText);
     const checkboxInput: HTMLElement = getByRole('checkbox');
     expect(checkboxLabel).toBeInTheDocument();
-    expect(checkboxInput).toHaveStyle(borderStyle);
+    // The error variant flags the input as invalid for assistive tech; the red
+    // border styling lives on the visual `.ui-checkbox-box` via descendant-
+    // selector sx, which jsdom's computed-style resolver cannot evaluate.
+    expect(checkboxInput).toHaveAttribute('aria-invalid', 'true');
   });
 
   it('supports controlled checked state', () => {
@@ -44,12 +45,12 @@ describe('UiCheckbox', () => {
       <UiCheckbox checked onChange={mockOnChange} label={testText} />
     );
 
-    let checkboxInput = getByRole('checkbox') as HTMLInputElement;
-    expect(checkboxInput.checked).toBe(true);
+    let checkboxInput: HTMLInputElement = getByRole('checkbox') as HTMLInputElement;
+    expect(checkboxInput).toBeChecked();
 
     rerender(<UiCheckbox checked={false} onChange={mockOnChange} label={testText} />);
 
     checkboxInput = getByRole('checkbox') as HTMLInputElement;
-    expect(checkboxInput.checked).toBe(false);
+    expect(checkboxInput).not.toBeChecked();
   });
 });

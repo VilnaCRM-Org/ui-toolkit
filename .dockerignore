@@ -5,9 +5,14 @@
 coverage
 playwright-report
 **/test-results
+.playwright-mcp
+.qlty
 
 .cache
 *.log
+.env
+.env.*
+!.env.example
 
 storybook-static
 

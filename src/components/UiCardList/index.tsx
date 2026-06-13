@@ -1,19 +1,35 @@
-import { Box } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 import React from 'react';
+
+import breakpointsTheme from '../UiBreakpoints';
 
 import CardGrid from './CardGrid';
 import CardSwiper from './CardSwiper';
 import styles from './styles';
 import { UiCardListProps } from './types';
 
-export default function UiCardList({ cardList }: UiCardListProps): JSX.Element {
+export default function UiCardList({
+  cardList,
+  headingComponent,
+}: UiCardListProps): React.ReactElement {
+  // Render exactly one variant. Gating CardGrid on `!isSmallScreen` (rather than
+  // mounting it always and hiding it with CSS) avoids rendering the whole card
+  // tree twice on mobile, matching how CardSwiper is gated.
+  const isSmallScreen: boolean = useMediaQuery(
+    `(max-width: ${breakpointsTheme.breakpoints.values.sm - 0.02}px)`
+  );
+
   return (
     <>
       <Box sx={styles.gridContainerLargeScreen}>
-        <CardGrid cardList={cardList} />
+        {isSmallScreen ? null : (
+          <CardGrid cardList={cardList} headingComponent={headingComponent} />
+        )}
       </Box>
       <Box sx={styles.swiperContainerSmallScreen}>
-        <CardSwiper cardList={cardList} />
+        {isSmallScreen ? (
+          <CardSwiper cardList={cardList} headingComponent={headingComponent} />
+        ) : null}
       </Box>
     </>
   );

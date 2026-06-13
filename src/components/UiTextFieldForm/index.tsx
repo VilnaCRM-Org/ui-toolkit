@@ -8,6 +8,7 @@ import {
 } from 'react-hook-form';
 
 import UiInput from '../UiInput';
+
 import { CustomTextField } from './types';
 
 type RenderArgs<T extends FieldValues> = {
@@ -42,7 +43,8 @@ function UiTextFieldForm<T extends FieldValues>({
   name,
   ...inputProps
 }: CustomTextField<T>): React.ReactElement {
-  const renderField = createRenderField<T>(inputProps);
+  const renderField: (args: RenderArgs<T>) => React.ReactElement =
+    createRenderField<T>(inputProps);
 
   if (defaultValue !== undefined) {
     return (

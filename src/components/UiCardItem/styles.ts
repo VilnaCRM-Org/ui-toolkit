@@ -1,7 +1,7 @@
 import breakpointsTheme from '../UiBreakpoints';
+import { hoveredCard, largeImage, smallImage, smallWrapper } from '../UiCardList/sharedCardStyles';
 import colorTheme from '../UiColorTheme';
 
-import { hoveredCard, largeImage, smallImage, smallWrapper } from '../UiCardList/sharedCardStyles';
 
 export default {
   smallWrapper,

@@ -18,16 +18,16 @@ function getPolicyUrl(value: string | undefined, fallbackUrl: string): string {
 function PrivacyPolicy(): React.ReactElement {
   const { t } = useTranslation();
   const privacyPolicyUrl: string = getPolicyUrl(
-    process.env.NEXT_PUBLIC_VILNACRM_PRIVACY_POLICY_URL,
+    process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL,
     defaultPrivacyPolicyUrl
   );
   const usagePolicyUrl: string = getPolicyUrl(
-    process.env.NEXT_PUBLIC_VILNACRM_USAGE_POLICY_URL,
+    process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL,
     defaultUsagePolicyUrl
   );
 
   return (
-    <Stack direction="row" alignItems="center" sx={styles.wrapper}>
+    <Stack direction="row" sx={{ ...styles.wrapper, alignItems: 'center' }}>
       <Link target="_blank" rel="noopener noreferrer" sx={styles.link} href={privacyPolicyUrl}>
         <UiTypography variant="medium16" sx={styles.textColor}>
           {t('footer.privacy')}

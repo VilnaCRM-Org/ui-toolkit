@@ -20,6 +20,9 @@ export default {
   },
   gridSmallMobile: {
     display: 'none',
+    '& .swiper .swiper-pagination .swiper-pagination-bullet': {
+      marginRight: '1.25rem',
+    },
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       minHeight: '18.5rem',
       display: 'grid',
@@ -51,6 +54,12 @@ export default {
     },
   },
   gridLargeMobile: {
+    '& .swiper .swiper-pagination .swiper-pagination-bullet': {
+      marginRight: '1.25rem',
+    },
+    '& .swiper .swiper-pagination': {
+      marginLeft: '0.5rem',
+    },
     display: 'none',
     [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
       display: 'grid',

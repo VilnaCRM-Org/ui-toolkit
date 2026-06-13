@@ -9,14 +9,17 @@ import UiSkeletonText from '../UiSkeletonText';
 
 import styles from './styles';
 
-const SOCIAL_BUTTONS = [
+const SOCIAL_BUTTONS: readonly { readonly id: string }[] = [
   { id: 'google' },
   { id: 'facebook' },
   { id: 'apple' },
   { id: 'linkedin' },
 ] as const;
 
-const STATIC_SX = { animation: 'none', backgroundSize: '100% 100%' } as const;
+const STATIC_SX: { readonly animation: 'none'; readonly backgroundSize: '100% 100%' } = {
+  animation: 'none',
+  backgroundSize: '100% 100%',
+} as const;
 
 export type AuthSkeletonProps = {
   disableAnimation?: boolean;
@@ -25,7 +28,7 @@ export type AuthSkeletonProps = {
 
 type Wrap = <T extends object>(baseSx: T) => (T | typeof STATIC_SX)[];
 
-const buildWrap =
+const buildWrap: (disableAnimation: boolean) => Wrap =
   (disableAnimation: boolean): Wrap =>
   baseSx =>
     disableAnimation ? [baseSx, STATIC_SX] : [baseSx];
@@ -113,7 +116,7 @@ export default function AuthSkeleton({
   disableAnimation = false,
   ariaLabel = 'Loading form',
 }: AuthSkeletonProps): React.ReactElement {
-  const wrap = buildWrap(disableAnimation);
+  const wrap: Wrap = buildWrap(disableAnimation);
 
   return (
     <Box component="section" aria-label={ariaLabel} sx={styles.formSection}>

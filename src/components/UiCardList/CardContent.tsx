@@ -5,7 +5,7 @@ import UiTooltip from '../UiTooltip';
 import UiTypography from '../UiTypography';
 
 import styles from './styles';
-import { UiCardItemData } from './types';
+import { HeadingLevel, UiCardItemData } from './types';
 
 function renderContent(content: string | React.ReactNode): React.ReactNode {
   return typeof content === 'string' ? <Trans i18nKey={content} /> : content;
@@ -14,15 +14,17 @@ function renderContent(content: string | React.ReactNode): React.ReactNode {
 export default function CardContent({
   item,
   isSmallCard,
+  headingComponent,
 }: {
   item: UiCardItemData;
   isSmallCard: boolean;
+  headingComponent?: HeadingLevel;
 }): React.ReactElement {
   return (
     <>
       <UiTypography
         variant={isSmallCard ? 'h6' : 'h5'}
-        component="h3"
+        component={headingComponent ?? 'h3'}
         sx={isSmallCard ? styles.smallTitle : styles.largeTitle}
       >
         {renderContent(item.title)}

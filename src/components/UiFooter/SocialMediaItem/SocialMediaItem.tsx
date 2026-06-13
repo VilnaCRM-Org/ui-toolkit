@@ -2,11 +2,13 @@ import { Box, Link } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { resolveImageSrc } from '@/types/assets';
+
 import { SocialMedia } from '../types';
 
 import styles from './styles';
 
-function SocialMediaItem({ item }: { item: SocialMedia }): React.ReactElement {
+function SocialMediaItem({ item }: Readonly<{ item: SocialMedia }>): React.ReactElement {
   const { t } = useTranslation();
 
   return (
@@ -17,7 +19,9 @@ function SocialMediaItem({ item }: { item: SocialMedia }): React.ReactElement {
         target="_blank"
         rel="noopener noreferrer"
       >
-        <img src={item.icon} alt={t(item.alt)} width={20} height={20} />
+        {/* The link's aria-label is the accessible name; the icon is decorative,
+            so its alt is empty to avoid a redundant second a11y-tree node. */}
+        <img src={resolveImageSrc(item.icon)} alt="" width={20} height={20} />
       </Link>
     </Box>
   );

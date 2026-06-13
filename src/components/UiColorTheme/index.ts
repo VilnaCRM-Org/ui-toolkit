@@ -1,6 +1,6 @@
 import { Theme, createTheme } from '@mui/material';
 
-export const sharedPalette = {
+export const sharedPalette: Record<string, { main: string }> = {
   primary: {
     main: '#1EAEFF',
   },

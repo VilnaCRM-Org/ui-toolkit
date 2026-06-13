@@ -11,7 +11,7 @@ describe('UiContainer', () => {
       </UiContainer>
     );
 
-    const container = screen.getByLabelText('container');
+    const container: HTMLElement = screen.getByLabelText('container');
     expect(container).toBeInTheDocument();
     expect(container).toHaveTextContent('Container content');
   });

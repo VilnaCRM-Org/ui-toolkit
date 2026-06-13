@@ -52,7 +52,7 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
 
   return (
     <form onSubmit={handleSubmit(() => {})}>
-      <Stack direction="row" alignItems="center" gap="1rem">
+      <Stack direction="row" sx={{ alignItems: 'center', gap: '1rem' }}>
         <UiTextFieldForm
           control={control}
           rules={rules}
@@ -70,7 +70,7 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
 }
 
 export const TextFieldForm: Story = {
-  render: args => <TextFieldFormStory {...(args as unknown as TextFieldFormStoryArgs)} />,
+  render: args => <TextFieldFormStory {...(args as TextFieldFormStoryArgs)} />,
   args: {
     rules: {
       required: t('This field is required'),

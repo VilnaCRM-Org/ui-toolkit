@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
+import { Box, SxProps } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import React from 'react';
 
 import UiButton from '../UiButton';
@@ -27,8 +28,8 @@ export default function UiBackToMain({
   label = 'Back to main',
   icon = <DefaultBackIcon />,
 }: UiBackToMainProps): React.ReactElement {
-  const theme = useTheme();
-  const styles = getBackToMainStyles(theme);
+  const theme: Theme = useTheme();
+  const styles: Record<string, SxProps<Theme>> = getBackToMainStyles(theme);
 
   return (
     <Box component="section" sx={styles.section}>

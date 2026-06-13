@@ -1,10 +1,13 @@
+import { SxProps } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+
 import Check from '@/assets/svg/check.svg';
 
 import colorTheme from '../UiColorTheme';
 
 const checkIconUrl: string = typeof Check === 'string' ? Check : Check.src;
 
-const boxBase = {
+const boxBase: SxProps<Theme> = {
   display: 'block',
   width: '1.5rem',
   height: '1.5rem',
@@ -13,7 +16,7 @@ const boxBase = {
   backgroundColor: colorTheme.palette.white.main,
 } as const;
 
-const checkedBox = {
+const checkedBox: SxProps<Theme> = {
   border: 'none',
   backgroundColor: colorTheme.palette.primary.main,
   backgroundImage: `url(${checkIconUrl})`,
@@ -21,7 +24,7 @@ const checkedBox = {
   backgroundRepeat: 'no-repeat',
 };
 
-const baseCheckbox = {
+const baseCheckbox: SxProps<Theme> = {
   padding: 0,
   marginRight: '0.813rem',
   '& .ui-checkbox-box--checked': checkedBox,

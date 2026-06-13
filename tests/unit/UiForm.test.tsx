@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
@@ -17,8 +17,8 @@ function RegisteredField(): React.ReactElement {
 
 describe('UiForm', () => {
   it('submits registered field values', async () => {
-    const user = userEvent.setup();
-    const onSubmit = jest.fn();
+    const user: UserEvent = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn();
 
     render(
       <UiForm<FormValues>
@@ -56,8 +56,8 @@ describe('UiForm', () => {
   });
 
   it('resets to default values after a successful submit when requested', async () => {
-    const user = userEvent.setup();
-    const onSubmit = jest.fn().mockResolvedValue(undefined);
+    const user: UserEvent = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn().mockResolvedValue(undefined);
 
     render(
       <UiForm<FormValues>
@@ -71,7 +71,7 @@ describe('UiForm', () => {
       </UiForm>
     );
 
-    const input = screen.getByLabelText('Email');
+    const input: HTMLElement = screen.getByLabelText('Email');
     await user.clear(input);
     await user.type(input, 'changed@example.com');
     await user.click(screen.getByRole('button', { name: 'Submit' }));

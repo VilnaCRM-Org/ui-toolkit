@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { SxProps, Theme } from '@mui/material';
+import type { ReactNode } from 'react';
 
 export interface UiTooltipProps {
   children: ReactNode;

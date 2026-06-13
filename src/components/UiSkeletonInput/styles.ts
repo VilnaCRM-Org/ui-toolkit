@@ -1,12 +1,12 @@
 import { type Theme } from '@mui/material/styles';
 import { type SystemStyleObject } from '@mui/system';
 
-import { SMALL_MOBILE_BREAKPOINT, baseSkeletonStyle } from '../UiSkeletons/base';
 import breakpointsTheme from '../UiBreakpoints';
+import { SMALL_MOBILE_BREAKPOINT, baseSkeletonStyle } from '../UiSkeletons/base';
 
-export const BASE_INPUT_HEIGHT = 3;
-export const MD_INPUT_HEIGHT = 4.9375;
-export const XL_INPUT_HEIGHT = 4;
+export const BASE_INPUT_HEIGHT: number = 3;
+export const MD_INPUT_HEIGHT: number = 4.9375;
+export const XL_INPUT_HEIGHT: number = 4;
 
 export default {
   staticSkeleton: {

@@ -1,10 +1,10 @@
+import breakpointsTheme from '../UiBreakpoints';
 import {
   SKELETON_BORDER_COLOR,
   SKELETON_BORDER_RADIUS,
   SMALL_MOBILE_BREAKPOINT,
   baseSkeletonStyle,
 } from '../UiSkeletons/base';
-import breakpointsTheme from '../UiBreakpoints';
 
 export default {
   buttonSkeleton: {

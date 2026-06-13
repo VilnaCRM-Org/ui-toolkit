@@ -1,6 +1,6 @@
 import breakpointsTheme from '../UiBreakpoints';
 
-const containerPadding = {
+const containerPadding: Record<string, string> = {
   xs: '0.9375rem',
   md: '1.625rem',
   lg: '2rem',

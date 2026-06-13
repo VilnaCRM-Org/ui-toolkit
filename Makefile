@@ -1,14 +1,14 @@
 # Parameters
-K6 = $(DOCKER) run -v ./src/test/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
-STORYBOOK_PORT ?= 6006
+K6 = $(DOCKER) run -v ./tests/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
+BATS_FORMATTER ?= pretty
 
 # Executables
 DOCKER = docker
 DOCKER_COMPOSE = docker compose
 
 # Docker helpers
-RUN_BUN = $(DOCKER_COMPOSE) run --rm --build bun
-RUN_BUN_SH = $(DOCKER_COMPOSE) run --rm --build --entrypoint sh bun -lc
+RUN_BUN = $(DOCKER_COMPOSE) run --rm bun
+RUN_BUN_SH = $(DOCKER_COMPOSE) run --rm --entrypoint sh bun -lc
 EXEC_BUN = $(DOCKER_COMPOSE) exec -T bun
 BUN = $(RUN_BUN) bun
 BUN_RUN = $(BUN) run
@@ -20,8 +20,23 @@ BUN_X = $(BUN) x
 .PHONY: help build lint lint-next lint-tsc lint-md format-check git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit copy-coverage test-mutation test-memory-leak test-visual \
-	lighthouse-desktop lighthouse-mobile install update playwright-install \
-	up down sh ps logs new-logs start stop build-k6-docker load-tests
+	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
+	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright
+
+PLAYWRIGHT_TEST_ARGS =
+
+run-storybook-playwright:
+	@test -n "$(PLAYWRIGHT_TEST_TARGET)"
+	@set -eu; \
+		$(DOCKER_COMPOSE) build playwright; \
+		$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true; \
+		$(DOCKER_COMPOSE) up -d --build storybook; \
+		trap "$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true" EXIT; \
+		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html"; then \
+			$(DOCKER_COMPOSE) logs storybook; \
+			exit 1; \
+		fi; \
+		$(DOCKER_COMPOSE) run --rm playwright bun x playwright test $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -36,13 +51,21 @@ lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
 		targets=""; \
-		if [ -d src ]; then targets="src"; fi; \
-		if [ -d pages ]; then targets="$$targets pages"; fi; \
+		for dir in src scripts tests; do \
+			if [ -d "$$dir" ]; then \
+				targets="$$targets $$dir"; \
+			fi; \
+		done; \
 		if [ -z "$$targets" ]; then \
 			echo "No lint targets found, skipping ESLint."; \
 			exit 0; \
 		fi; \
-		bun x eslint $$targets --ext .js,.jsx,.ts,.tsx \
+		files=$$(find $$targets -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \)); \
+		if [ -z "$$files" ]; then \
+			echo "No lint files found, skipping ESLint."; \
+			exit 0; \
+		fi; \
+		bun x eslint $$files \
 	'
 
 lint-tsc: ## Run the TypeScript linter inside the docker container.
@@ -58,9 +81,7 @@ git-hooks-install: ## Install git hooks.
 	$(BUN_X) husky install
 
 storybook-start: ## Start Storybook inside the docker container.
-	@host_port=$$(STORYBOOK_PORT=$(STORYBOOK_PORT) node ./scripts/resolveStorybookHostPort.js); \
-		echo "Storybook available at http://127.0.0.1:$$host_port"; \
-		$(DOCKER_COMPOSE) run --rm --build --publish $$host_port:6006 bun bun x storybook dev --ci --host 0.0.0.0 -p 6006
+	$(BUN_X) storybook dev -p 6006
 
 storybook-build: ## Build Storybook inside the docker container.
 	$(BUN_X) storybook build
@@ -68,22 +89,12 @@ storybook-build: ## Build Storybook inside the docker container.
 generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
 	$(BUN_X) api-extractor run --local --verbose
 
+test-e2e: PLAYWRIGHT_TEST_TARGET = ./tests/e2e
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
-	@$(RUN_BUN_SH) '\
-		set -e; \
-		bun x playwright install --with-deps >/tmp/ui-toolkit-playwright-install.log 2>&1; \
-		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
-		pid=$$!; \
-		trap "kill $$pid >/dev/null 2>&1 || true; rm -f /tmp/ui-toolkit-storybook.log /tmp/ui-toolkit-playwright-install.log || true" EXIT; \
-		if ! bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; then \
-			cat /tmp/ui-toolkit-storybook.log; \
-			exit 1; \
-		fi; \
-		bun x playwright test ./src/test/e2e \
-	'
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)"
 
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
-	$(BUN_X) playwright test ./src/test/e2e
+	$(DOCKER_COMPOSE) run --rm --build playwright bun x playwright test ./tests/e2e
 
 test-unit: ## Run Jest unit tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
@@ -111,7 +122,7 @@ test-mutation: ## Run mutation tests inside the docker container.
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		if [ ! -f src/test/memory-leak/runMemlabTests.js ]; then \
+		if [ ! -f tests/memory-leak/runMemlabTests.js ]; then \
 			echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."; \
 			exit 0; \
 		fi; \
@@ -122,14 +133,14 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 			cat /tmp/ui-toolkit-app.log; \
 			exit 1; \
 		fi; \
-		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./src/test/memory-leak/runMemlabTests.js \
+		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js \
 	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
-	$(BUN_X) lhci autorun
+	$(BUN_X) lhci autorun --collect.settings.preset=desktop
 
 lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
-	$(BUN_X) lhci autorun
+	$(BUN_X) lhci autorun --collect.settings.formFactor=mobile
 
 install: ## Install dependencies inside the docker container.
 	$(RUN_BUN) bun install --frozen-lockfile
@@ -137,22 +148,16 @@ install: ## Install dependencies inside the docker container.
 update: ## Update dependencies inside the docker container.
 	$(BUN) update
 
-playwright-install: ## Install Playwright browsers inside a Docker container.
-	$(RUN_BUN) bun x playwright install --with-deps
+playwright-install: ## Build the Playwright runner image with browsers and system dependencies.
+	$(DOCKER_COMPOSE) build playwright
 
+test-bats: ## Run Bats coverage for Makefile shell flows and coverage contracts inside the docker container.
+	$(DOCKER_COMPOSE) run --rm --build bun bun x bats --formatter $(BATS_FORMATTER) -r tests/bats
+
+test-visual: PLAYWRIGHT_TEST_TARGET = ./tests/visual
+test-visual: PLAYWRIGHT_TEST_ARGS = --pass-with-no-tests
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
-	@$(RUN_BUN_SH) '\
-		set -e; \
-		bun x playwright install --with-deps >/tmp/ui-toolkit-playwright-install.log 2>&1; \
-		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006 >/tmp/ui-toolkit-storybook.log 2>&1 & \
-		pid=$$!; \
-		trap "kill $$pid >/dev/null 2>&1 || true; rm -f /tmp/ui-toolkit-storybook.log /tmp/ui-toolkit-playwright-install.log || true" EXIT; \
-		if ! bun x wait-on --timeout 120000 tcp:127.0.0.1:6006; then \
-			cat /tmp/ui-toolkit-storybook.log; \
-			exit 1; \
-		fi; \
-		bun x playwright test ./src/test/visual --pass-with-no-tests \
-	'
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build
@@ -178,7 +183,7 @@ stop: ## Stop docker services.
 	$(DOCKER_COMPOSE) stop
 
 build-k6-docker:
-	$(DOCKER) build -t k6 -f ./src/test/load/Dockerfile .
+	$(DOCKER) build -t k6 -f ./tests/load/Dockerfile .
 
 load-tests: build-k6-docker
 	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js

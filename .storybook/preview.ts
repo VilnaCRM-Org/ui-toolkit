@@ -1,8 +1,7 @@
 import type { Preview } from '@storybook/react';
-import resources from '../i18n/localization.json';
-
 import { initReactI18next } from 'react-i18next';
 import i18next from 'i18next';
+import resources from '../i18n/localization.json';
 
 i18next.use(initReactI18next).init({
   resources,
@@ -11,6 +10,7 @@ i18next.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 const preview: Preview = {
+  tags: ['autodocs'],
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {

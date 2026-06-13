@@ -1,3 +1,4 @@
+import { SxProps, Theme } from '@mui/material';
 import Box from '@mui/material/Box';
 import React from 'react';
 
@@ -11,13 +12,9 @@ export default function UiSkeletonBlock({
   borderRadius = '8px',
   sx = [],
 }: UiSkeletonBlockProps): React.ReactElement {
-  const additionalSx = Array.isArray(sx) ? sx : [sx];
+  const mergedSx: SxProps<Theme> = Array.isArray(sx)
+    ? [getBlockSkeletonStyles(width, height, borderRadius), ...sx]
+    : [getBlockSkeletonStyles(width, height, borderRadius), sx];
 
-  return (
-    <Box
-      data-testid="ui-skeleton-block"
-      id={id}
-      sx={[getBlockSkeletonStyles(width, height, borderRadius), ...additionalSx]}
-    />
-  );
+  return <Box data-testid="ui-skeleton-block" id={id} sx={mergedSx} />;
 }

@@ -7,7 +7,7 @@ describe('UiBackToMain', () => {
   it('renders a default back-to-main link', () => {
     render(<UiBackToMain />);
 
-    const link = screen.getByRole('link', { name: 'Back to main' });
+    const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
     expect(link).toHaveAttribute('href', '/');
     expect(link).toBeInTheDocument();
   });
@@ -15,7 +15,7 @@ describe('UiBackToMain', () => {
   it('supports custom label and destination', () => {
     render(<UiBackToMain label="Return home" to="/dashboard" />);
 
-    const link = screen.getByRole('link', { name: 'Return home' });
+    const link: HTMLElement = screen.getByRole('link', { name: 'Return home' });
     expect(link).toHaveAttribute('href', '/dashboard');
   });
 

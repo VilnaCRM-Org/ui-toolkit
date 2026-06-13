@@ -1,3 +1,5 @@
+import { SxProps, Theme } from '@mui/material';
+
 import breakpointsTheme from '../UiBreakpoints';
 import colorTheme from '../UiColorTheme';
 
@@ -5,7 +7,7 @@ import colorTheme from '../UiColorTheme';
  * Card style blocks shared by UiCardList and the standalone UiCardItem card,
  * extracted to avoid duplicated definitions across the two card surfaces.
  */
-export const smallWrapper = {
+export const smallWrapper: SxProps<Theme> = {
   padding: '2.5rem 2rem 2.5rem 1.563rem',
   borderRadius: '0.75rem',
   border: `1px solid ${colorTheme.palette.grey500.main}`,
@@ -27,14 +29,14 @@ export const smallWrapper = {
   },
 };
 
-export const hoveredCard = {
+export const hoveredCard: SxProps<Theme> = {
   cursor: 'pointer',
   color: colorTheme.palette.primary.main,
   textDecoration: 'underline',
   fontWeight: '700',
 };
 
-export const smallImage = {
+export const smallImage: SxProps<Theme> = {
   width: '5rem',
   height: '5rem',
   [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
@@ -43,7 +45,7 @@ export const smallImage = {
   },
 };
 
-export const largeImage = {
+export const largeImage: SxProps<Theme> = {
   width: '4.375rem',
   height: '4.375rem',
   [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {

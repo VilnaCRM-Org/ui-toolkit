@@ -4,6 +4,11 @@ import React from 'react';
 import theme from './theme';
 import { UiInputProps } from './types';
 
+type InputSlotProp = NonNullable<NonNullable<UiInputProps['slotProps']>['input']>;
+type InputSlotFn = Extract<InputSlotProp, (...args: never[]) => unknown>;
+type InputSlotOwnerState = Parameters<InputSlotFn>[0];
+type InputSlotValue = ReturnType<InputSlotFn>;
+
 const DISPLAY_NAME: string = 'UiInput';
 
 const UiInput: React.ForwardRefExoticComponent<
@@ -13,8 +18,8 @@ const UiInput: React.ForwardRefExoticComponent<
     const mergedSlotProps: UiInputProps['slotProps'] = InputProps
       ? {
           ...slotProps,
-          input: ownerState => {
-            const base =
+          input: (ownerState: InputSlotOwnerState): InputSlotValue => {
+            const base: InputSlotValue | undefined =
               typeof slotProps?.input === 'function'
                 ? slotProps.input(ownerState)
                 : slotProps?.input;

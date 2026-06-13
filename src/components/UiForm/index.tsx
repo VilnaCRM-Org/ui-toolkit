@@ -177,9 +177,14 @@ export default function UiForm<T extends FieldValues>({
   resetOnSuccess = false,
   isSubmitDisabled = false,
 }: UiFormProps<T>): React.ReactElement {
-  const methods = useForm<T>({ mode: 'onTouched', defaultValues, ...formOptions });
-  const submitting = isSubmitting ?? methods.formState.isSubmitting;
-  const handleSubmit = buildSubmitHandler({ onSubmit, methods, defaultValues, resetOnSuccess });
+  const methods: UseFormReturn<T> = useForm<T>({ mode: 'onTouched', defaultValues, ...formOptions });
+  const submitting: boolean = isSubmitting ?? methods.formState.isSubmitting;
+  const handleSubmit: SubmitHandler<T> = buildSubmitHandler({
+    onSubmit,
+    methods,
+    defaultValues,
+    resetOnSuccess,
+  });
 
   return (
     <FormProviderBridge methods={methods}>

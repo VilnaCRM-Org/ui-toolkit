@@ -8,9 +8,12 @@ import CardContent from './CardContent';
 import styles from './styles';
 import { UiCardItemProps } from './types';
 
-export default function UiCardItem({ item }: UiCardItemProps): JSX.Element {
+export default function UiCardItem({
+  item,
+  headingComponent,
+}: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
-  const isSmallCard = item.type === 'smallCard';
+  const isSmallCard: boolean = item.type === 'smallCard';
 
   return (
     <Stack sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}>
@@ -20,7 +23,7 @@ export default function UiCardItem({ item }: UiCardItemProps): JSX.Element {
         sx={isSmallCard ? styles.smallImage : styles.largeImage}
       />
       <Stack direction="column">
-        <CardContent item={item} isSmallCard={isSmallCard} />
+        <CardContent item={item} isSmallCard={isSmallCard} headingComponent={headingComponent} />
       </Stack>
     </Stack>
   );

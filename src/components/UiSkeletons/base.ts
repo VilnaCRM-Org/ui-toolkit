@@ -1,6 +1,6 @@
-import { keyframes } from '@emotion/react';
+import { keyframes, Keyframes } from '@emotion/react';
 
-export const shimmerAnimation = keyframes`
+export const shimmerAnimation: Keyframes = keyframes`
   0% {
     background-position: 0% 0;
   }
@@ -9,19 +9,19 @@ export const shimmerAnimation = keyframes`
   }
 `;
 
-export const shimmerGradient = `linear-gradient(
+export const shimmerGradient: string = `linear-gradient(
   90deg,
   rgba(211, 216, 224, 0) 0%,
   rgba(211, 216, 224, 0.6) 49.13%,
   rgba(211, 216, 224, 0) 100%
 )`;
 
-export const SMALL_MOBILE_BREAKPOINT = 375;
-export const SMALL_MOBILE_BREAKPOINT_UPPER = SMALL_MOBILE_BREAKPOINT + 1;
-export const SKELETON_BORDER_RADIUS = '57px';
-export const SKELETON_BORDER_COLOR = '#E1E7EA';
+export const SMALL_MOBILE_BREAKPOINT: number = 375;
+export const SMALL_MOBILE_BREAKPOINT_UPPER: number = SMALL_MOBILE_BREAKPOINT + 1;
+export const SKELETON_BORDER_RADIUS: string = '57px';
+export const SKELETON_BORDER_COLOR: string = '#E1E7EA';
 
-export const shadowPulseAnimation = keyframes`
+export const shadowPulseAnimation: Keyframes = keyframes`
   0% {
     box-shadow: 0px 7px 20px 0px rgba(211, 216, 224, 0.2);
   }
@@ -30,7 +30,11 @@ export const shadowPulseAnimation = keyframes`
   }
 `;
 
-export const baseSkeletonStyle = {
+export const baseSkeletonStyle: {
+  backgroundImage: string;
+  backgroundSize: string;
+  animation: string;
+} = {
   backgroundImage: shimmerGradient,
   backgroundSize: '200% 100%',
   animation: `${shimmerAnimation} 1.5s ease-in-out infinite alternate`,

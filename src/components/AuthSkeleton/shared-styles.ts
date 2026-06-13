@@ -1,6 +1,8 @@
+import { CSSObject } from '@mui/material';
+
 import breakpointsTheme from '../UiBreakpoints';
 
-export const fieldGapMargins = {
+export const fieldGapMargins: CSSObject = {
   marginBottom: '0.5rem',
   [`@media (min-width:${breakpointsTheme.breakpoints.values.sm}px)`]: {
     marginBottom: '1.125rem',
@@ -16,7 +18,7 @@ export const fieldGapMargins = {
   },
 };
 
-export const formSection = {
+export const formSection: CSSObject = {
   paddingTop: '0.5rem',
   paddingLeft: '0.375rem',
   paddingRight: '0.375rem',
@@ -33,7 +35,7 @@ export const formSection = {
   },
 };
 
-export const formWrapper = {
+export const formWrapper: CSSObject = {
   position: 'relative',
   width: '100%',
   padding: '1.5rem 1.5rem 1.375rem',

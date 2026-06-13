@@ -24,12 +24,15 @@ function UiButton({
   children,
   ...rest
 }: React.PropsWithChildren<UiButtonProps>): React.ReactElement {
-  const linkTarget = resolveLinkTarget(to) ?? href;
-  const resolvedComponent = component ?? (linkTarget ? 'a' : undefined);
-  const isButtonElement = !resolvedComponent || resolvedComponent === 'button';
-  const componentProps = resolvedComponent ? { component: resolvedComponent } : {};
-  const hrefProps = linkTarget && !isButtonElement ? { href: linkTarget } : {};
-  const typeProps = isButtonElement ? { type } : {};
+  const linkTarget: string | undefined = resolveLinkTarget(to) ?? href;
+  const resolvedComponent: React.ElementType | undefined =
+    component ?? (linkTarget ? 'a' : undefined);
+  const isButtonElement: boolean = !resolvedComponent || resolvedComponent === 'button';
+  const componentProps: { component?: React.ElementType } = resolvedComponent
+    ? { component: resolvedComponent }
+    : {};
+  const hrefProps: { href?: string } = linkTarget && !isButtonElement ? { href: linkTarget } : {};
+  const typeProps: { type?: UiButtonProps['type'] } = isButtonElement ? { type } : {};
 
   return (
     <ThemeProvider theme={theme}>

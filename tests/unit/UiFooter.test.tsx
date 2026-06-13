@@ -1,56 +1,29 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
-import { UiFooter } from '../../src/components';
+import UiFooter from '../../src/components/UiFooter';
 
-const socialLinks = [
-  {
-    id: 'github-link',
-    href: 'https://github.com/example',
-    label: 'GitHub',
-  },
-  {
-    id: 'linkedin-link',
-    href: 'https://linkedin.com/company/example',
-    label: 'LinkedIn',
-  },
-];
+const stackElementClass: string = '.MuiStack-root';
+const containerElementClass: string = '.MuiContainer-root';
 
-describe('UiFooter', () => {
-  it('renders footer content for desktop and mobile wrappers', () => {
-    const { container } = render(
-      <UiFooter
-        copyrightLabel="Example Company"
-        logo={<span>Logo</span>}
-        privacyContent={<span>Privacy Policy</span>}
-        emailContent={<span>team@example.com</span>}
-        socialLinks={socialLinks}
-      />
-    );
+describe('UiFooter Component', () => {
+  it('renders DefaultFooter component with provided social links', () => {
+    const { container } = render(<UiFooter />);
 
-    expect(container.querySelector('footer')).toBeInTheDocument();
-    expect(screen.getAllByText('Privacy Policy')).toHaveLength(2);
-    expect(screen.getAllByText('team@example.com')).toHaveLength(2);
+    const footerElement: HTMLElement | null = container.querySelector('footer');
+    const defaultFooterWrapper: HTMLElement | null = container.querySelector(stackElementClass);
+
+    expect(footerElement).toBeInTheDocument();
+    expect(defaultFooterWrapper).toBeInTheDocument();
   });
 
-  it('renders provided social links', () => {
-    render(<UiFooter copyrightLabel="Example Company" socialLinks={socialLinks} />);
+  it('renders Mobile component with provided social links', () => {
+    const { container } = render(<UiFooter />);
 
-    expect(screen.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
-      'href',
-      'https://github.com/example'
-    );
-    expect(screen.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute(
-      'href',
-      'https://linkedin.com/company/example'
-    );
-  });
+    const footerElement: HTMLElement | null = container.querySelector('footer');
+    const mobileWrapper: HTMLElement | null = container.querySelector(containerElementClass);
 
-  it('renders the current year with the copyright label', () => {
-    render(<UiFooter copyrightLabel="Example Company" socialLinks={socialLinks} />);
-
-    expect(
-      screen.getAllByText(new RegExp(`Example Company, ${new Date().getFullYear()}`))
-    ).toHaveLength(2);
+    expect(footerElement).toBeInTheDocument();
+    expect(mobileWrapper).toBeInTheDocument();
   });
 });

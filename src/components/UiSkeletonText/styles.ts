@@ -1,4 +1,5 @@
 import { SKELETON_BORDER_RADIUS, baseSkeletonStyle } from '../UiSkeletons/base';
+
 import { SkeletonTextSize } from './types';
 
 const sizeHeights: Record<SkeletonTextSize, string> = {

@@ -19,7 +19,7 @@ so that I can integrate toolkit components predictably across company projects.
 ## Tasks / Subtasks
 
 - [x] Verify Story 1.1 execution preconditions and baseline files exist (AC: 1, 2, 3)
-  - [x] Confirm this is the full toolkit implementation checkout with `src/components/UiButton`, `src/components/UiInput`, `src/components/UiCheckbox`, `src/components/UiLink`, `src/components/index.ts`, `.storybook`, `package.json`, and the repo’s actual unit-test location (`src/test/testing-library`; planned artifacts referenced `tests/unit`).
+  - [x] Confirm this is the full toolkit implementation checkout with `src/components/UiButton`, `src/components/UiInput`, `src/components/UiCheckbox`, `src/components/UiLink`, `src/components/index.ts`, `.storybook`, `package.json`, and the repo’s actual unit-test location (`tests/unit`).
   - [x] If the implementation tree is missing, stop immediately and sync the real toolkit source checkout before changing code; do not create placeholder component code in the planning-only workspace.
   - [x] Capture the current public prop surface for `UiButton`, `UiInput`, `UiCheckbox`, and `UiLink` before modifying contracts.
 - [x] Align core control contract typing without breaking published behavior (AC: 1, 3)
@@ -85,7 +85,7 @@ so that I can integrate toolkit components predictably across company projects.
   - a targeted automated check that fails when a required core control export is missing from `src/components/index.ts`
   - unit coverage for any public contract typing or prop-surface logic changed in core controls
   - the repo’s relevant typecheck or lint command, if configured in the full checkout
-- Existing project testing standards are Jest plus Testing Library for unit coverage, with unit specs under `src/test/testing-library`. [Source: specs/planning-artifacts/architecture.md#integration-test-conventions]
+- Existing project testing standards are Jest plus Testing Library for unit coverage, with unit specs under `tests/unit`. [Source: specs/planning-artifacts/architecture.md#integration-test-conventions]
 - Story completion is blocked unless the new/updated tests exist and actually pass. [Source: specs/planning-artifacts/epics.md#story-11-core-contract-and-export-baseline] [Source: specs/planning-artifacts/prd.md#78-quality-gates]
 
 ### Current Checkout Intelligence
@@ -93,18 +93,18 @@ so that I can integrate toolkit components predictably across company projects.
 - This story artifact originated from planning-only workspace assumptions, but the current
   working checkout on branch `7-make-ui-toolkit` is the real toolkit source tree. It contains
   `src/`, `.storybook/`, `package.json`, and executable unit tests under
-  `src/test/testing-library`; the planning-only inventory below describes the earlier planning
+  `tests/unit`; the planning-only inventory below describes the earlier planning
   repository state, not the checkout where implementation and tests were run.
 - The implementation plan explicitly says Story execution must happen in the full toolkit source checkout and must stop if the source tree is missing. Treat that as a hard gate before TDD begins. [Source: specs/planning-artifacts/implementation-plan.md#execution-preconditions]
 - Recent git history is planning-focused only: `d1ebee0 specs: plan UI toolkit completion (PRD, architecture, epics)`, `ee44f87 feat(#3): add dependabot workflow (#4)`, `654a5bc Initial commit`. There is no recent component-implementation history in this checkout to mine for established prop patterns.
 
 ### Latest Technical Information
 
-- React docs currently identify React `19.2` as the latest major-docs version; the architecture and implementation plan for this project remain pinned to React 18 behavior, so do not introduce React 19-only APIs as part of Story 1.1 unless the actual implementation repo already upgraded. [Source: https://react.dev/versions] [Source: https://react.dev/blog/2025/10/01/react-19-2]
-- MUI’s versions page currently lists `v7.3.8` as the most recent stable release; this project architecture still targets MUI v5 conventions, especially `sx?: SxProps<Theme>`, so Story 1.1 should preserve v5-compatible contract typing unless package metadata says otherwise. [Source: https://mui.com/versions/] [Source: specs/planning-artifacts/prd.md#35-api-consistency-policy]
-- Storybook 10 is current and ESM-only, but the implementation plan still targets Storybook 8. Do not assume Storybook 10 config semantics unless the real checkout’s package metadata confirms that upgrade. [Source: https://storybook.js.org/blog/storybook-10] [Source: specs/planning-artifacts/implementation-plan.md]
-- Bun’s official docs currently advertise `v1.3.10`; the architecture baseline only requires Bun `>=1.2.0`. Avoid relying on Bun 1.3-only features in story automation unless the actual repo lockfile or package metadata confirms them. [Source: https://bun.sh/] [Source: https://bun.sh/docs/installation]
-- TypeScript `5.9` is current in the official release notes, but Story 1.1 only needs strict-mode compatibility with the repo’s current compiler settings; do not upgrade TypeScript within this story unless the repo already carries that migration. [Source: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-9.html]
+- This checkout has already upgraded to React `19.2` (`package.json` `react@^19.2.7`); the original planning artifacts targeted React 18, so treat React-19 APIs as available and keep the contract changes backward compatible with consumers. [Source: package.json] [Source: https://react.dev/versions]
+- This checkout uses MUI `v9` (`@mui/material@^9.0.1`), not the v5 the planning artifacts assumed; keep the shared `sx?: SxProps<Theme>` contract, which remains the supported typing in v9. [Source: package.json] [Source: specs/planning-artifacts/prd.md#35-api-consistency-policy]
+- This checkout uses Storybook `v10` (`storybook@^10.4.2`); the implementation plan referenced Storybook 8, so follow Storybook 10 (ESM-only) config semantics. [Source: package.json] [Source: https://storybook.js.org/blog/storybook-10]
+- Bun’s official docs currently advertise `v1.3.10`; this repo pins `bun@1.3.5` (`package.json` `packageManager`). Avoid relying on Bun features newer than the pinned version. [Source: package.json] [Source: https://bun.sh/]
+- This checkout uses TypeScript `v6` (`typescript@^6.0.3`); Story 1.1 only needs strict-mode compatibility with the repo’s current compiler settings — no further upgrade is required. [Source: package.json]
 
 ### Project Structure Notes
 
@@ -136,7 +136,7 @@ Codex GPT-5 (Amelia persona)
 ### Debug Log References
 
 - 2026-03-09: Story created from planning artifacts after initializing sprint tracking.
-- 2026-03-09: Verified branch `7-make-ui-toolkit` contains the real toolkit source tree; planning artifacts were stale about unit-test location, which is `src/test/testing-library` rather than `tests/unit`.
+- 2026-03-09: Verified branch `7-make-ui-toolkit` contains the real toolkit source tree; the repo’s unit-test location is `tests/unit`, matching the planning artifacts.
 - 2026-03-09: All implementation edits and verification recorded in this Dev Agent Record were
   executed in this checkout on branch `7-make-ui-toolkit`, not in the earlier planning-only
   repository snapshot.
@@ -146,12 +146,12 @@ Codex GPT-5 (Amelia persona)
 
 ### Completion Notes List
 
-- Verified actual checkout variance: story planning assumed `tests/unit`, but the executable repo uses `src/test/testing-library`.
+- Verified the executable repo uses `tests/unit` for unit specs, consistent with the story planning.
 - Normalized shared contract typing on `UiButton`, `UiInput`, `UiCheckbox`, and `UiLink` by moving `sx` to `SxProps<Theme>` and documenting invalid shared-field exceptions in adjacent type comments.
 - Extended `UiInput` public props with `size` and `variant`, forwarded both to MUI `TextField`, and kept existing consumer behavior backward compatible.
-- Added `src/test/testing-library/UiCoreContract.test.tsx` to enforce package exports and the `UiInput` contract regression in CI.
+- Added `tests/unit/UiCoreContract.test.tsx` to enforce package exports and the `UiInput` contract regression in CI.
 - Added Jest module mappings and test mocks for CSS/SVG assets, plus minimal React import/mock compatibility fixes required for the current unit-test transform pipeline.
-- Added a default fallback for `NEXT_PUBLIC_VILNACRM_GMAIL` so the existing footer email test remains deterministic when the environment variable is absent.
+- Added a default fallback for `REACT_APP_VILNACRM_GMAIL` so the existing footer email test remains deterministic when the environment variable is absent.
 - Verification evidence:
 - `make lint-tsc` passed.
 - `make lint-next` exited successfully with pre-existing warnings only.
@@ -180,16 +180,16 @@ Codex GPT-5 (Amelia persona)
 - src/components/UiLink/types.ts
 - src/components/UiTextFieldForm/index.tsx
 - src/components/UiToolbar/index.tsx
-- src/test/mocks/styleMock.ts
-- src/test/mocks/svgMock.ts
-- src/test/testing-library/UiButton.test.tsx
-- src/test/testing-library/UiCardGrid.test.tsx
-- src/test/testing-library/UiCardItem.test.tsx
-- src/test/testing-library/UiCardList.test.tsx
-- src/test/testing-library/UiCoreContract.test.tsx
-- src/test/testing-library/UiFooterEmail.test.tsx
-- src/test/testing-library/UiImage.test.tsx
-- src/test/testing-library/UiTooltipWrapper.test.tsx
+- tests/unit/mocks/styleMock.ts
+- tests/unit/mocks/svgMock.ts
+- tests/unit/UiButton.test.tsx
+- tests/unit/UiCardGrid.test.tsx
+- tests/unit/UiCardItem.test.tsx
+- tests/unit/UiCardList.test.tsx
+- tests/unit/UiCoreContract.test.tsx
+- tests/unit/UiFooterEmail.test.tsx
+- tests/unit/UiImage.test.tsx
+- tests/unit/UiTooltipWrapper.test.tsx
 
 ## Change Log
 
