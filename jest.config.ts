@@ -21,8 +21,8 @@ const config: Config = {
     global: { branches: 100, functions: 100, lines: 100, statements: 100 },
   },
   testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
-    '<rootDir>/tests/**/*.test.tsx',
+    '<rootDir>/tests/unit/**/*.test.ts',
+    '<rootDir>/tests/unit/**/*.test.tsx',
     '<rootDir>/tests/unit/**/*.spec.js',
   ],
   moduleNameMapper: {

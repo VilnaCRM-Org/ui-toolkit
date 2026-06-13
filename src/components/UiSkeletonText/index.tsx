@@ -12,7 +12,6 @@ export default function UiSkeletonText({
 }: UiSkeletonTextProps): React.ReactElement {
   return (
     <Box
-      data-testid="ui-skeleton-text"
       id={id}
       sx={[getTextSkeletonStyles(size, width), ...(Array.isArray(sx) ? sx : [sx])]}
     />

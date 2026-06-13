@@ -259,5 +259,21 @@ export default [
     rules: formattingRules,
   },
 
+  {
+    // Production (src/) code must not carry test-only hooks. Tests target
+    // components via semantic queries (role/label/text) or the real `id` prop.
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='data-testid']",
+          message:
+            'data-testid is prohibited in production (src/) code. Expose a semantic role/label or the component id prop for tests to target.',
+        },
+      ],
+    },
+  },
+
   prettier,
 ];

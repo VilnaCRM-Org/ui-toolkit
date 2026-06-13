@@ -16,7 +16,6 @@ export default function UiSkeletonInput({
 
   return (
     <Box
-      data-testid="ui-skeleton-input"
       id={id}
       sx={[styles.inputContainer, ...(staticSx ? [staticSx] : [])]}
     >

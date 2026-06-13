@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import {
@@ -28,117 +28,125 @@ import {
 } from '../../src/components/UiSkeletons/base';
 import getTextSkeletonStyles from '../../src/components/UiSkeletonText/styles';
 
+function getById(container: HTMLElement, id: string): HTMLElement {
+  const el: HTMLElement | null = container.querySelector<HTMLElement>(`#${id}`);
+  if (el === null) {
+    throw new Error(`Expected element #${id} to be present in the rendered skeleton`);
+  }
+  return el;
+}
+
 describe('UiSkeleton primitives', () => {
   it('renders UiSkeletonBlock with a custom id', () => {
-    render(<UiSkeletonBlock id="block-skeleton" />);
-    expect(screen.getByTestId('ui-skeleton-block')).toHaveAttribute('id', 'block-skeleton');
+    const { container } = render(<UiSkeletonBlock id="block-skeleton" />);
+    expect(getById(container, 'block-skeleton')).toHaveAttribute('id', 'block-skeleton');
   });
 
   it('renders UiSkeletonText with a custom id', () => {
-    render(<UiSkeletonText id="text-skeleton" />);
-    expect(screen.getByTestId('ui-skeleton-text')).toHaveAttribute('id', 'text-skeleton');
+    const { container } = render(<UiSkeletonText id="text-skeleton" />);
+    expect(getById(container, 'text-skeleton')).toHaveAttribute('id', 'text-skeleton');
   });
 
   it('renders UiSkeletonButton with a custom id', () => {
-    render(<UiSkeletonButton id="button-skeleton" />);
-    expect(screen.getByTestId('ui-skeleton-button')).toHaveAttribute('id', 'button-skeleton');
+    const { container } = render(<UiSkeletonButton id="button-skeleton" />);
+    expect(getById(container, 'button-skeleton')).toHaveAttribute('id', 'button-skeleton');
   });
 
   it('renders UiSkeletonInput with a custom id', () => {
-    render(<UiSkeletonInput id="input-skeleton" />);
-    expect(screen.getByTestId('ui-skeleton-input')).toHaveAttribute('id', 'input-skeleton');
+    const { container } = render(<UiSkeletonInput id="input-skeleton" />);
+    expect(getById(container, 'input-skeleton')).toHaveAttribute('id', 'input-skeleton');
   });
 });
 
 describe('UiSkeletonBlock sx merging', () => {
   it('renders within a ThemeProvider when given an object (non-array) sx prop', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonBlock id="block-obj-sx" sx={{ marginTop: '4px' }} />
       </ThemeProvider>
     );
 
-    const block: HTMLElement = screen.getByTestId('ui-skeleton-block');
+    const block: HTMLElement = getById(container, 'block-obj-sx');
     expect(block).toBeInTheDocument();
     expect(block).toHaveStyle({ marginTop: '4px' });
   });
 
   it('renders with an array sx prop merged after the base styles', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonBlock id="block-arr-sx" sx={[{ marginBottom: '8px' }]} />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('ui-skeleton-block')).toHaveStyle({ marginBottom: '8px' });
+    expect(getById(container, 'block-arr-sx')).toHaveStyle({ marginBottom: '8px' });
   });
 });
 
 describe('UiSkeletonButton sx merging', () => {
   it('renders with an object (non-array) sx prop merged onto the button base style', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonButton id="button-obj-sx" sx={{ opacity: 0.5 }} />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('ui-skeleton-button')).toHaveStyle({ opacity: '0.5' });
+    expect(getById(container, 'button-obj-sx')).toHaveStyle({ opacity: '0.5' });
   });
 
   it('renders with an array sx prop', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonButton id="button-arr-sx" sx={[{ opacity: 0.25 }]} />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('ui-skeleton-button')).toHaveStyle({ opacity: '0.25' });
+    expect(getById(container, 'button-arr-sx')).toHaveStyle({ opacity: '0.25' });
   });
 });
 
 describe('UiSkeletonText sx merging and sizes', () => {
   it('renders with an object (non-array) sx prop', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonText id="text-obj-sx" sx={{ marginLeft: '2px' }} />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('ui-skeleton-text')).toHaveStyle({ marginLeft: '2px' });
+    expect(getById(container, 'text-obj-sx')).toHaveStyle({ marginLeft: '2px' });
   });
 
   it('renders with an array sx prop and a custom width', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonText id="text-arr-sx" width="50%" sx={[{ marginRight: '2px' }]} />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('ui-skeleton-text')).toHaveStyle({ marginRight: '2px' });
+    expect(getById(container, 'text-arr-sx')).toHaveStyle({ marginRight: '2px' });
   });
 });
 
 describe('UiSkeletonInput animation toggling', () => {
   it('applies the static (no-animation) style when disableAnimation is true', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonInput id="input-static" disableAnimation />
       </ThemeProvider>
     );
 
-    const input: HTMLElement = screen.getByTestId('ui-skeleton-input');
+    const input: HTMLElement = getById(container, 'input-static');
     expect(input).toHaveAttribute('id', 'input-static');
     expect(input).toHaveStyle({ animation: 'none' });
   });
 
   it('keeps the shimmer animation when disableAnimation is false (default)', () => {
-    render(
+    const { container } = render(
       <ThemeProvider theme={websiteColorTheme}>
         <UiSkeletonInput id="input-animated" disableAnimation={false} />
       </ThemeProvider>
     );
 
-    const input: HTMLElement = screen.getByTestId('ui-skeleton-input');
+    const input: HTMLElement = getById(container, 'input-animated');
     expect(input).toHaveAttribute('id', 'input-animated');
     expect(input).not.toHaveStyle({ animation: 'none' });
   });
@@ -161,11 +169,11 @@ describe('UiSkeletonBlock styles helper', () => {
   });
 
   it('passes through numeric dimension values unchanged', () => {
-    const result: ReturnType<typeof getBlockSkeletonStyles> = getBlockSkeletonStyles(200, 60, 10);
-
-    expect(result.width).toBe(200);
-    expect(result.height).toBe(60);
-    expect(result.borderRadius).toBe(10);
+    expect(getBlockSkeletonStyles(200, 60, 10)).toMatchObject({
+      width: 200,
+      height: 60,
+      borderRadius: 10,
+    });
   });
 });
 
@@ -207,8 +215,9 @@ describe('UiSkeletonInput styles', () => {
   });
 
   it('resolves the inputContainer callback against the theme', () => {
-    const resolved: ReturnType<typeof skeletonInputStyles.inputContainer> =
-      skeletonInputStyles.inputContainer(websiteColorTheme);
+    const resolved: Record<string, unknown> = skeletonInputStyles.inputContainer(
+      websiteColorTheme
+    ) as Record<string, unknown>;
 
     expect(resolved.position).toBe('relative');
     expect(resolved.height).toBe(`clamp(${BASE_INPUT_HEIGHT}rem, 4vw, ${XL_INPUT_HEIGHT}rem)`);
