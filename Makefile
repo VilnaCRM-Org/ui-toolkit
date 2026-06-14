@@ -150,10 +150,10 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js \
 	'
 
-lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
+lighthouse-desktop: storybook-build ## Run desktop Lighthouse checks inside the docker container.
 	$(BUN_X) lhci autorun --collect.settings.preset=desktop
 
-lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
+lighthouse-mobile: storybook-build ## Run mobile Lighthouse checks inside the docker container.
 	$(BUN_X) lhci autorun --collect.settings.formFactor=mobile
 
 install: ## Install dependencies inside the docker container.
