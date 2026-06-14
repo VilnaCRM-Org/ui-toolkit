@@ -136,3 +136,106 @@ describe('UiLink', () => {
     expect(link).toHaveStyle({ fontWeight: '700' });
   });
 });
+
+const getElementCss = (element: HTMLElement): string => {
+  const emotionClass: string | undefined = Array.from(element.classList).find(
+    (className: string): boolean => className.startsWith('css-')
+  );
+  if (!emotionClass) {
+    return '';
+  }
+  let css: string = '';
+  // eslint-disable-next-line testing-library/no-node-access
+  Array.from(document.querySelectorAll('style')).forEach((styleEl: Element): void => {
+    const sheet: CSSStyleSheet | null = (styleEl as HTMLStyleElement).sheet;
+    if (!sheet) {
+      return;
+    }
+    Array.from(sheet.cssRules).forEach((rule: CSSRule): void => {
+      if (rule.cssText.includes(emotionClass)) {
+        css += rule.cssText;
+      }
+    });
+  });
+  return css;
+};
+
+const getNewTabLink = (label?: string): HTMLElement => {
+  if (label === undefined) {
+    render(
+      <UiLink href={testUrl} target="_blank">
+        {testText}
+      </UiLink>
+    );
+  } else {
+    render(
+      <UiLink href={testUrl} target="_blank" newTabLabel={label}>
+        {testText}
+      </UiLink>
+    );
+  }
+  return screen.getByRole('link');
+};
+
+const getNoticeSpan = (link: HTMLElement): HTMLElement | null =>
+  // eslint-disable-next-line testing-library/no-node-access
+  link.querySelector('span');
+
+describe('UiLink new-tab notice (default label)', () => {
+  it('appends the default "(opens in new tab)" notice for new-tab links', () => {
+    // Kills StringLiteral default newTabLabel = '(opens in new tab)' -> ''.
+    const link: HTMLElement = getNewTabLink();
+    expect(link).toHaveAccessibleName(`${testText} (opens in new tab)`);
+  });
+
+  it('renders the visually-hidden notice span for new-tab links', () => {
+    // Kills ConditionalExpression {opensInNewTab && newTabLabel ? ... : null} -> {false ? ...}.
+    const link: HTMLElement = getNewTabLink();
+    const span: HTMLElement | null = getNoticeSpan(link);
+    expect(span).not.toBeNull();
+    expect(span).toHaveTextContent('(opens in new tab)');
+  });
+
+  it('includes a leading space before the notice text', () => {
+    // Kills StringLiteral {` ${newTabLabel}`} -> {``} (the appended text content).
+    const link: HTMLElement = getNewTabLink();
+    const span: HTMLElement | null = getNoticeSpan(link);
+    expect(span?.textContent).toBe(' (opens in new tab)');
+  });
+
+  it('uses a caller-provided newTabLabel verbatim', () => {
+    const link: HTMLElement = getNewTabLink('external');
+    const span: HTMLElement | null = getNoticeSpan(link);
+    expect(span?.textContent).toBe(' external');
+    expect(link).toHaveAccessibleName(`${testText} external`);
+  });
+});
+
+describe('UiLink visually-hidden notice styles', () => {
+  it('applies every visually-hidden style to the notice span', () => {
+    // Kills ObjectLiteral visuallyHidden -> {} and the per-property StringLiteral -> ''
+    // mutations for position/width/height/margin/overflow/whiteSpace.
+    const link: HTMLElement = getNewTabLink();
+    const span: HTMLElement | null = getNoticeSpan(link);
+    expect(span).not.toBeNull();
+    expect(span).toHaveStyle({
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      margin: '-1px',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+    });
+  });
+
+  it('clips the notice span out of the visual flow with rect(0 0 0 0)', () => {
+    // Kills StringLiteral clip: 'rect(0 0 0 0)' -> ''. jsdom getComputedStyle and
+    // jest-dom toHaveStyle cannot distinguish clip here (both spuriously match), so we
+    // read the emotion-generated CSS rule for the span and assert the literal value.
+    const link: HTMLElement = getNewTabLink();
+    const span: HTMLElement | null = getNoticeSpan(link);
+    expect(span).not.toBeNull();
+    const css: string = getElementCss(span as HTMLElement);
+    expect(css).toMatch(/clip:\s*rect\(0 0 0 0\)/);
+  });
+});

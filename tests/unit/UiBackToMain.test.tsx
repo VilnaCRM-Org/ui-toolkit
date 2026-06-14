@@ -56,3 +56,27 @@ describe('UiBackToMain', () => {
     expect(screen.getByRole('link', { name: 'Back to main' })).toBeInTheDocument();
   });
 });
+
+describe('UiBackToMain default icon', () => {
+  it('renders the default back arrow when no icon prop is supplied', (): void => {
+    render(<UiBackToMain />);
+
+    const arrow: HTMLElement = screen.getByText('←');
+    expect(arrow.tagName).toBe('SPAN');
+    expect(arrow).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('applies the default icon inline typography styles', (): void => {
+    render(<UiBackToMain />);
+
+    const arrow: HTMLElement = screen.getByText('←');
+    expect(arrow).toHaveStyle({ fontSize: '1rem' });
+    expect(arrow).toHaveStyle({ lineHeight: '1' });
+  });
+
+  it('omits the default arrow when a custom icon replaces it', (): void => {
+    render(<UiBackToMain icon={<span>home</span>} />);
+
+    expect(screen.queryByText('←')).not.toBeInTheDocument();
+  });
+});

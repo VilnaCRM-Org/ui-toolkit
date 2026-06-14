@@ -127,3 +127,49 @@ describe('UiCardItem exported fixtures', () => {
     expect(screen.getByRole('img')).toHaveAttribute('alt', 'Image card of templates');
   });
 });
+
+describe('CardContent typography variants per card size', () => {
+  const headingRole: string = 'heading';
+
+  it('uses the h5 title variant for large cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard={false} />);
+
+    const title: HTMLElement = screen.getByRole(headingRole);
+
+    // Empty-string variant mutation drops the MuiTypography-h5 class and its size.
+    expect(title.className).toMatch(/MuiTypography-h5/);
+    expect(title).toHaveStyle({ fontSize: '1.75rem' });
+  });
+
+  it('uses the h6 title variant for small cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard />);
+
+    const title: HTMLElement = screen.getByRole(headingRole);
+
+    // Empty-string variant mutation drops the MuiTypography-h6 class and its size.
+    expect(title.className).toMatch(/MuiTypography-h6/);
+    expect(title).toHaveStyle({ fontSize: '1.375rem' });
+  });
+
+  it('uses the bodyText18 body variant for large cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard={false} />);
+
+    const body: HTMLElement = screen.getByText(cardItem.text);
+
+    // Empty-string variant mutation drops MuiTypography-bodyText18 and its size.
+    expect(body.className).toMatch(/MuiTypography-bodyText18/);
+    expect(body).toHaveStyle({ fontSize: '1.125rem' });
+  });
+
+  it('uses the bodyText16 body variant for small cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard />);
+
+    // The outer body paragraph carries the leading "Integrate" copy.
+    const body: HTMLElement = screen.getByText(/Integrate/);
+
+    expect(body.tagName).toBe('P');
+    // Empty-string variant mutation drops MuiTypography-bodyText16 and its size.
+    expect(body.className).toMatch(/MuiTypography-bodyText16/);
+    expect(body).toHaveStyle({ fontSize: '1rem' });
+  });
+});

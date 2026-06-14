@@ -38,3 +38,28 @@ describe('VilnaCRMEmail component', () => {
     );
   });
 });
+
+describe('VilnaCRMEmail whitespace handling', () => {
+  const originalGmail: string | undefined = process.env.REACT_APP_VILNACRM_GMAIL;
+
+  afterEach((): void => {
+    if (originalGmail === undefined) {
+      delete process.env.REACT_APP_VILNACRM_GMAIL;
+      return;
+    }
+
+    process.env.REACT_APP_VILNACRM_GMAIL = originalGmail;
+  });
+
+  it('falls back to the default email when env value is whitespace only', (): void => {
+    process.env.REACT_APP_VILNACRM_GMAIL = '   ';
+
+    render(<VilnaCRMEmail />);
+
+    expect(screen.getByRole('link', { name: mockEmail })).toHaveAttribute(
+      'href',
+      `mailto:${mockEmail}`
+    );
+    expect(screen.queryByRole('link', { name: '   ' })).not.toBeInTheDocument();
+  });
+});

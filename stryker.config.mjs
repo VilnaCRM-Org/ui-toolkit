@@ -10,10 +10,12 @@ const config = {
   timeoutMS: 20000,
   timeoutFactor: 4,
   jest: {
-    configFile: 'jest.config.ts',
+    // Mutation runs the FULL suite (unit + integration) so assertions in either
+    // tier count toward killing mutants; see jest.mutation.config.ts.
+    configFile: 'jest.mutation.config.ts',
     enableFindRelatedTests: false,
   },
-  mutate: ['./src/components/**/*.tsx'],
+  mutate: ['./src/components/**/*.tsx', '!./src/components/**/*.stories.tsx'],
   // Keep the Stryker sandbox copy from choking on non-source dirs (the `.qlty`
   // log dir in particular triggers an EISDIR copyfile error).
   ignorePatterns: [

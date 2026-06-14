@@ -54,3 +54,44 @@ describe('UiTypography', () => {
     expect(label).toHaveAttribute('for', 'email-field');
   });
 });
+
+describe('UiTypography default component vs variant mapping', () => {
+  it('forces the default "p" element even when a non-"p" variant is set', (): void => {
+    // component defaults to 'p' regardless of variant. Kills StringLiteral
+    // `component || 'p'` -> `component || ''`: with '' MUI Typography falls back to
+    // its variant mapping (variant="h1" -> <h1>) instead of the forced <p>.
+    render(<UiTypography variant="h1">{testText}</UiTypography>);
+
+    expect(screen.getByText(testText).tagName).toBe('P');
+  });
+});
+
+describe('UiTypography htmlFor branch', () => {
+  it('does not forward htmlFor on a non-label component', (): void => {
+    render(
+      <UiTypography component="span" htmlFor="email-field">
+        {testText}
+      </UiTypography>
+    );
+
+    const element: HTMLElement = screen.getByText(testText);
+    expect(element.tagName).toBe('SPAN');
+    expect(element).not.toHaveAttribute('for');
+  });
+
+  it('does not forward htmlFor on the default component', (): void => {
+    render(<UiTypography htmlFor="email-field">{testText}</UiTypography>);
+
+    const element: HTMLElement = screen.getByText(testText);
+    expect(element.tagName).toBe('P');
+    expect(element).not.toHaveAttribute('for');
+  });
+
+  it('does not add a for attribute on a label without htmlFor', (): void => {
+    render(<UiTypography component="label">{testText}</UiTypography>);
+
+    const element: HTMLElement = screen.getByText(testText);
+    expect(element.tagName).toBe('LABEL');
+    expect(element).not.toHaveAttribute('for');
+  });
+});

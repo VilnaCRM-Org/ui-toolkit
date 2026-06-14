@@ -154,3 +154,46 @@ describe('WrapperUiTooltip', () => {
     expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
   });
 });
+
+describe('WrapperUiTooltip mutation-hardening', () => {
+  const maxWidthQuery: string = '(max-width: 640px)';
+  const minWidthQuery: string = '(min-width: 640px)';
+
+  it('queries the exact max-width and min-width breakpoint strings', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    render(<WrapperUiTooltip title={tooltipContent}>{triggerText}</WrapperUiTooltip>);
+
+    expect(mockedUseMediaQuery).toHaveBeenCalledWith(maxWidthQuery);
+    expect(mockedUseMediaQuery).toHaveBeenCalledWith(minWidthQuery);
+  });
+
+  it('keeps an open tooltip open when a non-Escape key is pressed', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    render(<WrapperUiTooltip title={tooltipContent}>{triggerText}</WrapperUiTooltip>);
+    const trigger: HTMLElement = screen.getByRole('button');
+
+    fireEvent.keyDown(trigger, { key: 'Enter' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.keyDown(trigger, { key: 'Tab' });
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(tooltipContent)).toBeInTheDocument();
+  });
+
+  it('does not close an open tooltip on an arrow key (Escape branch is exact)', async () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    render(<WrapperUiTooltip title={tooltipContent}>{triggerText}</WrapperUiTooltip>);
+    const trigger: HTMLElement = screen.getByRole('button');
+
+    fireEvent.keyDown(trigger, { key: 'Enter' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => {
+      expect(screen.getByRole(tooltipRole)).toBeInTheDocument();
+    });
+  });
+});

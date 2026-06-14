@@ -42,6 +42,7 @@ const devDependencyPatterns = [
   'jest.setup.ts',
   'jest.config.ts',
   'jest.integration.config.ts',
+  'jest.mutation.config.ts',
   'playwright.config.ts',
   'build.config.mjs',
   '**/*.stories.ts',

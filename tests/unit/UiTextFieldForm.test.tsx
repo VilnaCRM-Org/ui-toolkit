@@ -1,7 +1,7 @@
 import InputAdornment from '@mui/material/InputAdornment';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm , Control} from 'react-hook-form';
 
 import { UiTextFieldForm } from '../../src/components';
 import breakpointsTheme from '../../src/components/UiBreakpoints';
@@ -171,5 +171,50 @@ describe('UiTextFieldForm styles', () => {
     expect(textFieldFormStyles.errorText).toHaveProperty(mediaQuery, {
       fontSize: '0.75rem',
     });
+  });
+});
+
+describe('UiTextFieldForm defaultValue branch', () => {
+  type OmittedDefaultFormValues = { testField: string };
+
+  function OmittedDefaultWrapper(): React.ReactElement {
+    const { control } = useForm<OmittedDefaultFormValues>();
+
+    return (
+      <UiTextFieldForm<OmittedDefaultFormValues>
+        control={control as Control<OmittedDefaultFormValues>}
+        name="testField"
+        placeholder={testPlaceholder}
+      />
+    );
+  }
+
+  it('renders an empty controlled value when defaultValue is omitted', () => {
+    render(<OmittedDefaultWrapper />);
+
+    const input: HTMLElement = screen.getByRole('textbox');
+
+    expect(input).toHaveValue('');
+    expect(input).toHaveAttribute('placeholder', testPlaceholder);
+  });
+
+  it('falls back to a form-level default when defaultValue is omitted', () => {
+    function FormDefaultWrapper(): React.ReactElement {
+      const { control } = useForm<OmittedDefaultFormValues>({
+        defaultValues: { testField: 'form-seeded' },
+      });
+
+      return (
+        <UiTextFieldForm<OmittedDefaultFormValues>
+          control={control as Control<OmittedDefaultFormValues>}
+          name="testField"
+          placeholder={testPlaceholder}
+        />
+      );
+    }
+
+    render(<FormDefaultWrapper />);
+
+    expect(screen.getByRole('textbox')).toHaveValue('form-seeded');
   });
 });

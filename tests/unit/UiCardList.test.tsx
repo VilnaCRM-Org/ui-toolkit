@@ -59,3 +59,35 @@ describe('UiCardList component', () => {
     expect(screen.queryByTestId('card-grid')).not.toBeInTheDocument();
   });
 });
+
+describe('UiCardList media query argument', () => {
+  const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
+
+  afterEach((): void => {
+    jest.clearAllMocks();
+  });
+
+  it('queries useMediaQuery with the exact sm - 0.02 max-width string', (): void => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList }));
+
+    expect(mockedUseMediaQuery).toHaveBeenCalledWith('(max-width: 639.98px)');
+  });
+
+  it('does not query useMediaQuery with the sm + 0.02 max-width string', (): void => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList }));
+
+    expect(mockedUseMediaQuery).not.toHaveBeenCalledWith('(max-width: 640.02px)');
+  });
+
+  it('does not query useMediaQuery with an empty string', (): void => {
+    mockedUseMediaQuery.mockReturnValue(true);
+
+    render(React.createElement(UiCardList, { cardList }));
+
+    expect(mockedUseMediaQuery).not.toHaveBeenCalledWith('');
+  });
+});

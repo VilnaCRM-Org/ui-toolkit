@@ -138,3 +138,33 @@ describe('UiButton', () => {
     expect(outlinedStyles).toHaveProperty('border');
   });
 });
+
+describe('UiButton href guard (line 34: linkTarget && !isButtonElement)', () => {
+  it('omits href when component is "button" even though an href is supplied', () => {
+    // linkTarget is truthy ("/external") but isButtonElement is true, so the real
+    // expression (linkTarget && !isButtonElement) is false and NO href is applied.
+    // Both the ConditionalExpression mutant (true ? {href} : {}) and the
+    // LogicalOperator mutant (linkTarget || !isButtonElement) would force the href on,
+    // which makes MUI render an <a> (role "link") instead of a <button>.
+    render(
+      <UiButton component="button" href="/external">
+        {testText}
+      </UiButton>
+    );
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    const button: HTMLElement = screen.getByRole('button', { name: testText });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).not.toHaveAttribute('href');
+  });
+
+  it('still applies href on the default anchor when no overriding component is set', () => {
+    // Inverse case: linkTarget truthy AND isButtonElement false -> href IS applied.
+    // Guards the truthy branch of the same expression against future regressions.
+    render(<UiButton href="/external">{testText}</UiButton>);
+
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/external');
+  });
+});

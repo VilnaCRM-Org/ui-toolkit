@@ -192,3 +192,54 @@ describe('Layout', () => {
     expect(getDescriptionContent()).toBe('second description');
   });
 });
+
+describe('Layout cleanup runs conditionally on the provided props', () => {
+  beforeEach((): void => {
+    // Mirror the suite-level reset so a prior test's unmount restore can't bleed
+    // across cases when this block runs in isolation.
+    getDescriptionMetas().forEach((node: HTMLMetaElement): void => node.remove());
+    document.title = '';
+  });
+
+  it('does not restore the title on unmount when no pageTitle was provided', (): void => {
+    document.title = 'effect-time title';
+
+    const { unmount } = render(
+      <Layout metaDescription="some description">
+        <div />
+      </Layout>
+    );
+
+    // Change the title after mount. With no pageTitle, the cleanup branch is
+    // skipped, so the title must keep this post-mount value. If the cleanup
+    // guard were always-true it would revert to the effect-time title.
+    document.title = 'changed after mount';
+
+    unmount();
+
+    expect(document.title).toBe('changed after mount');
+  });
+
+  it('keeps an externally added meta on unmount when no metaDescription was provided', (): void => {
+    const { unmount } = render(
+      <Layout pageTitle="Some Title">
+        <div />
+      </Layout>
+    );
+
+    // No meta existed at effect time (captured previousDescription is null). Add
+    // one after mount. With no metaDescription, the cleanup branch is skipped, so
+    // this tag must survive. If the cleanup guard were always-true the null-branch
+    // would run and remove it.
+    const added: HTMLMetaElement = document.createElement('meta');
+    added.setAttribute('name', 'description');
+    added.setAttribute('content', 'externally added');
+    document.head.appendChild(added);
+
+    unmount();
+
+    const meta: HTMLMetaElement | null = getDescriptionMeta();
+    expect(meta).not.toBeNull();
+    expect(meta).toHaveAttribute('content', 'externally added');
+  });
+});

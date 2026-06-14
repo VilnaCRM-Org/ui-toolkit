@@ -259,3 +259,79 @@ describe('UiSkeletons base tokens', () => {
     expect(SKELETON_BORDER_COLOR).toBe('#E1E7EA');
   });
 });
+
+describe('UiSkeleton default-prop styling (mutation guards)', () => {
+  it('renders UiSkeletonBlock with its default width, height and radius', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonBlock id="block-defaults" />
+      </ThemeProvider>
+    );
+
+    const block: HTMLElement = getById(container, 'block-defaults');
+    expect(block).toHaveStyle({ width: '100%' });
+    expect(block).toHaveStyle({ height: '3rem' });
+    expect(block).toHaveStyle({ borderRadius: '8px' });
+  });
+
+  it('renders UiSkeletonText with its default medium height and full width', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonText id="text-defaults" />
+      </ThemeProvider>
+    );
+
+    const text: HTMLElement = getById(container, 'text-defaults');
+    expect(text).toHaveStyle({ height: '12px' });
+    expect(text).toHaveStyle({ width: '100%' });
+  });
+
+  it('keeps the shimmer animation by default when disableAnimation is omitted', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonInput id="input-default-anim" />
+      </ThemeProvider>
+    );
+
+    const input: HTMLElement = getById(container, 'input-default-anim');
+    expect(input).not.toHaveStyle({ animation: 'none' });
+    expect(input).toHaveStyle({ backgroundSize: '200% 100%' });
+  });
+});
+
+describe('UiSkeletonInput placeholder styling (mutation guards)', () => {
+  function getPlaceholder(container: HTMLElement): HTMLElement {
+    // Placeholder is a decorative inner Box exposed only via its class name.
+    // eslint-disable-next-line testing-library/no-node-access, testing-library/no-container
+    const el: HTMLElement | null = container.querySelector<HTMLElement>(
+      '.ui-skeleton-input__placeholder'
+    );
+    if (el === null) {
+      throw new Error('Expected the skeleton input placeholder to be present');
+    }
+    return el;
+  }
+
+  it('applies the placeholder base styles to the inner element', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonInput id="input-ph-base" />
+      </ThemeProvider>
+    );
+
+    const placeholder: HTMLElement = getPlaceholder(container);
+    expect(placeholder).toHaveStyle({ position: 'absolute' });
+    expect(placeholder).toHaveStyle({ width: '9.1875rem' });
+    expect(placeholder).toHaveStyle({ zIndex: '1' });
+  });
+
+  it('disables the placeholder animation when disableAnimation is set', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonInput id="input-ph-static" disableAnimation />
+      </ThemeProvider>
+    );
+
+    expect(getPlaceholder(container)).toHaveStyle({ animation: 'none' });
+  });
+});

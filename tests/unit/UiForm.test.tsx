@@ -154,3 +154,134 @@ describe('UiForm', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 });
+
+type MutantFormValues = {
+  email: string;
+};
+
+function MutantRegisteredField(): React.ReactElement {
+  const { register } = useFormContext<MutantFormValues>();
+
+  return (
+    // register() returns native input props; spreading is idiomatic react-hook-form
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <input aria-label="Email" {...register('email')} />
+  );
+}
+
+type RequiredFormValues = {
+  name: string;
+};
+
+function RequiredOnTouchedField(): React.ReactElement {
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<RequiredFormValues>();
+
+  return (
+    <>
+      {/* register() returns native input props; spreading is idiomatic react-hook-form */}
+      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+      <input aria-label="Name" {...register('name', { required: 'Name is required' })} />
+      {errors.name ? <span>{String(errors.name.message)}</span> : null}
+    </>
+  );
+}
+
+describe('UiForm (mutation hardening)', () => {
+  it('omits the error banner entirely when no error is provided', () => {
+    render(
+      <UiForm<MutantFormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+      >
+        <MutantRegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('styles the error banner with red text and bottom spacing', () => {
+    render(
+      <UiForm<MutantFormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+        error="Request failed"
+      >
+        <MutantRegisteredField />
+      </UiForm>
+    );
+
+    const banner: HTMLElement = screen.getByRole('alert');
+    expect(banner).toHaveTextContent('Request failed');
+    expect(banner).toHaveStyle({ color: 'red', marginBottom: '1rem' });
+  });
+
+  it('seeds the registered field from defaultValues', () => {
+    render(
+      <UiForm<MutantFormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: 'preset@example.com' }}
+        submitLabel="Submit"
+        title="Sign in"
+      >
+        <MutantRegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.getByLabelText('Email')).toHaveValue('preset@example.com');
+  });
+
+  it('validates on blur (onTouched) before any submit', async () => {
+    const user: UserEvent = userEvent.setup();
+
+    render(
+      <UiForm<RequiredFormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ name: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+      >
+        <RequiredOnTouchedField />
+      </UiForm>
+    );
+
+    expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Name'));
+    await user.tab();
+
+    expect(await screen.findByText('Name is required')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled();
+  });
+
+  it('keeps the entered values after submit when resetOnSuccess is left default', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn().mockResolvedValue(undefined);
+
+    render(
+      <UiForm<MutantFormValues>
+        onSubmit={onSubmit}
+        defaultValues={{ email: 'default@example.com' }}
+        submitLabel="Submit"
+        title="Sign in"
+      >
+        <MutantRegisteredField />
+      </UiForm>
+    );
+
+    const input: HTMLElement = screen.getByLabelText('Email');
+    await user.clear(input);
+    await user.type(input, 'typed@example.com');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByLabelText('Email')).toHaveValue('typed@example.com'));
+  });
+});
