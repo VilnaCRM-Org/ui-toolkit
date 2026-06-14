@@ -66,7 +66,10 @@ const theme: Theme = createTheme({
       color: colorTheme.palette.grey300.main,
     },
     medium15: {
-      fontFamily: 'Inter',
+      // Design is the source of truth: the Figma "15 (medium)" token is Golos Text
+      // Medium 15/18 (only the 14/16 medium tokens are Inter). CRM leaves this
+      // family unset, but the design pins Golos here.
+      fontFamily: 'Golos Text',
       fontWeight: '500',
       fontSize: '0.9375rem',
       lineHeight: '1.125rem',
