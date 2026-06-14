@@ -8,6 +8,7 @@ import stories from './stories.json';
 // scripts / the README) and committed so the run is identical in Docker.
 
 type StoryEntry = { id: string; title: string; name: string };
+type IndexEntry = { type: string; id: string };
 
 const FREEZE_CSS = `
   *, *::before, *::after {
@@ -46,4 +47,23 @@ test.describe('Visual regression (Storybook stories)', () => {
       });
     });
   }
+});
+
+test('the manifest has a baseline target for every live Storybook story', async ({
+  request,
+  baseURL,
+}) => {
+  const response = await request.get(`${baseURL}/index.json`);
+  expect(response.ok()).toBeTruthy();
+
+  const index: { entries: Record<string, IndexEntry> } = await response.json();
+  const liveStoryIds: string[] = Object.values(index.entries)
+    .filter(entry => entry.type === 'story')
+    .map(entry => entry.id)
+    .sort();
+  const manifestIds: string[] = (stories as StoryEntry[]).map(entry => entry.id).sort();
+
+  // Every story must be in the manifest the screenshot loop iterates — so no
+  // story can ship without a visual baseline (100% story coverage).
+  expect(manifestIds).toEqual(liveStoryIds);
 });
