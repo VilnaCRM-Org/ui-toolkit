@@ -96,6 +96,12 @@ test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
 test-e2e-local: ## Open the local Playwright runner inside the docker container.
 	$(DOCKER_COMPOSE) run --rm --build playwright bun x playwright test ./tests/e2e
 
+test-visual: PLAYWRIGHT_TEST_TARGET = ./tests/visual
+test-visual: PLAYWRIGHT_TEST_ARGS = --project=chromium
+test-visual: ## Compare chromium visual baselines against Storybook inside Docker.
+	@$(MAKE) --no-print-directory run-storybook-playwright \
+		PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
+
 test-unit: ## Run Jest unit tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
