@@ -27,7 +27,10 @@ const checkedBox: SxProps<Theme> = {
 const baseCheckbox: SxProps<Theme> = {
   padding: 0,
   marginRight: '0.813rem',
-  '& .ui-checkbox-box--checked': checkedBox,
+  // Compound selector (.ui-checkbox-box.ui-checkbox-box--checked) so the checked
+  // fill wins over the base `.ui-checkbox-box` rule regardless of emitted order —
+  // otherwise a checked box renders white instead of the primary fill + check.
+  '& .ui-checkbox-box.ui-checkbox-box--checked': checkedBox,
   '&:hover:not(.Mui-disabled) .ui-checkbox-box': {
     cursor: 'pointer',
     borderColor: colorTheme.palette.primary.main,

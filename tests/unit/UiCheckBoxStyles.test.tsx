@@ -14,12 +14,12 @@ interface CheckedBoxRule {
 }
 
 interface CheckboxStyles {
-  checkbox: { '& .ui-checkbox-box--checked': CheckedBoxRule };
+  checkbox: { '& .ui-checkbox-box.ui-checkbox-box--checked': CheckedBoxRule };
 }
 
 function loadCheckedBoxRule(): CheckedBoxRule {
   const styles: CheckboxStyles = require('@/components/UiCheckbox/styles').default;
-  return styles.checkbox['& .ui-checkbox-box--checked'];
+  return styles.checkbox['& .ui-checkbox-box.ui-checkbox-box--checked'];
 }
 
 describe('UiCheckbox styles checkIconUrl resolution', () => {
