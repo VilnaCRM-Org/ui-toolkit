@@ -64,7 +64,7 @@ const HIDDEN: { hidden: true } = { hidden: true };
 
 describe('UiCardList integration (real composed child chain)', () => {
   describe('large-screen grid variant', () => {
-    it('renders the real CardGrid -> UiCardItem -> CardContent tree with every card heading', () => {
+    it('renders the real CardGrid -> UiCardItem -> CardContent tree with each heading', () => {
       setLargeScreen();
 
       render(<UiCardList cardList={LARGE_CARDLIST_ARRAY} />);

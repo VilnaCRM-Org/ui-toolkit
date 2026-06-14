@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 
 import CardSwiper from '../../src/components/UiCardList/CardSwiper';
@@ -56,6 +56,14 @@ function captureObserverCallback(): {
   };
 }
 
+// The swiper wrapper is the MUI Grid that owns `swiperRef`; it renders a div
+// with no semantic role, so it can only be reached as the parent of the mocked
+// swiper element. Used only for asserting the wrapper's inline pointer-events
+// style, which has no semantic query equivalent.
+function getSwiperWrapper(): HTMLElement {
+  return screen.getByTestId('swiper').parentElement as HTMLElement;
+}
+
 // CardSwiper renders the local parity card (`./UiCardItem`), not the canonical
 // `src/components/UiCardItem`, so the mock must target the local module.
 jest.mock('../../src/components/UiCardList/UiCardItem', () => {
@@ -68,31 +76,30 @@ jest.mock('../../src/components/UiCardList/UiCardItem', () => {
 });
 
 function addTooltipNode(): HTMLDivElement {
-  const tooltip: HTMLDivElement = document.createElement('div');
-  tooltip.setAttribute('role', 'tooltip');
-  tooltip.className = 'base-Popper-root';
+  const tooltip: HTMLDivElement = makeTooltipNode();
   document.body.appendChild(tooltip);
   return tooltip;
 }
 
 describe('CardSwiper component', () => {
   afterEach(() => {
-    document.querySelectorAll('[role="tooltip"].base-Popper-root').forEach(node => node.remove());
+    screen
+      .queryAllByRole('tooltip')
+      .filter(node => node.classList.contains('base-Popper-root'))
+      .forEach(node => node.remove());
   });
 
   it('renders a swiper slide for every card item', () => {
-    const { getByTestId, getAllByTestId } = render(
-      React.createElement(CardSwiper, { cardList: smallCardList })
-    );
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
-    expect(getByTestId('swiper')).toBeInTheDocument();
-    expect(getAllByTestId('swiper-slide')).toHaveLength(smallCardList.length);
-    expect(getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
+    expect(screen.getByTestId('swiper')).toBeInTheDocument();
+    expect(screen.getAllByTestId('swiper-slide')).toHaveLength(smallCardList.length);
+    expect(screen.getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
   });
 
   it('disables pointer events while a tooltip is open and restores on close', async () => {
-    const { container } = render(React.createElement(CardSwiper, { cardList: smallCardList }));
-    const swiperWrapper: HTMLElement = container.firstChild as HTMLElement;
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+    const swiperWrapper: HTMLElement = getSwiperWrapper();
 
     expect(swiperWrapper).not.toHaveStyle({ pointerEvents: 'none' });
 
@@ -104,39 +111,33 @@ describe('CardSwiper component', () => {
   });
 
   it('renders a card item for every card when the first card is small', () => {
-    const { getAllByTestId } = render(
-      React.createElement(CardSwiper, { cardList: smallCardList })
-    );
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
     // The small-vs-large mobile-grid branch is chosen from the first item's type.
     // jsdom cannot evaluate the MUI media-query sx, so assert the two style
     // objects differ (proving the branch is meaningful) plus correct rendering.
     expect(gridStyles.gridSmallMobile).not.toBe(gridStyles.gridLargeMobile);
-    expect(getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
+    expect(screen.getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
   });
 
   it('selects the large mobile grid branch when the first card is large', () => {
-    const { getAllByTestId } = render(
-      React.createElement(CardSwiper, { cardList: largeCardList })
-    );
+    render(React.createElement(CardSwiper, { cardList: largeCardList }));
 
-    expect(getAllByTestId('mock-card-item')).toHaveLength(largeCardList.length);
+    expect(screen.getAllByTestId('mock-card-item')).toHaveLength(largeCardList.length);
   });
 
   it('falls back to the large mobile grid branch when the list is empty', () => {
-    const { container, queryAllByTestId } = render(
-      React.createElement(CardSwiper, { cardList: [] })
-    );
+    render(React.createElement(CardSwiper, { cardList: [] }));
 
-    expect(container.firstChild).toBeInTheDocument();
-    expect(queryAllByTestId('mock-card-item')).toHaveLength(0);
+    expect(screen.getByTestId('swiper')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('mock-card-item')).toHaveLength(0);
   });
 
   it('ignores mutations that are not childList changes', () => {
     const { getCallback, restore } = captureObserverCallback();
 
-    const { container } = render(React.createElement(CardSwiper, { cardList: smallCardList }));
-    const wrapper: HTMLElement = container.firstChild as HTMLElement;
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+    const wrapper: HTMLElement = getSwiperWrapper();
     const callback: ObserverCallback | undefined = getCallback();
 
     expect(callback).toBeDefined();
@@ -152,8 +153,8 @@ describe('CardSwiper component', () => {
   it('disables pointer events when a childList mutation removes a tooltip node', () => {
     const { getCallback, restore } = captureObserverCallback();
 
-    const { container } = render(React.createElement(CardSwiper, { cardList: smallCardList }));
-    const wrapper: HTMLElement = container.firstChild as HTMLElement;
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+    const wrapper: HTMLElement = getSwiperWrapper();
     const callback: ObserverCallback | undefined = getCallback();
 
     // A tooltip is live in the DOM; notify via a childList mutation carrying a
@@ -191,10 +192,8 @@ describe('CardSwiper component', () => {
   it('disconnects the mutation observer on unmount', async () => {
     const disconnectSpy: jest.SpyInstance = jest.spyOn(MutationObserver.prototype, 'disconnect');
 
-    const { container, unmount } = render(
-      React.createElement(CardSwiper, { cardList: smallCardList })
-    );
-    const swiperWrapper: HTMLElement = container.firstChild as HTMLElement;
+    const { unmount } = render(React.createElement(CardSwiper, { cardList: smallCardList }));
+    const swiperWrapper: HTMLElement = getSwiperWrapper();
 
     unmount();
     expect(disconnectSpy).toHaveBeenCalled();

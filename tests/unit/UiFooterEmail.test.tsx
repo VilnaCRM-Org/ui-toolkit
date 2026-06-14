@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import VilnaCRMEmail from '../../src/components/UiFooter/VilnaCRMEmail';
@@ -20,9 +20,9 @@ describe('VilnaCRMEmail component', () => {
   it('renders email address correctly', () => {
     delete process.env.REACT_APP_VILNACRM_GMAIL;
 
-    const { getByText } = render(<VilnaCRMEmail />);
+    render(<VilnaCRMEmail />);
 
-    const emailLink: HTMLElement = getByText(mockEmail);
+    const emailLink: HTMLElement = screen.getByText(mockEmail);
     expect(emailLink).toBeInTheDocument();
   });
 
@@ -30,9 +30,9 @@ describe('VilnaCRMEmail component', () => {
     const configuredEmail: string = 'support@example.com';
     process.env.REACT_APP_VILNACRM_GMAIL = configuredEmail;
 
-    const { getByRole } = render(<VilnaCRMEmail />);
+    render(<VilnaCRMEmail />);
 
-    expect(getByRole('link', { name: configuredEmail })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: configuredEmail })).toHaveAttribute(
       'href',
       `mailto:${configuredEmail}`
     );

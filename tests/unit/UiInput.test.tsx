@@ -1,4 +1,4 @@
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiInput } from '../../src/components';
@@ -9,10 +9,8 @@ const testType: string = 'email';
 
 describe('UiInput', () => {
   it('renders the input with the provided props', () => {
-    const { getByPlaceholderText } = render(
-      <UiInput placeholder={testPlaceholder} type={testType} value={testEmail} />
-    );
-    const inputElement: HTMLElement = getByPlaceholderText(testPlaceholder);
+    render(<UiInput placeholder={testPlaceholder} type={testType} value={testEmail} />);
+    const inputElement: HTMLElement = screen.getByPlaceholderText(testPlaceholder);
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveAttribute('type', testType);
     expect(inputElement).toHaveValue(testEmail);
@@ -20,24 +18,24 @@ describe('UiInput', () => {
 
   it('calls the onChange function when the input value changes', () => {
     const mockOnChange: () => void = jest.fn();
-    const { getByRole } = render(<UiInput onChange={mockOnChange} />);
-    const inputElement: HTMLElement = getByRole('textbox');
+    render(<UiInput onChange={mockOnChange} />);
+    const inputElement: HTMLElement = screen.getByRole('textbox');
     fireEvent.change(inputElement, { target: { value: testText } });
     expect(mockOnChange).toHaveBeenCalled();
   });
 
   it('calls the onBlur function when the input loses focus', () => {
     const mockOnBlur: () => void = jest.fn();
-    const { getByRole } = render(<UiInput onBlur={mockOnBlur} />);
-    const inputElement: HTMLElement = getByRole('textbox');
+    render(<UiInput onBlur={mockOnBlur} />);
+    const inputElement: HTMLElement = screen.getByRole('textbox');
     fireEvent.blur(inputElement);
     expect(mockOnBlur).toHaveBeenCalled();
   });
 
   it('calls the onInput function when the input value changes', () => {
     const mockOnInput: (event: React.ChangeEvent<HTMLInputElement>) => void = jest.fn();
-    const { getByRole } = render(<UiInput onInput={mockOnInput} />);
-    const inputElement: HTMLElement = getByRole('textbox');
+    render(<UiInput onInput={mockOnInput} />);
+    const inputElement: HTMLElement = screen.getByRole('textbox');
 
     fireEvent.input(inputElement, { target: { value: testText } });
 
@@ -46,20 +44,20 @@ describe('UiInput', () => {
   });
 
   it('applies the correct styles based on the error prop', () => {
-    const { rerender, getByRole } = render(<UiInput error={false} />);
-    let inputElement: HTMLElement = getByRole('textbox');
+    const { rerender } = render(<UiInput error={false} />);
+    let inputElement: HTMLElement = screen.getByRole('textbox');
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveAttribute('aria-invalid', 'false');
 
     rerender(<UiInput error />);
-    inputElement = getByRole('textbox');
+    inputElement = screen.getByRole('textbox');
     expect(inputElement).toBeInTheDocument();
     expect(inputElement).toHaveAttribute('aria-invalid', 'true');
   });
 
   it('disables the input when the disabled prop is true', () => {
-    const { getByRole } = render(<UiInput disabled />);
-    const inputElement: HTMLElement = getByRole('textbox');
+    render(<UiInput disabled />);
+    const inputElement: HTMLElement = screen.getByRole('textbox');
     expect(inputElement).toBeDisabled();
   });
 
@@ -68,18 +66,14 @@ describe('UiInput', () => {
   });
 
   it('does not wrap slotProps when InputProps is omitted', () => {
-    const { getByRole } = render(
-      <UiInput slotProps={{ input: { 'aria-label': 'plain-input' } }} />
-    );
-    const inputElement: HTMLElement = getByRole('textbox');
+    render(<UiInput slotProps={{ input: { 'aria-label': 'plain-input' } }} />);
+    const inputElement: HTMLElement = screen.getByRole('textbox');
     expect(inputElement).toHaveAttribute('aria-label', 'plain-input');
   });
 
   it('merges InputProps onto the input slot when no slotProps are given', () => {
-    const { getByRole } = render(
-      <UiInput InputProps={{ readOnly: true, inputProps: { maxLength: 5 } }} />
-    );
-    const inputElement: HTMLElement = getByRole('textbox');
+    render(<UiInput InputProps={{ readOnly: true, inputProps: { maxLength: 5 } }} />);
+    const inputElement: HTMLElement = screen.getByRole('textbox');
     expect(inputElement).toHaveAttribute('readonly');
     expect(inputElement).toHaveAttribute('maxlength', '5');
   });
@@ -89,13 +83,13 @@ describe('UiInput', () => {
       'aria-label': 'from-fn',
       'aria-describedby': 'fn-desc',
     }));
-    const { getByRole } = render(
+    render(
       <UiInput
         InputProps={{ 'aria-label': 'from-input-props' } as never}
         slotProps={{ input: slotInputFn }}
       />
     );
-    const inputElement: HTMLElement = getByRole('textbox');
+    const inputElement: HTMLElement = screen.getByRole('textbox');
 
     expect(slotInputFn).toHaveBeenCalledTimes(1);
     expect(slotInputFn.mock.calls[0][0]).toBeDefined();
@@ -104,13 +98,13 @@ describe('UiInput', () => {
   });
 
   it('merges InputProps over an object slotProps.input base', () => {
-    const { getByRole } = render(
+    render(
       <UiInput
         InputProps={{ 'aria-label': 'input-props-wins' } as never}
         slotProps={{ input: { 'aria-label': 'object-base', 'aria-describedby': 'obj-desc' } }}
       />
     );
-    const inputElement: HTMLElement = getByRole('textbox');
+    const inputElement: HTMLElement = screen.getByRole('textbox');
 
     expect(inputElement).toHaveAttribute('aria-describedby', 'obj-desc');
     expect(inputElement).toHaveAttribute('aria-label', 'input-props-wins');

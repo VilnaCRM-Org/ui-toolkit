@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiCardItem from '../../src/components/UiCardItem';
@@ -15,10 +15,10 @@ describe('UiCardItem Component', () => {
     const servicesText: string = 'services';
 
     it('renders correctly with large card', () => {
-      const { getByText, getByRole } = render(<CardContent item={cardItem} isSmallCard={false} />);
+      render(<CardContent item={cardItem} isSmallCard={false} />);
 
-      const titleElement: HTMLElement = getByRole(cardTitleRole);
-      const textElement: HTMLElement = getByText(cardItem.text);
+      const titleElement: HTMLElement = screen.getByRole(cardTitleRole);
+      const textElement: HTMLElement = screen.getByText(cardItem.text);
 
       expect(titleElement).toBeInTheDocument();
       expect(titleElement).toHaveTextContent(cardItem.title);
@@ -26,11 +26,11 @@ describe('UiCardItem Component', () => {
     });
 
     it('renders correctly with small card', () => {
-      const { getByText, getByRole } = render(<CardContent item={cardItem} isSmallCard />);
+      render(<CardContent item={cardItem} isSmallCard />);
 
-      const titleElement: HTMLElement = getByRole(cardTitleRole);
-      const integrateElement: HTMLElement = getByText(integrateText);
-      const servicesElement: HTMLElement = getByText(servicesText);
+      const titleElement: HTMLElement = screen.getByRole(cardTitleRole);
+      const integrateElement: HTMLElement = screen.getByText(integrateText);
+      const servicesElement: HTMLElement = screen.getByText(servicesText);
 
       expect(titleElement).toBeInTheDocument();
       expect(titleElement).toHaveTextContent(cardItem.title);
@@ -38,16 +38,16 @@ describe('UiCardItem Component', () => {
       expect(servicesElement).toBeInTheDocument();
     });
 
-    it('renders the services disclosure without nested interactive controls or nested <p>', () => {
+    it('renders the services disclosure without nested controls or nested <p>', () => {
       const consoleError: jest.SpyInstance = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      const { queryByRole, getByText } = render(<CardContent item={cardItem} isSmallCard />);
+      render(<CardContent item={cardItem} isSmallCard />);
 
       // No <a> wrapping the trigger (it is the tooltip's role="button" span).
-      expect(queryByRole('link')).not.toBeInTheDocument();
-      expect(getByText(servicesText).tagName).toBe('SPAN');
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      expect(screen.getByText(servicesText).tagName).toBe('SPAN');
 
       // React logs invalid DOM nesting (e.g. <p> inside <p>) via console.error.
       const nestingErrors: unknown[][] = consoleError.mock.calls.filter(([message]) =>
@@ -61,11 +61,9 @@ describe('UiCardItem Component', () => {
     });
 
     it('honors a heading element override for the card title', () => {
-      const { getByRole } = render(
-        <CardContent item={cardItem} isSmallCard={false} headingComponent="h2" />
-      );
+      render(<CardContent item={cardItem} isSmallCard={false} headingComponent="h2" />);
 
-      const titleElement: HTMLElement = getByRole(cardTitleRole, { level: 2 });
+      const titleElement: HTMLElement = screen.getByRole(cardTitleRole, { level: 2 });
 
       expect(titleElement.tagName).toBe('H2');
       expect(titleElement).toHaveTextContent(cardItem.title);
@@ -73,32 +71,28 @@ describe('UiCardItem Component', () => {
   });
 });
 describe('UiCardItem', () => {
-  const stackElementClass: string = '.MuiStack-root';
-
   it('renders UiCardItem with small card style', () => {
-    const { container, getByText, queryByText } = render(<UiCardItem item={smallCard} />);
+    render(<UiCardItem item={smallCard} />);
 
-    const element: HTMLElement | null = container.querySelector(stackElementClass);
-
-    expect(element).toBeInTheDocument();
-    expect(getByText('services')).toBeInTheDocument();
-    expect(queryByText(smallCard.text)).not.toBeInTheDocument();
+    // The heading proves the card wrapper rendered its content.
+    expect(screen.getByRole(cardTitleRole)).toBeInTheDocument();
+    expect(screen.getByText('services')).toBeInTheDocument();
+    expect(screen.queryByText(smallCard.text)).not.toBeInTheDocument();
   });
 
   it('renders UiCardItem with large card style', () => {
-    const { container, getByText, queryByText } = render(<UiCardItem item={largeCard} />);
+    render(<UiCardItem item={largeCard} />);
 
-    const element: HTMLElement | null = container.querySelector(stackElementClass);
-
-    expect(element).toBeInTheDocument();
-    expect(getByText(largeCard.text)).toBeInTheDocument();
-    expect(queryByText('services')).not.toBeInTheDocument();
+    // The heading proves the card wrapper rendered its content.
+    expect(screen.getByRole(cardTitleRole)).toBeInTheDocument();
+    expect(screen.getByText(largeCard.text)).toBeInTheDocument();
+    expect(screen.queryByText('services')).not.toBeInTheDocument();
   });
 
   it('renders correct UiImage', () => {
-    const { getByRole } = render(<UiCardItem item={cardItem} />);
+    render(<UiCardItem item={cardItem} />);
 
-    const cardImage: HTMLElement = getByRole('img');
+    const cardImage: HTMLElement = screen.getByRole('img');
 
     expect(cardImage).toBeInTheDocument();
     expect(cardImage).toHaveAttribute('alt', cardItem.alt);
@@ -108,28 +102,28 @@ describe('UiCardItem', () => {
 describe('UiCardItem exported fixtures', () => {
   const cardTitleRole2: string = 'heading';
 
-  it('renders the SMALL_CARD_ITEM fixture as a small card with translated content', () => {
+  it('renders SMALL_CARD_ITEM as a small card with translated content', () => {
     expect(SMALL_CARD_ITEM.type).toBe('smallCard');
 
-    const { getByRole, getByText } = render(<UiCardItem item={SMALL_CARD_ITEM} />);
+    render(<UiCardItem item={SMALL_CARD_ITEM} />);
 
     // Title key resolves via i18n and the small variant uses the bodyText16 body copy.
-    expect(getByRole(cardTitleRole2)).toHaveTextContent('Public API');
+    expect(screen.getByRole(cardTitleRole2)).toHaveTextContent('Public API');
     expect(
-      getByText(/For cases when you did not find the desired ready-made integration/)
+      screen.getByText(/For cases when you did not find the desired ready-made integration/)
     ).toBeInTheDocument();
     // alt key resolves to the localized image description.
-    expect(getByRole('img')).toHaveAttribute('alt', 'Image of Ruby');
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Image of Ruby');
   });
 
-  it('renders the LARGE_CARD_ITEM fixture as a large card with translated content', () => {
+  it('renders LARGE_CARD_ITEM as a large card with translated content', () => {
     expect(LARGE_CARD_ITEM.type).toBe('largeCard');
 
-    const { getByRole, queryByText } = render(<UiCardItem item={LARGE_CARD_ITEM} />);
+    render(<UiCardItem item={LARGE_CARD_ITEM} />);
 
     // Large variant renders the title and text keys directly (no "services" trigger).
-    expect(getByRole(cardTitleRole2)).toHaveTextContent('Ready templates');
-    expect(queryByText('services')).not.toBeInTheDocument();
-    expect(getByRole('img')).toHaveAttribute('alt', 'Image card of templates');
+    expect(screen.getByRole(cardTitleRole2)).toHaveTextContent('Ready templates');
+    expect(screen.queryByText('services')).not.toBeInTheDocument();
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Image card of templates');
   });
 });

@@ -67,6 +67,8 @@ describe('UiFooter (integration)', () => {
     // ignores CSS visibility, so both real children prove they mounted.
     expect(within(footer).getAllByAltText(logoAlt)).toHaveLength(RENDERED_BRANCHES);
     // The Mobile branch carries the only MUI Container wrapper.
+    // MUI Container exposes no ARIA role; count by class to distinguish the mobile branch.
+    // eslint-disable-next-line testing-library/no-node-access
     expect(footer.querySelectorAll('.MuiContainer-root')).toHaveLength(VISIBLE_BRANCHES);
   });
 
@@ -142,6 +144,8 @@ describe('UiFooter (integration)', () => {
     expect(yearNodes).toHaveLength(RENDERED_BRANCHES);
 
     yearNodes.forEach(yearNode => {
+      // No semantic query for an enclosing paragraph; walk up to the copyright <p>.
+      // eslint-disable-next-line testing-library/no-node-access
       const paragraph: HTMLElement | null = yearNode.closest('p');
       expect(paragraph).not.toBeNull();
       expect(paragraph).toHaveTextContent(copyrightText);

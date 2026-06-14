@@ -12,7 +12,11 @@ type FormValues = {
 function RegisteredField(): React.ReactElement {
   const { register } = useFormContext<FormValues>();
 
-  return <input aria-label="Email" {...register('email')} />;
+  return (
+    // register() returns native input props; spreading is idiomatic react-hook-form
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <input aria-label="Email" {...register('email')} />
+  );
 }
 
 describe('UiForm', () => {

@@ -38,6 +38,8 @@ function Host({
       <UiTextFieldForm<FormValues>
         control={control as Control<FormValues>}
         name="fullName"
+        // Host forwards arbitrary field props to the component under test
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...fieldProps}
       />
       <button type="submit">{submitLabel}</button>
@@ -206,10 +208,7 @@ describe('UiTextFieldForm (integration)', () => {
     await user.click(screen.getByRole('button', { name: 'Submit' }));
 
     await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith(
-        { fullName: 'Katherine Johnson' },
-        expect.anything()
-      )
+      expect(onSubmit).toHaveBeenCalledWith({ fullName: 'Katherine Johnson' }, expect.anything())
     );
   });
 

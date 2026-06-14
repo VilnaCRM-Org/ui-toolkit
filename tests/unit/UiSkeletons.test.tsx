@@ -29,6 +29,8 @@ import {
 import getTextSkeletonStyles from '../../src/components/UiSkeletonText/styles';
 
 function getById(container: HTMLElement, id: string): HTMLElement {
+  // Skeleton primitives are decorative (no role/label); they expose a stable id only.
+  // eslint-disable-next-line testing-library/no-node-access
   const el: HTMLElement | null = container.querySelector<HTMLElement>(`#${id}`);
   if (el === null) {
     throw new Error(`Expected element #${id} to be present in the rendered skeleton`);

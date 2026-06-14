@@ -9,8 +9,8 @@ import { testText, testUrl } from './constants';
 describe('UiLink', () => {
   it('renders the Link with the provided children and href', () => {
     const testHref: string = testUrl;
-    const { getByText } = render(<UiLink href={testHref}>{testText}</UiLink>);
-    const linkElement: HTMLElement = getByText(testText);
+    render(<UiLink href={testHref}>{testText}</UiLink>);
+    const linkElement: HTMLElement = screen.getByText(testText);
     expect(linkElement).toBeInTheDocument();
     expect(linkElement).toHaveAttribute('href', testHref);
   });
@@ -72,6 +72,8 @@ describe('UiLink', () => {
     // name is exactly the children with no appended notice.
     const link: HTMLElement = screen.getByRole('link', { name: testText });
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    // No semantic query exists for "no appended notice span"; assert its absence by structure.
+    // eslint-disable-next-line testing-library/no-node-access
     expect(link.querySelector('span')).toBeNull();
   });
 

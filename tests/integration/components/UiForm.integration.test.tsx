@@ -147,7 +147,7 @@ describe('UiForm integration (real composed inputs)', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('clears a surfaced error once the user corrects the field (onTouched re-validation)', async () => {
+  it('clears a surfaced error after the user corrects the field (onTouched)', async () => {
     const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
     renderLoginForm({ onSubmit: jest.fn() });
 
@@ -160,7 +160,7 @@ describe('UiForm integration (real composed inputs)', () => {
     expect(screen.getByLabelText(EMAIL_LABEL)).toHaveAttribute('aria-invalid', 'false');
   });
 
-  it('blocks submit while a sibling raw UiInput stays invalid, then succeeds when valid', async () => {
+  it('blocks submit while a raw UiInput stays invalid, then succeeds when valid', async () => {
     const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
     const onSubmit: jest.Mock = jest.fn();
 
@@ -208,7 +208,7 @@ describe('UiForm integration (real composed inputs)', () => {
     expect(submitted).toEqual({ username: 'turing' });
   });
 
-  it('resets the real inputs to defaults after a successful submit when resetOnSuccess', async () => {
+  it('resets the real inputs to defaults after a successful submit (resetOnSuccess)', async () => {
     const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
     const onSubmit: jest.Mock = jest.fn();
     renderLoginForm({ onSubmit, resetOnSuccess: true });

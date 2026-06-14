@@ -54,16 +54,29 @@ function renderLayout(
   props: Partial<React.ComponentProps<typeof Layout>> = {}
 ): ReturnType<typeof render> {
   return render(
+    // eslint-disable-next-line react/jsx-props-no-spreading
     <Layout header={<RealHeader />} footer={<UiFooter />} {...props}>
       <RealChildren />
     </Layout>
   );
 }
 
+// <meta name="description"> lives in <head>, outside the RTL render container, so Testing
+// Library queries cannot reach it; direct document access is the only way to assert this
+// document-level metadata side effect.
+function metaDescriptionTags(): HTMLMetaElement[] {
+  // eslint-disable-next-line testing-library/no-node-access
+  return Array.from(document.querySelectorAll<HTMLMetaElement>('meta[name="description"]'));
+}
+
+function firstMetaDescription(): HTMLMetaElement | null {
+  return metaDescriptionTags()[0] ?? null;
+}
+
 describe('Layout (integration)', () => {
   beforeEach(() => {
     // Reset metadata so a prior test's unmount-restore can't bleed across cases.
-    document.head.querySelectorAll('meta[name="description"]').forEach(node => node.remove());
+    metaDescriptionTags().forEach(node => node.remove());
     document.title = '';
   });
 
@@ -82,9 +95,9 @@ describe('Layout (integration)', () => {
     const footer: HTMLElement = screen.getByRole('contentinfo');
     expect(within(footer).getAllByText(new RegExp(COPYRIGHT_TEXT)).length).toBeGreaterThan(0);
     expect(within(footer).getAllByRole('link', { name: PRIVACY_LABEL }).length).toBeGreaterThan(0);
-    expect(
-      within(footer).getAllByRole('link', { name: INSTAGRAM_LABEL }).length
-    ).toBeGreaterThan(0);
+    expect(within(footer).getAllByRole('link', { name: INSTAGRAM_LABEL }).length).toBeGreaterThan(
+      0
+    );
   });
 
   it('renders header, then children, then footer in source order', () => {
@@ -103,7 +116,7 @@ describe('Layout (integration)', () => {
 
     expect(document.title).toBe('Toolkit Dashboard');
 
-    const metas: NodeListOf<HTMLMetaElement> = document.querySelectorAll('meta[name="description"]');
+    const metas: HTMLMetaElement[] = metaDescriptionTags();
     expect(metas).toHaveLength(1);
     expect(metas[0]).toHaveAttribute('content', 'Composed toolkit page');
 
@@ -120,7 +133,7 @@ describe('Layout (integration)', () => {
 
     renderLayout({ metaDescription: 'overwritten by Layout' });
 
-    const metas: NodeListOf<HTMLMetaElement> = document.querySelectorAll('meta[name="description"]');
+    const metas: HTMLMetaElement[] = metaDescriptionTags();
     expect(metas).toHaveLength(1);
     expect(metas[0]).toHaveAttribute('content', 'overwritten by Layout');
   });
@@ -134,15 +147,12 @@ describe('Layout (integration)', () => {
     });
 
     expect(document.title).toBe('Temporary Title');
-    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-      'content',
-      'temporary description'
-    );
+    expect(firstMetaDescription()).toHaveAttribute('content', 'temporary description');
 
     unmount();
 
     expect(document.title).toBe('Original Title');
-    expect(document.querySelector('meta[name="description"]')).toBeNull();
+    expect(firstMetaDescription()).toBeNull();
   });
 
   it('restores a pre-existing meta description content on unmount', () => {
@@ -153,17 +163,11 @@ describe('Layout (integration)', () => {
 
     const { unmount } = renderLayout({ metaDescription: 'temporary description' });
 
-    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-      'content',
-      'temporary description'
-    );
+    expect(firstMetaDescription()).toHaveAttribute('content', 'temporary description');
 
     unmount();
 
-    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-      'content',
-      'original description'
-    );
+    expect(firstMetaDescription()).toHaveAttribute('content', 'original description');
   });
 
   it('re-runs the metadata effect when title/description props change', () => {
@@ -179,10 +183,7 @@ describe('Layout (integration)', () => {
     );
 
     expect(document.title).toBe('First Title');
-    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-      'content',
-      'first description'
-    );
+    expect(firstMetaDescription()).toHaveAttribute('content', 'first description');
 
     rerender(
       <Layout
@@ -196,10 +197,7 @@ describe('Layout (integration)', () => {
     );
 
     expect(document.title).toBe('Second Title');
-    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-      'content',
-      'second description'
-    );
+    expect(firstMetaDescription()).toHaveAttribute('content', 'second description');
 
     // Real composed children still rendered across the re-run.
     expect(screen.getByRole('heading', { name: PAGE_HEADING })).toBeInTheDocument();

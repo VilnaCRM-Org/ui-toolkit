@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import CardContent from '../../src/components/UiCardList/CardContent';
@@ -130,10 +130,9 @@ describe('UiCardItem component', () => {
   });
 
   it('renders both image and heading inside a single card subtree', () => {
-    const { container } = render(<UiCardItem item={baseSmallItem} />);
-    const card: HTMLElement = container.firstChild as HTMLElement;
+    render(<UiCardItem item={baseSmallItem} />);
 
-    expect(within(card).getByRole('heading', { name: 'Open source' })).toBeInTheDocument();
-    expect(within(card).getByRole('img')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Open source' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Image card of open source' })).toBeInTheDocument();
   });
 });

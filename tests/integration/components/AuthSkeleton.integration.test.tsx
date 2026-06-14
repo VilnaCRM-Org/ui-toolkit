@@ -35,6 +35,8 @@ const BUTTON_IDS: readonly string[] = ['auth-skeleton-submit'];
 const BLOCK_IDS: readonly string[] = SOCIAL_IDS.map(id => `auth-skeleton-social-${id}`);
 
 function getById(container: HTMLElement, id: string): HTMLElement {
+  // Skeleton primitives are decorative (no role/label); asserted by stable id only.
+  // eslint-disable-next-line testing-library/no-node-access
   const el: HTMLElement | null = container.querySelector<HTMLElement>(`#${id}`);
   if (el === null) {
     throw new Error(`Expected element #${id} to be present in the composed skeleton tree`);
@@ -95,8 +97,12 @@ describe('AuthSkeleton (integration)', () => {
     // The placeholder div is produced by the REAL UiSkeletonInput child, proving
     // the primitive was rendered rather than mocked away.
     inputs.forEach(input => {
+      // Asserts the REAL UiSkeletonInput rendered its inner placeholder; structural.
+      // eslint-disable-next-line testing-library/no-node-access
       expect(input.querySelector('.ui-skeleton-input__placeholder')).not.toBeNull();
     });
+    // Aggregate count of the real inner placeholders; structural assertion, no semantic query.
+    // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
     expect(container.querySelectorAll('.ui-skeleton-input__placeholder')).toHaveLength(3);
   });
 
@@ -118,6 +124,8 @@ describe('AuthSkeleton (integration)', () => {
     // The divider label is a real UiSkeletonText nested inside the MUI divider.
     const dividerText: HTMLElement = getById(container, 'auth-skeleton-divider-text');
     expect(dividerText).toBeInTheDocument();
+    // Asserts the real text primitive is nested inside the divider; structural, no semantic query.
+    // eslint-disable-next-line testing-library/no-node-access
     expect(divider.querySelector('#auth-skeleton-divider-text')).toBe(dividerText);
   });
 
@@ -139,10 +147,12 @@ describe('AuthSkeleton (integration)', () => {
     const switcher: HTMLElement = getById(container, 'auth-skeleton-switcher');
 
     expect(switcher).toBeInTheDocument();
+    // Asserts the DOM parent of the switcher is the loading section; structural relationship.
+    // eslint-disable-next-line testing-library/no-node-access
     expect(switcher.parentElement).toBe(section);
   });
 
-  it('composes the complete skeleton tree (title, subtitle, fields, submit, divider, social, switcher)', () => {
+  it('composes the complete skeleton tree from every real primitive', () => {
     const { container } = render(<AuthSkeleton />);
 
     const expectedIds: readonly string[] = [
