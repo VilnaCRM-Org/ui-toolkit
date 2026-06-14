@@ -222,3 +222,77 @@ describe('UiForm integration (real composed inputs)', () => {
     expect(screen.getByLabelText(PASSWORD_LABEL)).toHaveValue('');
   });
 });
+
+describe('UiForm header and error composition', () => {
+  const noop: SubmitHandler<LoginForm> = (): void => {};
+
+  it('surfaces a form-level error in an alert region', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noop}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        error="Service unavailable"
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Service unavailable');
+  });
+
+  it('hides the title when showTitle is false', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noop}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        showTitle={false}
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.queryByText(FORM_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('renders the subtitle when showSubtitle is enabled', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noop}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        subtitle="Sign in to continue"
+        showSubtitle
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.getByText('Sign in to continue')).toBeInTheDocument();
+  });
+});
+
+describe('UiForm submitting state', () => {
+  const noopSubmit: SubmitHandler<LoginForm> = (): void => {};
+
+  it('honours an explicit isSubmitting flag on the submit control', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noopSubmit}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        isSubmitting
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+});

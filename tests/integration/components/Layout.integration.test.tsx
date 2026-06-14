@@ -65,7 +65,7 @@ function renderLayout(
 // Library queries cannot reach it; direct document access is the only way to assert this
 // document-level metadata side effect.
 function metaDescriptionTags(): HTMLMetaElement[] {
-  // eslint-disable-next-line testing-library/no-node-access
+   
   return Array.from(document.querySelectorAll<HTMLMetaElement>('meta[name="description"]'));
 }
 
@@ -229,5 +229,21 @@ describe('Layout (integration)', () => {
     await user.click(screen.getByRole('button', { name: ACTION_LABEL }));
 
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Layout metadata cleanup edge case', () => {
+  it('does not throw on unmount when the created meta was already removed', () => {
+    metaDescriptionTags().forEach(node => node.remove());
+
+    const { unmount } = renderLayout({ metaDescription: 'temporary description' });
+    expect(firstMetaDescription()).not.toBeNull();
+
+    // External removal before unmount: the cleanup's `?.remove()` must no-op on
+    // the now-null query (the optional-chaining null branch).
+    metaDescriptionTags().forEach(node => node.remove());
+
+    expect(() => unmount()).not.toThrow();
+    expect(firstMetaDescription()).toBeNull();
   });
 });
