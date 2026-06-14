@@ -34,8 +34,13 @@ export const baseSkeletonStyle: {
   backgroundImage: string;
   backgroundSize: string;
   animation: string;
+  '@media (prefers-reduced-motion: reduce)': { animation: string };
 } = {
   backgroundImage: shimmerGradient,
   backgroundSize: '200% 100%',
   animation: `${shimmerAnimation} 1.5s ease-in-out infinite alternate`,
+  // Honour the OS "reduce motion" preference (WCAG 2.3.3 / 2.2.2): every
+  // skeleton primitive routes through this base, so one guard stops the
+  // shimmer for all of them when the user opts out of motion.
+  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
 };
