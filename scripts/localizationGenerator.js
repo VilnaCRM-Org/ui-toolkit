@@ -123,7 +123,6 @@ class LocalizationGenerator {
     }, {});
   }
 
-   
   writeLocalizationFile(fileContent, filePath) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
     fs.writeFileSync(filePath, fileContent);

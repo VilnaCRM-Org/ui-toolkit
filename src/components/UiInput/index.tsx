@@ -37,7 +37,9 @@ const UiInput: React.ForwardRefExoticComponent<
           onInput={
             onInput
               ? (event: React.FormEvent<HTMLDivElement>): void =>
-                  onInput(event as unknown as React.ChangeEvent<HTMLInputElement>)
+                  onInput(
+                    event as unknown as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+                  )
               : undefined
           }
         />

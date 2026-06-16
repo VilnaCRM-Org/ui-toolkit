@@ -10,9 +10,7 @@ export default function UiSkeletonInput({
   disableAnimation = false,
   id,
 }: UiSkeletonInputProps): React.ReactElement {
-  const staticSx: SxProps<Theme> | undefined = disableAnimation
-    ? styles.staticSkeleton
-    : undefined;
+  const staticSx: SxProps<Theme> | undefined = disableAnimation ? styles.staticSkeleton : undefined;
 
   return (
     <Box

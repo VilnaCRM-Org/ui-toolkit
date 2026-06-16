@@ -43,8 +43,7 @@ function UiTextFieldForm<T extends FieldValues>({
   name,
   ...inputProps
 }: CustomTextField<T>): React.ReactElement {
-  const renderField: (args: RenderArgs<T>) => React.ReactElement =
-    createRenderField<T>(inputProps);
+  const renderField: (args: RenderArgs<T>) => React.ReactElement = createRenderField<T>(inputProps);
 
   if (defaultValue !== undefined) {
     return (

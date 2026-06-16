@@ -6,6 +6,6 @@ export type UiInputProps = Omit<TextFieldProps, 'inputRef' | 'onBlur' | 'onChang
   InputProps?: OutlinedInputProps;
   onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  onInput?: React.ChangeEventHandler<HTMLInputElement>;
+  onInput?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   ref?: React.ForwardedRef<HTMLInputElement>;
 };

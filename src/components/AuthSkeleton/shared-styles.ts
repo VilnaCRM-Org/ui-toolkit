@@ -1,6 +1,7 @@
 import { CSSObject } from '@mui/material';
 
 import breakpointsTheme from '../UiBreakpoints';
+import { SKELETON_BORDER_COLOR } from '../UiSkeletons/base';
 
 export const fieldGapMargins: CSSObject = {
   marginBottom: '0.5rem',
@@ -41,7 +42,7 @@ export const formWrapper: CSSObject = {
   padding: '1.5rem 1.5rem 1.375rem',
   margin: '0 auto',
   backgroundColor: '#fff',
-  border: '1px solid #E1E7EA',
+  border: `1px solid ${SKELETON_BORDER_COLOR}`,
   borderRadius: '16px',
   boxShadow: '0px 7px 40px 0px rgba(211, 216, 224, 0.2)',
   maxWidth: '22.6875rem',
