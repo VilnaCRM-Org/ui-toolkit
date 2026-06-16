@@ -13,40 +13,24 @@ const DISPLAY_NAME: string = 'UiInput';
 
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
-> = React.forwardRef<HTMLInputElement, UiInputProps>(
-  ({ InputProps, onInput, slotProps, ...rest }, ref) => {
-    const mergedSlotProps: UiInputProps['slotProps'] = InputProps
-      ? {
-          ...slotProps,
-          input: (ownerState: InputSlotOwnerState): InputSlotValue => {
-            const base: InputSlotValue | undefined =
-              typeof slotProps?.input === 'function'
-                ? slotProps.input(ownerState)
-                : slotProps?.input;
-            return { ...base, ...InputProps };
-          },
-        }
-      : slotProps;
+> = React.forwardRef<HTMLInputElement, UiInputProps>(({ InputProps, slotProps, ...rest }, ref) => {
+  const mergedSlotProps: UiInputProps['slotProps'] = InputProps
+    ? {
+        ...slotProps,
+        input: (ownerState: InputSlotOwnerState): InputSlotValue => {
+          const base: InputSlotValue | undefined =
+            typeof slotProps?.input === 'function' ? slotProps.input(ownerState) : slotProps?.input;
+          return { ...base, ...InputProps };
+        },
+      }
+    : slotProps;
 
-    return (
-      <ThemeProvider theme={theme}>
-        <TextField
-          {...rest}
-          inputRef={ref}
-          slotProps={mergedSlotProps}
-          onInput={
-            onInput
-              ? (event: React.FormEvent<HTMLDivElement>): void =>
-                  onInput(
-                    event as unknown as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-                  )
-              : undefined
-          }
-        />
-      </ThemeProvider>
-    );
-  }
-);
+  return (
+    <ThemeProvider theme={theme}>
+      <TextField {...rest} inputRef={ref} slotProps={mergedSlotProps} />
+    </ThemeProvider>
+  );
+});
 
 UiInput.displayName = DISPLAY_NAME;
 

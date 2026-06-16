@@ -25,8 +25,13 @@ function UiLink({
   newTabLabel = '(opens in new tab)',
 }: UiLinkProps): React.ReactElement {
   const opensInNewTab: boolean = target === '_blank';
-  const computedRel: string | undefined =
-    rel ?? (opensInNewTab ? 'noopener noreferrer' : undefined);
+  // For target="_blank" always enforce noopener/noreferrer (anti tab-nabbing),
+  // merging—not replacing—any rel tokens the consumer passed.
+  const computedRel: string | undefined = opensInNewTab
+    ? Array.from(
+        new Set([...(rel?.split(/\s+/).filter(Boolean) ?? []), 'noopener', 'noreferrer'])
+      ).join(' ')
+    : rel;
 
   return (
     <ThemeProvider theme={theme}>

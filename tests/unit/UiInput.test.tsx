@@ -35,7 +35,7 @@ describe('UiInput', () => {
   });
 
   it('calls the onInput function when the input value changes', () => {
-    const mockOnInput: (event: React.ChangeEvent<HTMLInputElement>) => void = jest.fn();
+    const mockOnInput: React.FormEventHandler<HTMLDivElement> = jest.fn();
     const { getByRole } = render(<UiInput onInput={mockOnInput} />);
     const inputElement: HTMLElement = getByRole('textbox');
 

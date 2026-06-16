@@ -20,13 +20,28 @@ function createRenderField<T extends FieldValues>(
   inputProps: Omit<CustomTextField<T>, 'control' | 'defaultValue' | 'name' | 'rules'>
 ): (args: RenderArgs<T>) => React.ReactElement {
   return function renderField({
-    field: { ref, value, ...field },
+    field: { ref, value, onChange, onBlur, ...field },
     fieldState: { error },
   }: RenderArgs<T>): React.ReactElement {
+    // Run RHF's handlers (required to track value/validation) AND any handler the
+    // consumer passed, instead of letting the spread order silently drop theirs.
+    const handleChange: React.ChangeEventHandler<
+      HTMLInputElement | HTMLTextAreaElement
+    > = event => {
+      onChange(event);
+      inputProps.onChange?.(event);
+    };
+    const handleBlur: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> = event => {
+      onBlur();
+      inputProps.onBlur?.(event);
+    };
+
     return (
       <UiInput
         {...inputProps}
         {...field}
+        onChange={handleChange}
+        onBlur={handleBlur}
         ref={ref}
         value={value ?? ''}
         error={!!error}

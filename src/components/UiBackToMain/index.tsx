@@ -34,7 +34,12 @@ export default function UiBackToMain({
   return (
     <Box component="section" sx={styles.section}>
       <UiContainer>
-        <UiButton disableRipple sx={styles.backButton} to={to} aria-label={String(label)}>
+        <UiButton
+          disableRipple
+          sx={styles.backButton}
+          to={to}
+          aria-label={typeof label === 'string' ? label : undefined}
+        >
           <Box sx={styles.icon}>{icon}</Box>
           <UiTypography sx={styles.backText} component="span">
             {label}

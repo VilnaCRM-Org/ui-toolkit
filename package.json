@@ -114,16 +114,5 @@
     "react-hook-form": "^7.0.0",
     "i18next": "^23.0.0",
     "react-i18next": "^14.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react-hook-form": {
-      "optional": true
-    },
-    "i18next": {
-      "optional": true
-    },
-    "react-i18next": {
-      "optional": true
-    }
   }
 }
