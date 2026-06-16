@@ -77,7 +77,6 @@ export default function CardSwiper({
         spaceBetween={12}
         slidesPerView={1.04}
         loop
-        className="swiper-wrapper"
       >
         {cardList.map(item => (
           <SwiperSlide key={item.id}>

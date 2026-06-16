@@ -26,4 +26,16 @@ describe('UiTooltip', () => {
 
     expect(trigger).toBeInTheDocument();
   });
+
+  it('forwards triggerLabel as the accessible name of the trigger', () => {
+    const { getByRole } = render(
+      <ThemeProvider theme={theme}>
+        <UiTooltip title={title} triggerLabel="Open details">
+          <span aria-hidden>★</span>
+        </UiTooltip>
+      </ThemeProvider>
+    );
+
+    expect(getByRole('button', { name: 'Open details' })).toBeInTheDocument();
+  });
 });
