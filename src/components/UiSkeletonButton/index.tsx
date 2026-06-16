@@ -13,7 +13,5 @@ export default function UiSkeletonButton({
     ? sx
     : [sx];
 
-  return (
-    <Box data-testid="ui-skeleton-button" id={id} sx={[styles.buttonSkeleton, ...additionalSx]} />
-  );
+  return <Box id={id} sx={[styles.buttonSkeleton, ...additionalSx]} />;
 }

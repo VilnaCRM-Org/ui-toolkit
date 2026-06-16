@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import ServicesHoverCard from '../../src/components/UiCardItem/ServicesHoverCard';
@@ -9,16 +9,16 @@ const hoverCardtext: string = 'Integrate in a few clicks';
 
 describe('ServicesHoverCard component', () => {
   it('renders title and text correctly', () => {
-    const { getByText } = render(<ServicesHoverCard />);
+    render(<ServicesHoverCard />);
 
-    expect(getByText(hoverCardtitle)).toBeInTheDocument();
-    expect(getByText(hoverCardtext)).toBeInTheDocument();
+    expect(screen.getByText(hoverCardtitle)).toBeInTheDocument();
+    expect(screen.getByText(hoverCardtext)).toBeInTheDocument();
   });
 
   it('renders images correctly', () => {
-    const { getAllByAltText } = render(<ServicesHoverCard />);
+    render(<ServicesHoverCard />);
 
-    const images: HTMLElement[] = getAllByAltText(/.+/);
+    const images: HTMLElement[] = screen.getAllByAltText(/.+/);
     expect(images.length).toBe(8);
   });
 });

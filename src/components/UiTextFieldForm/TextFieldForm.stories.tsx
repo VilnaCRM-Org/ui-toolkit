@@ -70,6 +70,8 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
 }
 
 export const TextFieldForm: Story = {
+  // Storybook's render passes the story args through to the wrapper component.
+  // eslint-disable-next-line react/jsx-props-no-spreading
   render: args => <TextFieldFormStory {...(args as TextFieldFormStoryArgs)} />,
   args: {
     rules: {

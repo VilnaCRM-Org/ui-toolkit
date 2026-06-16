@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import CardGrid from '../../src/components/UiCardList/CardGrid';
@@ -45,9 +45,9 @@ jest.mock('../../src/components/UiCardList/UiCardItem', () => {
 
 describe('CardGrid component', () => {
   it('renders a card item for every entry in the list', () => {
-    const { getAllByTestId } = render(React.createElement(CardGrid, { cardList }));
+    render(React.createElement(CardGrid, { cardList }));
 
-    expect(getAllByTestId('mock-ui-card-item')).toHaveLength(cardList.length);
+    expect(screen.getAllByTestId('mock-ui-card-item')).toHaveLength(cardList.length);
   });
 
   it('selects the smallGrid style when the first item is a small card', () => {
@@ -58,6 +58,12 @@ describe('CardGrid component', () => {
 
   it('selects the largeGrid style when the first item is a large card', () => {
     render(React.createElement(CardGrid, { cardList: largeCardList }));
+
+    expect(mockGrid).toHaveBeenCalledWith(expect.objectContaining({ sx: gridStyles.largeGrid }));
+  });
+
+  it('falls back to the largeGrid style when the list is empty', () => {
+    render(React.createElement(CardGrid, { cardList: [] }));
 
     expect(mockGrid).toHaveBeenCalledWith(expect.objectContaining({ sx: gridStyles.largeGrid }));
   });

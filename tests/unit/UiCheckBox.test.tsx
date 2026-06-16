@@ -1,4 +1,4 @@
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiCheckbox } from '../../src/components';
@@ -9,30 +9,28 @@ const mockOnChange: () => void = jest.fn();
 
 describe('UiCheckbox', () => {
   it('renders the checkbox with the provided label', () => {
-    const { getByLabelText } = render(<UiCheckbox label={testText} onChange={mockOnChange} />);
-    const checkboxLabel: HTMLElement = getByLabelText(testText);
+    render(<UiCheckbox label={testText} onChange={mockOnChange} />);
+    const checkboxLabel: HTMLElement = screen.getByLabelText(testText);
     expect(checkboxLabel).toBeInTheDocument();
   });
 
   it('calls the onChange function when the checkbox is clicked', () => {
-    const { getByRole } = render(<UiCheckbox onChange={mockOnChange} label={testText} />);
-    const checkboxInput: HTMLElement = getByRole('checkbox');
+    render(<UiCheckbox onChange={mockOnChange} label={testText} />);
+    const checkboxInput: HTMLElement = screen.getByRole('checkbox');
     fireEvent.click(checkboxInput);
     expect(mockOnChange).toHaveBeenCalled();
   });
 
   it('disables the checkbox when the disabled prop is true', () => {
-    const { getByRole } = render(<UiCheckbox disabled onChange={mockOnChange} label={testText} />);
-    const checkboxInput: HTMLElement = getByRole('checkbox');
+    render(<UiCheckbox disabled onChange={mockOnChange} label={testText} />);
+    const checkboxInput: HTMLElement = screen.getByRole('checkbox');
     expect(checkboxInput).toBeDisabled();
   });
 
   it('renders the checkbox with the provided error', () => {
-    const { getByLabelText, getByRole } = render(
-      <UiCheckbox error onChange={mockOnChange} label={testText} />
-    );
-    const checkboxLabel: HTMLElement = getByLabelText(testText);
-    const checkboxInput: HTMLElement = getByRole('checkbox');
+    render(<UiCheckbox error onChange={mockOnChange} label={testText} />);
+    const checkboxLabel: HTMLElement = screen.getByLabelText(testText);
+    const checkboxInput: HTMLElement = screen.getByRole('checkbox');
     expect(checkboxLabel).toBeInTheDocument();
     // The error variant flags the input as invalid for assistive tech; the red
     // border styling lives on the visual `.ui-checkbox-box` via descendant-
@@ -41,16 +39,14 @@ describe('UiCheckbox', () => {
   });
 
   it('supports controlled checked state', () => {
-    const { getByRole, rerender } = render(
-      <UiCheckbox checked onChange={mockOnChange} label={testText} />
-    );
+    const { rerender } = render(<UiCheckbox checked onChange={mockOnChange} label={testText} />);
 
-    let checkboxInput: HTMLInputElement = getByRole('checkbox') as HTMLInputElement;
+    let checkboxInput: HTMLInputElement = screen.getByRole('checkbox') as HTMLInputElement;
     expect(checkboxInput).toBeChecked();
 
     rerender(<UiCheckbox checked={false} onChange={mockOnChange} label={testText} />);
 
-    checkboxInput = getByRole('checkbox') as HTMLInputElement;
+    checkboxInput = screen.getByRole('checkbox') as HTMLInputElement;
     expect(checkboxInput).not.toBeChecked();
   });
 });

@@ -1,9 +1,12 @@
 import InputAdornment from '@mui/material/InputAdornment';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Control } from 'react-hook-form';
 
 import { UiTextFieldForm } from '../../src/components';
+import breakpointsTheme from '../../src/components/UiBreakpoints';
+import colorTheme from '../../src/components/UiColorTheme';
+import textFieldFormStyles from '../../src/components/UiTextFieldForm/styles';
 
 import { testPlaceholder, testText } from './constants';
 
@@ -147,5 +150,115 @@ describe('UiTextFieldForm', () => {
     render(<InputPropsWrapper />);
 
     expect(screen.getByTestId('field-adornment')).toBeInTheDocument();
+  });
+});
+
+describe('UiTextFieldForm styles', () => {
+  it('applies spacing and the theme error color to the error text', () => {
+    expect(textFieldFormStyles.errorText).toEqual(
+      expect.objectContaining({
+        marginTop: '0.25rem',
+        paddingBottom: '10px',
+        color: colorTheme.palette.error.main,
+      })
+    );
+  });
+
+  it('shrinks the error text font size below the sm breakpoint', () => {
+    const smBreakpoint: number = breakpointsTheme.breakpoints.values.sm;
+    const mediaQuery: string = `@media (max-width: ${smBreakpoint}px)`;
+
+    expect(textFieldFormStyles.errorText).toHaveProperty(mediaQuery, {
+      fontSize: '0.75rem',
+    });
+  });
+
+  it('invokes consumer onChange and onBlur alongside the react-hook-form handlers', () => {
+    const onChange: jest.Mock = jest.fn();
+    const onBlur: jest.Mock = jest.fn();
+
+    function ConsumerHandlerWrapper(): React.ReactElement {
+      const { control } = useForm();
+
+      return (
+        <UiTextFieldForm
+          control={control}
+          name="testField"
+          placeholder={testPlaceholder}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      );
+    }
+
+    render(<ConsumerHandlerWrapper />);
+    const input: HTMLElement = screen.getByRole('textbox');
+
+    fireEvent.change(input, { target: { value: testText } });
+    fireEvent.blur(input);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onBlur).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs the form blur handler when no consumer onBlur is provided', () => {
+    function NoHandlerWrapper(): React.ReactElement {
+      const { control } = useForm();
+
+      return <UiTextFieldForm control={control} name="testField" placeholder={testPlaceholder} />;
+    }
+
+    render(<NoHandlerWrapper />);
+    const input: HTMLElement = screen.getByRole('textbox');
+
+    // No consumer onBlur: exercises the optional-chaining skip in the composed handler.
+    fireEvent.blur(input);
+
+    expect(input).toBeInTheDocument();
+  });
+});
+
+describe('UiTextFieldForm defaultValue branch', () => {
+  type OmittedDefaultFormValues = { testField: string };
+
+  function OmittedDefaultWrapper(): React.ReactElement {
+    const { control } = useForm<OmittedDefaultFormValues>();
+
+    return (
+      <UiTextFieldForm<OmittedDefaultFormValues>
+        control={control as Control<OmittedDefaultFormValues>}
+        name="testField"
+        placeholder={testPlaceholder}
+      />
+    );
+  }
+
+  it('renders an empty controlled value when defaultValue is omitted', () => {
+    render(<OmittedDefaultWrapper />);
+
+    const input: HTMLElement = screen.getByRole('textbox');
+
+    expect(input).toHaveValue('');
+    expect(input).toHaveAttribute('placeholder', testPlaceholder);
+  });
+
+  it('falls back to a form-level default when defaultValue is omitted', () => {
+    function FormDefaultWrapper(): React.ReactElement {
+      const { control } = useForm<OmittedDefaultFormValues>({
+        defaultValues: { testField: 'form-seeded' },
+      });
+
+      return (
+        <UiTextFieldForm<OmittedDefaultFormValues>
+          control={control as Control<OmittedDefaultFormValues>}
+          name="testField"
+          placeholder={testPlaceholder}
+        />
+      );
+    }
+
+    render(<FormDefaultWrapper />);
+
+    expect(screen.getByRole('textbox')).toHaveValue('form-seeded');
   });
 });

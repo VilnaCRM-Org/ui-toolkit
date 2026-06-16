@@ -110,6 +110,22 @@ EOF
   assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests'
 }
 
+@test "test-integration prefers docker compose exec when the bun service is running" {
+  run_make_target_with_env test-integration FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose ps -q bun'
+  assert_log_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
+  assert_log_not_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
+}
+
+@test "test-integration falls back to docker compose run when the bun service is not running" {
+  run_make_target test-integration
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose ps -q bun'
+  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
+  assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
+}
+
 @test "copy-coverage fails clearly when the bun service is not running" {
   run_make_target copy-coverage
   [ "$status" -ne 0 ]

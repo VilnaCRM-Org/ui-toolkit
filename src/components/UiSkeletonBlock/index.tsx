@@ -16,5 +16,5 @@ export default function UiSkeletonBlock({
     ? [getBlockSkeletonStyles(width, height, borderRadius), ...sx]
     : [getBlockSkeletonStyles(width, height, borderRadius), sx];
 
-  return <Box data-testid="ui-skeleton-block" id={id} sx={mergedSx} />;
+  return <Box id={id} sx={mergedSx} />;
 }

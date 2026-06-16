@@ -13,11 +13,7 @@ export default function UiSkeletonInput({
   const staticSx: SxProps<Theme> | undefined = disableAnimation ? styles.staticSkeleton : undefined;
 
   return (
-    <Box
-      data-testid="ui-skeleton-input"
-      id={id}
-      sx={[styles.inputContainer, ...(staticSx ? [staticSx] : [])]}
-    >
+    <Box id={id} sx={[styles.inputContainer, ...(staticSx ? [staticSx] : [])]}>
       <Box
         className="ui-skeleton-input__placeholder"
         sx={[styles.inputPlaceholder, ...(staticSx ? [staticSx] : [])]}

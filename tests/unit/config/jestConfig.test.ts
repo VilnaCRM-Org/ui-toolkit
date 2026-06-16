@@ -7,9 +7,12 @@ describe('jest config', () => {
     );
   });
 
-  test('discovers TypeScript unit tests under tests', () => {
+  test('discovers TypeScript unit tests under tests/unit', () => {
     expect(jestConfig.testMatch).toEqual(
-      expect.arrayContaining(['<rootDir>/tests/**/*.test.ts', '<rootDir>/tests/**/*.test.tsx'])
+      expect.arrayContaining([
+        '<rootDir>/tests/unit/**/*.test.ts',
+        '<rootDir>/tests/unit/**/*.test.tsx',
+      ])
     );
   });
 });

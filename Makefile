@@ -19,7 +19,7 @@ BUN_X = $(BUN) x
 .RECIPEPREFIX +=
 .PHONY: help build lint lint-next lint-tsc lint-md format-check git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
-	test-unit copy-coverage test-mutation test-memory-leak test-visual \
+	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright
 
@@ -102,6 +102,14 @@ test-unit: ## Run Jest unit tests inside the docker container.
 		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests; \
 	else \
 		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests; \
+	fi
+
+test-integration: ## Run Jest integration (composition) tests inside the docker container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -n "$$container_id" ]; then \
+		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests; \
+	else \
+		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests; \
 	fi
 
 copy-coverage: ## Copy the Jest coverage directory from the docker container.

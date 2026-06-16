@@ -1,0 +1,224 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import React from 'react';
+import { FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
+
+import UiForm from '../../../src/components/UiForm';
+import UiInput from '../../../src/components/UiInput';
+import UiTextFieldForm from '../../../src/components/UiTextFieldForm';
+
+// Integration tier: render UiForm with its REAL composed children (UiInput and
+// UiTextFieldForm) inside the live react-hook-form context provided by UiForm.
+// No child mocks — we assert the wired-together behaviour: typing updates form
+// state, submit forwards the entered values to onSubmit, and validation errors
+// surface on the real inputs.
+
+type LoginForm = {
+  email: string;
+  password: string;
+};
+
+const DEFAULT_VALUES: LoginForm = { email: '', password: '' };
+
+const EMAIL_LABEL: string = 'Email';
+const PASSWORD_LABEL: string = 'Password';
+const SUBMIT_LABEL: string = 'Sign in';
+const FORM_TITLE: string = 'Account access';
+
+const REQUIRED_EMAIL_MESSAGE: string = 'Email is required';
+const INVALID_EMAIL_MESSAGE: string = 'Enter a valid email';
+const SHORT_PASSWORD_MESSAGE: string = 'Password must be at least 6 characters';
+
+// Real composed children: both fields read `control` from the live form context
+// that UiForm publishes, exactly as a consumer would wire them inside <UiForm>.
+function LoginFields(): React.ReactElement {
+  const { control } = useFormContext<LoginForm>();
+
+  return (
+    <>
+      <UiTextFieldForm<LoginForm>
+        control={control}
+        name="email"
+        label={EMAIL_LABEL}
+        type="email"
+        rules={{
+          required: REQUIRED_EMAIL_MESSAGE,
+          pattern: { value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, message: INVALID_EMAIL_MESSAGE },
+        }}
+      />
+      <UiTextFieldForm<LoginForm>
+        control={control}
+        name="password"
+        label={PASSWORD_LABEL}
+        type="password"
+        rules={{
+          required: 'Password is required',
+          minLength: { value: 6, message: SHORT_PASSWORD_MESSAGE },
+        }}
+      />
+    </>
+  );
+}
+
+type RenderFormOptions = {
+  onSubmit: SubmitHandler<LoginForm>;
+  resetOnSuccess?: boolean;
+};
+
+function renderLoginForm({ onSubmit, resetOnSuccess = false }: RenderFormOptions): void {
+  render(
+    <UiForm<LoginForm>
+      onSubmit={onSubmit}
+      defaultValues={DEFAULT_VALUES}
+      submitLabel={SUBMIT_LABEL}
+      title={FORM_TITLE}
+      resetOnSuccess={resetOnSuccess}
+    >
+      <LoginFields />
+    </UiForm>
+  );
+}
+
+describe('UiForm integration (real composed inputs)', () => {
+  it('renders the composed children as accessible fields inside the form', () => {
+    renderLoginForm({ onSubmit: jest.fn() });
+
+    expect(screen.getByText(FORM_TITLE)).toBeInTheDocument();
+    expect(screen.getByLabelText(EMAIL_LABEL)).toBeInTheDocument();
+    expect(screen.getByLabelText(PASSWORD_LABEL)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: SUBMIT_LABEL })).toBeInTheDocument();
+  });
+
+  it('updates form state as the user types into the real inputs', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    renderLoginForm({ onSubmit: jest.fn() });
+
+    const emailField: HTMLInputElement = screen.getByLabelText(EMAIL_LABEL) as HTMLInputElement;
+    const passwordField: HTMLInputElement = screen.getByLabelText(
+      PASSWORD_LABEL
+    ) as HTMLInputElement;
+
+    await user.type(emailField, 'ada@example.com');
+    await user.type(passwordField, 'sup3rsecret');
+
+    expect(emailField).toHaveValue('ada@example.com');
+    expect(passwordField).toHaveValue('sup3rsecret');
+  });
+
+  it('calls onSubmit with the values entered into the real inputs', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn();
+    renderLoginForm({ onSubmit });
+
+    await user.type(screen.getByLabelText(EMAIL_LABEL), 'grace@example.com');
+    await user.type(screen.getByLabelText(PASSWORD_LABEL), 'hopper42');
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    const [submitted] = onSubmit.mock.calls[0] as [LoginForm, unknown];
+    expect(submitted).toEqual({ email: 'grace@example.com', password: 'hopper42' });
+  });
+
+  it('surfaces required-field errors on the real inputs on an empty submit', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn();
+    renderLoginForm({ onSubmit });
+
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    expect(await screen.findByText(REQUIRED_EMAIL_MESSAGE)).toBeInTheDocument();
+    expect(screen.getByText('Password is required')).toBeInTheDocument();
+    expect(screen.getByLabelText(EMAIL_LABEL)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText(PASSWORD_LABEL)).toHaveAttribute('aria-invalid', 'true');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('shows the pattern/length validation messages from the field rules', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn();
+    renderLoginForm({ onSubmit });
+
+    await user.type(screen.getByLabelText(EMAIL_LABEL), 'not-an-email');
+    await user.type(screen.getByLabelText(PASSWORD_LABEL), 'abc');
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    expect(await screen.findByText(INVALID_EMAIL_MESSAGE)).toBeInTheDocument();
+    expect(screen.getByText(SHORT_PASSWORD_MESSAGE)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('clears a surfaced error after the user corrects the field (onTouched)', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    renderLoginForm({ onSubmit: jest.fn() });
+
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+    expect(await screen.findByText(REQUIRED_EMAIL_MESSAGE)).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(EMAIL_LABEL), 'fixed@example.com');
+
+    await waitFor(() => expect(screen.queryByText(REQUIRED_EMAIL_MESSAGE)).not.toBeInTheDocument());
+    expect(screen.getByLabelText(EMAIL_LABEL)).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  it('blocks submit while a raw UiInput stays invalid, then succeeds when valid', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn();
+
+    // A second composition path: a raw UiInput registered straight into the form
+    // context via register(), with the error state read back from formState —
+    // proving the bridge exposes register/formState/handleSubmit to arbitrary
+    // real children, not only UiTextFieldForm.
+    type RawForm = { username: string };
+    function RawRegisteredField(): React.ReactElement {
+      const {
+        register,
+        formState: { errors },
+      } = useFormContext<RawForm>();
+      return (
+        <UiInput
+          label="Username"
+          error={!!errors.username}
+          {...register('username', { required: true })}
+        />
+      );
+    }
+
+    render(
+      <UiForm<RawForm>
+        onSubmit={onSubmit as SubmitHandler<RawForm>}
+        defaultValues={{ username: '' }}
+        submitLabel={SUBMIT_LABEL}
+        title="Raw field form"
+      >
+        <RawRegisteredField />
+      </UiForm>
+    );
+
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+    await waitFor(() =>
+      expect(screen.getByLabelText('Username')).toHaveAttribute('aria-invalid', 'true')
+    );
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText('Username'), 'turing');
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    const [submitted] = onSubmit.mock.calls[0] as [FieldValues, unknown];
+    expect(submitted).toEqual({ username: 'turing' });
+  });
+
+  it('resets the real inputs to defaults after a successful submit (resetOnSuccess)', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn();
+    renderLoginForm({ onSubmit, resetOnSuccess: true });
+
+    await user.type(screen.getByLabelText(EMAIL_LABEL), 'reset@example.com');
+    await user.type(screen.getByLabelText(PASSWORD_LABEL), 'resetme');
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByLabelText(EMAIL_LABEL)).toHaveValue(''));
+    expect(screen.getByLabelText(PASSWORD_LABEL)).toHaveValue('');
+  });
+});
