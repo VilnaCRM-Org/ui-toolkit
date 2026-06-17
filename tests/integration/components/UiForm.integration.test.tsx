@@ -43,7 +43,10 @@ function LoginFields(): React.ReactElement {
         type="email"
         rules={{
           required: REQUIRED_EMAIL_MESSAGE,
-          pattern: { value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, message: INVALID_EMAIL_MESSAGE },
+          pattern: {
+            value: /^[^@\s]{1,64}@[^@\s]{1,255}\.[^@\s]{1,255}$/,
+            message: INVALID_EMAIL_MESSAGE,
+          },
         }}
       />
       <UiTextFieldForm<LoginForm>

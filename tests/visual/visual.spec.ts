@@ -60,8 +60,10 @@ test('the manifest has a baseline target for every live Storybook story', async 
   const liveStoryIds: string[] = Object.values(index.entries)
     .filter(entry => entry.type === 'story')
     .map(entry => entry.id)
-    .sort();
-  const manifestIds: string[] = (stories as StoryEntry[]).map(entry => entry.id).sort();
+    .sort((a, b) => a.localeCompare(b));
+  const manifestIds: string[] = (stories as StoryEntry[])
+    .map(entry => entry.id)
+    .sort((a, b) => a.localeCompare(b));
 
   // Every story must be in the manifest the screenshot loop iterates — so no
   // story can ship without a visual baseline (100% story coverage).

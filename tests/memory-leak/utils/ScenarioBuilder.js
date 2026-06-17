@@ -9,7 +9,11 @@ class ScenarioBuilder {
       if (!url) {
         throw new Error('MEMLAB_WEBSITE_URL environment variable is required');
       }
-      return url.replace(/\/+$/, '');
+      let trimmed = url;
+      while (trimmed.endsWith('/')) {
+        trimmed = trimmed.slice(0, -1);
+      }
+      return trimmed;
     };
   }
 
