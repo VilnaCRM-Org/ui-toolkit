@@ -39,8 +39,10 @@ test('the story manifest covers every live Storybook story', async ({ request, b
   const liveStoryIds: string[] = Object.values(index.entries)
     .filter(entry => entry.type === 'story')
     .map(entry => entry.id)
-    .sort();
-  const manifestIds: string[] = (stories as StoryEntry[]).map(entry => entry.id).sort();
+    .sort((a, b) => a.localeCompare(b));
+  const manifestIds: string[] = (stories as StoryEntry[])
+    .map(entry => entry.id)
+    .sort((a, b) => a.localeCompare(b));
 
   expect(manifestIds).toEqual(liveStoryIds);
 });

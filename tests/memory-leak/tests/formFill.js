@@ -16,6 +16,14 @@ async function action(page) {
 async function back(page) {
   await page.click(emailInputSelector, { clickCount: 3 });
   await page.keyboard.press('Backspace');
+  await page.waitForFunction(
+    selector => {
+      const el = document.querySelector(selector);
+      return el instanceof HTMLInputElement && el.value === '';
+    },
+    {},
+    emailInputSelector
+  );
 }
 
 module.exports = scenarioBuilder.createScenario({

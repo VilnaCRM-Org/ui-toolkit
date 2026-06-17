@@ -31,6 +31,14 @@ async function back(page) {
   if (isChecked) {
     await page.click(checkboxSelector);
   }
+  await page.waitForFunction(
+    selector => {
+      const el = document.querySelector(selector);
+      return el instanceof HTMLInputElement && !el.checked;
+    },
+    {},
+    checkboxSelector
+  );
 }
 
 module.exports = scenarioBuilder.createScenario({

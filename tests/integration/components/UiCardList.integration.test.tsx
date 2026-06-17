@@ -222,6 +222,8 @@ describe('UiCardList grid content edge cases', () => {
     // grid); a ReactNode `text` exercises CardContent's non-string render branch.
     render(<UiCardList cardList={[reactNodeCard]} />);
 
+    // Ensure this edge-case is validated on the grid path, not swiper.
+    expect(screen.queryByTestId('swiper')).not.toBeInTheDocument();
     expect(screen.getByText('Custom node body')).toBeInTheDocument();
   });
 });

@@ -2,7 +2,10 @@ const ScenarioBuilder = require('../utils/ScenarioBuilder');
 
 const scenarioBuilder = new ScenarioBuilder();
 
-const triggerSelector = '[role="button"]';
+// Scope to the tooltip trigger by its stable accessible name (the story's
+// children text) and button role, so an extra button in the story can't be
+// clicked by mistake. Uses puppeteer's ARIA query handler.
+const triggerSelector = '::-p-aria([name="Hello World!"][role="button"])';
 const tooltipSelector = '[role="tooltip"]';
 
 // UiTooltip opens on click (TooltipWrapper toggles MUI Tooltip's open state),

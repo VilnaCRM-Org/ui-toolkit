@@ -9,6 +9,7 @@ test.describe('Layout landmarks and metadata', () => {
     await expect(page.getByRole('banner')).toBeVisible();
     await expect(page.getByRole('main')).toBeVisible();
     await expect(page.getByRole('contentinfo')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
     await expect(page.getByRole('heading', { level: 1, name: 'Vilna Toolkit' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Dashboard' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
