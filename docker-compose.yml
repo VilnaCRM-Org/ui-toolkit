@@ -1,6 +1,9 @@
 services:
   bun:
-    build: .
+    build:
+      context: .
+      args:
+        INSTALL_CHROMIUM: ${INSTALL_CHROMIUM:-false}
     restart: unless-stopped
   storybook:
     build: .

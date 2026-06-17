@@ -28,7 +28,6 @@ const testFilePatterns = [
   '**/*.spec.tsx',
   '**/*.integration.test.ts',
   '**/*.integration.test.tsx',
-  'tests/load/**/*.js',
   'tests/**/*.js',
   'tests/**/*.jsx',
   'tests/**/*.ts',

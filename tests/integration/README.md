@@ -21,3 +21,23 @@ Composed components under test: AuthSkeleton (skeleton primitives), UiCardList
 (CardGrid/CardSwiper → UiCardItem → CardContent → UiImage/UiTooltip), UiFooter
 (DefaultFooter/Mobile/SocialMediaItem/VilnaCRMEmail), UiForm (react-hook-form +
 inputs), Layout (header/footer/children + document metadata), UiTextFieldForm.
+
+## Coverage
+
+Like the unit tier (and the CRM), the integration run enforces a **100% coverage
+gate** (`coverageThreshold` in `jest.integration.config.ts`) — but scoped via
+`collectCoverageFrom` to the **composition/orchestration** files it owns:
+`AuthSkeleton`, `Layout`, `UiForm`, `UiTextFieldForm`, and the `UiFooter` /
+`UiCardList` subtrees.
+
+Out of scope here (covered fully by the unit tier instead):
+
+- **Leaf components** (Button, Input, Checkbox, Tooltip, skeleton primitives,
+  Link, Image, Typography, …) — integration only verifies that they _compose_,
+  not their exhaustive internal logic.
+- **`theme.ts` / `styles.ts` / `*-styles.ts` / `constants.ts` / `types.ts` /
+  barrels** — mirroring the CRM's exclusion of theme/style modules.
+- **`UiCardList/CardSwiper.tsx`** (its `MutationObserver` branches need the unit
+  tier's mock-driven simulation) and **`UiCardList/CardGrid.tsx`** (its
+  empty-list branch is unreachable through `UiCardList`, which requires a
+  non-empty list).

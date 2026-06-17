@@ -199,17 +199,9 @@ describe('AuthSkeleton (integration)', () => {
   it('propagates disableAnimation into every wrapped text/button/block primitive', () => {
     const { container } = render(<AuthSkeleton disableAnimation />);
 
-    const wrappedIds: readonly string[] = [
-      'auth-skeleton-title',
-      'auth-skeleton-subtitle',
-      'auth-skeleton-subtitle-line2',
-      'auth-skeleton-field-label-1',
-      'auth-skeleton-submit',
-      'auth-skeleton-divider-text',
-      'auth-skeleton-social-google',
-      'auth-skeleton-social-linkedin',
-      'auth-skeleton-switcher',
-    ];
+    // Cover every wrapped text/button/block primitive (inputs are asserted
+    // separately below) so facebook/apple and field-label-2/3 are not skipped.
+    const wrappedIds: readonly string[] = [...TEXT_IDS, ...BUTTON_IDS, ...BLOCK_IDS];
 
     wrappedIds.forEach(id => {
       const style: CSSStyleDeclaration = getComputedStyle(getById(container, id));

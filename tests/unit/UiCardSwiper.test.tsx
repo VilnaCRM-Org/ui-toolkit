@@ -84,6 +84,9 @@ function addTooltipNode(): HTMLDivElement {
 
 describe('CardSwiper component', () => {
   afterEach(() => {
+    // Restore unconditionally so a test that throws before its own restore()
+    // cannot leak the patched constructor into later tests.
+    global.MutationObserver = RealMutationObserver;
     screen
       .queryAllByRole('tooltip')
       .filter(node => node.classList.contains('base-Popper-root'))

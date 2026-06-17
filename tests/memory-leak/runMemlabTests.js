@@ -1,12 +1,14 @@
 const fs = require('node:fs');
+const path = require('node:path');
 
 const { run, analyze } = require('@memlab/api');
 const { StringAnalysis } = require('@memlab/heap-analysis');
 
-const memoryLeakDir = './tests/memory-leak';
-const testsDir = './tests';
-
-const workDir = './tests/memory-leak/results';
+// Resolve scenario + work dirs from this module's location so the runner works
+// regardless of the process CWD (readdir is CWD-relative, require is
+// module-relative — keeping both on __dirname removes that mismatch).
+const scenariosDir = path.join(__dirname, 'tests');
+const workDir = path.join(__dirname, 'results');
 const consoleMode = 'VERBOSE';
 
 async function runScenario(testFilePath) {
@@ -25,9 +27,7 @@ async function runScenario(testFilePath) {
 }
 
 async function runMemlabTests() {
-  const testFilePaths = fs
-    .readdirSync(`${memoryLeakDir}/${testsDir}`)
-    .map(test => `${testsDir}/${test}`);
+  const testFilePaths = fs.readdirSync(scenariosDir).map(test => path.join(scenariosDir, test));
 
   await testFilePaths.reduce(
     (previousRun, testFilePath) => previousRun.then(() => runScenario(testFilePath)),

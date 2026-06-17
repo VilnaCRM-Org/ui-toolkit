@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { AuthSkeleton } from '../../src/components';
+import authSkeletonStyles from '../../src/components/AuthSkeleton/styles';
 
 // The skeleton primitives render as MUI Box divs (role="generic") identified
 // only by their `id`; resolve them through a semantic role query + id filter
@@ -116,5 +117,13 @@ describe('AuthSkeleton mutation hardening', () => {
     expect(wrapperStyle.borderRadius).toBe('16px');
     expect(wrapperStyle.maxWidth).toBe('22.6875rem');
     expect(wrapperStyle.position).toBe('relative');
+  });
+});
+
+describe('AuthSkeleton reduced-motion', () => {
+  it('suppresses the form pulse animation under prefers-reduced-motion', () => {
+    expect(authSkeletonStyles.formWrapperPulse).toMatchObject({
+      '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+    });
   });
 });

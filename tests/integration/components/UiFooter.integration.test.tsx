@@ -170,3 +170,50 @@ describe('UiFooter (integration)', () => {
     expect(within(footer).getAllByText(currentYear)).toHaveLength(RENDERED_BRANCHES);
   });
 });
+
+describe('UiFooter env-configured links', () => {
+  const envKeys: readonly string[] = [
+    'REACT_APP_VILNACRM_GMAIL',
+    'REACT_APP_VILNACRM_PRIVACY_POLICY_URL',
+    'REACT_APP_VILNACRM_USAGE_POLICY_URL',
+  ];
+  const originalEnv: Record<string, string | undefined> = {};
+
+  beforeEach(() => {
+    envKeys.forEach(key => {
+      originalEnv[key] = process.env[key];
+    });
+  });
+
+  afterEach(() => {
+    envKeys.forEach(key => {
+      if (originalEnv[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalEnv[key];
+      }
+    });
+  });
+
+  it('uses the configured email and policy URLs when the env vars are set', () => {
+    process.env.REACT_APP_VILNACRM_GMAIL = 'custom@vilna.test';
+    process.env.REACT_APP_VILNACRM_PRIVACY_POLICY_URL = 'https://example.com/privacy';
+    process.env.REACT_APP_VILNACRM_USAGE_POLICY_URL = 'https://example.com/usage';
+
+    render(<UiFooter />);
+    const footer: HTMLElement = screen.getByRole('contentinfo');
+
+    expect(within(footer).getByRole('link', { name: 'custom@vilna.test' })).toHaveAttribute(
+      'href',
+      'mailto:custom@vilna.test'
+    );
+    expect(within(footer).getByRole('link', { name: privacyText })).toHaveAttribute(
+      'href',
+      'https://example.com/privacy'
+    );
+    expect(within(footer).getByRole('link', { name: usagePolicyText })).toHaveAttribute(
+      'href',
+      'https://example.com/usage'
+    );
+  });
+});

@@ -208,3 +208,20 @@ describe('UiCardList integration (real composed child chain)', () => {
     });
   });
 });
+
+describe('UiCardList grid content edge cases', () => {
+  it('renders the small grid and a non-string card body via the real CardContent', () => {
+    setLargeScreen();
+
+    const reactNodeCard: UiCardItemData = {
+      ...SMALL_CARDLIST_ARRAY[0],
+      text: <span>Custom node body</span>,
+    };
+
+    // A smallCard first item makes CardGrid pick the small grid (vs the large
+    // grid); a ReactNode `text` exercises CardContent's non-string render branch.
+    render(<UiCardList cardList={[reactNodeCard]} />);
+
+    expect(screen.getByText('Custom node body')).toBeInTheDocument();
+  });
+});

@@ -222,3 +222,124 @@ describe('UiForm integration (real composed inputs)', () => {
     expect(screen.getByLabelText(PASSWORD_LABEL)).toHaveValue('');
   });
 });
+
+describe('UiForm header and error composition', () => {
+  const noop: SubmitHandler<LoginForm> = (): void => {};
+
+  it('surfaces a form-level error in an alert region', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noop}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        error="Service unavailable"
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Service unavailable');
+  });
+
+  it('hides the title when showTitle is false', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noop}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        showTitle={false}
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.queryByText(FORM_TITLE)).not.toBeInTheDocument();
+  });
+
+  it('renders the subtitle when showSubtitle is enabled', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noop}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        subtitle="Sign in to continue"
+        showSubtitle
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.getByText('Sign in to continue')).toBeInTheDocument();
+  });
+});
+
+describe('UiForm submitting state', () => {
+  const noopSubmit: SubmitHandler<LoginForm> = (): void => {};
+
+  it('honours an explicit isSubmitting flag on the submit control', () => {
+    render(
+      <UiForm<LoginForm>
+        onSubmit={noopSubmit}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+        isSubmitting
+      >
+        <LoginFields />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+});
+
+describe('UiTextFieldForm consumer-handler composition (real form context)', () => {
+  // The other tests render fields WITHOUT consumer onChange/onBlur, so they only
+  // exercise the nullish side of inputProps.onChange?.()/onBlur?.(). This test
+  // passes both handlers to prove RHF's own change/blur AND the consumer's run —
+  // covering the truthy branch the composition added.
+  it('runs the consumer onChange and onBlur alongside RHF without dropping either', async () => {
+    const user: ReturnType<typeof userEvent.setup> = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    const onBlur: jest.Mock = jest.fn();
+
+    function FieldWithConsumerHandlers(): React.ReactElement {
+      const { control } = useFormContext<LoginForm>();
+
+      return (
+        <UiTextFieldForm<LoginForm>
+          control={control}
+          name="email"
+          label={EMAIL_LABEL}
+          onChange={onChange}
+          onBlur={onBlur}
+        />
+      );
+    }
+
+    render(
+      <UiForm<LoginForm>
+        onSubmit={jest.fn()}
+        defaultValues={DEFAULT_VALUES}
+        submitLabel={SUBMIT_LABEL}
+        title={FORM_TITLE}
+      >
+        <FieldWithConsumerHandlers />
+      </UiForm>
+    );
+
+    const emailField: HTMLInputElement = screen.getByLabelText(EMAIL_LABEL) as HTMLInputElement;
+    await user.type(emailField, 'lovelace@example.com');
+    await user.tab();
+
+    // RHF still tracked the value (its onChange ran)…
+    expect(emailField).toHaveValue('lovelace@example.com');
+    // …and the consumer's own handlers fired too.
+    expect(onChange).toHaveBeenCalled();
+    expect(onBlur).toHaveBeenCalledTimes(1);
+  });
+});

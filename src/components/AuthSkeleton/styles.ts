@@ -13,6 +13,10 @@ const AUTH_SKELETON_TINY_BREAKPOINT: string = '336px';
 export default {
   formWrapperPulse: {
     animation: `${shadowPulseAnimation} 1.5s ease-in-out infinite alternate`,
+    // Suppress the pulse when the user has requested reduced motion (WCAG 2.3.3).
+    '@media (prefers-reduced-motion: reduce)': {
+      animation: 'none',
+    },
   },
   titleSkeleton: {
     width: '7.5rem',

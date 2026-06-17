@@ -335,3 +335,11 @@ describe('UiSkeletonInput placeholder styling (mutation guards)', () => {
     expect(getPlaceholder(container)).toHaveStyle({ animation: 'none' });
   });
 });
+
+describe('UiSkeletons reduced-motion', () => {
+  it('suppresses the shimmer animation under prefers-reduced-motion', () => {
+    expect(baseSkeletonStyle['@media (prefers-reduced-motion: reduce)']).toEqual({
+      animation: 'none',
+    });
+  });
+});
