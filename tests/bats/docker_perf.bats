@@ -464,10 +464,12 @@ EOF
 
   [ -f "$workflow" ]
 
-  run grep -E "^[[:space:]]*-[[:space:]]*'Dockerfile'$" "$workflow"
+  # Accept any YAML quoting style ('x', "x", or bare x): all are equivalent
+  # for a path trigger, so the contract checks the path, not its formatting.
+  run grep -E "^[[:space:]]*-[[:space:]]*['\"]?Dockerfile['\"]?[[:space:]]*$" "$workflow"
   [ "$status" -eq 0 ]
 
-  run grep -E "^[[:space:]]*-[[:space:]]*'Dockerfile\\.playwright'$" "$workflow"
+  run grep -E "^[[:space:]]*-[[:space:]]*['\"]?Dockerfile\\.playwright['\"]?[[:space:]]*$" "$workflow"
   [ "$status" -eq 0 ]
 
   run grep -F ".github/dockerfile-perf.json" "$workflow"
