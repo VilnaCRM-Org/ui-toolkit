@@ -39,6 +39,15 @@ detect_exception_scope() {
   local marker=""
   local scope=""
 
+  # A PR label is a blanket waiver and must take precedence so it can widen a
+  # narrowly-scoped inline marker: an emergency label has to be able to waive
+  # every gate even when the Dockerfile only documents a narrow (e.g. size)
+  # exception. Checked before the marker so the label is never silently ignored.
+  if [[ "${PERF_EXCEPTION_LABEL:-false}" == "true" ]] || [[ "${PERF_EXCEPTION_IMAGE_LABEL:-false}" == "true" ]]; then
+    printf 'all'
+    return 0
+  fi
+
   marker="$(inline_exception_marker "$dockerfile")"
   if [[ -n "$marker" ]]; then
     if [[ "$marker" =~ $PERF_EXCEPTION_PATTERN ]]; then
@@ -50,10 +59,6 @@ detect_exception_scope() {
       printf 'all'
     fi
     return 0
-  fi
-
-  if [[ "${PERF_EXCEPTION_LABEL:-false}" == "true" ]] || [[ "${PERF_EXCEPTION_IMAGE_LABEL:-false}" == "true" ]]; then
-    printf 'all'
   fi
 }
 

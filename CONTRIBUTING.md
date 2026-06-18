@@ -89,15 +89,18 @@ All three gates are evaluated for every configured image:
 The known documented exception in this repo is `Dockerfile.playwright`, which
 contains:
 
-`# perf-exception:size: Playwright ships glibc-only browser binaries; Alpine or
-musl is not viable for this runner`
+`# perf-exception:size,dive: glibc-only Playwright vendor base`
 
-That exception keeps the Playwright runner measured and reported, but allows its
-glibc-only constraint to be waived without weakening the gate for other images.
-Prefer the inline marker over PR labels because it documents the reason next to
-the Dockerfile. Use `docker-perf-exception` only when every image in the PR
-needs the waiver, or `docker-perf-exception:<name>` when only one configured
-image should be waived.
+That exception keeps the Playwright runner measured and reported, but waives the
+`size` and `dive` gates that its glibc-only vendor base makes unavoidable: the
+image is far larger than any musl base and, at >99% layer efficiency, still
+trips dive's absolute wasted-bytes gate purely on scale. `hadolint` stays
+enforced, and other images are unaffected. Prefer the inline marker over PR
+labels because it documents the reason next to the Dockerfile. Use
+`docker-perf-exception` only when every image in the PR needs the waiver, or
+`docker-perf-exception:<name>` when only one configured image should be waived;
+a PR label grants a blanket waiver and widens any inline marker, so it waives
+every gate even when the Dockerfile documents a narrower exception.
 
 ### Commit your update
 

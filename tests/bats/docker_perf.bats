@@ -147,6 +147,36 @@ EOF
   [ "$output" = "size" ]
 }
 
+@test "detect-exception-scope: extracts a multi-gate inline marker (positive)" {
+  local df="$BATS_TEST_TMPDIR/Dockerfile.multiscope"
+  cat > "$df" <<'EOF'
+FROM alpine
+# perf-exception:size,dive: huge vendor base trips size and dive
+RUN true
+EOF
+
+  run env -u PERF_EXCEPTION_LABEL -u PERF_EXCEPTION_IMAGE_LABEL bash "$SCRIPT" detect-exception-scope "$df"
+  [ "$status" -eq 0 ]
+  [ "$output" = "size,dive" ]
+}
+
+@test "detect-exception-scope: a PR label widens a narrowly-scoped inline marker (edge)" {
+  local df="$BATS_TEST_TMPDIR/Dockerfile.widen"
+  cat > "$df" <<'EOF'
+FROM alpine
+# perf-exception:size: glibc only
+RUN true
+EOF
+
+  run env PERF_EXCEPTION_LABEL=true bash "$SCRIPT" detect-exception-scope "$df"
+  [ "$status" -eq 0 ]
+  [ "$output" = "all" ]
+
+  run env PERF_EXCEPTION_IMAGE_LABEL=true bash "$SCRIPT" detect-exception-scope "$df"
+  [ "$status" -eq 0 ]
+  [ "$output" = "all" ]
+}
+
 @test "detect-exception-scope: plain markers and PR labels remain blanket waivers (positive)" {
   local df="$BATS_TEST_TMPDIR/Dockerfile.plain-scope"
   cat > "$df" <<'EOF'
@@ -491,6 +521,6 @@ EOF
 }
 
 @test "repo contract: Playwright Dockerfile documents its perf exception inline" {
-  run grep -F '# perf-exception:size:' "$PROJECT_ROOT/Dockerfile.playwright"
+  run grep -F '# perf-exception:size,dive:' "$PROJECT_ROOT/Dockerfile.playwright"
   [ "$status" -eq 0 ]
 }
