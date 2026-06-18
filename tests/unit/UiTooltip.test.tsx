@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiTooltip } from '../../src/components';
@@ -14,7 +14,7 @@ const children: React.ReactNode = <div>{testText}</div>;
 
 describe('UiTooltip', () => {
   it('renders the tooltip with the correct props', () => {
-    const { getByText } = render(
+    render(
       <ThemeProvider theme={theme}>
         <UiTooltip title={title} placement={placement} arrow sx={sx}>
           {children}
@@ -22,8 +22,20 @@ describe('UiTooltip', () => {
       </ThemeProvider>
     );
 
-    const trigger: HTMLElement = getByText(testText);
+    const trigger: HTMLElement = screen.getByText(testText);
 
     expect(trigger).toBeInTheDocument();
+  });
+
+  it('forwards triggerLabel as the accessible name of the trigger', () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <UiTooltip title={title} triggerLabel="Open details">
+          <span aria-hidden>★</span>
+        </UiTooltip>
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole('button', { name: 'Open details' })).toBeInTheDocument();
   });
 });

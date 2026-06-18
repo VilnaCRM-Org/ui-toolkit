@@ -1,28 +1,9 @@
 import breakpointsTheme from '../UiBreakpoints';
+import { hoveredCard, largeImage, smallImage, smallWrapper } from '../UiCardList/sharedCardStyles';
 import colorTheme from '../UiColorTheme';
 
 export default {
-  smallWrapper: {
-    padding: '2.5rem 2rem 2.5rem 1.563rem',
-    borderRadius: '0.75rem',
-    border: `1px solid ${colorTheme.palette.grey500.main}`,
-    maxHeight: '20.75rem',
-    alignItems: 'start',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.xl - 1}px)`]: {
-      padding: '2.125rem 1.875rem 2.125rem 1.563rem',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: '2.813rem',
-      maxHeight: '11.375rem',
-    },
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      flexDirection: 'column',
-      padding: '1rem 1.125rem 0rem 1rem',
-      gap: '1rem',
-      alignItems: 'start',
-      minHeight: '15.125rem',
-    },
-  },
+  smallWrapper,
 
   smallTitle: {
     pt: '2rem',
@@ -53,23 +34,14 @@ export default {
     },
   },
 
-  smallImage: {
-    width: '5rem',
-    height: '5rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
-      width: '3.125rem',
-      height: '3.125rem',
-    },
-  },
+  smallImage,
 
-  // Visible affordance for the "services" disclosure trigger. Applied directly
-  // to the focusable inline span (not the tooltip popper) so the underline/
-  // color cue is present at every breakpoint.
-  hoveredCard: {
-    cursor: 'pointer',
-    color: colorTheme.palette.primary.main,
-    textDecoration: 'underline',
-    fontWeight: '700',
+  hoveredCard,
+
+  servicesLink: {
+    color: 'inherit',
+    fontWeight: 'inherit',
+    textDecorationColor: 'inherit',
   },
 
   largeWrapper: {
@@ -107,12 +79,5 @@ export default {
     },
   },
 
-  largeImage: {
-    width: '4.375rem',
-    height: '4.375rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
-      width: '3.125rem',
-      height: '3.125rem',
-    },
-  },
+  largeImage,
 };

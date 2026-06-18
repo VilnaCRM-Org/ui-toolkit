@@ -13,6 +13,7 @@ declare module '@mui/material/styles' {
     button: CSSProperties;
     mobileText: CSSProperties;
   }
+
   interface TypographyVariantsOptions {
     medium16?: CSSProperties;
     medium15?: CSSProperties;
@@ -25,27 +26,11 @@ declare module '@mui/material/styles' {
     button?: CSSProperties;
     mobileText?: CSSProperties;
   }
-}
 
-declare module '@mui/material/Typography' {
-  interface TypographyPropsVariantOverrides {
-    medium16: true;
-    medium15: true;
-    medium14: true;
-    regular16: true;
-    bodyText18: true;
-    bodyText16: true;
-    bold22: true;
-    demi18: true;
-    button: true;
-    mobileText: true;
-  }
-}
-
-declare module '@mui/material/styles' {
   interface Palette {
     darkPrimary: Palette['primary'];
     darkSecondary: Palette['primary'];
+    strokeDanger: Palette['primary'];
     white: Palette['primary'];
     brandGray: Palette['primary'];
     grey200: Palette['primary'];
@@ -69,6 +54,7 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     darkPrimary?: PaletteOptions['primary'];
     darkSecondary?: PaletteOptions['primary'];
+    strokeDanger?: PaletteOptions['primary'];
     white?: PaletteOptions['primary'];
     brandGray?: PaletteOptions['primary'];
     grey200?: PaletteOptions['primary'];
@@ -87,5 +73,20 @@ declare module '@mui/material/styles' {
     notchMobileAfter?: PaletteOptions['primary'];
     textLinkHover?: PaletteOptions['primary'];
     textLinkActive?: PaletteOptions['primary'];
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    medium16: true;
+    medium15: true;
+    medium14: true;
+    regular16: true;
+    bodyText18: true;
+    bodyText16: true;
+    bold22: true;
+    demi18: true;
+    button: true;
+    mobileText: true;
   }
 }

@@ -11,11 +11,22 @@ function UiTypography({
   variant,
   id,
   role,
+  htmlFor,
+  ...rest
 }: UiTypographyProps): React.ReactElement {
-  const componentProp: { component?: React.ElementType } = component ? { component } : {};
+  const componentProp: { component: React.ElementType } = { component: component || 'p' };
+  const htmlForProp: { htmlFor?: string } = component === 'label' && htmlFor ? { htmlFor } : {};
   return (
     <ThemeProvider theme={theme}>
-      <Typography sx={sx} {...componentProp} variant={variant} id={id} role={role}>
+      <Typography
+        sx={sx}
+        {...componentProp}
+        variant={variant}
+        id={id}
+        role={role}
+        {...htmlForProp}
+        {...rest}
+      >
         {children}
       </Typography>
     </ThemeProvider>

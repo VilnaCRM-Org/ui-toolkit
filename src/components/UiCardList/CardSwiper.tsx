@@ -1,14 +1,14 @@
-import { Box, SxProps, Theme } from '@mui/material';
+import { Grid, SxProps, Theme } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import UiCardItem from '../UiCardItem';
-
 import styles from './styles';
+import { UiCardListProps } from './types';
+import UiCardItem from './UiCardItem';
+
 import 'swiper/css';
 import 'swiper/css/pagination';
-import { CardList } from './types';
 
 const TOOLTIP_SELECTOR: string = '[role="tooltip"].base-Popper-root';
 
@@ -44,8 +44,11 @@ function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | 
   }
 }
 
-function CardSwiper({ cardList, headingComponent }: Readonly<CardList>): React.ReactElement {
-  const swiperRef: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement | null>(null);
+export default function CardSwiper({
+  cardList,
+  headingComponent,
+}: UiCardListProps): React.ReactElement {
+  const swiperRef: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const target: HTMLElement | null = document.querySelector('body');
@@ -64,14 +67,12 @@ function CardSwiper({ cardList, headingComponent }: Readonly<CardList>): React.R
   // Layout is chosen once from the first item: the card list is expected to be
   // homogeneous (all small or all large cards).
   const gridMobile: SxProps<Theme> =
-    cardList[0].type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
+    cardList[0]?.type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
 
   return (
-    <Box sx={gridMobile} ref={swiperRef}>
+    <Grid sx={gridMobile} ref={swiperRef as React.RefObject<HTMLDivElement>}>
       <Swiper
-        pagination={{
-          clickable: true,
-        }}
+        pagination={{ clickable: true }}
         modules={[Pagination]}
         spaceBetween={12}
         slidesPerView={1.04}
@@ -83,8 +84,6 @@ function CardSwiper({ cardList, headingComponent }: Readonly<CardList>): React.R
           </SwiperSlide>
         ))}
       </Swiper>
-    </Box>
+    </Grid>
   );
 }
-
-export default CardSwiper;

@@ -12,6 +12,7 @@ jobs:
       contents: read
     env:
       CI: true
+      INSTALL_CHROMIUM: 'true'
 
     steps:
       - name: Checkout code

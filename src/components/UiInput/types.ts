@@ -1,23 +1,10 @@
-import { SxProps, TextFieldProps, Theme } from '@mui/material';
+import type { OutlinedInputProps } from '@mui/material/OutlinedInput';
+import type { TextFieldProps } from '@mui/material/TextField';
+import type React from 'react';
 
-/**
- * Shared contract support:
- * - supported: value, onChange, disabled, error, size, variant, sx
- * - exceptions: none for Story 1.1 baseline
- */
-export interface UiInputProps {
-  sx?: SxProps<Theme>;
-  placeholder?: string;
-  value?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+export type UiInputProps = Omit<TextFieldProps, 'inputRef' | 'onBlur' | 'onChange'> & {
+  InputProps?: OutlinedInputProps;
+  onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
   ref?: React.ForwardedRef<HTMLInputElement>;
-  error?: boolean;
-  size?: TextFieldProps['size'];
-  variant?: TextFieldProps['variant'];
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
-  type?: string;
-  fullWidth?: boolean;
-  disabled?: boolean;
-  onInput?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  id?: string;
-}
+};

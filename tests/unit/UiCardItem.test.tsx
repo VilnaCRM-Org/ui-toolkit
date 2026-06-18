@@ -1,8 +1,9 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiCardItem from '../../src/components/UiCardItem';
 import CardContent from '../../src/components/UiCardItem/CardContent';
+import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from '../../src/components/UiCardItem/constants';
 
 import { cardItem, largeCard, smallCard } from './constants';
 
@@ -14,10 +15,10 @@ describe('UiCardItem Component', () => {
     const servicesText: string = 'services';
 
     it('renders correctly with large card', () => {
-      const { getByText, getByRole } = render(<CardContent item={cardItem} isSmallCard={false} />);
+      render(<CardContent item={cardItem} isSmallCard={false} />);
 
-      const titleElement: HTMLElement = getByRole(cardTitleRole);
-      const textElement: HTMLElement = getByText(cardItem.text);
+      const titleElement: HTMLElement = screen.getByRole(cardTitleRole);
+      const textElement: HTMLElement = screen.getByText(cardItem.text);
 
       expect(titleElement).toBeInTheDocument();
       expect(titleElement).toHaveTextContent(cardItem.title);
@@ -25,11 +26,11 @@ describe('UiCardItem Component', () => {
     });
 
     it('renders correctly with small card', () => {
-      const { getByText, getByRole } = render(<CardContent item={cardItem} isSmallCard />);
+      render(<CardContent item={cardItem} isSmallCard />);
 
-      const titleElement: HTMLElement = getByRole(cardTitleRole);
-      const integrateElement: HTMLElement = getByText(integrateText);
-      const servicesElement: HTMLElement = getByText(servicesText);
+      const titleElement: HTMLElement = screen.getByRole(cardTitleRole);
+      const integrateElement: HTMLElement = screen.getByText(integrateText);
+      const servicesElement: HTMLElement = screen.getByText(servicesText);
 
       expect(titleElement).toBeInTheDocument();
       expect(titleElement).toHaveTextContent(cardItem.title);
@@ -37,16 +38,16 @@ describe('UiCardItem Component', () => {
       expect(servicesElement).toBeInTheDocument();
     });
 
-    it('renders the services disclosure without nested interactive controls or nested <p>', () => {
+    it('renders the services disclosure without nested controls or nested <p>', () => {
       const consoleError: jest.SpyInstance = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      const { queryByRole, getByText } = render(<CardContent item={cardItem} isSmallCard />);
+      render(<CardContent item={cardItem} isSmallCard />);
 
       // No <a> wrapping the trigger (it is the tooltip's role="button" span).
-      expect(queryByRole('link')).not.toBeInTheDocument();
-      expect(getByText(servicesText).tagName).toBe('SPAN');
+      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      expect(screen.getByText(servicesText).tagName).toBe('SPAN');
 
       // React logs invalid DOM nesting (e.g. <p> inside <p>) via console.error.
       const nestingErrors: unknown[][] = consoleError.mock.calls.filter(([message]) =>
@@ -60,11 +61,9 @@ describe('UiCardItem Component', () => {
     });
 
     it('honors a heading element override for the card title', () => {
-      const { getByRole } = render(
-        <CardContent item={cardItem} isSmallCard={false} headingComponent="h2" />
-      );
+      render(<CardContent item={cardItem} isSmallCard={false} headingComponent="h2" />);
 
-      const titleElement: HTMLElement = getByRole(cardTitleRole, { level: 2 });
+      const titleElement: HTMLElement = screen.getByRole(cardTitleRole, { level: 2 });
 
       expect(titleElement.tagName).toBe('H2');
       expect(titleElement).toHaveTextContent(cardItem.title);
@@ -72,34 +71,105 @@ describe('UiCardItem Component', () => {
   });
 });
 describe('UiCardItem', () => {
-  const stackElementClass: string = '.MuiStack-root';
-
   it('renders UiCardItem with small card style', () => {
-    const { container, getByText, queryByText } = render(<UiCardItem item={smallCard} />);
+    render(<UiCardItem item={smallCard} />);
 
-    const element: HTMLElement | null = container.querySelector(stackElementClass);
-
-    expect(element).toBeInTheDocument();
-    expect(getByText('services')).toBeInTheDocument();
-    expect(queryByText(smallCard.text)).not.toBeInTheDocument();
+    // The heading proves the card wrapper rendered its content.
+    expect(screen.getByRole(cardTitleRole)).toBeInTheDocument();
+    expect(screen.getByText('services')).toBeInTheDocument();
+    expect(screen.queryByText(smallCard.text)).not.toBeInTheDocument();
   });
 
   it('renders UiCardItem with large card style', () => {
-    const { container, getByText, queryByText } = render(<UiCardItem item={largeCard} />);
+    render(<UiCardItem item={largeCard} />);
 
-    const element: HTMLElement | null = container.querySelector(stackElementClass);
-
-    expect(element).toBeInTheDocument();
-    expect(getByText(largeCard.text)).toBeInTheDocument();
-    expect(queryByText('services')).not.toBeInTheDocument();
+    // The heading proves the card wrapper rendered its content.
+    expect(screen.getByRole(cardTitleRole)).toBeInTheDocument();
+    expect(screen.getByText(largeCard.text)).toBeInTheDocument();
+    expect(screen.queryByText('services')).not.toBeInTheDocument();
   });
 
   it('renders correct UiImage', () => {
-    const { getByRole } = render(<UiCardItem item={cardItem} />);
+    render(<UiCardItem item={cardItem} />);
 
-    const cardImage: HTMLElement = getByRole('img');
+    const cardImage: HTMLElement = screen.getByRole('img');
 
     expect(cardImage).toBeInTheDocument();
     expect(cardImage).toHaveAttribute('alt', cardItem.alt);
+  });
+});
+
+describe('UiCardItem exported fixtures', () => {
+  const cardTitleRole2: string = 'heading';
+
+  it('renders SMALL_CARD_ITEM as a small card with translated content', () => {
+    expect(SMALL_CARD_ITEM.type).toBe('smallCard');
+
+    render(<UiCardItem item={SMALL_CARD_ITEM} />);
+
+    // Title key resolves via i18n and the small variant uses the bodyText16 body copy.
+    expect(screen.getByRole(cardTitleRole2)).toHaveTextContent('Public API');
+    expect(
+      screen.getByText(/For cases when you did not find the desired ready-made integration/)
+    ).toBeInTheDocument();
+    // alt key resolves to the localized image description.
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Image of Ruby');
+  });
+
+  it('renders LARGE_CARD_ITEM as a large card with translated content', () => {
+    expect(LARGE_CARD_ITEM.type).toBe('largeCard');
+
+    render(<UiCardItem item={LARGE_CARD_ITEM} />);
+
+    // Large variant renders the title and text keys directly (no "services" trigger).
+    expect(screen.getByRole(cardTitleRole2)).toHaveTextContent('Ready templates');
+    expect(screen.queryByText('services')).not.toBeInTheDocument();
+    expect(screen.getByRole('img')).toHaveAttribute('alt', 'Image card of templates');
+  });
+});
+
+describe('CardContent typography variants per card size', () => {
+  const headingRole: string = 'heading';
+
+  it('uses the h5 title variant for large cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard={false} />);
+
+    const title: HTMLElement = screen.getByRole(headingRole);
+
+    // Empty-string variant mutation drops the MuiTypography-h5 class and its size.
+    expect(title.className).toMatch(/MuiTypography-h5/);
+    expect(title).toHaveStyle({ fontSize: '1.75rem' });
+  });
+
+  it('uses the h6 title variant for small cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard />);
+
+    const title: HTMLElement = screen.getByRole(headingRole);
+
+    // Empty-string variant mutation drops the MuiTypography-h6 class and its size.
+    expect(title.className).toMatch(/MuiTypography-h6/);
+    expect(title).toHaveStyle({ fontSize: '1.375rem' });
+  });
+
+  it('uses the bodyText18 body variant for large cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard={false} />);
+
+    const body: HTMLElement = screen.getByText(cardItem.text);
+
+    // Empty-string variant mutation drops MuiTypography-bodyText18 and its size.
+    expect(body.className).toMatch(/MuiTypography-bodyText18/);
+    expect(body).toHaveStyle({ fontSize: '1.125rem' });
+  });
+
+  it('uses the bodyText16 body variant for small cards', (): void => {
+    render(<CardContent item={cardItem} isSmallCard />);
+
+    // The outer body paragraph carries the leading "Integrate" copy.
+    const body: HTMLElement = screen.getByText(/Integrate/);
+
+    expect(body.tagName).toBe('P');
+    // Empty-string variant mutation drops MuiTypography-bodyText16 and its size.
+    expect(body.className).toMatch(/MuiTypography-bodyText16/);
+    expect(body).toHaveStyle({ fontSize: '1rem' });
   });
 });

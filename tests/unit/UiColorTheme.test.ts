@@ -1,4 +1,8 @@
-import UiColorTheme from '../../src/components/UiColorTheme';
+import UiColorTheme, {
+  crmColorTheme,
+  sharedPalette,
+  websiteColorTheme,
+} from '../../src/components/UiColorTheme';
 
 describe('UiColorTheme', () => {
   it('defines the shared palette tokens', () => {
@@ -8,5 +12,14 @@ describe('UiColorTheme', () => {
     expect(UiColorTheme.palette.textLinkHover.main).toBe('#297FFF');
     expect(UiColorTheme.palette.textLinkActive.main).toBe('#0399ED');
     expect(UiColorTheme.palette.backgroundGrey300.main).toBe('#F5F6F7');
+    expect(UiColorTheme.palette.strokeDanger.main).toBe('#DF7878');
+  });
+
+  it('exports explicit website and CRM color presets', () => {
+    expect(websiteColorTheme.palette.primary.main).toBe(sharedPalette.primary.main);
+    expect(crmColorTheme.palette.secondary.main).toBe(sharedPalette.secondary.main);
+    expect(crmColorTheme.palette.textLinkHover.main).toBe(sharedPalette.textLinkHover.main);
+    expect(websiteColorTheme.palette.strokeDanger.main).toBe(sharedPalette.strokeDanger.main);
+    expect(crmColorTheme.palette.strokeDanger.main).toBe(sharedPalette.strokeDanger.main);
   });
 });
