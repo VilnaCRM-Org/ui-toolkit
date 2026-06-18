@@ -19,26 +19,60 @@
 set -euo pipefail
 
 readonly MIB=$((1024 * 1024))
+readonly PERF_EXCEPTION_PATTERN='^[[:space:]]*#[[:space:]]*[Pp][Ee][Rr][Ff]-[Ee][Xx][Cc][Ee][Pp][Tt][Ii][Oo][Nn](:([[:alnum:]_,-]+))?:'
 
 log() { printf '%s\n' "$*" >&2; }
+
+inline_exception_marker() {
+  local dockerfile="${1:-}"
+
+  if [[ -n "$dockerfile" && -f "$dockerfile" ]]; then
+    grep -iE '^[[:space:]]*#[[:space:]]*perf-exception(:[[:alnum:]_,-]+)?:' "$dockerfile" 2>/dev/null \
+      | head -n1 \
+      | tr -d '\r' \
+      | sed -E 's/[[:space:]]+$//' || true
+  fi
+}
+
+detect_exception_scope() {
+  local dockerfile="${1:-}"
+  local marker=""
+  local scope=""
+
+  marker="$(inline_exception_marker "$dockerfile")"
+  if [[ -n "$marker" ]]; then
+    if [[ "$marker" =~ $PERF_EXCEPTION_PATTERN ]]; then
+      scope="${BASH_REMATCH[2]:-}"
+    fi
+    if [[ -n "$scope" ]]; then
+      printf '%s' "${scope,,}"
+    else
+      printf 'all'
+    fi
+    return 0
+  fi
+
+  if [[ "${PERF_EXCEPTION_LABEL:-false}" == "true" ]] || [[ "${PERF_EXCEPTION_IMAGE_LABEL:-false}" == "true" ]]; then
+    printf 'all'
+  fi
+}
 
 detect_exception() {
   local dockerfile="${1:-}"
   local reason=""
+  local marker=""
 
-  if [ -n "$dockerfile" ] && [ -f "$dockerfile" ]; then
-    reason="$(grep -iE '^[[:space:]]*#[[:space:]]*perf-exception:' "$dockerfile" 2>/dev/null \
-      | head -n1 \
-      | sed -E 's/^[[:space:]]*#[[:space:]]*[Pp][Ee][Rr][Ff]-[Ee][Xx][Cc][Ee][Pp][Tt][Ii][Oo][Nn]:[[:space:]]*//' \
-      | tr -d '\r' \
-      | sed -E 's/[[:space:]]+$//' || true)"
+  marker="$(inline_exception_marker "$dockerfile")"
+  if [[ -n "$marker" ]]; then
+    reason="$(printf '%s' "$marker" \
+      | sed -E 's/^[[:space:]]*#[[:space:]]*[Pp][Ee][Rr][Ff]-[Ee][Xx][Cc][Ee][Pp][Tt][Ii][Oo][Nn](:[[:alnum:]_,-]+)?:[[:space:]]*//')"
   fi
 
-  if [ -z "$reason" ]; then
+  if [[ -z "$reason" ]]; then
     local label_name="${PERF_EXCEPTION_LABEL_NAME:-docker-perf-exception}"
-    if [ "${PERF_EXCEPTION_LABEL:-false}" = "true" ]; then
+    if [[ "${PERF_EXCEPTION_LABEL:-false}" == "true" ]]; then
       reason="PR label '${label_name}' applied"
-    elif [ "${PERF_EXCEPTION_IMAGE_LABEL:-false}" = "true" ]; then
+    elif [[ "${PERF_EXCEPTION_IMAGE_LABEL:-false}" == "true" ]]; then
       reason="PR label '${label_name}:${NAME:-}' applied"
     fi
   fi
@@ -53,30 +87,61 @@ evaluate() {
   local dive_status="${DIVE_STATUS:-0}"
   local hadolint_status="${HADOLINT_STATUS:-0}"
   local exception="${EXCEPTION_REASON:-}"
+  local exception_scope="${EXCEPTION_SCOPE:-}"
 
   local budget_bytes=$((budget_mb * MIB))
   local limit=$(( budget_bytes * (100 + tol) / 100 ))
 
   local -a failures=()
-  if [ "$current" -gt "$limit" ]; then
-    failures+=("size ${current}B exceeds limit ${limit}B (budget ${budget_mb}MiB +${tol}% tolerance)")
+  local -a waived_failures=()
+
+  if [[ -n "$exception" && -z "$exception_scope" ]]; then
+    exception_scope="all"
   fi
-  if [ "$dive_status" -ne 0 ]; then
-    failures+=("dive layer-efficiency gate failed")
+  exception_scope="${exception_scope,,}"
+
+  gate_is_waived() {
+    local gate="$1"
+
+    [[ -n "$exception" ]] || return 1
+    [[ "$exception_scope" == "all" ]] && return 0
+    [[ ",${exception_scope}," == *",${gate},"* ]]
+  }
+
+  if [[ "$current" -gt "$limit" ]]; then
+    local failure="size ${current}B exceeds limit ${limit}B (budget ${budget_mb}MiB +${tol}% tolerance)"
+    if gate_is_waived size; then
+      waived_failures+=("$failure")
+    else
+      failures+=("$failure")
+    fi
   fi
-  if [ "$hadolint_status" -ne 0 ]; then
-    failures+=("hadolint best-practice gate failed")
+  if [[ "$dive_status" -ne 0 ]]; then
+    local failure="dive layer-efficiency gate failed"
+    if gate_is_waived dive; then
+      waived_failures+=("$failure")
+    else
+      failures+=("$failure")
+    fi
+  fi
+  if [[ "$hadolint_status" -ne 0 ]]; then
+    local failure="hadolint best-practice gate failed"
+    if gate_is_waived hadolint; then
+      waived_failures+=("$failure")
+    else
+      failures+=("$failure")
+    fi
   fi
 
-  if [ "${#failures[@]}" -eq 0 ]; then
+  if [[ "${#failures[@]}" -eq 0 && "${#waived_failures[@]}" -eq 0 ]]; then
     echo "PASS: all gates within budget"
     return 0
   fi
 
   local failure
-  if [ -n "$exception" ]; then
+  if [[ "${#failures[@]}" -eq 0 && -n "$exception" ]]; then
     echo "EXCEPTION: gate(s) failed but a documented exception applies: ${exception}"
-    for failure in "${failures[@]}"; do echo "  - (waived) ${failure}"; done
+    for failure in "${waived_failures[@]}"; do echo "  - (waived) ${failure}"; done
     return 0
   fi
 
@@ -113,11 +178,11 @@ build_image() {
   local dockerfile="$1" context="$2" target="$3" tag="$4" role="$5"
   local -a args=(buildx build --file "$dockerfile" --tag "$tag" --load --progress plain)
 
-  [ -n "$target" ] && args+=(--target "$target")
+  [[ -n "$target" ]] && args+=(--target "$target")
 
-  if [ -n "${DOCKER_PERF_GHA_CACHE:-}" ]; then
+  if [[ -n "${DOCKER_PERF_GHA_CACHE:-}" ]]; then
     args+=(--cache-from "type=gha,scope=docker-perf-${NAME}")
-    if [ "$role" = "head" ]; then
+    if [[ "$role" == "head" ]]; then
       args+=(--cache-to "type=gha,mode=max,scope=docker-perf-${NAME}")
     fi
   fi
@@ -138,7 +203,7 @@ run_hadolint() {
   local dockerfile="$1"
   local config="${HADOLINT_CONFIG:-.hadolint.yaml}"
 
-  if [ -n "${HADOLINT:-}" ]; then
+  if [[ -n "${HADOLINT:-}" ]]; then
     "$HADOLINT" --config "$config" "$dockerfile"
   else
     docker run --rm -i \
@@ -152,7 +217,7 @@ run_dive() {
   local tag="$1"
   local config="${DIVE_CONFIG:-.dive-ci}"
 
-  if [ -n "${DIVE:-}" ]; then
+  if [[ -n "${DIVE:-}" ]]; then
     CI=true "$DIVE" --ci --ci-config "$config" --source docker "$tag"
   else
     docker run --rm \
@@ -181,7 +246,7 @@ run() {
   current_bytes="$(image_size "$head_tag")"
 
   local base_bytes=0 base_build_ms=0
-  if [ -n "${BASE_DOCKERFILE:-}" ] && [ -f "${BASE_DOCKERFILE}" ]; then
+  if [[ -n "${BASE_DOCKERFILE:-}" && -f "${BASE_DOCKERFILE}" ]]; then
     log "==> [${NAME}] building base image from ${BASE_DOCKERFILE}"
     local base_tag="docker-perf-${NAME}:base"
     base_build_ms="$(build_image "$BASE_DOCKERFILE" "${BASE_CONTEXT:-$CONTEXT}" "$target" "$base_tag" base || echo 0)"
@@ -198,13 +263,15 @@ run() {
   run_dive "$head_tag" || dive_status=$?
   log "==> [${NAME}] dive exit status: ${dive_status}"
 
-  local exception
+  local exception exception_scope
   exception="$(detect_exception "$DOCKERFILE")"
-  [ -n "$exception" ] && log "==> [${NAME}] documented exception: ${exception}"
+  exception_scope="$(detect_exception_scope "$DOCKERFILE")"
+  [[ -n "$exception" ]] && log "==> [${NAME}] documented exception: ${exception}"
 
   local eval_out rc=0
   eval_out="$(CURRENT_BYTES="$current_bytes" BUDGET_MB="$BUDGET_MB" TOLERANCE_PCT="$tol" \
-    DIVE_STATUS="$dive_status" HADOLINT_STATUS="$hadolint_status" EXCEPTION_REASON="$exception" \
+    DIVE_STATUS="$dive_status" HADOLINT_STATUS="$hadolint_status" EXCEPTION_SCOPE="$exception_scope" \
+    EXCEPTION_REASON="$exception" \
     evaluate)" || rc=$?
   printf '%s\n' "$eval_out" >&2
 
@@ -214,6 +281,9 @@ run() {
     EXCEPTION*) verdict="exception" ;;
     *) verdict="fail" ;;
   esac
+
+  local report_exception=""
+  [[ "$verdict" == "exception" ]] && report_exception="$exception"
 
   jq -n \
     --arg name "$NAME" \
@@ -227,7 +297,7 @@ run() {
     --argjson dive "$dive_status" \
     --argjson hadolint "$hadolint_status" \
     --arg verdict "$verdict" \
-    --arg exception "$exception" \
+    --arg exception "$report_exception" \
     '{name:$name, dockerfile:$dockerfile, current_bytes:$current, base_bytes:$base,
       build_ms:$build_ms, base_build_ms:$base_build_ms, budget_mb:$budget_mb,
       tolerance_pct:$tol, dive_status:$dive, hadolint_status:$hadolint,
@@ -236,7 +306,7 @@ run() {
 
   render_report "$out_dir/metrics-${NAME}.json" > "$out_dir/row-${NAME}.md"
 
-  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     {
       echo "### Dockerfile performance - ${NAME}"
       echo
@@ -251,11 +321,12 @@ run() {
 
 main() {
   local cmd="${1:-run}"
-  [ "$#" -gt 0 ] && shift
+  [[ "$#" -gt 0 ]] && shift
   case "$cmd" in
     run) run ;;
     evaluate) evaluate ;;
     detect-exception) detect_exception "$@" ;;
+    detect-exception-scope) detect_exception_scope "$@" ;;
     render-report) render_report "$@" ;;
     *) log "unknown subcommand: ${cmd}"; return 2 ;;
   esac

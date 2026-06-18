@@ -46,6 +46,28 @@ readonly MIB=1048576
   [[ "$output" == *"exceeds limit"* ]]
 }
 
+@test "evaluate: EXCEPTION when a scoped size exception covers the only failing gate (negative-waived)" {
+  run env CURRENT_BYTES=$((200 * MIB)) BUDGET_MB=100 TOLERANCE_PCT=0 \
+    DIVE_STATUS=0 HADOLINT_STATUS=0 EXCEPTION_SCOPE="size" \
+    EXCEPTION_REASON="glibc baseline only" bash "$SCRIPT" evaluate
+  [ "$status" -eq 0 ]
+  [[ "$output" == EXCEPTION* ]]
+  [[ "$output" == *"glibc baseline only"* ]]
+  [[ "$output" == *"(waived) size"* ]]
+  [[ "$output" == *"exceeds limit"* ]]
+}
+
+@test "evaluate: FAIL when a scoped size exception does not waive a dive failure (negative)" {
+  run env CURRENT_BYTES=$((200 * MIB)) BUDGET_MB=100 TOLERANCE_PCT=0 \
+    DIVE_STATUS=1 HADOLINT_STATUS=0 EXCEPTION_SCOPE="size" \
+    EXCEPTION_REASON="glibc baseline only" bash "$SCRIPT" evaluate
+  [ "$status" -eq 1 ]
+  [[ "$output" == FAIL* ]]
+  [[ "$output" == *"dive layer-efficiency gate failed"* ]]
+  [[ "$output" != *"hadolint"* ]]
+  [[ "$output" != *"exceeds limit"* ]]
+}
+
 @test "evaluate: PASS when size is exactly at the limit (boundary)" {
   run env CURRENT_BYTES=$((100 * MIB)) BUDGET_MB=100 TOLERANCE_PCT=0 \
     DIVE_STATUS=0 HADOLINT_STATUS=0 EXCEPTION_REASON="" \
@@ -112,6 +134,35 @@ readonly MIB=1048576
 # detect-exception
 # ---------------------------------------------------------------------------
 
+@test "detect-exception-scope: extracts a scoped inline marker (positive)" {
+  local df="$BATS_TEST_TMPDIR/Dockerfile.scope"
+  cat > "$df" <<'EOF'
+FROM alpine
+# perf-exception:size: large base image is required for native deps
+RUN true
+EOF
+
+  run bash "$SCRIPT" detect-exception-scope "$df"
+  [ "$status" -eq 0 ]
+  [ "$output" = "size" ]
+}
+
+@test "detect-exception-scope: plain markers and PR labels remain blanket waivers (positive)" {
+  local df="$BATS_TEST_TMPDIR/Dockerfile.plain-scope"
+  cat > "$df" <<'EOF'
+FROM alpine
+# perf-exception: inline wins
+EOF
+
+  run bash "$SCRIPT" detect-exception-scope "$df"
+  [ "$status" -eq 0 ]
+  [ "$output" = "all" ]
+
+  run env PERF_EXCEPTION_LABEL=true bash "$SCRIPT" detect-exception-scope "$BATS_TEST_TMPDIR/does-not-exist"
+  [ "$status" -eq 0 ]
+  [ "$output" = "all" ]
+}
+
 @test "detect-exception: extracts the inline marker reason verbatim (positive)" {
   local df="$BATS_TEST_TMPDIR/Dockerfile.marker"
   cat > "$df" <<'EOF'
@@ -123,6 +174,18 @@ EOF
   run bash "$SCRIPT" detect-exception "$df"
   [ "$status" -eq 0 ]
   [ "$output" = "large base image is required for native deps" ]
+}
+
+@test "detect-exception: scoped inline markers strip the gate prefix from the reason (positive)" {
+  local df="$BATS_TEST_TMPDIR/Dockerfile.scoped-reason"
+  cat > "$df" <<'EOF'
+FROM alpine
+# perf-exception:size: glibc only
+EOF
+
+  run bash "$SCRIPT" detect-exception "$df"
+  [ "$status" -eq 0 ]
+  [ "$output" = "glibc only" ]
 }
 
 @test "detect-exception: empty output when no marker and no label (negative)" {
@@ -371,16 +434,28 @@ EOF
 
   [ -f "$workflow" ]
 
-  run grep -F "Dockerfile" "$workflow"
+  run grep -E "^[[:space:]]*-[[:space:]]*'Dockerfile'$" "$workflow"
   [ "$status" -eq 0 ]
 
-  run grep -F "Dockerfile.playwright" "$workflow"
+  run grep -E "^[[:space:]]*-[[:space:]]*'Dockerfile\\.playwright'$" "$workflow"
   [ "$status" -eq 0 ]
 
   run grep -F ".github/dockerfile-perf.json" "$workflow"
   [ "$status" -eq 0 ]
 
   run grep -F "scripts/ci/docker_perf.sh" "$workflow"
+  [ "$status" -eq 0 ]
+}
+
+@test "repo contract: workflow writes PR-report artifacts from a non-hidden directory" {
+  local workflow="$PROJECT_ROOT/.github/workflows/dockerfile-performance.yml"
+
+  [ -f "$workflow" ]
+
+  run grep -F "OUT_DIR: docker-perf" "$workflow"
+  [ "$status" -eq 0 ]
+
+  run grep -F "path: docker-perf/" "$workflow"
   [ "$status" -eq 0 ]
 }
 
@@ -410,7 +485,12 @@ EOF
   [ "$status" -eq 0 ]
 }
 
+@test "repo contract: .dockerignore excludes the CI base checkout" {
+  run grep -Fx 'base' "$PROJECT_ROOT/.dockerignore"
+  [ "$status" -eq 0 ]
+}
+
 @test "repo contract: Playwright Dockerfile documents its perf exception inline" {
-  run grep -F '# perf-exception:' "$PROJECT_ROOT/Dockerfile.playwright"
+  run grep -F '# perf-exception:size:' "$PROJECT_ROOT/Dockerfile.playwright"
   [ "$status" -eq 0 ]
 }

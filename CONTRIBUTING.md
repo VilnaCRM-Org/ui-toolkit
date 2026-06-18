@@ -72,8 +72,8 @@ If your change touches a Dockerfile or the gate's own config, CI rebuilds each
 configured image, measures its size and build time, and runs `dive` plus
 `hadolint` checks against per-image budgets. Budgets live in
 `.github/dockerfile-perf.json`, and exceptions are granted via an inline
-`# perf-exception: <reason>` marker or a `docker-perf-exception[:name]` PR
-label.
+`# perf-exception[:gate]: <reason>` marker or a
+`docker-perf-exception[:name]` PR label.
 
 Current image matrix and thresholds:
 
@@ -89,7 +89,8 @@ All three gates are evaluated for every configured image:
 The known documented exception in this repo is `Dockerfile.playwright`, which
 contains:
 
-`# perf-exception: Playwright ships glibc-only browser binaries; Alpine or musl is not viable for this runner`
+`# perf-exception:size: Playwright ships glibc-only browser binaries; Alpine or
+musl is not viable for this runner`
 
 That exception keeps the Playwright runner measured and reported, but allows its
 glibc-only constraint to be waived without weakening the gate for other images.

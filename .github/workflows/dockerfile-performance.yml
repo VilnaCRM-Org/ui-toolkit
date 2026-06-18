@@ -82,7 +82,7 @@ jobs:
           PERF_EXCEPTION_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'docker-perf-exception') }}
           PERF_EXCEPTION_IMAGE_LABEL: ${{ contains(github.event.pull_request.labels.*.name, format('docker-perf-exception:{0}', matrix.name)) }}
           PERF_EXCEPTION_LABEL_NAME: docker-perf-exception
-          OUT_DIR: .docker-perf
+          OUT_DIR: docker-perf
         run: bash scripts/ci/docker_perf.sh run
 
       - name: Upload metrics
@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: docker-perf-${{ matrix.name }}
-          path: .docker-perf/
+          path: docker-perf/
           retention-days: 14
 
   comment:
