@@ -77,7 +77,7 @@ configured image, measures its size and build time, and runs `dive` plus
 
 Current image matrix and thresholds:
 
-- `toolkit` -> `Dockerfile` -> 600 MiB budget with 10% tolerance
+- `toolkit` -> `Dockerfile` -> 1550 MiB budget with 10% tolerance
 - `playwright` -> `Dockerfile.playwright` -> 1500 MiB budget with 15% tolerance
 
 All three gates are evaluated for every configured image:
