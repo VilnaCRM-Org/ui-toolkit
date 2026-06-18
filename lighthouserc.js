@@ -33,6 +33,10 @@ module.exports = {
       url: STORY_IDS.map(story),
       numberOfRuns: 1,
       settings: {
+        // Chrome runs as root inside the Docker test image, where the setuid
+        // sandbox is unavailable — disable it (and dev-shm/gpu) so Lighthouse can
+        // launch headless in CI. Mirrors the CRM repo's LHCI_CHROME_FLAGS.
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --headless=new',
         // Component iframes don't need the SEO/PWA passes; keep the run lean.
         onlyCategories: ['accessibility', 'best-practices', 'performance'],
         skipAudits: ['uses-http2'],
