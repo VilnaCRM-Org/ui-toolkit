@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/playwright:v1.59.1-jammy
 
+# perf-exception: Playwright ships glibc-only browser binaries; Alpine or musl is not viable for this runner
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV BUN_INSTALL=/usr/local

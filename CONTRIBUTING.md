@@ -66,6 +66,38 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+#### Dockerfile build performance
+
+If your change touches a Dockerfile or the gate's own config, CI rebuilds each
+configured image, measures its size and build time, and runs `dive` plus
+`hadolint` checks against per-image budgets. Budgets live in
+`.github/dockerfile-perf.json`, and exceptions are granted via an inline
+`# perf-exception: <reason>` marker or a `docker-perf-exception[:name]` PR
+label.
+
+Current image matrix and thresholds:
+
+- `toolkit` -> `Dockerfile` -> 600 MiB budget with 10% tolerance
+- `playwright` -> `Dockerfile.playwright` -> 1500 MiB budget with 15% tolerance
+
+All three gates are evaluated for every configured image:
+
+- final image size versus the configured budget and tolerance
+- `dive --ci` layer-efficiency checks from `.dive-ci`
+- `hadolint` warning-and-above checks from `.hadolint.yaml`
+
+The known documented exception in this repo is `Dockerfile.playwright`, which
+contains:
+
+`# perf-exception: Playwright ships glibc-only browser binaries; Alpine or musl is not viable for this runner`
+
+That exception keeps the Playwright runner measured and reported, but allows its
+glibc-only constraint to be waived without weakening the gate for other images.
+Prefer the inline marker over PR labels because it documents the reason next to
+the Dockerfile. Use `docker-perf-exception` only when every image in the PR
+needs the waiver, or `docker-perf-exception:<name>` when only one configured
+image should be waived.
+
 ### Commit your update
 
 Commit the changes once you are happy with them.

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "toolkit",
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    "target": "",
+    "budget_mb": 600,
+    "tolerance_pct": 10
+  },
+  {
+    "name": "playwright",
+    "dockerfile": "Dockerfile.playwright",
+    "context": ".",
+    "target": "",
+    "budget_mb": 1500,
+    "tolerance_pct": 15
+  }
+]
