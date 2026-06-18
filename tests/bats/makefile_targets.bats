@@ -38,8 +38,8 @@ logs|docker compose logs --follow|
 new-logs|docker compose logs --tail=0 --follow|
 stop|docker compose stop|
 build-k6-docker|docker build -t k6 -f ./tests/load/Dockerfile .|
-lighthouse-desktop|docker compose run --rm bun bun x lhci autorun|--collect.settings.preset=desktop
-lighthouse-mobile|docker compose run --rm bun bun x lhci autorun|--collect.settings.formFactor=mobile
+lighthouse-desktop|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.preset=desktop
+lighthouse-mobile|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.formFactor=mobile
 EOF
 }
 
