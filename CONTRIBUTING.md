@@ -66,7 +66,36 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
-#### Dockerfile build performance
+### Commit your update
+
+Commit the changes once you are happy with them.
+Don't forget to self-review to speed up the review process :zap:.
+
+Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+
+### Pull Request
+
+When you're finished with the changes, create a pull request, also known as a PR.
+
+- Fill the "Ready for review" template so that we can
+  review your PR. This template helps reviewers understand your changes as well
+  as the purpose of your pull request.
+- Don't forget to [link PR to issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
+  if you are solving one.
+- Enable the checkbox to [allow maintainer edits](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
+  so the branch can be updated for a merge. Once you submit your PR, our team member
+  will review your proposal. We may ask questions or request additional information.
+- We may ask for changes to be made before a PR can be merged, either using
+  [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request)
+  or pull request comments. You can apply suggested changes directly through the UI.
+  You can make any other changes in your fork, then commit them to your branch.
+- As you update your PR and apply changes, mark each conversation as
+  [resolved](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
+- If you run into any merge issues, checkout this
+  [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you
+  resolve merge conflicts and other issues.
+
+### Dockerfile build performance
 
 If your change touches a Dockerfile or the gate's own config, CI rebuilds each
 configured image, measures its size and build time, and runs `dive` plus
@@ -101,35 +130,6 @@ labels because it documents the reason next to the Dockerfile. Use
 `docker-perf-exception:<name>` when only one configured image should be waived;
 a PR label grants a blanket waiver and widens any inline marker, so it waives
 every gate even when the Dockerfile documents a narrower exception.
-
-### Commit your update
-
-Commit the changes once you are happy with them.
-Don't forget to self-review to speed up the review process :zap:.
-
-Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-
-### Pull Request
-
-When you're finished with the changes, create a pull request, also known as a PR.
-
-- Fill the "Ready for review" template so that we can
-  review your PR. This template helps reviewers understand your changes as well
-  as the purpose of your pull request.
-- Don't forget to [link PR to issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue)
-  if you are solving one.
-- Enable the checkbox to [allow maintainer edits](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
-  so the branch can be updated for a merge. Once you submit your PR, our team member
-  will review your proposal. We may ask questions or request additional information.
-- We may ask for changes to be made before a PR can be merged, either using
-  [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request)
-  or pull request comments. You can apply suggested changes directly through the UI.
-  You can make any other changes in your fork, then commit them to your branch.
-- As you update your PR and apply changes, mark each conversation as
-  [resolved](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
-- If you run into any merge issues, checkout this
-  [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you
-  resolve merge conflicts and other issues.
 
 ### Your PR is merged
 
