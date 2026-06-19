@@ -66,6 +66,13 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+### Commit your update
+
+Commit the changes once you are happy with them.
+Don't forget to self-review to speed up the review process :zap:.
+
+Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+
 ### Docker base-image policy (Alpine)
 
 Every Dockerfile must use an Alpine-based image wherever an Alpine variant exists, for a
@@ -91,13 +98,6 @@ waives every non-Alpine base in that file — so scrutinise multi-stage Dockerfi
 
 Current documented exception: `Dockerfile.playwright` — the official Playwright browser base
 is glibc-only, with no Alpine/musl variant published.
-
-### Commit your update
-
-Commit the changes once you are happy with them.
-Don't forget to self-review to speed up the review process :zap:.
-
-Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ### Pull Request
 
