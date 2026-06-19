@@ -16,6 +16,14 @@ log() {
   printf '%s\n' "$*" >&2
 }
 
+# This guard relies on Bash 4+ features (`${var,,}` lowercasing, name-indexed
+# loops). Fail fast with a clear message instead of cryptic syntax errors on
+# stale shells (e.g. the Bash 3.2 that ships with macOS).
+if (( BASH_VERSINFO[0] < 4 )); then
+  log "alpine base guard: requires bash >= 4 (found ${BASH_VERSION:-unknown})"
+  exit 2
+fi
+
 # classify <image_ref> -> alpine | scratch | non-alpine | unknown
 classify() {
   local ref="${1:-}"
@@ -48,8 +56,12 @@ classify() {
     tag="${last##*:}"
   fi
 
-  # 5. Tag contains `alpine`.
-  if [[ "${tag,,}" == *alpine* ]]; then
+  # 5. Tag marks an Alpine variant. Match `alpine` only on a token boundary:
+  #    exactly `alpine` (e.g. nginx:alpine), a `-alpine` suffix (node:20-alpine),
+  #    or `alpine` immediately followed by its version (20-alpine3.19, alpine3.19).
+  #    A bare substring match is deliberately avoided so a non-Alpine repo with a
+  #    spoof tag such as `notalpine`, `alpine-ish`, or `8.0-alpinexx` cannot pass.
+  if [[ "${tag,,}" =~ (^|-)alpine([0-9]|$) ]]; then
     printf '%s\n' "alpine"
     return 0
   fi
@@ -88,6 +100,18 @@ parse_froms() {
     local rest="${line#"${BASH_REMATCH[0]}"}"
     local -a tokens=()
     read -r -a tokens <<<"$rest"
+
+    # Drop everything from the first inline-comment token onward. A `#` only
+    # ever starts a comment here (image refs never contain one), so this stops
+    # a crafted comment from spoofing the image ref or an `AS <stage>` alias and
+    # sneaking a later `FROM <stage>` past the non-Alpine guard.
+    local -a real_tokens=()
+    local t
+    for t in "${tokens[@]+"${tokens[@]}"}"; do
+      [[ "$t" == '#'* ]] && break
+      real_tokens+=("$t")
+    done
+    tokens=("${real_tokens[@]+"${real_tokens[@]}"}")
 
     # First non-flag token is the image ref.
     local ref=""
@@ -221,10 +245,11 @@ scan() {
   local rc=0
   local file
   for file in "${files[@]+"${files[@]}"}"; do
-    # Fail closed: an explicitly-listed path that does not exist (a deleted,
-    # renamed, or typo'd Dockerfile in a changed-files list) must not pass the
-    # gate by default.
-    if [ ! -f "$file" ]; then
+    # Fail closed: an explicitly-listed path that is missing (a deleted,
+    # renamed, or typo'd Dockerfile in a changed-files list) or exists but is
+    # unreadable must not pass the gate. An unreadable file would otherwise
+    # yield no FROM refs and slip through as a false PASS.
+    if [[ ! -f "$file" || ! -r "$file" ]]; then
       printf '%s | %s | %s\n' "$file" "(missing)" "FAIL: Dockerfile not found or unreadable"
       rc=1
       continue
@@ -233,7 +258,7 @@ scan() {
     local -a refs=()
     local r
     while IFS= read -r r; do
-      [ -n "$r" ] && refs+=("$r")
+      [[ -n "$r" ]] && refs+=("$r")
     done < <(parse_froms "$file")
 
     local file_class="alpine"

@@ -48,6 +48,12 @@ write_fixture() {
   [ "$output" = "scratch" ]
 }
 
+@test "classify treats a bare alpine tag such as nginx:alpine as alpine (positive)" {
+  run bash "$SCRIPT" classify 'nginx:alpine'
+  [ "$status" -eq 0 ]
+  [ "$output" = "alpine" ]
+}
+
 # --- classify (negative) -----------------------------------------------------
 
 @test "classify treats the Playwright jammy vendor image as non-alpine (negative)" {
@@ -58,6 +64,24 @@ write_fixture() {
 
 @test "classify treats ubuntu as non-alpine (negative)" {
   run bash "$SCRIPT" classify 'ubuntu:22.04'
+  [ "$status" -eq 0 ]
+  [ "$output" = "non-alpine" ]
+}
+
+@test "classify rejects a non-Alpine image whose tag merely contains alpine (security/negative)" {
+  run bash "$SCRIPT" classify 'ubuntu:notalpine'
+  [ "$status" -eq 0 ]
+  [ "$output" = "non-alpine" ]
+}
+
+@test "classify rejects an alpine-lookalike tag fragment (security/negative)" {
+  run bash "$SCRIPT" classify 'node:20-bookworm-alpinexx'
+  [ "$status" -eq 0 ]
+  [ "$output" = "non-alpine" ]
+}
+
+@test "classify rejects a hyphenated alpine-lookalike tag (security/negative)" {
+  run bash "$SCRIPT" classify 'debian:3.20-alpine-fake'
   [ "$status" -eq 0 ]
   [ "$output" = "non-alpine" ]
 }
@@ -148,6 +172,21 @@ write_fixture() {
   [ "${lines[1]}" = "alpine:3.19" ]
   [ "${#lines[@]}" -eq 2 ]
   [[ "$output" != *build* ]]
+}
+
+@test "parse-froms ignores an AS alias hidden in an inline comment (security/edge)" {
+  local dockerfile="$BATS_TEST_TMPDIR/Dockerfile.comment-spoof"
+  write_fixture "$dockerfile" \
+    'FROM alpine:3.19 # AS ubuntu' \
+    'FROM ubuntu'
+
+  run bash "$SCRIPT" parse-froms "$dockerfile"
+  [ "$status" -eq 0 ]
+  # The commented-out "AS ubuntu" must not register a stage alias, so the real
+  # non-Alpine base on the next line is surfaced rather than skipped as a stage.
+  [ "${lines[0]}" = "alpine:3.19" ]
+  [ "${lines[1]}" = "ubuntu" ]
+  [ "${#lines[@]}" -eq 2 ]
 }
 
 @test "parse-froms prints nothing for a missing file (edge)" {
@@ -325,4 +364,42 @@ write_fixture() {
   [ "$status" -eq 1 ]
   assert_output_contains 'FAIL'
   assert_output_contains 'not found'
+}
+
+@test "scan fails closed on a non-Alpine base whose tag contains alpine as a substring (security/negative)" {
+  local dockerfile="$BATS_TEST_TMPDIR/Dockerfile.tag-substring"
+  write_fixture "$dockerfile" \
+    'FROM ubuntu:notalpine'
+
+  run bash "$SCRIPT" scan "$dockerfile"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'FAIL'
+}
+
+@test "scan fails closed when an inline comment spoofs an AS stage alias (security/negative)" {
+  local dockerfile="$BATS_TEST_TMPDIR/Dockerfile.comment-spoof-scan"
+  write_fixture "$dockerfile" \
+    'FROM alpine:3.19 # AS ubuntu' \
+    'FROM ubuntu'
+
+  run bash "$SCRIPT" scan "$dockerfile"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'FAIL'
+}
+
+@test "scan fails closed on an existing but unreadable Dockerfile (security/negative)" {
+  [ "$(id -u)" -eq 0 ] && skip 'root bypasses file permission checks'
+  # Alpine content would PASS if readable, so a failure here is unambiguously
+  # caused by unreadability rather than a non-Alpine base.
+  local dockerfile="$BATS_TEST_TMPDIR/Dockerfile.unreadable"
+  write_fixture "$dockerfile" \
+    'FROM node:20-alpine'
+  chmod 000 "$dockerfile"
+
+  run bash "$SCRIPT" scan "$dockerfile"
+  chmod 644 "$dockerfile"
+
+  [ "$status" -eq 1 ]
+  assert_output_contains 'FAIL'
+  assert_output_contains 'unreadable'
 }
