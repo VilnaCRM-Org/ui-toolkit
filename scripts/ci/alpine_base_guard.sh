@@ -56,12 +56,13 @@ classify() {
     tag="${last##*:}"
   fi
 
-  # 5. Tag marks an Alpine variant. Match `alpine` only on a token boundary:
-  #    exactly `alpine` (e.g. nginx:alpine), a `-alpine` suffix (node:20-alpine),
-  #    or `alpine` immediately followed by its version (20-alpine3.19, alpine3.19).
-  #    A bare substring match is deliberately avoided so a non-Alpine repo with a
-  #    spoof tag such as `notalpine`, `alpine-ish`, or `8.0-alpinexx` cannot pass.
-  if [[ "${tag,,}" =~ (^|-)alpine([0-9]|$) ]]; then
+  # 5. Tag marks an Alpine variant. Match `alpine` only as a whole trailing
+  #    token: exactly `alpine` (e.g. nginx:alpine), a `-alpine` suffix
+  #    (node:20-alpine), or `alpine` followed by a numeric version that runs to
+  #    the end of the tag (20-alpine3.19, alpine3.19). Anchoring to `$` rejects
+  #    both substring spoofs (`notalpine`, `alpine-ish`, `8.0-alpinexx`) and
+  #    trailing-junk spoofs (`1.0-alpine9evil`, `alpine3.19-backdoor`).
+  if [[ "${tag,,}" =~ (^|-)alpine([0-9]+([.][0-9]+)*)?$ ]]; then
     printf '%s\n' "alpine"
     return 0
   fi

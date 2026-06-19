@@ -86,6 +86,18 @@ write_fixture() {
   [ "$output" = "non-alpine" ]
 }
 
+@test "classify rejects an alpine-suffix tag with trailing junk after a digit (security/negative)" {
+  run bash "$SCRIPT" classify 'ubuntu:1.0-alpine9evil'
+  [ "$status" -eq 0 ]
+  [ "$output" = "non-alpine" ]
+}
+
+@test "classify rejects an alpine-version tag with a trailing word (security/negative)" {
+  run bash "$SCRIPT" classify 'ubuntu:alpine3.19-backdoor'
+  [ "$status" -eq 0 ]
+  [ "$output" = "non-alpine" ]
+}
+
 # --- classify (edge) ---------------------------------------------------------
 
 @test "classify reports an unresolved build-arg base as unknown (edge)" {
