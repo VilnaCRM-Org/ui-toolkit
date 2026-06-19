@@ -1,3 +1,5 @@
+import type { ReactElement, ReactNode } from 'react';
+
 import { StaticImageSrc } from '@/types/assets';
 
 export interface SocialMedia {
@@ -9,3 +11,18 @@ export interface SocialMedia {
   linkHref: string;
   ariaLabel: string;
 }
+
+export type UiFooterSocialLink = {
+  id: string;
+  href: string;
+  label: string;
+  icon?: ReactElement | string;
+};
+
+export type UiFooterProps = {
+  logo?: ReactNode;
+  privacyContent?: ReactNode;
+  emailContent?: ReactNode;
+  socialLinks: UiFooterSocialLink[];
+  copyrightLabel: string;
+};

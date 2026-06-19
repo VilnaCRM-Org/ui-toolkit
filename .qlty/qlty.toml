@@ -53,6 +53,21 @@ test_patterns = [
   "**/spec_*.*",
 ]
 
+# Memory-leak (memlab) harness: memlab/faker are devDependencies and the runner
+# loads scenario files dynamically. These are intentional for the test harness
+# and already disabled in eslint.config.mjs, but qlty runs eslint with its own
+# config where the path-scoped override does not apply, so silence them here.
+[[triage]]
+match.plugins = ["eslint"]
+match.rules = [
+  "eslint:import/no-extraneous-dependencies",
+  "eslint:import/no-unresolved",
+  "eslint:global-require",
+  "eslint:import/no-dynamic-require",
+]
+match.file_patterns = ["tests/memory-leak/**"]
+set.ignored = true
+
 [smells]
 mode = "comment"
 

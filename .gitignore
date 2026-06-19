@@ -15,7 +15,6 @@ build/
 
 # misc
 .DS_Store
-.qlty/
 *.pem
 
 # debug logs
@@ -64,3 +63,7 @@ tests/load/results
 
 # memlab
 tests/memory-leak/results
+
+# qlty (track the shared config only; ignore local cache and tooling)
+.qlty/*
+!.qlty/qlty.toml

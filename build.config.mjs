@@ -42,6 +42,23 @@ esbuild
     entryNames: '[name]',
     bundle: true,
     minify: true,
+    format: 'esm',
+    outExtension: { '.js': '.mjs' },
+    // Externalize only peer dependencies — the consumer provides them. Swiper is a
+    // direct dependency (not a peer), so it and its carousel CSS must stay bundled
+    // into build/index.css (exported as `@vilnacrm/ui-toolkit/styles.css`); blanket
+    // `packages: 'external'` would drop those required styles from the library.
+    external: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      '@mui/*',
+      '@emotion/*',
+      'react-hook-form',
+      'i18next',
+      'react-i18next',
+    ],
     tsconfig: path.resolve(currentDir, 'tsconfig.json'),
     sourcemap: true,
     target: ['es2020'],

@@ -4,56 +4,33 @@ import React from 'react';
 import theme from './theme';
 import { UiInputProps } from './types';
 
+type InputSlotProp = NonNullable<NonNullable<UiInputProps['slotProps']>['input']>;
+type InputSlotFn = Extract<InputSlotProp, (...args: never[]) => unknown>;
+type InputSlotOwnerState = Parameters<InputSlotFn>[0];
+type InputSlotValue = ReturnType<InputSlotFn>;
+
 const DISPLAY_NAME: string = 'UiInput';
 
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
-> = React.forwardRef<HTMLInputElement, UiInputProps>(
-  (
-    {
-      sx,
-      placeholder,
-      error,
-      size,
-      variant,
-      onBlur,
-      type,
-      fullWidth,
-      value,
-      onChange,
-      disabled,
-      onInput,
-      id,
-    },
-    ref
-  ) => (
+> = React.forwardRef<HTMLInputElement, UiInputProps>(({ InputProps, slotProps, ...rest }, ref) => {
+  const mergedSlotProps: UiInputProps['slotProps'] = InputProps
+    ? {
+        ...slotProps,
+        input: (ownerState: InputSlotOwnerState): InputSlotValue => {
+          const base: InputSlotValue | undefined =
+            typeof slotProps?.input === 'function' ? slotProps.input(ownerState) : slotProps?.input;
+          return { ...base, ...InputProps };
+        },
+      }
+    : slotProps;
+
+  return (
     <ThemeProvider theme={theme}>
-      <TextField
-        sx={sx}
-        placeholder={placeholder}
-        inputRef={ref}
-        slotProps={{
-          htmlInput: {
-            onInput: onInput
-              ? (event: React.FormEvent<HTMLInputElement>): void =>
-                  onInput(event as unknown as React.ChangeEvent<HTMLInputElement>)
-              : undefined,
-          },
-        }}
-        error={error}
-        size={size}
-        variant={variant}
-        type={type}
-        onChange={onChange}
-        onBlur={onBlur}
-        value={value}
-        fullWidth={fullWidth}
-        disabled={disabled}
-        id={id}
-      />
+      <TextField {...rest} inputRef={ref} slotProps={mergedSlotProps} />
     </ThemeProvider>
-  )
-);
+  );
+});
 
 UiInput.displayName = DISPLAY_NAME;
 

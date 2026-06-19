@@ -17,11 +17,7 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const tsconfigPath = path.join(rootDir, 'tsconfig.json');
 
-const sourceGlobs = ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'];
-const typedGlobs = ['**/*.ts', '**/*.tsx'];
-const scriptGlobs = ['scripts/**/*.js'];
-const storyGlobs = ['**/*.stories.js', '**/*.stories.jsx', '**/*.stories.ts', '**/*.stories.tsx'];
-const testGlobs = [
+const testFilePatterns = [
   '**/*.test.js',
   '**/*.test.jsx',
   '**/*.test.ts',
@@ -30,111 +26,88 @@ const testGlobs = [
   '**/*.spec.jsx',
   '**/*.spec.ts',
   '**/*.spec.tsx',
+  '**/*.integration.test.ts',
+  '**/*.integration.test.tsx',
   'tests/**/*.js',
   'tests/**/*.jsx',
   'tests/**/*.ts',
   'tests/**/*.tsx',
+  'tests/integration/**/*.ts',
+  'tests/integration/**/*.tsx',
 ];
 
-const sharedLanguageOptions = {
-  ecmaVersion: 2022,
-  sourceType: 'module',
-  globals: {
-    ...globals.browser,
-    ...globals.jest,
-    ...globals.node,
-  },
+const devDependencyPatterns = [
+  'eslint.config.mjs',
+  'jest.setup.ts',
+  'jest.config.ts',
+  'jest.integration.config.ts',
+  'jest.mutation.config.ts',
+  'playwright.config.ts',
+  'build.config.mjs',
+  '**/*.stories.ts',
+  '**/*.stories.tsx',
+  ...testFilePatterns,
+];
+
+// MUI/primitive elements this toolkit's thin wrappers forward props to. Spreading
+// onto them is intentional (the wrappers exist to pass-through), so they extend
+// the CRM's TextField/FormProvider allow-list for this repo.
+const propSpreadingExceptions = ['TextField', 'FormProvider', 'Button', 'Typography', 'UiInput'];
+
+const importNoExtraneousDependenciesOptions = {
+  devDependencies: devDependencyPatterns,
+  packageDir: [rootDir],
 };
 
-const sharedRules = {
-  'eslint-comments/no-use': ['error', { allow: [] }],
-  'react/jsx-no-bind': 'warn',
-  'react/jsx-props-no-spreading': 'warn',
-  'no-await-in-loop': 'warn',
-  'no-restricted-syntax': 'warn',
-  'no-alert': 'error',
-  'no-console': 'error',
-  'import/prefer-default-export': 'warn',
-  'no-restricted-imports': [
-    'error',
-    {
-      patterns: ['@/features/*/*'],
-    },
-  ],
-  'no-extra-semi': 'off',
-  'class-methods-use-this': 'off',
-  'import/default': 'off',
-  'import/no-named-as-default-member': 'off',
-  'import/no-named-as-default': 'off',
-  'import/no-unresolved': 'off',
-  'import/extensions': 'off',
-  'react/prop-types': 'off',
-  'react/react-in-jsx-scope': 'off',
-  'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
-  'jsx-a11y/anchor-is-valid': 'off',
-  'no-unused-vars': 'off',
+const testImportNoExtraneousDependenciesOptions = {
+  devDependencies: true,
+  packageDir: [rootDir],
 };
 
-const typedRules = {
-  '@typescript-eslint/no-unused-vars': ['error'],
-  '@typescript-eslint/typedef': [
-    'error',
-    {
-      variableDeclaration: true,
-      variableDeclarationIgnoreFunction: false,
-      arrayDestructuring: false,
-      objectDestructuring: false,
-      propertyDeclaration: true,
-      memberVariableDeclaration: true,
-    },
-  ],
-  '@typescript-eslint/explicit-member-accessibility': [
-    'error',
-    {
-      accessibility: 'explicit',
-      overrides: {
-        constructors: 'no-public',
-      },
-    },
-  ],
-  '@typescript-eslint/member-ordering': 'error',
-  '@typescript-eslint/explicit-function-return-type': 'error',
-  '@typescript-eslint/explicit-module-boundary-types': 'off',
-  '@typescript-eslint/no-empty-function': 'off',
-  '@typescript-eslint/no-explicit-any': 'error',
-  '@typescript-eslint/no-var-requires': 'off',
-};
-
-const formattingRules = {
-  'max-len': ['error', { code: 150 }],
-  quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
-  semi: ['error', 'always'],
-  'no-multiple-empty-lines': [2, { max: 2, maxEOF: 0 }],
-  'linebreak-style': ['error', 'unix'],
-};
+const tsGlobs = ['**/*.ts', '**/*.tsx'];
+const jsGlobs = ['**/*.js', '**/*.jsx'];
+const jsxGlobs = ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'];
+const storyGlobs = ['**/*.stories.js', '**/*.stories.jsx', '**/*.stories.ts', '**/*.stories.tsx'];
 
 export default [
   {
     ignores: [
       'node_modules/**',
+      'docker-compose.yml',
+      'bun.lock*',
       'build/**',
       'coverage/**',
-      'storybook-static/**',
+      'stryker.config.mjs',
       '.stryker-tmp/**',
-      'bun.lock',
-      'bun.lockb',
+      '.storybook/**',
+      'storybook-static/**',
       'eslint.config.mjs',
+      'scripts/**',
+      'playwright-report/**',
+      'test-results/**',
+      'reports/**',
+      '.qlty/**',
+      '.lighthouseci/**',
+      'lhci-reports-desktop/**',
+      'lhci-reports-mobile/**',
     ],
   },
 
+  // Base: eslint:recommended for every linted file.
   {
-    files: sourceGlobs,
+    files: jsxGlobs,
     ...js.configs.recommended,
-    languageOptions: sharedLanguageOptions,
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser, ...globals.jest },
+    },
   },
 
+  // Shared plugin registry so plugin-prefixed rules resolve in every
+  // config object below (flat config does not inherit plugins).
   {
-    files: sourceGlobs,
+    files: jsxGlobs,
     plugins: {
       '@typescript-eslint': tsPlugin,
       import: importPlugin,
@@ -147,97 +120,138 @@ export default [
     },
   },
 
+  // React (recommended + new JSX runtime — no React import needed).
   {
-    files: sourceGlobs,
+    files: jsxGlobs,
     ...react.configs.flat.recommended,
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
+    settings: { react: { version: 'detect' } },
   },
   {
-    files: sourceGlobs,
+    files: jsxGlobs,
     ...react.configs.flat['jsx-runtime'],
   },
 
-  { ...tsPlugin.configs['flat/eslint-recommended'], files: typedGlobs },
+  // TypeScript: type-aware parser + @typescript-eslint/recommended.
+  { ...tsPlugin.configs['flat/eslint-recommended'], files: tsGlobs },
   ...tsPlugin.configs['flat/recommended'].map(config => ({
     ...config,
-    files: typedGlobs,
+    files: tsGlobs,
   })),
+  // testing-library / jest-dom are TEST-only rule sets (the CRM applies them to
+  // all TS, but they are meant for test files — applying them to source produces
+  // false positives, e.g. a source helper named like a render result). Scope
+  // them to the test globs for this repo.
+  {
+    files: testFilePatterns,
+    rules: {
+      ...testingLibrary.configs['flat/react'].rules,
+      ...jestDom.configs['flat/recommended'].rules,
+    },
+  },
 
   {
-    files: typedGlobs,
+    files: tsGlobs,
+    ignores: ['**/*.d.ts'],
     languageOptions: {
-      ...sharedLanguageOptions,
       parser: tsParser,
-      parserOptions: {
-        project: tsconfigPath,
-        tsconfigRootDir: rootDir,
-      },
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parserOptions: { project: tsconfigPath },
+      globals: { ...globals.node, ...globals.browser, ...globals.jest },
+    },
+    plugins: {
+      import: importPlugin,
+      'eslint-comments': eslintComments,
+      'react-hooks': reactHooks,
+      'jsx-a11y': jsxA11y,
     },
     settings: {
-      react: {
-        version: 'detect',
-      },
+      react: { version: 'detect' },
+      'import/internal-regex': '^@/',
       'import/resolver': {
-        node: {
-          extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs'],
-        },
-        typescript: {
-          alwaysTryTypes: true,
-          project: tsconfigPath,
-        },
+        node: { extensions: ['.ts', '.tsx', '.js', '.jsx', '.mjs'] },
+        typescript: { project: tsconfigPath, alwaysTryTypes: true },
       },
     },
     rules: {
       ...importPlugin.flatConfigs.recommended.rules,
       ...importPlugin.flatConfigs.typescript.rules,
       ...jsxA11y.flatConfigs.recommended.rules,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       ...eslintComments.configs.recommended.rules,
-      ...sharedRules,
-      ...typedRules,
+      'eslint-comments/no-use': [
+        'error',
+        { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable'] },
+      ],
+      'react/jsx-no-bind': 'warn',
+      'no-await-in-loop': 'warn',
+      'no-restricted-syntax': 'warn',
+      'no-alert': 'error',
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      'import/prefer-default-export': 'warn',
+      'max-len': ['error', { code: 100 }],
+      'eslint-comments/disable-enable-pair': 'off',
+      'no-restricted-imports': ['error', { patterns: ['@/features/*/*'] }],
+      'no-param-reassign': ['error', { props: true, ignorePropertyModificationsFor: ['state'] }],
+      'no-extra-semi': 'off',
+      'class-methods-use-this': 'off',
+      quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
+      'no-multiple-empty-lines': [2, { max: 2, maxEOF: 0 }],
+      'linebreak-style': ['error', 'unix'],
+      'react/prop-types': 'off',
+      'import/no-extraneous-dependencies': ['error', importNoExtraneousDependenciesOptions],
       'import/order': [
         'error',
         {
           groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object'],
+          pathGroupsExcludedImportTypes: ['builtin', 'external', 'object'],
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         },
       ],
-      'import/no-extraneous-dependencies': 'off',
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'import/default': 'off',
+      'import/no-named-as-default-member': 'off',
+      'import/no-named-as-default': 'off',
+      'import/no-unresolved': 'off',
+      'import/extensions': 'off',
+      'react/jsx-props-no-spreading': ['error', { exceptions: propSpreadingExceptions }],
+      'react/react-in-jsx-scope': 'off',
+      'react/require-default-props': 'off',
+      'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
+      'jsx-a11y/anchor-is-valid': 'off',
+      '@typescript-eslint/no-unused-vars': ['error'],
+      semi: 'off',
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        { accessibility: 'explicit', overrides: { constructors: 'no-public' } },
+      ],
+      '@typescript-eslint/member-ordering': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'error',
+      '@typescript-eslint/explicit-module-boundary-types': ['off'],
+      '@typescript-eslint/no-empty-function': ['off'],
+      '@typescript-eslint/no-explicit-any': 'error',
+      'no-unused-vars': 'off',
     },
   },
 
+  // Plain JS/JSX: no type-aware project, relax TS-specific rules.
   {
-    files: scriptGlobs,
-    rules: {
-      ...eslintComments.configs.recommended.rules,
-      'eslint-comments/no-use': ['error', { allow: [] }],
+    files: jsGlobs,
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser, ...globals.jest },
     },
-  },
-
-  {
-    files: testGlobs,
     rules: {
-      ...jestDom.configs['flat/recommended'].rules,
-      ...testingLibrary.configs['flat/react'].rules,
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      'import/no-dynamic-require': 'off',
-      'import/no-extraneous-dependencies': 'off',
-      'global-require': 'off',
-      'no-undef': 'off',
-      'no-use-before-define': 'off',
-      'testing-library/no-container': 'off',
-      'testing-library/no-node-access': 'off',
-      'testing-library/prefer-screen-queries': 'off',
     },
   },
 
+  // Storybook stories. `no-renderer-packages` is off: this toolkit's stories
+  // import types from `@storybook/react` (the React renderer), which is correct
+  // for its Storybook 10 + react-webpack5 setup — a kept repo constraint.
   ...storybook.configs['flat/recommended'].map(config => ({
     ...config,
     files: storyGlobs,
@@ -247,6 +261,7 @@ export default [
     },
   })),
 
+  // Type declaration files: allow `require()` style imports.
   {
     files: ['**/*.d.ts'],
     rules: {
@@ -254,10 +269,113 @@ export default [
     },
   },
 
+  // Tests: relaxed import/runtime rules.
   {
-    files: sourceGlobs,
-    rules: formattingRules,
+    files: testFilePatterns,
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser, ...globals.jest },
+    },
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      'import/extensions': 'off',
+      'prefer-template': 'off',
+      'no-restricted-syntax': 'off',
+      'import/no-unresolved': 'off',
+      'import/no-cycle': 'off',
+      'class-methods-use-this': 'off',
+      'no-restricted-globals': 'off',
+      'no-undef': 'off',
+      'no-use-before-define': 'off',
+      'import/no-extraneous-dependencies': ['error', testImportNoExtraneousDependenciesOptions],
+      'import/no-dynamic-require': 'off',
+      'global-require': 'off',
+      'no-await-in-loop': 'off',
+      'react/react-in-jsx-scope': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-unused-vars': 'off',
+    },
   },
 
+  // Source (issue #90): production source must not ship `data-testid`. Expose a
+  // stable `id` where a non-semantic hook is unavoidable; tests query by
+  // role/label/text. Stories are excluded.
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.js', 'src/**/*.jsx'],
+    ignores: ['**/*.stories.*', '**/*.test.*', '**/*.spec.*'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='data-testid']",
+          message:
+            'No data-testid in source — expose a stable id or query by role/label/text (issue #90).',
+        },
+        {
+          selector: "Property[key.value='data-testid']",
+          message: 'No data-testid prop in source — use an id instead (issue #90).',
+        },
+        {
+          selector: "TSPropertySignature[key.value='data-testid']",
+          message: 'No data-testid prop type in source — expose an id prop instead (issue #90).',
+        },
+      ],
+    },
+  },
+
+  // Tests (issue #90): discourage *ByTestId — prefer getByRole/getByLabelText/
+  // getByText, falling back to a stable id. `warn` during staged migration
+  // (mock-stub queries remain valid); promote to `error` once the suite is clean.
+  {
+    files: testFilePatterns,
+    rules: {
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            'CallExpression[callee.property.name=/^(get|query|find)(All)?ByTestId$/], CallExpression[callee.name=/^(get|query|find)(All)?ByTestId$/]',
+          message:
+            'Prefer getByRole/getByLabelText/getByText; *ByTestId is a last resort (issue #90).',
+        },
+      ],
+    },
+  },
+
+  // K6 load test scripts: console output is the idiomatic logging channel.
+  {
+    files: ['tests/load/**/*.js'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
+  // Playwright e2e/visual specs are NOT React Testing Library tests — they drive
+  // a real browser through `page.*` locators. The testing-library rules misread
+  // `page.getByRole`/`page.getByText` as RTL query misuse (e.g. prefer-screen-
+  // queries on `page.getByRole`), so disable the whole rule set for these specs.
+  {
+    files: [
+      'tests/e2e/**/*.ts',
+      'tests/e2e/**/*.tsx',
+      'tests/visual/**/*.ts',
+      'tests/visual/**/*.tsx',
+    ],
+    rules: Object.fromEntries(
+      Object.keys(testingLibrary.configs['flat/react'].rules).map(rule => [rule, 'off'])
+    ),
+  },
+
+  // Prettier last: disable all formatting-related rules.
   prettier,
+
+  // Re-enable max-len after prettier (prettier turns it off as a formatting rule).
+  {
+    files: jsxGlobs,
+    rules: {
+      'max-len': ['error', { code: 100 }],
+    },
+  },
 ];

@@ -11,4 +11,5 @@ export interface UiCheckboxProps {
   disabled?: boolean;
   sx?: SxProps<Theme>;
   error?: boolean;
+  checked?: boolean;
 }

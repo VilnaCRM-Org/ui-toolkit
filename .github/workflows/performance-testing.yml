@@ -1,0 +1,50 @@
+name: performance testing
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CI: true
+      INSTALL_CHROMIUM: 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Detect performance inputs
+        id: project
+        run: |
+          if [[ -f package.json && -f bun.lock && -f lighthouserc.js ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip performance tests
+        if: steps.project.outputs.present != 'true'
+        run: echo "Skipping performance tests because this bootstrap PR does not include the project runtime files yet."
+
+      - name: Start docker test environment
+        if: steps.project.outputs.present == 'true'
+        run: make start
+
+      - name: Run desktop Lighthouse audit
+        if: steps.project.outputs.present == 'true'
+        run: make lighthouse-desktop
+
+      - name: Run mobile Lighthouse audit
+        if: steps.project.outputs.present == 'true'
+        run: make lighthouse-mobile
+
+      - name: Stop docker test environment
+        if: always() && steps.project.outputs.present == 'true'
+        run: make down

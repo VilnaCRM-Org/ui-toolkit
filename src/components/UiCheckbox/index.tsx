@@ -1,23 +1,32 @@
-import { Box, FormControlLabel } from '@mui/material';
+import { Checkbox, FormControlLabel } from '@mui/material';
 import React from 'react';
 
 import styles from './styles';
 import { UiCheckboxProps } from './types';
 
-function UiCheckbox({ label, sx, onChange, error, disabled }: UiCheckboxProps): React.ReactElement {
+function UiCheckbox({
+  label,
+  sx,
+  onChange,
+  error,
+  disabled,
+  checked,
+}: UiCheckboxProps): React.ReactElement {
   return (
     <FormControlLabel
       sx={sx}
       disabled={disabled}
       control={
-        <Box component="span" sx={error ? styles.checkboxWrapperError : styles.checkboxWrapper}>
-          <input
-            type="checkbox"
-            className="PrivateSwitchBase-input"
-            disabled={disabled}
-            onChange={onChange}
-          />
-        </Box>
+        <Checkbox
+          checked={checked}
+          disabled={disabled}
+          onChange={onChange}
+          disableRipple
+          icon={<span className="ui-checkbox-box" />}
+          checkedIcon={<span className="ui-checkbox-box ui-checkbox-box--checked" />}
+          slotProps={{ input: { 'aria-invalid': error ? 'true' : undefined } }}
+          sx={error ? styles.checkboxError : styles.checkbox}
+        />
       }
       label={label}
     />
