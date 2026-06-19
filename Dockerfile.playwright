@@ -1,4 +1,5 @@
 FROM mcr.microsoft.com/playwright:v1.59.1-jammy
+# alpine-exception: Playwright's official browser image is Debian (jammy); Chromium/Firefox/WebKit and their system libraries require glibc, and Microsoft publishes no Alpine/musl Playwright base.
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 

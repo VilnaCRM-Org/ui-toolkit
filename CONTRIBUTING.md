@@ -66,6 +66,31 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+### Docker base-image policy (Alpine)
+
+Every Dockerfile must use an Alpine-based image wherever an Alpine variant exists, for a
+smaller image and reduced attack surface.
+
+This is enforced by `scripts/ci/alpine_base_guard.sh scan`, run by the `alpine base guard`
+workflow on PRs to `main`. Run it locally before pushing:
+
+```bash
+bash scripts/ci/alpine_base_guard.sh scan
+```
+
+The guard checks every `Dockerfile`, `Dockerfile.<suffix>`, `<prefix>.Dockerfile`, and
+`Containerfile` in the repo. A base counts as Alpine when its tag or final repository segment
+says so (e.g. `oven/bun:1.3.14-alpine`, `alpine:3.19`); an Alpine-based image that does not
+advertise this in its name (e.g. `alpine/git`) still needs an exception.
+
+Exceptions (default-deny): when no Alpine variant is usable, add an inline
+`# alpine-exception: <reason>` comment to the Dockerfile (a reason is required), or apply the
+`docker-alpine-exception` PR label for emergencies. The marker is file-scoped — one marker
+waives every non-Alpine base in that file — so scrutinise multi-stage Dockerfiles carrying one.
+
+Current documented exception: `Dockerfile.playwright` — the official Playwright browser base
+is glibc-only, with no Alpine/musl variant published.
+
 ### Commit your update
 
 Commit the changes once you are happy with them.
