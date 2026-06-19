@@ -142,7 +142,7 @@ FROM alpine
 RUN true
 EOF
 
-  run bash "$SCRIPT" detect-exception-scope "$df"
+  run env -u PERF_EXCEPTION_LABEL -u PERF_EXCEPTION_IMAGE_LABEL bash "$SCRIPT" detect-exception-scope "$df"
   [ "$status" -eq 0 ]
   [ "$output" = "size" ]
 }
@@ -184,7 +184,7 @@ FROM alpine
 # perf-exception: inline wins
 EOF
 
-  run bash "$SCRIPT" detect-exception-scope "$df"
+  run env -u PERF_EXCEPTION_LABEL -u PERF_EXCEPTION_IMAGE_LABEL bash "$SCRIPT" detect-exception-scope "$df"
   [ "$status" -eq 0 ]
   [ "$output" = "all" ]
 
