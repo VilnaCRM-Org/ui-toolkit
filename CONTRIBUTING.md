@@ -66,6 +66,27 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+### Dependency version ranges
+
+Every entry in `dependencies` and `devDependencies` of the root `package.json`
+must use a caret (`^`) version range.
+
+Non-semver specifiers (git, file, workspace, link, npm, url, and github
+shorthand) and dist-tags such as `latest` are exempt and may stay as-is.
+The `packageManager` field and the package's own `version` are not
+dependencies and are unaffected. `peerDependencies` and
+`optionalDependencies` are out of scope.
+
+This is enforced by `make lint-dep-ranges`, which runs
+`scripts/ci/check-dependency-ranges.ts`:
+
+```bash
+make lint-dep-ranges
+```
+
+The static testing workflow runs it on every pull request, and the policy is
+unit-tested in `tests/unit/dependencyRangePolicy.test.ts`.
+
 ### Commit your update
 
 Commit the changes once you are happy with them.

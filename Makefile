@@ -21,7 +21,8 @@ BUN_X = $(BUN) x
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
-	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright
+	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright \
+	lint-dep-ranges
 
 PLAYWRIGHT_TEST_ARGS =
 
@@ -45,7 +46,7 @@ help:
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
@@ -76,6 +77,9 @@ lint-md: ## Run the Markdown linter inside the docker container.
 
 format-check: ## Check Prettier formatting inside the docker container.
 	$(BUN_X) prettier . --check
+
+lint-dep-ranges: ## Enforce caret (^) version ranges in package.json inside the docker container.
+	$(BUN) scripts/ci/check-dependency-ranges.ts
 
 git-hooks-install: ## Install git hooks.
 	$(BUN_X) husky install
