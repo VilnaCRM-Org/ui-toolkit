@@ -44,12 +44,22 @@ describe('dependencyRangePolicy', () => {
       expect(isExemptSpecifier(specifier)).toBe(true);
     });
 
-    it.each(['1.2.3', '~1.2.3', '>=1.0.0', '^1.2.3', '1.x', '*', 'v1.2.3', ''])(
-      'treats %p as non-exempt',
-      specifier => {
-        expect(isExemptSpecifier(specifier)).toBe(false);
-      }
-    );
+    it.each([
+      '1.2.3',
+      '~1.2.3',
+      '>=1.0.0',
+      '^1.2.3',
+      '1.x',
+      '*',
+      'v1.2.3',
+      '',
+      'x',
+      'X',
+      'x.x.x',
+      'X.2.3',
+    ])('treats %p as non-exempt', specifier => {
+      expect(isExemptSpecifier(specifier)).toBe(false);
+    });
   });
 
   describe('usesCaretRange', () => {
@@ -86,6 +96,37 @@ describe('dependencyRangePolicy', () => {
           field: 'dependencies',
           name: 'tilde',
           specifier: '~1.0.0',
+          reason: 'expected a caret (^) range',
+        },
+      ]);
+    });
+
+    it('flags semver wildcard specifiers that start with x or X', () => {
+      const fixture = {
+        dependencies: {
+          wild: 'x',
+          wildUpper: 'X',
+          wildParts: 'x.x.x',
+        },
+      };
+
+      expect(findRangeViolations(fixture)).toEqual<RangeViolation[]>([
+        {
+          field: 'dependencies',
+          name: 'wild',
+          specifier: 'x',
+          reason: 'expected a caret (^) range',
+        },
+        {
+          field: 'dependencies',
+          name: 'wildUpper',
+          specifier: 'X',
+          reason: 'expected a caret (^) range',
+        },
+        {
+          field: 'dependencies',
+          name: 'wildParts',
+          specifier: 'x.x.x',
           reason: 'expected a caret (^) range',
         },
       ]);
