@@ -66,6 +66,23 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+### Test directory layout
+
+All test files live under the root `tests/` tree — never under `src/`. Each test type has its
+own subdirectory:
+
+- `tests/unit` — Jest unit and component tests (`*.test.ts`, `*.test.tsx`, `*.spec.js`)
+- `tests/integration` — Jest composition tests across components
+- `tests/e2e` — Playwright end-to-end specs run against Storybook
+- `tests/visual` — Playwright visual-regression specs and their snapshots
+- `tests/load` — k6 load tests
+- `tests/memory-leak` — Memlab leak scenarios
+- `tests/bats` — Bats coverage for Makefile and CI shell flows
+
+`make lint-test-structure` enforces this layout: it fails when any `*.test.*` or `*.spec.*` file
+lives outside the root `tests/` tree. The check runs on every pull request through the static
+testing workflow, so a misplaced test file fails CI.
+
 ### Commit your update
 
 Commit the changes once you are happy with them.
