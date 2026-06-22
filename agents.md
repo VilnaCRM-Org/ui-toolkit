@@ -41,6 +41,9 @@ Playwright run against a Storybook build (`tests/e2e/**`, `tests/visual/**`); vi
 sit in adjacent `*-snapshots/` folders. There is no separate `make test-integration` target:
 integration-level coverage (component composition and interaction) lives in the Jest unit
 suite via React Testing Library — exercise composed behavior there, not just isolated units.
+Every test file lives under the root `tests/` tree, and `make lint-test-structure` (run on
+every pull request) fails on any `*.test.*` or `*.spec.*` file placed outside it — see
+CONTRIBUTING.md for the canonical layout.
 
 Storybook is a first-class coverage layer here, not just documentation. Every new or enhanced
 component MUST ship stories that render its full state matrix (see Step 2); e2e and visual

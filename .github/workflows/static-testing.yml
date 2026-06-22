@@ -47,6 +47,10 @@ jobs:
         if: steps.project.outputs.present == 'true'
         run: make format-check
 
+      - name: Enforce test directory structure
+        if: steps.project.outputs.present == 'true'
+        run: make lint-test-structure
+
       - name: Stop docker test environment
         if: always() && steps.project.outputs.present == 'true'
         run: make down
