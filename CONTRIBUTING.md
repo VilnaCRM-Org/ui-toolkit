@@ -73,6 +73,32 @@ Don't forget to self-review to speed up the review process :zap:.
 
 Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
+### Docker base-image policy (Alpine)
+
+Every Dockerfile must use an Alpine-based image wherever an Alpine variant exists, for a
+smaller image and reduced attack surface.
+
+This is enforced by `scripts/ci/alpine_base_guard.sh scan`, run by the `alpine base guard`
+workflow on PRs to `main`. Run it locally before pushing:
+
+```bash
+bash scripts/ci/alpine_base_guard.sh scan
+```
+
+The guard checks every `Dockerfile`, `Dockerfile.<suffix>`, `<prefix>.Dockerfile`,
+`Containerfile`, and `Containerfile.<suffix>` in the repo. A base counts as Alpine when its tag
+or final repository segment says so (e.g. `oven/bun:1.3.14-alpine`, `alpine:3.19`); an
+Alpine-based image that does not advertise this in its name (e.g. `alpine/git`) still needs an
+exception.
+
+Exceptions (default-deny): when no Alpine variant is usable, add an inline
+`# alpine-exception: <reason>` comment to the Dockerfile (a reason is required), or apply the
+`docker-alpine-exception` PR label for emergencies. The marker is file-scoped — one marker
+waives every non-Alpine base in that file — so scrutinise multi-stage Dockerfiles carrying one.
+
+Current documented exception: `Dockerfile.playwright` — the official Playwright browser base
+is glibc-only, with no Alpine/musl variant published.
+
 ### Pull Request
 
 When you're finished with the changes, create a pull request, also known as a PR.
