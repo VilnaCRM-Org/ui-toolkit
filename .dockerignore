@@ -13,6 +13,9 @@ playwright-report
 .env
 .env.*
 !.env.example
+base
+docker-perf
+.docker-perf
 
 storybook-static
 

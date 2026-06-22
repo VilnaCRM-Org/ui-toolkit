@@ -1,0 +1,12 @@
+# hadolint configuration for the Dockerfile build-performance gate.
+# See CONTRIBUTING.md for the policy this enforces.
+#
+# Builds fail on any rule at warning severity or above (best-practice and
+# performance rules such as untagged base images, missing apk or apt version
+# pins, and missing --no-install-recommends).
+failure-threshold: warning
+
+ignored:
+  # Multiple consecutive RUN instructions are informational only here. Real
+  # layer waste is measured separately and gated by dive via .dive-ci.
+  - DL3059

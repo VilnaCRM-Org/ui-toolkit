@@ -121,6 +121,42 @@ When you're finished with the changes, create a pull request, also known as a PR
   [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you
   resolve merge conflicts and other issues.
 
+### Dockerfile build performance
+
+If your change touches a Dockerfile or the gate's own config, CI rebuilds each
+configured image, measures its size and build time, and runs `dive` plus
+`hadolint` checks against per-image budgets. Budgets live in
+`.github/dockerfile-perf.json`, and exceptions are granted via an inline
+`# perf-exception[:gate]: <reason>` marker or a
+`docker-perf-exception[:name]` PR label.
+
+Current image matrix and thresholds:
+
+- `toolkit` -> `Dockerfile` -> 1550 MiB budget with 10% tolerance
+- `playwright` -> `Dockerfile.playwright` -> 1500 MiB budget with 15% tolerance
+
+All three gates are evaluated for every configured image:
+
+- final image size versus the configured budget and tolerance
+- `dive --ci` layer-efficiency checks from `.dive-ci`
+- `hadolint` warning-and-above checks from `.hadolint.yaml`
+
+The known documented exception in this repo is `Dockerfile.playwright`, which
+contains:
+
+`# perf-exception:size,dive: glibc-only Playwright vendor base`
+
+That exception keeps the Playwright runner measured and reported, but waives the
+`size` and `dive` gates that its glibc-only vendor base makes unavoidable: the
+image is far larger than any musl base and, at >99% layer efficiency, still
+trips dive's absolute wasted-bytes gate purely on scale. `hadolint` stays
+enforced, and other images are unaffected. Prefer the inline marker over PR
+labels because it documents the reason next to the Dockerfile. Use
+`docker-perf-exception` only when every image in the PR needs the waiver, or
+`docker-perf-exception:<name>` when only one configured image should be waived;
+a PR label grants a blanket waiver and widens any inline marker, so it waives
+every gate even when the Dockerfile documents a narrower exception.
+
 ### Your PR is merged
 
 Congratulations :tada::tada: Our team thanks you :sparkles:.
