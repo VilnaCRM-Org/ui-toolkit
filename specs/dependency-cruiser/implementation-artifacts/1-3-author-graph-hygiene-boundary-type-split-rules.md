@@ -241,7 +241,7 @@ src` inside the docker-compose `bun` service) and confirm a clean exit `0` with 
   - FR5 (generic dependency-health rules), FR6 (components-centric boundary rules),
     FR7 (type/runtime-split discipline), FR8 (zero-tolerance, no `depcruise-baseline`)
 - Previous story:
-  `specs/dependency-cruiser/implementation-artifacts/1-2-commit-dependency-cruiser-policy-scope-alias.md`
+  `specs/dependency-cruiser/implementation-artifacts/1-2-commit-dependency-cruiser-policy-scope-and-alias.md`
 
 ## Dev Agent Record
 

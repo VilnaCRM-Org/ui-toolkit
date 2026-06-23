@@ -130,7 +130,7 @@ This story is documentation-authoring; verification is by inspection plus the Ma
   `specs/dependency-cruiser/implementation-artifacts/3-1-contributor-documentation-dependency-cruiser-gate.md`
   (the `## Dependency graph hygiene (dependency-cruiser)` section this story cross-references)
 - Previous story:
-  `specs/dependency-cruiser/implementation-artifacts/4-3-add-naming-rules-verify-clean-gate.md`
+  `specs/dependency-cruiser/implementation-artifacts/4-3-kebab-case-naming-rules-and-clean-gate.md`
 
 ## Dev Agent Record
 

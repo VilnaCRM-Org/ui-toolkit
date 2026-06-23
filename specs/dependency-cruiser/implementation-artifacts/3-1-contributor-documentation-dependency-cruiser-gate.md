@@ -102,7 +102,7 @@ workflow are delivered by Epics 1 and 2; this story documents the already-wired 
 §Enforcement Guidelines, `make lint-dep-cruiser` is the single source of truth for the command,
 config path, and scope. Documentation MUST reference the make target, never the raw CLI:
 
-```text
+```bash
 make lint-dep-cruiser
 ```
 
@@ -134,10 +134,10 @@ must say so explicitly.
 ### Project Structure Notes
 
 - **Files to modify:**
-  - `/home/dima/Desktop/ui-toolkit/CONTRIBUTING.md` — add the
+  - `CONTRIBUTING.md` — add the
     `## Dependency graph hygiene (dependency-cruiser)` section (enforced rules, ESLint
     complementarity, local command, `text` output, remediation, out-of-scope, zero-tolerance).
-  - `/home/dima/Desktop/ui-toolkit/README.md` — add a short quality-gate entry with the
+  - `README.md` — add a short quality-gate entry with the
     `make lint-dep-cruiser` command, linking to the fuller `CONTRIBUTING.md` section.
 - **No new files** and **no application source changes** for this story.
 - This story assumes Epic 1 (`.dependency-cruiser.js`, `lint-dep-cruiser` target, `lint:` chain)

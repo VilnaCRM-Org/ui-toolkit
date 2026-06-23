@@ -22,7 +22,7 @@ options.
 6. `options.combinedDependencies` is `true` (this also enables the `not-to-dev-dep`
    `dependencyTypesNot: ['npm-peer']` mechanism in Story 1.3 — dual-placed dev+peer modules are
    tagged both `npm-dev` and `npm-peer`), and `options.detectProcessBuiltinModuleCalls` is `true`
-   (CRM parity, so `node:`-prefixed builtin calls are detected for the core-module rules).
+   (CRM parity, so `process.getBuiltinModule()` calls are detected for the core-module rules).
 7. `options.enhancedResolveOptions` is set as specified by the architecture
    (`exportsFields: ['exports']`; `conditionNames: ['import', 'require', 'node', 'default',
 'types']`; `extensions: ['.ts', '.tsx', '.d.ts', '.js']`; `mainFields: ['main', 'types',
