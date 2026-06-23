@@ -72,7 +72,15 @@ function evaluateSpecifier(
 ): RangeViolation | null {
   if (exceptions.has(name)) return null;
 
-  const specifier = String(rawSpecifier);
+  // A non-string specifier (e.g. the boolean `true`) must never be coerced and
+  // then matched against the exemption patterns: `String(true)` → "true" would
+  // be misread as a dist-tag and silently exempted. Treat any non-string as a
+  // violation outright.
+  if (typeof rawSpecifier !== 'string') {
+    return { field, name, specifier: String(rawSpecifier), reason: 'expected a caret (^) range' };
+  }
+
+  const specifier = rawSpecifier;
   if (isExemptSpecifier(specifier)) return null;
   if (usesCaretRange(specifier)) return null;
 

@@ -132,6 +132,30 @@ describe('dependency-range-policy', () => {
       ]);
     });
 
+    it('flags non-string specifiers instead of silently exempting them', () => {
+      const fixture = {
+        dependencies: {
+          boolTrue: true,
+          boolFalse: false,
+        },
+      };
+
+      expect(findRangeViolations(fixture)).toEqual<RangeViolation[]>([
+        {
+          field: 'dependencies',
+          name: 'boolTrue',
+          specifier: 'true',
+          reason: 'expected a caret (^) range',
+        },
+        {
+          field: 'dependencies',
+          name: 'boolFalse',
+          specifier: 'false',
+          reason: 'expected a caret (^) range',
+        },
+      ]);
+    });
+
     it('does not report packages listed in allowedExceptions', () => {
       const fixture = {
         dependencies: {
