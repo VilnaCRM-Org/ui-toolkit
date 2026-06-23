@@ -58,6 +58,13 @@ barrel/public-API discipline, exclusion of stories and truly dev-only dependenci
 production paths, and type-only import discipline — none of which any existing linter enforces
 here.
 
+The policy also enforces an all-lowercase kebab-case naming convention for files and folders
+(matching the CRM repo), ported from CRM's `no-uppercase-paths` and `src-*-name-kebab-case`
+rules. Because the repository today uses PascalCase component directories and camelCase test
+files, enabling these naming rules requires a one-time normalization of the current
+`src/components/` tree and the camelCase test files so the zero-tolerance gate passes on the run
+that turns the rules on.
+
 This PRD covers only this repository-level CI check effort for `ui-toolkit`. The
 `rust-code-analysis` gate (issue #59), IDE/editor integration, multi-repository reuse, and
 auto-fix are outside the current scope.
@@ -104,6 +111,9 @@ auto-fix are outside the current scope.
 - Add `dependency-cruiser` to CI for pull requests to `main` as a required check.
 - Commit a `.dependency-cruiser.js` policy tuned to this repository's `src/` structure.
 - Fail the CI check on any policy violation with zero tolerance.
+- Enforce an all-lowercase kebab-case convention for files and folders under `src/` and `tests/`
+  (matching the CRM repo), which requires a one-time normalization of the current PascalCase
+  component tree and camelCase test files so the gate passes.
 - Provide a `make lint-dep-cruiser` target and register it in the aggregate `lint` flow.
 - Document local usage and failure interpretation for contributors.
 
@@ -210,9 +220,11 @@ path alias by pointing `tsConfig.fileName` at `tsconfig.json` (which extends
 - The committed policy must define the governed analysis scope and exclusions clearly enough to
   avoid ambiguity for both source and excluded artifact directories.
 - The policy must NOT include CRM-style bulletproof-react layering rules (no modules/features/
-  repositories layout exists here) and must NOT enforce lowercase paths, since component
-  directories are PascalCase by convention and a `no-uppercase-paths` rule would fail the entire
-  tree.
+  repositories layout exists here).
+- The policy DOES enforce all-lowercase kebab-case paths (CRM `no-uppercase-paths` and
+  `src-*-name-kebab-case` parity). Because component directories are PascalCase and some test
+  files are camelCase today, the current tree must be normalized to kebab-case as part of the
+  same delivery slice so the `no-uppercase-paths`/kebab rules pass with zero tolerance.
 - Failure output must remain understandable enough for contributors to remediate quickly.
 
 ## Project Scoping & Delivery Boundaries
@@ -328,7 +340,9 @@ lint` flow.
 ### CI Results Reporting
 
 - FR16: CI runs can produce human-readable output for both successful and failed
-  `dependency-cruiser` evaluations.
+  `dependency-cruiser` evaluations, using the actionable default/text reporter so that advisory
+  `warn`-severity findings remain visible alongside `error`-severity violations rather than being
+  suppressed by an error-only reporter.
 - FR17: Failed CI runs can report policy violations clearly enough — naming the offending file
   and the violated rule — for contributors to remediate them without interpreting raw tool
   internals.
@@ -345,6 +359,25 @@ lint` flow.
   circular-import gap.
 - FR20: Contributors can access repository documentation describing how to run the check locally
   through `make lint-dep-cruiser` and how to interpret check failures.
+
+### Naming & Path Normalization
+
+- FR21: All governed source files and directories under `src/` and `tests/` MUST be lowercase
+  kebab-case; the policy forbids any uppercase character in governed source paths, ported from
+  CRM's `no-uppercase-paths` rule (error).
+- FR22: Component directories and their files under `src/components/` MUST follow kebab-case
+  naming (e.g. `ui-button/`, `card-content.tsx`), enforced by a dedicated kebab-case naming rule
+  (CRM `src-*-name-kebab-case` parity), with test directories/files under `tests/` likewise
+  kebab-case.
+- FR23: The repository's existing PascalCase/camelCase paths (the ~21
+  `src/components/<PascalName>/` dirs and their PascalCase files, the
+  `src/index.ts`→`src/components/index.ts` barrels, all internal `@/` and relative imports,
+  Storybook `*.stories.tsx`, and camelCase test files such as `authSkeleton.spec.ts`/
+  `backToMain.spec.ts`) MUST be normalized to kebab-case so the zero-tolerance gate passes with
+  no `no-uppercase-paths`/kebab violations on the run that enables the naming rules.
+- FR24: Contributor documentation MUST state the kebab-case naming convention — all files and
+  folders lowercase kebab-case, matching the CRM repo — alongside the existing dependency-rule
+  documentation.
 
 ## Non-Functional Requirements
 

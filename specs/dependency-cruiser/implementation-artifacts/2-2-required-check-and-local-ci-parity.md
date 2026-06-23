@@ -39,7 +39,7 @@ passes in CI.
   - [ ] 1.1 With Epic 1 (`.dependency-cruiser.js`, `lint-dep-cruiser` target) and Story 2.1
         (`.github/workflows/dependency-cruiser.yml`) merged, run `make lint-dep-cruiser` against
         the current `main` branch inside the docker-compose `bun` service.
-  - [ ] 1.2 Review the `err` reporter output and catalogue every `error`-severity violation
+  - [ ] 1.2 Review the default `text` reporter output and catalogue every `error`-severity violation
         (cycles, orphans, leaked stories/dev/test imports, type-split violations). Note that any
         `not-to-dev-dep` hits on the dev+peer runtime libraries (`@mui/material`, `react`, etc.)
         indicate a rule-scoping miss in Story 1.3, NOT a source defect.
@@ -127,9 +127,10 @@ passes in CI.
       $(BUN_X) depcruise --config .dependency-cruiser.js src
   ```
 
-- **Failure reporting names file + rule.** The default `err` reporter prints one line per
-  violation naming the offending file and the violated rule and exits non-zero on any
-  `error`-severity match; a clean run exits `0` with no output (Decision 6).
+- **Failure reporting names file + rule.** The reporter is pinned to the default `text` (NOT
+  `err`). `text` prints one line per finding naming the offending file and the violated rule for
+  all severities — keeping advisory `warn`/`info` findings visible — and still exits non-zero on
+  any `error`-severity match; a clean run exits `0` with no output (Decision 6).
 
 - **Branch-protection integration is the enforcement surface.** PRs to `main` are blocked until
   the required `dependency-cruiser` check passes (Branch Protection Integration).

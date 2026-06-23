@@ -22,8 +22,9 @@ so that I can run the same committed policy locally and see a clean pass before 
    scoped to truly dev-only modules so the dev+peer runtime libraries (`@mui/material`, `react`,
    etc.) do not produce false dev-dep violations.
 6. A clean run prints no violations and exits `0`.
-7. When one or more `src/` modules violate an `error`-severity rule, the `err` reporter prints
-   one line per violation naming the offending file and the violated rule.
+7. When one or more `src/` modules violate an `error`-severity rule, the default `text` reporter
+   prints one line per finding naming the offending file and the violated rule (advisory
+   `warn`/`info` findings stay visible alongside the `error` violations).
 8. On any `error`-severity violation, `make lint-dep-cruiser` exits non-zero.
 9. When `make lint` is invoked, `lint-dep-cruiser` runs as part of the chain against the same
    committed policy and `src` scope.
@@ -36,7 +37,8 @@ so that I can run the same committed policy locally and see a clean pass before 
   - [ ] 1.2 Set the recipe to `$(BUN_X) depcruise --config .dependency-cruiser.js src` so the
         cruise roots at `src/index.ts` inside the docker-compose `bun` service
   - [ ] 1.3 Confirm `$(BUN_X)` resolves to `docker compose run --rm bun bun x` via the existing
-        `RUN_BUN_SH` / `BUN` / `BUN_X` variable chain (no new variables)
+        `RUN_BUN` / `BUN` / `BUN_X` variable chain (no new variables; `RUN_BUN_SH` is a separate
+        `--entrypoint sh` helper, not part of this chain)
 
 - [ ] Task 2: Register the target in `.PHONY` (AC: 2)
   - [ ] 2.1 Append `lint-dep-cruiser` to the `.PHONY` line (Makefile line ~20) alongside
@@ -62,8 +64,8 @@ so that I can run the same committed policy locally and see a clean pass before 
 
 - [ ] Task 5: Confirm failure behavior and reporter output (AC: 7, 8)
   - [ ] 5.1 Verify (e.g. with a scratch fixture reverted afterward) that an introduced
-        `error`-severity violation makes the `err` reporter print one line per violation naming
-        the offending file and the violated rule
+        `error`-severity violation makes the default `text` reporter print one line per finding
+        naming the offending file and the violated rule
   - [ ] 5.2 Confirm the target exits non-zero on that violation and that the scratch fixture is
         fully reverted so the committed tree stays clean
 
@@ -100,10 +102,13 @@ aggregate chain so a full local `make lint` exercises the gate and CI invokes th
 lint: lint-next lint-tsc lint-md format-check lint-test-structure lint-dep-cruiser
 ```
 
-**Reporting Format (Decision 6).** The default `err` reporter prints one line per violation naming
-the offending file and the violated rule, and exits non-zero on any `error`-severity match. A
-clean run prints no violations and exits zero. Visual/graph reporters (`dot`/`archi`) are out of
-scope.
+**Reporting Format (Decision 6).** The reporter is pinned to the default `text` (NOT `err`). `text`
+prints one line per finding — naming the offending file and the violated rule — for BOTH
+`error`-severity and advisory (`warn`/`info`) matches, and still exits non-zero on any
+`error`-severity match. `err` is deliberately avoided because it suppresses everything below
+`error`, hiding the deliberately-kept advisory warns (`peer-deps-used`, `not-to-deprecated`,
+`no-duplicate-dep-types`, `optional-deps-used`). A clean run prints no violations and exits zero.
+Visual/graph reporters (`dot`/`archi`) are out of scope.
 
 **Zero-tolerance baseline (Decision 6 / Decision Impact step 5).** There is no `depcruise-baseline`
 file; every violation surfaces on every run. Pre-existing violations against current `main` must be
@@ -134,7 +139,8 @@ options, so the recipe passes only `src`.
   violations get refactored under Task 4 (file list determined at implementation time).
 - **No new file:** explicitly no `depcruise-baseline.json`.
 - Makefile reference points: `.PHONY` at line ~20, `lint:` aggregate at line ~48; the existing
-  `BUN_X` variable chain (`RUN_BUN_SH` → `BUN` → `BUN_X`) is reused unchanged.
+  `BUN_X` variable chain (`RUN_BUN` → `BUN` → `BUN_X`) is reused unchanged (`RUN_BUN_SH` is a
+  separate `--entrypoint sh` helper, not part of this chain).
 
 ### Testing Approach
 
@@ -142,7 +148,7 @@ This story is Makefile wiring plus a clean-baseline remediation; verification is
 run inside the docker-compose `bun` service (`make start` first per project conventions):
 
 - `make lint-dep-cruiser` exits `0` with no violations on the remediated tree (AC 6).
-- A deliberately introduced `error`-severity violation produces one `err` line per violation
+- A deliberately introduced `error`-severity violation produces one `text` line per finding
   (file + rule) and a non-zero exit, then is reverted (AC 7, 8).
 - `make lint` runs the full chain including `lint-dep-cruiser` against the same policy and scope
   (AC 9).

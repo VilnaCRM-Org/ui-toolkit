@@ -20,13 +20,15 @@ failure signal and without manual intervention.
 5. The `make start`, `make lint-dep-cruiser`, and `make down` steps are gated on the
    runtime-detection flag (`steps.<id>.outputs.present == 'true'`).
 6. The `make down` step runs with `if: always()` (combined with the runtime-detection flag).
-7. The workflow uses TAG-pinned actions — `actions/checkout@v4`.
+7. The workflow uses TAG-pinned actions — `actions/checkout@v4` — and the checkout step sets
+   `with: { persist-credentials: false }` so the job's `GITHUB_TOKEN` is not persisted to disk.
 8. The workflow contains no `setup-node` step; the docker-compose `bun` service supplies the
    Node/bun runtime.
 9. The workflow runs `make lint-dep-cruiser` (never a raw `bun x depcruise` line in YAML), so the
    full governed `src/` graph is evaluated against the committed `.dependency-cruiser.js`.
-10. On any `error`-severity violation the job exits non-zero and prints the `err` reporter output
-    naming the offending file and the violated rule.
+10. On any `error`-severity violation the job exits non-zero and prints the default `text` reporter
+    output — one line per finding naming the offending file and the violated rule, with advisory
+    `warn`/`info` findings staying visible.
 11. On a clean graph the job exits `0` with no violation output.
 
 ## Tasks / Subtasks
@@ -39,7 +41,8 @@ failure signal and without manual intervention.
   - [ ] 1.5 Declare job-level `permissions: contents: read`
 
 - [ ] Task 2: Add checkout and runtime-detection gate (AC: 4, 7, 8)
-  - [ ] 2.1 Add the `Checkout code` step using `actions/checkout@v4` (TAG-pinned)
+  - [ ] 2.1 Add the `Checkout code` step using `actions/checkout@v4` (TAG-pinned) with
+        `with: { persist-credentials: false }`
   - [ ] 2.2 Add a `Detect runtime project files` step with `id: project` that writes
         `present=true`/`present=false` to `$GITHUB_OUTPUT` based on `-f package.json && -f bun.lock`
   - [ ] 2.3 Do NOT add a `setup-node` step — the docker-compose `bun` service provides the runtime
@@ -55,7 +58,7 @@ failure signal and without manual intervention.
 - [ ] Task 4: Confirm the workflow consumes the repository-owned gate (AC: 9, 10, 11)
   - [ ] 4.1 Confirm the workflow calls `make lint-dep-cruiser`, relying on the Makefile target for
         config path (`.dependency-cruiser.js`), scope (`src`), `@/*` resolution, exit code, and
-        `err` reporting — no thresholds/scope duplicated in YAML
+        `text` reporting — no thresholds/scope duplicated in YAML
   - [ ] 4.2 Confirm the `lint-dep-cruiser` target and `.dependency-cruiser.js` from Epic 1 exist so
         the workflow has something to invoke (dependency, not re-created here)
 
@@ -65,9 +68,10 @@ failure signal and without manual intervention.
   - [ ] 5.2 Confirm `permissions: contents: read` is present
   - [ ] 5.3 Confirm the runtime-detection flag gates `make start` / `make lint-dep-cruiser` /
         `make down`, and that `make down` carries `if: always()`
-  - [ ] 5.4 Confirm action pins are TAGs (`actions/checkout@v4`) and no `setup-node` is present
+  - [ ] 5.4 Confirm action pins are TAGs (`actions/checkout@v4`), the checkout step sets
+        `with: { persist-credentials: false }`, and no `setup-node` is present
   - [ ] 5.5 Run `make lint-dep-cruiser` locally (or in the dev container) to validate the exact
-        command the workflow executes, asserting non-zero exit + `err` output on a seeded violation
+        command the workflow executes, asserting non-zero exit + `text` output on a seeded violation
         and exit `0` with no output on a clean graph
 
 ## Dev Notes
@@ -88,9 +92,12 @@ read`; `ubuntu-latest`; TAG-pinned `actions/checkout@v4`; NO `setup-node` (the d
   `bun` service supplies the runtime); a "Detect runtime project files" gate mirroring
   `static-testing.yml` keeps the workflow inert on bootstrap PRs lacking `package.json` + `bun.lock`;
   steps bracketed by `make start` ... `make down` with `make down` under `if: always()`.
-- **Reporting (Decision 6).** The default `err` reporter prints one line per violation naming file +
-  rule and exits non-zero on any `error`-severity match; a clean run prints nothing and exits `0`.
-  No `depcruise-baseline` — every violation surfaces on every run.
+- **Reporting (Decision 6).** The reporter is pinned to the default `text` (NOT `err`). `text`
+  prints one line per finding naming file + rule for BOTH `error`-severity and advisory
+  (`warn`/`info`) matches, and still exits non-zero on any `error`-severity match; a clean run
+  prints nothing and exits `0`. `err` is avoided because it would suppress the deliberately-kept
+  advisory warns (`peer-deps-used`, `not-to-deprecated`, `no-duplicate-dep-types`,
+  `optional-deps-used`). No `depcruise-baseline` — every violation surfaces on every run.
 
 Canonical workflow shape (from the architecture's GitHub Actions Integration block):
 
@@ -109,6 +116,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Detect runtime project files
         id: project
         run: |
@@ -146,10 +155,11 @@ workflow runs:
 
 - Inspect `.github/workflows/dependency-cruiser.yml` for: trigger (`pull_request` -> `main`), job
   name (`dependency-cruiser`), `permissions: contents: read`, the runtime-detection gate, the
-  `if: always()` teardown, TAG-pinned `actions/checkout@v4`, and the absence of `setup-node`.
+  `if: always()` teardown, TAG-pinned `actions/checkout@v4` with `persist-credentials: false`, and
+  the absence of `setup-node`.
 - Run `make lint-dep-cruiser` locally / in the dev container to validate the exact command the
   workflow executes — assert exit `0` with no output on the clean `src/` graph, and seed a
-  temporary circular import to assert non-zero exit with `err` output naming file + `no-circular`.
+  temporary circular import to assert non-zero exit with `text` output naming file + `no-circular`.
 - GitHub Actions execution on a real pull request validates the `pull_request` -> `main` event path
   and the gated docker lifecycle end to end.
 

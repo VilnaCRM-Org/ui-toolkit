@@ -68,6 +68,22 @@ FR19: Contributors can access repository documentation describing what the `depe
 check enforces and how it complements ESLint by filling the disabled circular-import gap.
 FR20: Contributors can access repository documentation describing how to run the check locally
 through `make lint-dep-cruiser` and how to interpret check failures.
+FR21: All governed source files and directories under `src/` and `tests/` MUST be lowercase
+kebab-case; the policy forbids any uppercase character in governed source paths, ported from
+CRM's `no-uppercase-paths` rule (error).
+FR22: Component directories and their files under `src/components/` MUST follow kebab-case
+naming (e.g. `ui-button/`, `card-content.tsx`), enforced by a dedicated kebab-case naming rule
+(CRM `src-*-name-kebab-case` parity), with test directories/files under `tests/` likewise
+kebab-case.
+FR23: The repository's existing PascalCase/camelCase paths (the ~21
+`src/components/<PascalName>/` dirs and their PascalCase files, the
+`src/index.ts`→`src/components/index.ts` barrels, all internal `@/` and relative imports,
+Storybook `*.stories.tsx`, and camelCase test files such as `authSkeleton.spec.ts`/
+`backToMain.spec.ts`) MUST be normalized to kebab-case so the zero-tolerance gate passes with
+no `no-uppercase-paths`/kebab violations on the run that enables the naming rules.
+FR24: Contributor documentation MUST state the kebab-case naming convention — all files and
+folders lowercase kebab-case, matching the CRM repo — alongside the existing dependency-rule
+documentation.
 
 ### Non-Functional Requirements
 
@@ -115,8 +131,9 @@ NFR8: Performance — This PRD does not impose a fixed numeric execution-time ta
   components-centric rules (`src-not-to-tests`, `no-prod-import-of-stories`,
   `components-public-api`). CRM bulletproof-react layering and lowercase/kebab-path rules are
   explicitly NOT ported.
-- Reporting: the default `err` reporter — one line per violation naming file + rule; clean run
-  exits zero with no output.
+- Reporting: the default `text` reporter (NOT `err`) — one line per finding naming file + rule for
+  all severities, keeping advisory `warn`/`info` findings visible, and still exiting non-zero on any
+  `error`-severity match; a clean run exits zero with no output.
 - CI workflow file: `.github/workflows/dependency-cruiser.yml`, job name `dependency-cruiser`,
   trigger `pull_request` -> `main`, `permissions: contents: read`, TAG-pinned actions
   (`actions/checkout@v4`), no `setup-node`, runtime-detection gate mirroring `static-testing.yml`,
@@ -135,26 +152,37 @@ FR1: Epic 1 — `dependency-cruiser@^17.3.7` declared as a devDependency
 FR2: Epic 1 — single committed `.dependency-cruiser.js` (`forbidden`-only) policy
 FR3: Epic 1 — `tsConfig.fileName: 'tsconfig.json'` resolves the `@/*` alias
 FR4: Epic 1 — `src` scope from `src/index.ts` + `exclude`/`doNotFollow` list
-FR5: Epic 1 — generic-health rules in the committed policy
-FR6: Epic 1 — components-centric boundary rules (`src-not-to-tests`, `no-prod-import-of-stories`,
-`components-public-api`)
+FR5: Epic 1 — generic-health rules in the committed policy; the spec/test-FILE clause maps to
+`not-to-spec` (the directory concern is owned by `src-not-to-tests` under FR6, so `not-to-test`
+is folded into `src-not-to-tests` to avoid a duplicate report — see architecture Decision 3)
+FR6: Epic 1 — components-centric boundary rules (`src-not-to-tests` owns the `src/` ↛ `tests/`
+DIRECTORY rule, `no-prod-import-of-stories`, `components-public-api`)
 FR7: Epic 1 — type/runtime-split rules
 FR8: Epic 1 — zero-tolerance, no `depcruise-baseline`
 FR9: Epic 2 — CI trigger on `pull_request` -> `main`
 FR10: Epic 2 — required status check registration in branch protection
-FR11: Epic 2 — `err` reporter exits non-zero on any `error`-severity violation (reinforced from
+FR11: Epic 2 — `text` reporter exits non-zero on any `error`-severity violation (reinforced from
 the local target in Epic 1)
 FR12: Epic 2 — full governed `src/` graph evaluated each run
 FR13: Epic 1 — `make lint-dep-cruiser` target
 FR14: Epic 1 — `lint-dep-cruiser` appended to the aggregate `lint:` chain
-FR15: Epic 1 — `err` output names offending file and violated rule
+FR15: Epic 1 — `text` output names offending file and violated rule (one line per finding)
 FR16: Epic 2 — workflow job logs render success and failure output
-FR17: Epic 2 — `err` output names file + rule without raw internals
+FR17: Epic 2 — `text` output names file + rule without raw internals
 FR18: Epic 2 — same `.dependency-cruiser.js` + `src` scope via the shared `make lint-dep-cruiser`
 (established in Epic 1)
 FR19: Epic 3 — documentation: what the gate enforces + ESLint `import/no-cycle` gap
 complementarity
 FR20: Epic 3 — documentation: local `make lint-dep-cruiser` usage + failure interpretation
+FR21: Epic 4 — `no-uppercase-paths` rule (CRM line 472 parity) forbidding uppercase in governed
+`src/`/`tests/` paths, enabled after the kebab-case migration
+FR22: Epic 4 — `component-name-kebab-case` + `test-name-kebab-case` rules (CRM
+`src-*-name-kebab-case` parity)
+FR23: Epic 4 — kebab-case migration: `git mv` of `src/components/**` dirs/files + camelCase test
+files to kebab-case, with barrels/imports/stories/tests updated (React export identifiers stay
+PascalCase)
+FR24: Epic 4 — documentation of the all-lowercase kebab-case convention (matching CRM); also
+relates to the Epic 3 documentation story (Story 3.1) it cross-references
 
 ## Epic List
 
@@ -177,6 +205,14 @@ local and CI evaluation in parity through the same `make lint-dep-cruiser` targe
 Contributors can self-serve to understand what the gate enforces, how it complements ESLint by
 filling the disabled `import/no-cycle` gap, how to run it locally, and how to interpret failures.
 **FRs covered:** FR19, FR20
+
+### Epic 4: Kebab-case Path Normalization & Naming Enforcement
+
+The repository's PascalCase component tree and camelCase test files are normalized to lowercase
+kebab-case (preserving history via `git mv` and keeping React export identifiers PascalCase), the
+`no-uppercase-paths` and kebab-case naming rules are turned on in `.dependency-cruiser.js`, and
+the zero-tolerance gate is verified to pass at zero naming violations on the enabling run.
+**FRs covered:** FR21, FR22, FR23, FR24
 
 ## Epic 1: Policy Configuration & Local Enforcement Details
 
@@ -309,8 +345,8 @@ introduced)
 
 **Given** one or more `src/` modules violate an `error`-severity rule
 **When** `make lint-dep-cruiser` completes
-**Then** the `err` reporter prints one line per violation naming the offending file and the
-violated rule
+**Then** the `text` reporter prints one line per finding naming the offending file and the
+violated rule (advisory `warn`/`info` findings stay visible)
 **And** the target exits non-zero
 
 **Given** `make lint` is invoked
@@ -354,7 +390,8 @@ read`
 **When** the workflow runs `make lint-dep-cruiser`
 **Then** the full governed `src/` graph is evaluated against the committed
 `.dependency-cruiser.js`
-**And** the job exits non-zero and prints the `err` violations (file + rule) on any violation
+**And** the job exits non-zero and prints the `text` reporter findings (file + rule, one line each,
+including advisory `warn`/`info`) on any `error`-severity violation
 **And** the job exits `0` with no violation output on a clean graph
 
 ### Story 2.2: Required status check, local/CI parity, and baseline compliance
@@ -425,8 +462,8 @@ required
 
 **Given** a contributor's run produces violations
 **When** they read the documentation
-**Then** the `err` output format is explained (one line per violation naming the offending file
-and the violated rule)
+**Then** the `text` output format is explained (one line per finding naming the offending file
+and the violated rule, for all severities, with advisory `warn`/`info` findings staying visible)
 **And** guidance on remediating common violations (cycles, orphans, leaked stories/dev imports) is
 present
 
@@ -434,3 +471,125 @@ present
 **When** it is reviewed
 **Then** IDE/editor integration and visual/graph reporting are explicitly noted as out of scope
 **And** the zero-tolerance, no-baseline nature of the gate is stated
+
+## Epic 4: Kebab-case Path Normalization & Naming Enforcement Details
+
+The repository's PascalCase component tree and camelCase test files are normalized to lowercase
+kebab-case (preserving history via `git mv` and keeping React export identifiers PascalCase), the
+`no-uppercase-paths` and kebab-case naming rules are turned on in `.dependency-cruiser.js`, and
+the zero-tolerance gate is verified to pass at zero naming violations on the enabling run.
+
+### Story 4.1: Normalize `src/components/` to kebab-case
+
+As a maintainer,
+I want every PascalCase component directory and source file under `src/components/` renamed to
+lowercase kebab-case with all references updated,
+So that the governed source tree satisfies the kebab-case naming convention without changing the
+published component API.
+
+**Acceptance Criteria:**
+
+**Given** the `src/components/` tree is inspected
+**When** a contributor lists the component directories after the rename
+**Then** every PascalCase directory (`UiButton`, `UiCardItem`, `UiCardList`, `UiFooter`,
+`AppTheme`, `UiColorTheme`, `UiBreakpoints`, `AuthSkeleton`, `Layout`, and the remaining ~21
+top-level dirs) is lowercase kebab-case (`ui-button/`, `ui-card-item/`, `app-theme/`, ...)
+**And** nested subcomponent directories (e.g. `UiCardItem/ServicesHoverCard` ->
+`ui-card-item/services-hover-card`, `UiFooter/PrivacyPolicy`, `UiFooter/SocialMediaItem`) are
+likewise kebab-case
+**And** every PascalCase source file (e.g. `CardContent.tsx` -> `card-content.tsx`,
+`UiFooter.tsx` -> `ui-footer.tsx`) is kebab-case
+
+**Given** the renames are performed
+**When** a contributor inspects the git history of the renamed paths
+**Then** each rename was done with `git mv` so file history is preserved
+
+**Given** the files and directories are renamed
+**When** the barrels and imports are inspected
+**Then** `src/index.ts` and `src/components/index.ts` barrel re-exports point at the new
+kebab-case paths
+**And** all `@/` aliased and relative imports across `src/` resolve to the renamed paths
+**And** every `*.stories.tsx` import path is updated
+**And** the import paths used by unit/integration/e2e/visual tests resolve to the renamed paths
+
+**Given** the rename is complete
+**When** the exported React component identifiers are inspected
+**Then** the exported names stay PascalCase (e.g. `export const UiButton`) — only the FILE and
+DIRECTORY paths become kebab-case
+**And** `make lint-tsc` and the test suites confirm the barrels, imports, stories, and tests
+still resolve and compile after the rename
+
+### Story 4.2: Normalize `tests/` paths to kebab-case
+
+As a maintainer,
+I want the camelCase/PascalCase test files and directories under `tests/` renamed to lowercase
+kebab-case with all references updated,
+So that the test tree satisfies the same kebab-case naming convention as the source tree.
+
+**Acceptance Criteria:**
+
+**Given** the `tests/` tree is inspected
+**When** a contributor lists the test files after the rename
+**Then** camelCase/PascalCase spec and test files are kebab-case (e.g.
+`authSkeleton.spec.ts` -> `auth-skeleton.spec.ts`, `backToMain.spec.ts` -> `back-to-main.spec.ts`,
+`UiBackToMain.test.tsx` -> `ui-back-to-main.test.tsx`)
+**And** any matching `*-snapshots/` directories are renamed to match the kebab-case spec name
+
+**Given** the test files are renamed
+**When** a contributor inspects the git history of the renamed paths
+**Then** each rename was done with `git mv` so file history is preserved
+
+**Given** the renames are performed
+**When** the test references are inspected
+**Then** Playwright and Jest references resolve to the renamed paths
+**And** the `check-test-structure.sh` expectations are updated if they reference the renamed
+paths or directory shapes
+
+### Story 4.3: Add `no-uppercase-paths` + kebab-case naming rules and verify a clean gate
+
+As a maintainer,
+I want the `no-uppercase-paths` and kebab-case naming rules added to `.dependency-cruiser.js` and
+the gate verified clean against the migrated tree,
+So that the naming convention is enforced under zero tolerance with no violations on the enabling
+run.
+
+**Acceptance Criteria:**
+
+**Given** Stories 4.1 and 4.2 are complete (this story is sequenced AFTER the migration)
+**When** a contributor inspects `.dependency-cruiser.js`
+**Then** a `no-uppercase-paths` rule (error, ported from CRM line 472, scoped to the governed
+`src/` + `tests/` graph) is present, forbidding any uppercase character in governed source paths
+**And** kebab-case naming rules for component dirs/files (`component-name-kebab-case`) and test
+dirs/files (`test-name-kebab-case`) — CRM `src-*-name-kebab-case` parity, adapted — are present
+
+**Given** the naming rules are added and the tree has been migrated
+**When** a contributor runs `make lint-dep-cruiser` against the post-migration tree
+**Then** the gate evaluates the naming rules across the governed `src/` and `tests/` paths
+**And** it reports ZERO `no-uppercase-paths`/kebab-case naming violations
+**And** the run exits `0` with no naming-related output
+
+**Given** the naming rules are live
+**When** a contributor reintroduces a PascalCase path (for example a `UiNew/` component dir)
+**Then** `make lint-dep-cruiser` fails and the `text` output names the offending path and the
+violated naming rule
+**And** no `depcruise-baseline` file is introduced to suppress the finding
+
+### Story 4.4: Document the kebab-case naming convention
+
+As a contributor,
+I want documentation stating the kebab-case naming convention and how it is enforced,
+So that I name new files and folders correctly and know how to verify them before review.
+
+**Acceptance Criteria:**
+
+**Given** a contributor opens `CONTRIBUTING.md` or `README.md`
+**When** they look for naming guidance
+**Then** the documentation states that all files and folders are lowercase kebab-case (matching
+the CRM repo)
+**And** it gives concrete examples (`ui-button/index.tsx`, `card-content.tsx`)
+
+**Given** the naming documentation exists
+**When** a contributor reads how the convention is enforced
+**Then** it states the rule is enforced by `make lint-dep-cruiser` (the `no-uppercase-paths` and
+kebab-case naming rules)
+**And** it cross-references the existing dependency-rule documentation from Story 3.1

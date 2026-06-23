@@ -21,10 +21,11 @@ we work through each architectural decision together._
 ### Requirements Overview
 
 **Functional Requirements:**
-The PRD defines 20 functional requirements across seven capability areas: tooling & policy
+The PRD defines 24 functional requirements across eight capability areas: tooling & policy
 definition (FR1-FR4), graph-hygiene rules (FR5-FR8), quality-gate enforcement (FR9-FR12),
 contributor validation (FR13-FR15), CI results reporting (FR16-FR17), repository policy
-consistency (FR18), and contributor documentation (FR19-FR20). Architecturally, this is a
+consistency (FR18), contributor documentation (FR19-FR20), and naming & path normalization
+(FR21-FR24). Architecturally, this is a
 repository workflow initiative rather than an application-runtime feature. The solution must
 support one committed `.dependency-cruiser.js` policy, one reproducible local execution path
 (`make lint-dep-cruiser`), one CI execution path (a dedicated pull-request workflow), clear
@@ -63,7 +64,9 @@ The committed policy must point `tsConfig.fileName` at `tsconfig.json` — which
 imports resolve during analysis. The governed scope is the `src/` graph rooted at the public
 entry `src/index.ts`; only `src/components/` and `src/types/` hold real code, and the
 `src/{hooks,lib,providers,routes,stores,utils}` placeholder directories are empty. Component
-directories are PascalCase by convention, which forbids any lowercase-path rule. The repository
+directories are PascalCase today, so the adopted kebab-case naming rules cannot be enabled until
+the tree is normalized — Epic 1 enables the base gate on the current tree and Epic 4 performs the
+kebab-case migration before turning the naming rules on (see Decision 7). The repository
 has no `modules/`, `features/`, or `repositories/` layout, so CRM bulletproof-react layering
 rules do not apply. The check must be zero-tolerance with no `depcruise-baseline` file, so any
 pre-existing graph violations must be resolved within the same delivery slice.
@@ -249,6 +252,7 @@ parity.
       doNotFollow: { path: 'node_modules' },
       tsPreCompilationDeps: true,
       combinedDependencies: true,
+      detectProcessBuiltinModuleCalls: true,
       tsConfig: { fileName: 'tsconfig.json' },
       enhancedResolveOptions: {
         exportsFields: ['exports'],
@@ -272,7 +276,11 @@ parity.
 - **Rationale:** `tsConfig.fileName: 'tsconfig.json'` resolves the `@/*` alias (via the extended
   `tsconfig.paths.json`) so aliased imports analyze correctly. `tsPreCompilationDeps: true`
   surfaces type-only imports needed by the type-split rules. `combinedDependencies: true` and the
-  `enhancedResolveOptions` mirror CRM so package-resolution behaves identically. `exclude`
+  `enhancedResolveOptions` mirror CRM so package-resolution behaves identically — and
+  `combinedDependencies: true` is also what makes the `not-to-dev-dep` `dependencyTypesNot`
+  mechanism work, since a dual-placed module then carries both `npm-dev` and `npm-peer` tags (see
+  Decision 3). `detectProcessBuiltinModuleCalls: true` mirrors CRM so `node:`-prefixed builtin
+  calls are detected for the core-module rules. `exclude`
   removes build/report directories from analysis; `doNotFollow` keeps `node_modules` out of the
   graph. No baseline file is created, enforcing zero tolerance.
 - **Affects:** `.dependency-cruiser.js` (new file), depends on `tsconfig.json` /
@@ -280,55 +288,81 @@ parity.
 
 ### Decision 3: Rule Set Design
 
-The rule set ports the CRM generic-health and type-split rules and replaces the CRM
+The rule set ports the CRM generic-health, type-split, and naming rules
+(`no-uppercase-paths` plus the kebab-case `*-name` family) and replaces the CRM
 bulletproof-react layering rules with components-centric boundary rules tuned to this library.
 All rules are `forbidden`-only. One CRM rule — `not-to-dev-dep` — does **not** port verbatim and
-is re-scoped for this library's dependency layout (see the dev+peer overlap note below).
+is re-scoped for this library's dependency layout (see the dev+peer overlap note below). The
+naming rules are adopted per stakeholder direction but cannot be enabled on the current tree
+until it is normalized to kebab-case — see Decision 7 for the migration sequencing.
 
 <!-- markdownlint-disable MD013 -->
 
-| Rule name                          | Severity | What it forbids                                                                                                                                                                                                                           |
-| ---------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `no-circular`                      | error    | Any cyclic dependency chain within the `src/` graph.                                                                                                                                                                                      |
-| `no-orphans`                       | error    | Modules nothing imports, with an allowlist for dotfiles, `*.d.ts`, config files, the entry barrels, and stories.                                                                                                                          |
-| `no-deprecated-core`               | warn     | Imports of deprecated Node/bun core modules.                                                                                                                                                                                              |
-| `not-to-deprecated`                | warn     | Imports of npm modules marked deprecated.                                                                                                                                                                                                 |
-| `no-non-package-json`              | error    | Imports of npm modules not declared in `package.json` (dependencies/peer/optional).                                                                                                                                                       |
-| `not-to-unresolvable`              | error    | Imports that cannot be resolved on disk.                                                                                                                                                                                                  |
-| `no-duplicate-dep-types`           | warn     | A module declared under more than one dependency type in `package.json`.                                                                                                                                                                  |
-| `not-to-dev-dep`                   | error    | Production `src/` code importing a **truly dev-only** devDependency (one NOT also a peerDependency). Scoped with a `pathNot` allowlist for the runtime libs mirrored into both `devDependencies` and `peerDependencies` (see note below). |
-| `not-to-test`                      | error    | Production `src/` code importing a module under the `tests/` tree.                                                                                                                                                                        |
-| `not-to-spec`                      | error    | Production `src/` code importing a `*.spec.*` / `*.test.*` file.                                                                                                                                                                          |
-| `optional-deps-used`               | info     | Use of an optional dependency (informational).                                                                                                                                                                                            |
-| `peer-deps-used`                   | warn     | Direct use of a peerDependency from source.                                                                                                                                                                                               |
-| `type-files-imported-as-type-only` | error    | Importing a type-only module (`*.d.ts`, `types.ts`) as a runtime (value) import instead of a type-only import.                                                                                                                            |
-| `type-files-no-runtime-imports`    | error    | A type-only module pulling in runtime (value) imports.                                                                                                                                                                                    |
-| `src-not-to-tests`                 | error    | Any `src/` module depending on the repository `tests/` tree (components-centric direction rule).                                                                                                                                          |
-| `no-prod-import-of-stories`        | error    | Production `src/` code importing a `*.stories.tsx` story file.                                                                                                                                                                            |
-| `components-public-api`            | error    | Reaching past a component's public entry (`index.tsx`/`index.ts`) barrel into another component's internals.                                                                                                                              |
+| Rule name                          | Severity | What it forbids                                                                                                                                                                                                                            |
+| ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `no-circular`                      | error    | Any cyclic dependency chain within the `src/` graph.                                                                                                                                                                                       |
+| `no-orphans`                       | error    | Modules nothing imports, with an allowlist for dotfiles, `*.d.ts`, config files, the entry barrels, and stories.                                                                                                                           |
+| `no-deprecated-core`               | warn     | Imports of deprecated Node/bun core modules.                                                                                                                                                                                               |
+| `not-to-deprecated`                | warn     | Imports of npm modules marked deprecated.                                                                                                                                                                                                  |
+| `no-non-package-json`              | error    | Imports of npm modules not declared in `package.json` (dependencies/peer/optional).                                                                                                                                                        |
+| `not-to-unresolvable`              | error    | Imports that cannot be resolved on disk.                                                                                                                                                                                                   |
+| `no-duplicate-dep-types`           | warn     | A module declared under more than one dependency type in `package.json`.                                                                                                                                                                   |
+| `not-to-dev-dep`                   | error    | Production `src/` code importing a **truly dev-only** devDependency (one NOT also a peerDependency). Scoped with a `pathNot` allowlist for the runtime libs mirrored into both `devDependencies` and `peerDependencies` (see note below).  |
+| `not-to-test`                      | error    | Production `src/` code importing a module under the `tests/` tree.                                                                                                                                                                         |
+| `not-to-spec`                      | error    | Production `src/` code importing a `*.spec.*` / `*.test.*` file.                                                                                                                                                                           |
+| `optional-deps-used`               | info     | Use of an optional dependency (informational).                                                                                                                                                                                             |
+| `peer-deps-used`                   | warn     | Direct use of a peerDependency from source.                                                                                                                                                                                                |
+| `type-files-imported-as-type-only` | error    | Importing a type-only module (`*.d.ts`, `types.ts`) as a runtime (value) import instead of a type-only import.                                                                                                                             |
+| `type-files-no-runtime-imports`    | error    | A type-only module pulling in runtime (value) imports.                                                                                                                                                                                     |
+| `src-not-to-tests`                 | error    | Any `src/` module depending on the repository `tests/` tree (components-centric direction rule).                                                                                                                                           |
+| `no-prod-import-of-stories`        | error    | Production `src/` code importing a `*.stories.tsx` story file.                                                                                                                                                                             |
+| `components-public-api`            | error    | Reaching past a component's public entry (`index.tsx`/`index.ts`) barrel into another component's internals.                                                                                                                               |
+| `no-uppercase-paths`               | error    | Any uppercase character in a governed `src/` or `tests/` file or directory path (ported verbatim from CRM line 472 — `from.path: '.*[A-Z].*'`). All governed paths must be lowercase.                                                      |
+| `component-name-kebab-case`        | error    | A component directory or file under `src/components/<name>/` whose path segment is not lowercase kebab-case (CRM `src-module-name-kebab-case` / `src-feature-name-kebab-case` parity, adapted to `^src/components/(?![a-z0-9-]+/)[^/]+/`). |
+| `test-name-kebab-case`             | error    | A test directory or file under `tests/<tier>/` whose path segment is not lowercase kebab-case (CRM `tests-*-name-kebab-case` parity, adapted to `^tests/(?:e2e\|visual\|...)/(?![a-z0-9-]+...)`).                                          |
 
 Severity legend: `error` fails the gate; `warn`/`info` are advisory and do not fail. Because the
 policy is zero-tolerance, the boundary-critical rules are `error`.
 
 <!-- markdownlint-enable MD013 -->
 
+**CRM naming rules now ADOPTED (reversing the earlier drop):** Per stakeholder direction,
+`no-uppercase-paths` and the kebab-case `*-name` family are reinstated and ported to this
+library (adapted to `src/components/<name>` and `tests/<tier>/...`). They appear in the rule
+table above. They are NOT dropped. Because the current tree is PascalCase
+(`UiButton/`, `UiCardItem/ServicesHoverCard/`) with camelCase test files, these rules would fail
+the whole tree if enabled today; Decision 7 sequences the one-time kebab-case migration that
+precedes turning them on.
+
 **CRM rules explicitly dropped and why:**
 
 - `no-cross-module-imports`, `no-components-import-modules`, repository/store/feature/DI rules,
   and the `*-allowed-folders` rules — there is no `modules/`, `features/`, `repositories/`, or
   `stores/` layout in this library (those `src/` dirs are empty placeholders), so the rules would
-  match nothing or misfire.
-- `*-name-kebab-case` and `no-uppercase-paths` — component directories are PascalCase by
-  convention (`UiButton/`, `UiCardItem/ServicesHoverCard/`); a lowercase/kebab path rule would
-  fail the entire tree. These are removed and replaced by the components-centric rules above.
+  match nothing or misfire. The bulletproof-react LAYERING rules remain dropped for the same
+  reason.
 
 **Rationale:** The ported generic-health and type-split rules carry directly because they are
 layout-agnostic. The new `src-not-to-tests`, `no-prod-import-of-stories`, and
 `components-public-api` rules encode this library's actual boundaries: `src/` must not depend on
 `tests/`, production code must not import stories, and component internals are reached only
-through their barrel. The `no-orphans` allowlist accounts for the entry barrels
-(`src/index.ts`, `src/components/index.ts`), the `fonts.css` side-effect import, `*.d.ts` files
-(`src/types/styles.d.ts`, `Types.d.ts`), config, and the 21 `*.stories.tsx` files.
+through their barrel. The `no-orphans` allowlist is expressed as REGEX CLASSES rather than
+enumerated paths so it does not drift as files are added:
+`\\.d\\.ts$` (covers `src/types/styles.d.ts`, `src/components/Types.d.ts`, AND
+`src/react-app-env.d.ts`), `\\.stories\\.tsx$` (all 21 stories), `fonts\\.css$`, and
+`^src/(components/)?index\\.(ts|tsx)$` (both entry barrels). Dotfiles and config are covered by
+dependency-cruiser's default orphan `pathNot`.
+
+**`not-to-test` / `src-not-to-tests` non-overlap (de-duplication):** These two rules are given
+DISTINCT, non-overlapping scopes so they never double-report the same edge. `not-to-spec` owns
+the FILE patterns (`[.](?:spec|test)[.](?:tsx?|jsx?|...)$`, mirroring CRM lines 154-167) — any
+`src/` import of a spec/test file. `src-not-to-tests` owns the DIRECTORY (`^tests/` as a target
+of `^src/`, mirroring CRM `not-to-test` lines 138-153). `not-to-test` is therefore folded into
+`src-not-to-tests` (one directory rule), so FR6's "`src/` must not depend on `tests/`" maps to
+`src-not-to-tests`, and FR5's spec/test-file clause maps to `not-to-spec`. The rule table lists
+`not-to-test` and `not-to-spec` as the CRM-named source rules; in THIS policy the directory
+concern is implemented once as `src-not-to-tests` to avoid a duplicate report against
+`tests/**/*.spec.ts`.
 
 **Dev+peer dependency overlap — why `not-to-dev-dep` cannot port verbatim:** As a published
 React/MUI component library, `@vilnacrm/ui-toolkit` declares its runtime libraries under **both**
@@ -339,12 +373,44 @@ Concretely, `@mui/material` (~51 `src/` imports), `react` (~46), `react-hook-for
 `not-to-dev-dep` rule (`src` ↛ `npm-dev`) works only because CRM's runtime libs are true
 `dependencies`; that premise does **not** hold here. A verbatim port would resolve every one of
 those 100+ component imports as `npm-dev` and fail the entire tree on the first zero-tolerance
-run. The rule is therefore re-scoped to forbid only **truly dev-only** modules: its
-`to.dependencyTypes` targets `npm-dev` but its `to.pathNot` (or equivalent
-`dependencyTypesNot: ['npm-peer']` exclusion) allowlists every module that is also a
-`peerDependency`. This keeps the genuine value
-(catching `src/` leaks of build/test-only tooling such as `jest`, `storybook`, `webpack`,
-`eslint`) while not flagging the library's legitimately mirrored runtime peers.
+run. The rule is therefore re-scoped to forbid only **truly dev-only** modules. The COMMITTED
+mechanism is `to.dependencyTypesNot: ['npm-peer']` — NOT a hand-maintained `pathNot` allowlist.
+Because `combinedDependencies: true` (Decision 2) makes any module placed in both
+`devDependencies` and `peerDependencies` carry BOTH the `npm-dev` and `npm-peer` tags, a rule of
+`to.dependencyTypes: ['npm-dev']` + `to.dependencyTypesNot: ['npm-peer', 'type-only']` spares all
+nine dual-placed runtime libs automatically with no enumerated path list to drift. CRM's existing
+`type-only` exclusion and the `node_modules/@types/` `pathNot` exception are layered under it. The
+rule's `from.path: '^src'` + `from.pathNot` spec/test exclusion mirrors CRM lines 169-189. This
+keeps the genuine value (catching `src/` leaks of build/test-only tooling such as `jest`,
+`storybook`, `webpack`, `eslint`) while not flagging the library's legitimately mirrored runtime
+peers. The `.dependency-cruiser.js` author MUST run the gate against `main` and confirm ZERO
+`not-to-dev-dep` hits on those nine dev+peer modules (`@mui/material`, `react`, `react-hook-form`,
+`@mui/system`, `@emotion/react`, `i18next`, `react-i18next`, plus the remaining peers); `swiper`
+is the only true `dependency`.
+
+**`components-public-api` concrete regex (modeled on CRM `no-repository-internal-imports`,
+lines 241-256):** The rule forbids one component dir reaching PAST another component's public
+entry into its internals, while allowing a component to import its OWN internals/subcomponents.
+Using a negative-lookahead on the barrel filename:
+
+```javascript
+{
+  name: 'components-public-api',
+  severity: 'error',
+  comment:
+    "Imports between components must go through the target component's public entry " +
+    '(index.ts|index.tsx), not reach into its internals.',
+  from: { path: '^src/components/([^/]+)/' },
+  to: {
+    // a DIFFERENT component dir's non-index file
+    path: '^src/components/(?!\\1/)[^/]+/(?!index[.](?:ts|tsx)$).+',
+  },
+},
+```
+
+The `\\1` back-reference scopes the `pathNot` so a component importing within its own directory
+(its subcomponents/internals) never matches; only crossing into a sibling component's non-`index`
+file fails.
 
 **Affects:** `.dependency-cruiser.js`.
 
@@ -377,7 +443,8 @@ run. The rule is therefore re-scoped to forbid only **truly dev-only** modules: 
 - **Trigger:** `pull_request` targeting `main` (mirrors `static-testing.yml`).
 - **Permissions:** `contents: read`.
 - **Runner / runtime:** `ubuntu-latest`; the docker-compose `bun` service provides the Node/bun
-  runtime, so no `setup-node` step. Action pins use TAGs (`actions/checkout@v4`).
+  runtime, so no `setup-node` step. Action pins use TAGs (`actions/checkout@v4`), and the checkout
+  step sets `with: { persist-credentials: false }` so the job's `GITHUB_TOKEN` is not left on disk.
 - **Steps:** checkout -> (detect runtime project files, mirroring static-testing's gate) ->
   `make start` -> `make lint-dep-cruiser` -> `make down` (`if: always()`).
 - **Required check:** Registered as a required status check in branch protection for PRs to
@@ -390,14 +457,50 @@ run. The rule is therefore re-scoped to forbid only **truly dev-only** modules: 
 
 ### Decision 6: Reporting Format
 
-- **Primary:** Plain job logs. The default `err` reporter prints one line per violation, naming
-  the offending file and the violated rule, and exits non-zero on any `error`-severity match.
+- **Primary:** Plain job logs using the DEFAULT `text` reporter (NOT `err`). `text` prints one
+  line per finding — naming the offending file and the violated rule — for BOTH `error`- and
+  advisory (`warn`/`info`)-severity matches, and still exits non-zero whenever any `error`-severity
+  rule matches.
+- **Why not `err`:** The `err` reporter suppresses everything below `error`, which would hide the
+  deliberately-kept advisory warns (`peer-deps-used`, `not-to-deprecated`, `no-duplicate-dep-types`,
+  `optional-deps-used`). Those exist to stay VISIBLE in CI output, so the reporter is pinned to
+  `text` to reconcile with Decision 2's `reporterOptions.text` and the advisory rules in
+  Decision 3. The PRD output FRs (FR16) require advisory `warn`-severity findings to remain
+  visible alongside `error` violations rather than be suppressed by an error-only reporter.
 - **Success output:** A clean run prints no violations and exits zero.
 - **No baseline:** There is no `depcruise-baseline` file; every violation surfaces on every run.
-- **Rationale:** The `err` reporter is the most actionable default for CI and local use — it
-  states file + rule directly, satisfying the "no raw tool internals" requirement without extra
-  formatting setup. Visual/graph reporters (`dot`/`archi`) are out of scope per the PRD.
+- **Rationale:** The `text` reporter is the most actionable default for CI and local use — it
+  states file + rule directly for every severity, satisfying the "no raw tool internals"
+  requirement without extra formatting setup. Visual/graph reporters (`dot`/`archi`) are out of
+  scope per the PRD.
 - **Affects:** `.dependency-cruiser.js` reporter behavior; `lint-dep-cruiser` recipe output.
+
+### Decision 7: Kebab-case Path Normalization & Migration
+
+- **Strategy:** The naming rules (`no-uppercase-paths`, `component-name-kebab-case`,
+  `test-name-kebab-case`) are adopted per stakeholder direction, but they CANNOT be enabled under
+  zero-tolerance against the current tree. The existing PascalCase component tree (~21 top-level
+  component dirs plus nested subcomponents such as `UiFooter/PrivacyPolicy/`,
+  `UiCardItem/ServicesHoverCard/`, PascalCase files like `CardContent.tsx` / `UiFooter.tsx`, and
+  the `index.ts`/`index.tsx` barrels) and the camelCase test files (`authSkeleton.spec.ts`,
+  `backToMain.spec.ts`) must FIRST be renamed (via `git mv`) to lowercase kebab-case, with all
+  barrels, internal `@/` and relative imports, Storybook `*.stories.tsx`, and tests updated to
+  match. React export IDENTIFIERS stay PascalCase (e.g. `export const UiButton`); only the file
+  and directory PATHS become kebab-case (`ui-button/ui-button.tsx`). This is what FR23 requires.
+- **Sequencing:** Epic 1 enables the BASE gate (generic-health, type-split, components-centric
+  boundary rules) on the CURRENT tree with the naming rules OFF, so the zero-tolerance gate can go
+  green without a tree-wide rename. Epic 4 then performs the kebab-case migration and, in the same
+  slice, turns the three naming rules ON — the run that enables them must pass with zero
+  `no-uppercase-paths` / kebab violations.
+- **Rationale:** Enabling a lowercase-path rule against a PascalCase tree would fail every governed
+  file at once, coupling a large mechanical rename to the gate's first introduction and inflating
+  the blast radius of Epic 1. Splitting the rename into its own epic keeps each slice
+  independently verifiable: Epic 1 proves the boundary/health policy holds, Epic 4 proves the
+  naming policy holds after normalization. Keeping export identifiers PascalCase preserves the
+  public API and every consumer import while still satisfying the path convention.
+- **Affects:** `src/components/**` (dir + file renames, barrels), `tests/**` (camelCase spec
+  renames), all internal imports/stories/tests referencing renamed paths,
+  `.dependency-cruiser.js` (enabling the three naming rules in the Epic 4 slice).
 
 ### Decision Impact Analysis
 
@@ -458,7 +561,7 @@ Six areas where implementing agents could diverge — all locked below.
 ### Format Patterns
 
 - **Enforcement mode:** zero-tolerance. No `depcruise-baseline` file may be created.
-- **Failure output:** the default `err` reporter — one line per violation naming file + rule.
+- **Failure output:** the default `text` reporter — one line per finding naming file + rule, keeping advisory `warn`/`info` findings visible.
 - **Severity discipline:** boundary-critical rules are `error`; advisory rules are `warn`/`info`
   and do not fail the gate.
 
@@ -467,10 +570,11 @@ Six areas where implementing agents could diverge — all locked below.
 - **Alias resolution:** `tsConfig.fileName` MUST be `tsconfig.json` (which extends
   `tsconfig.paths.json`). Never point it at `tsconfig.paths.json` directly — the alias-only file
   lacks `include`/compiler context.
-- **No lowercase-path rule:** never add `no-uppercase-paths` or kebab-case path rules; the
-  PascalCase component tree would fail wholesale.
-- **No bulletproof-react layering rules:** never port CRM's module/feature/repository rules; the
-  layout does not exist here.
+- **Naming-rule sequencing:** the `no-uppercase-paths` and kebab-case naming rules ARE adopted,
+  but they are enabled only in the Epic 4 slice AFTER the kebab-case migration (Decision 7). Never
+  enable them on the current PascalCase tree in Epic 1 — they would fail it wholesale.
+- **No bulletproof-react layering rules:** never port CRM's module/feature/repository layering or
+  `*-allowed-folders` rules; the layout does not exist here.
 
 ### Enforcement Guidelines
 
@@ -487,7 +591,8 @@ Six areas where implementing agents could diverge — all locked below.
 - Creating a `depcruise-baseline` file to silence pre-existing violations.
 - Adding a `package.json` script instead of a Makefile target.
 - Folding the check into `static-testing.yml` instead of a dedicated workflow.
-- Porting CRM layering or lowercase-path rules.
+- Porting CRM bulletproof-react layering rules (those stay dropped).
+- Enabling the kebab-case naming rules before the Epic 4 migration (Decision 7).
 
 ## Project Structure & Boundaries
 
@@ -496,18 +601,22 @@ Six areas where implementing agents could diverge — all locked below.
 (target-state — planning only; none of these files are part of this PR)
 
 This initiative extends the existing `ui-toolkit` repository. No new project root.
-Planned delta totals: 2 new files and 4 modified files.
+Planned delta totals (Epics 1-3): 2 new files and 4 modified files. Epic 4 adds a tree-wide
+kebab-case rename plus enabling the three naming rules in `.dependency-cruiser.js`.
 
 <!-- markdownlint-disable MD013 -->
 
-| File                                       | Change   | Purpose                                                                   |
-| ------------------------------------------ | -------- | ------------------------------------------------------------------------- |
-| `package.json`                             | modified | Add `dependency-cruiser@^17.3.7` devDependency.                           |
-| `.dependency-cruiser.js`                   | new      | Committed CommonJS policy: options + `forbidden` rule set; no baseline.   |
-| `Makefile`                                 | modified | Add `lint-dep-cruiser` target; add to `.PHONY`; append to `lint:` chain.  |
-| `.github/workflows/dependency-cruiser.yml` | new      | Dedicated PR -> main required workflow running `make lint-dep-cruiser`.   |
-| `CONTRIBUTING.md`                          | modified | Document local usage, ESLint complementarity, and failure interpretation. |
-| `README.md`                                | modified | Document what the gate enforces and how to run it locally.                |
+| File                                       | Change   | Purpose                                                                                                                                                |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `package.json`                             | modified | Add `dependency-cruiser@^17.3.7` devDependency.                                                                                                        |
+| `.dependency-cruiser.js`                   | new      | Committed CommonJS policy: options + `forbidden` rule set; no baseline. Epic 1 base rules; Epic 4 enables the three naming rules.                      |
+| `Makefile`                                 | modified | Add `lint-dep-cruiser` target; add to `.PHONY`; append to `lint:` chain.                                                                               |
+| `.github/workflows/dependency-cruiser.yml` | new      | Dedicated PR -> main required workflow running `make lint-dep-cruiser`.                                                                                |
+| `CONTRIBUTING.md`                          | modified | Document local usage, ESLint complementarity, failure interpretation, and the kebab-case naming convention.                                            |
+| `README.md`                                | modified | Document what the gate enforces, how to run it locally, and the kebab-case naming convention.                                                          |
+| `src/components/**`                        | renamed  | Epic 4: `git mv` ~21 PascalCase component dirs + nested subcomponents + PascalCase files + barrels to kebab-case (export identifiers stay PascalCase). |
+| `tests/**`                                 | renamed  | Epic 4: `git mv` camelCase spec files (`authSkeleton.spec.ts`, `backToMain.spec.ts`, ...) to kebab-case.                                               |
+| internal imports / `*.stories.tsx`         | modified | Epic 4: update all `@/` + relative imports, barrels, and Storybook story paths to the renamed kebab-case paths.                                        |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -517,7 +626,7 @@ Planned delta totals: 2 new files and 4 modified files.
 
 - `dependency-cruiser` is a pure devDependency invoked via `bun x depcruise`.
 - The repository owns: version pin (`^17.3.7`), the `.dependency-cruiser.js` policy, the
-  invocation (`make lint-dep-cruiser`), and reporting choice (`err`).
+  invocation (`make lint-dep-cruiser`), and reporting choice (default `text`).
 - The tool owns: graph construction and rule evaluation — no custom wrappers or patches.
 
 **CI Boundary:**
@@ -536,28 +645,32 @@ Planned delta totals: 2 new files and 4 modified files.
 
 <!-- markdownlint-disable MD013 -->
 
-| FR   | Covered by                                                                                                                                                    |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1  | `package.json` — `dependency-cruiser@^17.3.7` devDependency (Decision 1).                                                                                     |
-| FR2  | `.dependency-cruiser.js` — single CommonJS, `forbidden`-only policy (Decision 2).                                                                             |
-| FR3  | `.dependency-cruiser.js` `options.tsConfig.fileName: 'tsconfig.json'` resolving `@/*` (Decision 2).                                                           |
-| FR4  | `.dependency-cruiser.js` scope = `src` from `src/index.ts` + `exclude`/`doNotFollow` list (Decision 2/5).                                                     |
-| FR5  | Generic-health rules: `no-circular`, `no-orphans`, `no-non-package-json`, `not-to-unresolvable`, `not-to-dev-dep`, `not-to-test`, `not-to-spec` (Decision 3). |
-| FR6  | Components-centric rules: `src-not-to-tests`, `no-prod-import-of-stories`, `components-public-api` (Decision 3).                                              |
-| FR7  | `type-files-imported-as-type-only`, `type-files-no-runtime-imports` (Decision 3).                                                                             |
-| FR8  | Zero-tolerance — `forbidden`-only policy, no `depcruise-baseline` (Decision 2/6).                                                                             |
-| FR9  | `.github/workflows/dependency-cruiser.yml` — `pull_request` -> `main` (Decision 5).                                                                           |
-| FR10 | Dedicated workflow registered as a required status check in branch protection (Decision 5).                                                                   |
-| FR11 | `err` reporter exits non-zero on any `error`-severity violation in the `src/` graph (Decision 3/6).                                                           |
-| FR12 | `make lint-dep-cruiser` cruises the full governed `src` graph each run (Decision 4).                                                                          |
-| FR13 | `Makefile` — `lint-dep-cruiser` target (Decision 4).                                                                                                          |
-| FR14 | `lint-dep-cruiser` appended to the aggregate `lint:` chain (Decision 4).                                                                                      |
-| FR15 | `err` reporter names offending file and violated rule (Decision 6).                                                                                           |
-| FR16 | Workflow job logs render success (clean exit) and failure (`err` output) (Decision 5/6).                                                                      |
-| FR17 | `err` output names file + rule without raw internals (Decision 6).                                                                                            |
-| FR18 | Same `.dependency-cruiser.js` + same `src` scope via the shared `make lint-dep-cruiser` (Decision 4).                                                         |
-| FR19 | `CONTRIBUTING.md` / `README.md` — what it enforces + ESLint `import/no-cycle` gap complementarity (Decision: Docs).                                           |
-| FR20 | `CONTRIBUTING.md` / `README.md` — local `make lint-dep-cruiser` usage + failure interpretation (Decision: Docs).                                              |
+| FR   | Covered by                                                                                                                                                        |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1  | `package.json` — `dependency-cruiser@^17.3.7` devDependency (Decision 1).                                                                                         |
+| FR2  | `.dependency-cruiser.js` — single CommonJS, `forbidden`-only policy (Decision 2).                                                                                 |
+| FR3  | `.dependency-cruiser.js` `options.tsConfig.fileName: 'tsconfig.json'` resolving `@/*` (Decision 2).                                                               |
+| FR4  | `.dependency-cruiser.js` scope = `src` from `src/index.ts` + `exclude`/`doNotFollow` list (Decision 2/5).                                                         |
+| FR5  | Generic-health rules: `no-circular`, `no-orphans`, `no-non-package-json`, `not-to-unresolvable`, `not-to-dev-dep`, `not-to-test`, `not-to-spec` (Decision 3).     |
+| FR6  | Components-centric rules: `src-not-to-tests`, `no-prod-import-of-stories`, `components-public-api` (Decision 3).                                                  |
+| FR7  | `type-files-imported-as-type-only`, `type-files-no-runtime-imports` (Decision 3).                                                                                 |
+| FR8  | Zero-tolerance — `forbidden`-only policy, no `depcruise-baseline` (Decision 2/6).                                                                                 |
+| FR9  | `.github/workflows/dependency-cruiser.yml` — `pull_request` -> `main` (Decision 5).                                                                               |
+| FR10 | Dedicated workflow registered as a required status check in branch protection (Decision 5).                                                                       |
+| FR11 | `text` reporter exits non-zero on any `error`-severity violation in the `src/` graph (Decision 3/6).                                                              |
+| FR12 | `make lint-dep-cruiser` cruises the full governed `src` graph each run (Decision 4).                                                                              |
+| FR13 | `Makefile` — `lint-dep-cruiser` target (Decision 4).                                                                                                              |
+| FR14 | `lint-dep-cruiser` appended to the aggregate `lint:` chain (Decision 4).                                                                                          |
+| FR15 | `text` reporter names offending file and violated rule (Decision 6).                                                                                              |
+| FR16 | Workflow job logs render success (clean exit) and failure (`text` output incl. advisory warns) (Decision 5/6).                                                    |
+| FR17 | `text` output names file + rule without raw internals (Decision 6).                                                                                               |
+| FR18 | Same `.dependency-cruiser.js` + same `src` scope via the shared `make lint-dep-cruiser` (Decision 4).                                                             |
+| FR19 | `CONTRIBUTING.md` / `README.md` — what it enforces + ESLint `import/no-cycle` gap complementarity (Decision: Docs).                                               |
+| FR20 | `CONTRIBUTING.md` / `README.md` — local `make lint-dep-cruiser` usage + failure interpretation (Decision: Docs).                                                  |
+| FR21 | `.dependency-cruiser.js` `no-uppercase-paths` rule (CRM line 472 parity) forbidding uppercase in governed `src/`/`tests/` paths (Decision 3/7).                   |
+| FR22 | `.dependency-cruiser.js` `component-name-kebab-case` + `test-name-kebab-case` rules (CRM `src-*-name-kebab-case` parity) (Decision 3/7).                          |
+| FR23 | Epic 4 kebab-case migration: `git mv` of `src/components/**` dirs/files + camelCase test files to kebab-case, barrels/imports/stories/tests updated (Decision 7). |
+| FR24 | `CONTRIBUTING.md` / `README.md` — documents the all-lowercase kebab-case convention matching the CRM repo (Decision 7 + Docs).                                    |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -589,6 +702,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Detect runtime project files
         id: project
         run: |
@@ -623,7 +738,7 @@ pull_request event (-> main)
         -> make lint-dep-cruiser
           -> bun x depcruise --config .dependency-cruiser.js src
             -> graph rooted at src/index.ts, @/* resolved via tsconfig.json
-              -> violations? -> err output (file + rule) -> exit 1
+              -> violations? -> text output (file + rule, all severities) -> exit 1 on any error
               -> clean?      -> no output -> exit 0
         -> make down (if: always())
 ```
@@ -641,17 +756,23 @@ target. No additional toolchain step is required.
 the no-baseline rule. The runtime-detection gate cleanly mirrors `static-testing.yml`, keeping
 the workflow inert on bootstrap PRs.
 
-**Structure Alignment:** The repository delta maps directly and completely to all 20 FRs. The
+**Structure Alignment:** The repository delta maps directly and completely to all 24 FRs
+(FR1-FR20 base gate; FR21-FR24 naming rules + kebab-case migration via Decision 7 / Epic 4). The
 required-check name convention satisfies branch-protection registration.
 
 ### Requirements Coverage Validation ✅
 
-All 20 functional requirements (FR1-FR20) are covered, as shown in the
-Requirements-to-Structure Mapping. All NFRs are addressed: reliability (deterministic
+All 24 functional requirements (FR1-FR24) are covered, as shown in the
+Requirements-to-Structure Mapping. FR21-FR24 — the reinstated naming rules
+(`no-uppercase-paths`, `component-name-kebab-case`, `test-name-kebab-case`), the kebab-case
+normalization of the current PascalCase/camelCase tree, and the naming-convention documentation —
+are covered by Decision 3 (rules), Decision 7 (migration sequencing), and the Epic 4 slice; they
+are enabled only after the migration so the zero-tolerance gate passes on the enabling run. All
+NFRs are addressed: reliability (deterministic
 `forbidden`-only evaluation against committed policy), consistency (shared
 `make lint-dep-cruiser` + single `.dependency-cruiser.js` + identical `src` scope across local and
 CI, non-redundant with ESLint by owning the disabled `import/no-cycle` gap and boundary checks),
-usability (`err` output names file + rule; documented local workflow), and performance
+usability (`text` output names file + rule; documented local workflow), and performance
 (operationally acceptable inside the existing `bun` service, no fixed numeric target).
 
 ### Gap Analysis Results
@@ -674,9 +795,10 @@ imports) within the same delivery slice. No `depcruise-baseline` file may be int
 an implementation prerequisite, not a scope change.
 
 **Important — `no-orphans` allowlist correctness:**
-The allowlist must cover both entry barrels (`src/index.ts`, `src/components/index.ts`), the
-`fonts.css` side-effect import, `*.d.ts` files (`src/types/styles.d.ts`,
-`src/components/Types.d.ts`), config files, and all 21 `*.stories.tsx` files — otherwise the
+The allowlist is expressed as regex CLASSES (not enumerated paths): `\.d\.ts$` (covering
+`src/types/styles.d.ts`, `src/components/Types.d.ts`, and `src/react-app-env.d.ts`),
+`\.stories\.tsx$` (all 21 stories), `fonts\.css`, and
+`^src/(components/)?index\.(ts|tsx)$` (both entry barrels). This must be in place — otherwise the
 zero-tolerance gate fails the tree on first run.
 
 **Minor — Entry-file inconsistency:**
@@ -696,10 +818,10 @@ and `no-orphans` rules must treat both as the public barrel.
 
 - [x] Tool & version specified (`dependency-cruiser@^17.3.7`, `bun x depcruise`)
 - [x] Config file design defined (`.dependency-cruiser.js`, CommonJS, no baseline)
-- [x] Rule set defined (ported generic + type-split + components-centric; CRM rules dropped)
+- [x] Rule set defined (ported generic + type-split + components-centric + reinstated naming rules; CRM layering rules dropped)
 - [x] Make target design defined (`lint-dep-cruiser`, `.PHONY`, appended to `lint:`)
 - [x] CI structure decided (dedicated `dependency-cruiser.yml`, required check)
-- [x] Reporting format decided (`err` output, no baseline)
+- [x] Reporting format decided (default `text` output, no baseline)
 
 #### ✅ Implementation Patterns
 
@@ -711,10 +833,10 @@ and `no-orphans` rules must treat both as the public barrel.
 
 #### ✅ Project Structure
 
-- [x] Complete file delta defined (2 new, 4 modified)
+- [x] Complete file delta defined (2 new, 4 modified for Epics 1-3; plus Epic 4 kebab-case rename)
 - [x] Component boundaries established (tool / CI / local-CI parity)
 - [x] Integration points mapped (Makefile -> workflow -> branch protection)
-- [x] Requirements-to-structure mapping complete (FR1-FR20)
+- [x] Requirements-to-structure mapping complete (FR1-FR24)
 
 ### Architecture Readiness Assessment
 
@@ -743,7 +865,9 @@ patterns unambiguous, and the file delta fully specified.
 - Use the locked names — `lint-dep-cruiser`, `.dependency-cruiser.js`,
   `.github/workflows/dependency-cruiser.yml`.
 - `make lint-dep-cruiser` is the only valid invocation path; CI must call it, not the raw CLI.
-- Resolve `@/*` through `tsconfig.json`; never add lowercase-path or bulletproof-react rules.
+- Resolve `@/*` through `tsconfig.json`; never add bulletproof-react layering rules. The
+  kebab-case naming rules ARE adopted but are enabled only in the Epic 4 slice after the migration
+  (Decision 7).
 - Run the zero-tolerance baseline-compliance check before enabling the required check; never add
   a `depcruise-baseline`.
 

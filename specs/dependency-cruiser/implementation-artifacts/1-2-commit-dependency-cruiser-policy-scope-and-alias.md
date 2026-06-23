@@ -19,7 +19,10 @@ options.
 4. `options.tsConfig.fileName` is set to `tsconfig.json` (which `extends` `tsconfig.paths.json`),
    so the `@/*` -> `src/*` alias resolves during analysis.
 5. `options.tsPreCompilationDeps` is `true`.
-6. `options.combinedDependencies` is `true`.
+6. `options.combinedDependencies` is `true` (this also enables the `not-to-dev-dep`
+   `dependencyTypesNot: ['npm-peer']` mechanism in Story 1.3 — dual-placed dev+peer modules are
+   tagged both `npm-dev` and `npm-peer`), and `options.detectProcessBuiltinModuleCalls` is `true`
+   (CRM parity, so `node:`-prefixed builtin calls are detected for the core-module rules).
 7. `options.enhancedResolveOptions` is set as specified by the architecture
    (`exportsFields: ['exports']`; `conditionNames: ['import', 'require', 'node', 'default',
 'types']`; `extensions: ['.ts', '.tsx', '.d.ts', '.js']`; `mainFields: ['main', 'types',
@@ -45,6 +48,7 @@ options.
         `tsconfig.paths.json` — never point it at `tsconfig.paths.json` directly)
   - [ ] 2.2 Set `options.tsPreCompilationDeps` to `true`
   - [ ] 2.3 Set `options.combinedDependencies` to `true`
+  - [ ] 2.3a Set `options.detectProcessBuiltinModuleCalls` to `true` (CRM parity)
   - [ ] 2.4 Set `options.enhancedResolveOptions` with `exportsFields`, `conditionNames`,
         `extensions`, and `mainFields` exactly as the architecture specifies
   - [ ] 2.5 Set `options.skipAnalysisNotInRules` to `true`
@@ -97,6 +101,8 @@ establishes the file shape, scope, exclusions, and resolution options.
       doNotFollow: { path: 'node_modules' },
       tsPreCompilationDeps: true,
       combinedDependencies: true,
+      // CRM parity; ui-toolkit src uses process.env as a global.
+      detectProcessBuiltinModuleCalls: true,
       tsConfig: { fileName: 'tsconfig.json' },
       enhancedResolveOptions: {
         exportsFields: ['exports'],

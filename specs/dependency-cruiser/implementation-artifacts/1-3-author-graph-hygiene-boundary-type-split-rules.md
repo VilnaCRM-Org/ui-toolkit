@@ -13,26 +13,42 @@ without any baseline to suppress them.
 ## Acceptance Criteria
 
 1. The `forbidden` set contains the `error`-severity generic-health rules `no-circular`,
-   `no-orphans`, `no-non-package-json`, `not-to-unresolvable`, `not-to-dev-dep`, `not-to-test`,
-   and `not-to-spec`. The `not-to-dev-dep` rule is scoped to forbid only **truly dev-only**
-   modules (`npm-dev` and NOT `npm-peer`); every module also declared under `peerDependencies` is
-   excluded, so the dev+peer runtime libraries (`@mui/material`, `react`, `react-dom`,
-   `react-hook-form`, `@mui/system`, `@emotion/react`, `@emotion/styled`, `i18next`,
-   `react-i18next`) are NOT flagged.
+   `no-orphans`, `no-non-package-json`, `not-to-unresolvable`, `not-to-dev-dep`, and `not-to-spec`
+   (the `*.spec.*`/`*.test.*` FILE rule). The `tests/` DIRECTORY concern (CRM `not-to-test`) is
+   implemented once as the components-centric `src-not-to-tests` rule (AC5), with non-overlapping
+   scope so the two never double-report. The `not-to-dev-dep` rule forbids only **truly dev-only** modules using
+   `to.dependencyTypes: ['npm-dev']` + `to.dependencyTypesNot: ['npm-peer', 'type-only']` (the
+   committed mechanism, NOT a hand-maintained `pathNot` allowlist); because
+   `combinedDependencies: true` dual-tags any dev+peer module, every module also declared under
+   `peerDependencies` is excluded, so the dev+peer runtime libraries (`@mui/material`, `react`,
+   `react-dom`, `react-hook-form`, `@mui/system`, `@emotion/react`, `@emotion/styled`, `i18next`,
+   `react-i18next`) are NOT flagged. The gate is run against `main` and confirmed to produce ZERO
+   `not-to-dev-dep` hits on those nine modules; `swiper` is the only true `dependency`.
 2. The `forbidden` set contains the advisory rules `no-deprecated-core`, `not-to-deprecated`,
    `no-duplicate-dep-types`, `optional-deps-used`, and `peer-deps-used` at `warn`/`info` severity
    so they surface findings but do not fail the gate.
-3. The `no-orphans` rule's allowlist exempts dotfiles, `*.d.ts` files (`src/types/styles.d.ts`,
-   `src/components/Types.d.ts`), config files, the entry barrels (`src/index.ts`,
-   `src/components/index.ts`), and the `*.stories.tsx` files.
+3. The `no-orphans` rule's allowlist is expressed as REGEX CLASSES (not enumerated paths):
+   `\.d\.ts$` (covering `src/types/styles.d.ts`, `src/components/Types.d.ts`, AND
+   `src/react-app-env.d.ts`), `\.stories\.tsx$`, `fonts\.css`, and
+   `^src/(components/)?index\.(ts|tsx)$` (both entry barrels); dotfiles/config are covered by the
+   default orphan `pathNot`.
 4. The `fonts.css` side-effect import in `src/components/index.ts` does not trigger a `no-orphans`
    violation.
 5. The `forbidden` set contains the `error`-severity components-centric rules `src-not-to-tests`,
-   `no-prod-import-of-stories`, and `components-public-api`.
+   `no-prod-import-of-stories`, and `components-public-api`. `src-not-to-tests` owns the `tests/`
+   DIRECTORY concern (CRM's `not-to-test`, `from.path: '^src'`, `to.path: '^tests/'`) and is the
+   ONLY directory rule — `not-to-spec` (AC1) owns the disjoint spec/test FILE-pattern concern, so
+   the two never double-report the same edge. `components-public-api` uses a concrete
+   capture-group + negative-lookahead so a component may import its OWN internals but reaching past
+   ANOTHER component's `index.ts`/`index.tsx` barrel fails: `from.path: '^src/components/([^/]+)/'`
+   and `to.path: '^src/components/(?!\1/)[^/]+/(?!index[.](?:ts|tsx)$).+'`.
 6. The `forbidden` set contains the `error`-severity type-split rules
    `type-files-imported-as-type-only` and `type-files-no-runtime-imports`.
-7. No `no-uppercase-paths` rule, no kebab-case path rule, and no CRM bulletproof-react layering
-   rules (module/feature/repository/store/DI) are present in the policy.
+7. In THIS story (Epic 1, base gate on the current PascalCase tree) the `no-uppercase-paths` and
+   kebab-case naming rules are NOT yet present — they are adopted but enabled only in Epic 4 after
+   the kebab-case migration (Decision 7), since they would fail the current tree wholesale. No CRM
+   bulletproof-react layering rules (module/feature/repository/store/DI) are present (those stay
+   dropped permanently).
 
 ## Tasks / Subtasks
 
@@ -43,21 +59,38 @@ without any baseline to suppress them.
         `package.json`.
   - [ ] 1.3 Add `not-to-unresolvable` (`error`) forbidding imports that cannot be resolved on disk.
   - [ ] 1.4 Add `not-to-dev-dep` (`error`) forbidding production `src/` code from importing a
-        **truly dev-only** devDependency. Scope `to.dependencyTypes` to `npm-dev` but exclude
-        modules that are also peers — e.g. add `npm-peer` to `to.dependencyTypesNot`, or list the
-        dev+peer runtime libraries in `to.pathNot`. Verify against `package.json` that the only
-        true `dependencies` entry is `swiper` and that `@mui/material`, `react`, `react-dom`,
-        `react-hook-form`, `@mui/system`, `@emotion/react`, `@emotion/styled`, `i18next`, and
-        `react-i18next` (all dev+peer) are NOT in the forbidden set — otherwise the rule fires on
-        100+ component imports and fails the whole tree on the first zero-tolerance run.
-  - [ ] 1.5 Add `not-to-test` (`error`) and `not-to-spec` (`error`) forbidding production imports
-        of the `tests/` tree and `*.spec.*` / `*.test.*` files.
+        **truly dev-only** devDependency. Scope `to.dependencyTypes` to `['npm-dev']` and set
+        `to.dependencyTypesNot: ['npm-peer', 'type-only']` — this is the COMMITTED mechanism, NOT a
+        hand-maintained `pathNot` allowlist. Because `combinedDependencies: true` makes any module
+        placed in both `devDependencies` and `peerDependencies` carry BOTH the `npm-dev` and
+        `npm-peer` tags, `dependencyTypesNot: ['npm-peer']` spares all nine dual-placed runtime
+        libs automatically with no path list to drift. Keep CRM's `node_modules/@types/` `pathNot`
+        exception layered under it, and `from.path: '^src'` + `from.pathNot` spec/test exclusion
+        (CRM lines 169-189). Verify against `package.json` that the only true `dependencies` entry
+        is `swiper` and that `@mui/material`, `react`, `react-dom`, `react-hook-form`,
+        `@mui/system`, `@emotion/react`, `@emotion/styled`, `i18next`, and `react-i18next` (all
+        dev+peer) are NOT in the forbidden set — otherwise the rule fires on 100+ component imports
+        and fails the whole tree on the first zero-tolerance run.
+  - [ ] 1.6 After authoring 1.4, run the gate against `main` (`make lint-dep-cruiser`) and confirm
+        `not-to-dev-dep` produces ZERO hits on the nine dev+peer runtime libs (`@mui/material`,
+        `react`, `react-dom`, `react-hook-form`, `@mui/system`, `@emotion/react`,
+        `@emotion/styled`, `i18next`, `react-i18next`), proving the committed
+        `dependencyTypesNot: ['npm-peer', 'type-only']` mechanism (NOT a `pathNot` allowlist)
+        excludes them; the only true `dependency`, `swiper`, stays out of scope too.
+  - [ ] 1.5 Add `not-to-spec` (`error`) forbidding production `src/` imports of `*.spec.*` /
+        `*.test.*` FILE patterns (CRM lines 154-167). Give it a DISTINCT, non-overlapping scope
+        from `src-not-to-tests` (Task 4.1) so they never double-report the same edge: `not-to-spec`
+        owns the spec/test FILE pattern; `src-not-to-tests` owns the `tests/` DIRECTORY. The
+        directory concern (CRM's `not-to-test`, lines 138-153) is implemented ONCE as
+        `src-not-to-tests` to avoid a duplicate report against `tests/**/*.spec.ts`.
 
 - [ ] Task 2: Author the `no-orphans` rule with the components-library allowlist (AC: 1, 3, 4)
   - [ ] 2.1 Add `no-orphans` (`error`) for modules nothing imports.
-  - [ ] 2.2 In its `from.pathNot` allowlist, exempt dotfiles, `\\.d\\.ts$` files, config files,
-        the entry barrels `src/index\\.ts` and `src/components/index\\.ts`, and `\\.stories\\.tsx$`
-        story files.
+  - [ ] 2.2 In its `from.pathNot` allowlist, use REGEX CLASSES rather than enumerated paths:
+        `\\.d\\.ts$` (covers `src/types/styles.d.ts`, `src/components/Types.d.ts`, and
+        `src/react-app-env.d.ts`), `\\.stories\\.tsx$`, `fonts\\.css`, and
+        `^src/(components/)?index\\.(ts|tsx)$` (both entry barrels). Dotfiles/config are covered by
+        the default orphan `pathNot`.
   - [ ] 2.3 Confirm the `import './fonts.css'` side-effect import in `src/components/index.ts` is
         not reported as an orphan (it is reached from the barrel, not an orphan itself).
 
@@ -69,11 +102,25 @@ without any baseline to suppress them.
 
 - [ ] Task 4: Author the components-centric boundary rules (AC: 5)
   - [ ] 4.1 Add `src-not-to-tests` (`error`) forbidding any `src/` module from depending on the
-        repository `tests/` tree.
+        repository `tests/` DIRECTORY (`from.path: '^src'`, `to.path: '^tests/'`; CRM `not-to-test`
+        lines 138-153). This is the single directory rule; do NOT also add a separate `not-to-test`
+        rule (it would double-report with `not-to-spec`/this rule).
   - [ ] 4.2 Add `no-prod-import-of-stories` (`error`) forbidding production `src/` code from
         importing a `*.stories.tsx` file.
   - [ ] 4.3 Add `components-public-api` (`error`) forbidding reaching past a component's public
-        entry barrel (`index.tsx` or `index.ts`) into another component's internals.
+        entry barrel (`index.tsx` or `index.ts`) into ANOTHER component's internals, while allowing
+        a component to import its OWN internals/subcomponents. Model it on CRM's
+        `no-repository-internal-imports` negative-lookahead (CRM lines 241-256) with a `\1`
+        back-reference so the "different component" scope is precise:
+
+        ```javascript
+        {
+          name: 'components-public-api',
+          severity: 'error',
+          from: { path: '^src/components/([^/]+)/' },
+          to: { path: '^src/components/(?!\\1/)[^/]+/(?!index[.](?:ts|tsx)$).+' },
+        }
+        ```
 
 - [ ] Task 5: Author the type/runtime-split rules (AC: 6)
   - [ ] 5.1 Add `type-files-imported-as-type-only` (`error`) forbidding importing a type-only
@@ -81,17 +128,20 @@ without any baseline to suppress them.
   - [ ] 5.2 Add `type-files-no-runtime-imports` (`error`) forbidding a type-only module from
         pulling in runtime (value) imports.
 
-- [ ] Task 6: Exclude the CRM-specific rules (AC: 7)
-  - [ ] 6.1 Confirm no `no-uppercase-paths` or kebab-case path rule is present (the PascalCase
-        component tree would fail wholesale).
+- [ ] Task 6: Confirm rule-set boundaries for this Epic-1 slice (AC: 7)
+  - [ ] 6.1 Confirm no `no-uppercase-paths` or kebab-case naming rule is present YET — they are
+        adopted but enabled only in Epic 4 after the kebab-case migration (Decision 7); on the
+        current PascalCase tree they would fail wholesale.
   - [ ] 6.2 Confirm no `no-cross-module-imports`, `no-components-import-modules`,
-        repository/store/feature/DI, or `*-allowed-folders` rules are present.
+        repository/store/feature/DI, or `*-allowed-folders` layering rules are present (dropped
+        permanently — no such layout exists).
 
 - [ ] Task 7: Verification (AC: 1-7)
   - [ ] 7.1 Run `make lint-dep-cruiser` against the current `src/` graph and confirm it exits `0`
         with no `error`-severity violations (zero-tolerance baseline compliance; no
         `depcruise-baseline` created). In particular confirm `not-to-dev-dep` produces zero
-        violations for the dev+peer runtime libraries (`@mui/material`, `react`, etc.).
+        violations for the dev+peer runtime libraries (`@mui/material`, `react`, etc.) — this is the
+        same main-branch confirmation captured in subtask 1.6.
   - [ ] 7.2 Grep `.dependency-cruiser.js` to confirm each required rule name is present at the
         expected severity and that the excluded CRM rule names are absent.
   - [ ] 7.3 Temporarily introduce a circular import or an orphan module and confirm the
@@ -128,14 +178,17 @@ consideration — larger than cycles/orphans. The rule MUST forbid only truly de
 value (catching `src/` leaks of build/test tooling like `jest`, `storybook`, `webpack`, `eslint`).
 
 **`no-orphans` allowlist correctness (Gap Analysis).** Because the gate is zero-tolerance, the
-allowlist must cover both entry barrels (`src/index.ts`, `src/components/index.ts`), the
-`fonts.css` side-effect import, `*.d.ts` files (`src/types/styles.d.ts`,
-`src/components/Types.d.ts`), config files, and all 21 `*.stories.tsx` files — otherwise the first
+allowlist is expressed as regex CLASSES so it does not drift: `^src/(components/)?index\.(ts|tsx)$`
+(both entry barrels), `fonts\.css` (side-effect import), `\.d\.ts$` (covers
+`src/types/styles.d.ts`, `src/components/Types.d.ts`, and `src/react-app-env.d.ts`), and
+`\.stories\.tsx$` (all 21 stories); dotfiles/config use the default `pathNot`. Otherwise the first
 run fails the tree.
 
-**CRM rules explicitly dropped (Decision 3 / Process Patterns).** Never add `no-uppercase-paths`
-or kebab-case path rules — component directories are PascalCase (`UiButton/`,
-`UiCardItem/ServicesHoverCard/`). Never port the module/feature/repository/store/DI layering rules:
+**Naming rules deferred to Epic 4, layering rules dropped (Decision 3/7 / Process Patterns).** The
+`no-uppercase-paths` and kebab-case naming rules ARE adopted but are enabled only in the Epic 4
+slice AFTER the kebab-case migration — do not add them in THIS story; the current PascalCase tree
+(`UiButton/`, `UiCardItem/ServicesHoverCard/`) would fail them wholesale. Never port the
+module/feature/repository/store/DI layering rules (dropped permanently):
 `src/{hooks,lib,providers,routes,stores,utils}` are empty placeholders, so those rules would match
 nothing or misfire.
 
@@ -168,7 +221,8 @@ src` inside the docker-compose `bun` service) and confirm a clean exit `0` with 
 - Inspect `.dependency-cruiser.js` to confirm each required rule name and severity is present and
   that the excluded CRM rule names are absent.
 - Negative-path: introduce a temporary circular import / orphan module and confirm the gate exits
-  non-zero with the `err` reporter naming the offending file and the violated rule, then revert.
+  non-zero with the default `text` reporter naming the offending file and the violated rule, then
+  revert.
 
 ### References
 
@@ -177,7 +231,7 @@ src` inside the docker-compose `bun` service) and confirm a clean exit `0` with 
   - Decision 2: Config File Design (options the rules depend on — `tsPreCompilationDeps`,
     `tsConfig.fileName`)
   - Decision 3: Rule Set Design (the full rule table, severities, and dropped CRM rules)
-  - Decision 6: Reporting Format (`err` reporter, no baseline)
+  - Decision 6: Reporting Format (default `text` reporter, no baseline)
   - Implementation Patterns & Consistency Rules: Format Patterns, Process Patterns,
     Enforcement Guidelines, Anti-Patterns
   - Gap Analysis Results: `no-orphans` allowlist correctness, entry-file inconsistency

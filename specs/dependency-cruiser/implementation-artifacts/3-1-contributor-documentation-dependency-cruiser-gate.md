@@ -22,8 +22,8 @@ tool internals.
 4. The documentation references `make lint-dep-cruiser`, not the raw `bun x depcruise` invocation.
 5. The documentation states that no additional setup beyond the repository's existing
    docker-compose `bun` workflow is required.
-6. The `err` output format is explained: one line per violation naming the offending file and the
-   violated rule.
+6. The default `text` output format is explained: one line per finding naming the offending file
+   and the violated rule, for all severities, with advisory `warn`/`info` findings staying visible.
 7. Guidance on remediating common violations (cycles, orphans, leaked stories/dev imports) is
    present.
 8. IDE/editor integration and visual/graph reporting are explicitly noted as out of scope.
@@ -62,8 +62,9 @@ tool internals.
         workflow (`make start` brings the service up; the target runs inside it via `$(BUN_X)`).
 
 - [ ] Task 4: Explain failure output and remediation (AC: 6, 7)
-  - [ ] 4.1 Explain the `err` reporter output: one line per violation naming the offending file
-        and the violated rule; a clean run prints nothing and exits `0`.
+  - [ ] 4.1 Explain the default `text` reporter output: one line per finding naming the offending
+        file and the violated rule, for all severities (advisory `warn`/`info` findings stay
+        visible alongside `error` violations); a clean run prints nothing and exits `0`.
   - [ ] 4.2 Add remediation guidance for common violations: break circular imports
         (`no-circular`) by extracting shared code or inverting a dependency; wire orphan modules
         into the entry barrel or remove them (`no-orphans`); move `*.stories.tsx` and dev-only
@@ -84,7 +85,7 @@ tool internals.
   - [ ] 7.2 Confirm the ESLint complementarity wording (AC 2) is present and accurate.
   - [ ] 7.3 Confirm `make lint-dep-cruiser` is the only documented command and no raw
         `bun x depcruise` line is shown to contributors (AC 3, 4).
-  - [ ] 7.4 Confirm the no-extra-setup, `err` format, remediation, and out-of-scope statements
+  - [ ] 7.4 Confirm the no-extra-setup, `text` format, remediation, and out-of-scope statements
         (AC 5, 6, 7, 8) are present.
   - [ ] 7.5 Run `make lint-md` and confirm the edited docs pass markdownlint.
 
@@ -120,9 +121,11 @@ foregrounded.
 `no-circular` is a genuine gap dependency-cruiser fills. The docs must frame the gate as
 non-redundant, not as a second copy of existing ESLint checks.
 
-**Failure format (Decision 6).** The default `err` reporter prints one line per violation naming
-the offending file and the violated rule, and exits non-zero on any `error` match; a clean run
-prints nothing and exits `0`. There is no baseline — zero-tolerance.
+**Failure format (Decision 6).** The reporter is pinned to the default `text` (NOT `err`). `text`
+prints one line per finding naming the offending file and the violated rule for all severities —
+keeping the deliberately-kept advisory warns (`peer-deps-used`, `not-to-deprecated`,
+`no-duplicate-dep-types`, `optional-deps-used`) visible — and still exits non-zero on any `error`
+match; a clean run prints nothing and exits `0`. There is no baseline — zero-tolerance.
 
 **Out of scope (Decision 6, Deferred Decisions).** Visual/graph reporters (`dot`/`archi`) are out
 of scope per the PRD; IDE/editor integration is likewise not part of this initiative. The docs
@@ -133,7 +136,7 @@ must say so explicitly.
 - **Files to modify:**
   - `/home/dima/Desktop/ui-toolkit/CONTRIBUTING.md` — add the
     `## Dependency graph hygiene (dependency-cruiser)` section (enforced rules, ESLint
-    complementarity, local command, `err` output, remediation, out-of-scope, zero-tolerance).
+    complementarity, local command, `text` output, remediation, out-of-scope, zero-tolerance).
   - `/home/dima/Desktop/ui-toolkit/README.md` — add a short quality-gate entry with the
     `make lint-dep-cruiser` command, linking to the fuller `CONTRIBUTING.md` section.
 - **No new files** and **no application source changes** for this story.
@@ -150,12 +153,12 @@ This is a documentation-only story; there are no unit tests to add. Verification
 review-and-lint based (Task 7):
 
 - Manual review confirms each acceptance criterion's content is present and accurate (enforced
-  areas, ESLint complementarity, single make command, no raw CLI, no-extra-setup, `err` format,
+  areas, ESLint complementarity, single make command, no raw CLI, no-extra-setup, `text` format,
   remediation, out-of-scope, zero-tolerance/no-baseline).
 - `make lint-md` (markdownlint) must pass on the edited `CONTRIBUTING.md` and `README.md`; it runs
   inside the docker-compose `bun` service and is already part of the aggregate `lint` chain.
 - The documented command itself is exercised indirectly: a reviewer can run `make lint-dep-cruiser`
-  exactly as the docs instruct and confirm the described `err`/clean-exit behavior matches.
+  exactly as the docs instruct and confirm the described `text`/clean-exit behavior matches.
 
 ### References
 
