@@ -47,6 +47,10 @@ jobs:
         if: steps.project.outputs.present == 'true'
         run: make format-check
 
+      - name: Run dependency range linter
+        if: steps.project.outputs.present == 'true'
+        run: make lint-dep-ranges
+
       - name: Enforce test directory structure
         if: steps.project.outputs.present == 'true'
         run: make lint-test-structure

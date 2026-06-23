@@ -14,6 +14,7 @@ lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the sta
 lint-md	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-next	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-tsc	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
+lint-dep-ranges	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-test-structure	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow to keep test files under the root tests/ tree.
 load-tests	bats	tests/bats/makefile_targets.bats	Validated as the combined k6 image build and homepage load-run entrypoint.
 logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose follow-logs command.
