@@ -17,7 +17,7 @@ BUN_X = $(BUN) x
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
-.PHONY: help build lint lint-next lint-tsc lint-md format-check git-hooks-install \
+.PHONY: help build lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
@@ -46,7 +46,7 @@ help:
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
@@ -80,6 +80,9 @@ format-check: ## Check Prettier formatting inside the docker container.
 
 lint-dep-ranges: ## Enforce caret (^) version ranges in package.json inside the docker container.
 	$(BUN) scripts/ci/check-dependency-ranges.ts
+
+lint-test-structure: ## Verify every test file lives under the root tests/ tree.
+	sh ./scripts/check-test-structure.sh
 
 git-hooks-install: ## Install git hooks.
 	$(BUN_X) husky install

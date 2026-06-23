@@ -1,0 +1,54 @@
+name: alpine base guard
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - Dockerfile.*
+      - '**/Dockerfile'
+      - '**/Dockerfile.*'
+      - '*.Dockerfile'
+      - '**/*.Dockerfile'
+      - Containerfile
+      - Containerfile.*
+      - '**/Containerfile'
+      - '**/Containerfile.*'
+      - scripts/ci/alpine_base_guard.sh
+      - .github/workflows/alpine-base-guard.yml
+
+permissions: {}
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      # Tamper-evidence: prove the guard actually trips on a non-Alpine base (and
+      # passes a compliant one) using fixtures outside the repo. A PR that guts the
+      # script to neuter the real check fails here instead of passing vacuously.
+      - name: Guard self-test
+        run: |
+          tmp="$(mktemp -d)"
+          printf 'FROM ubuntu:22.04\n' > "$tmp/Dockerfile.selftest"
+          if bash scripts/ci/alpine_base_guard.sh scan "$tmp/Dockerfile.selftest"; then
+            echo "::error::guard self-test failed: a non-Alpine base did not trip the gate"
+            exit 1
+          fi
+          printf 'FROM alpine:3.19\n' > "$tmp/Dockerfile.ok"
+          bash scripts/ci/alpine_base_guard.sh scan "$tmp/Dockerfile.ok"
+          echo "guard self-test passed"
+
+      - name: Enforce Alpine base images
+        run: bash scripts/ci/alpine_base_guard.sh scan
+        env:
+          ALPINE_EXCEPTION_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'docker-alpine-exception') }}

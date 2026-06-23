@@ -85,7 +85,24 @@ make lint-dep-ranges
 ```
 
 The static testing workflow runs it on every pull request, and the policy is
-unit-tested in `tests/unit/dependencyRangePolicy.test.ts`.
+unit-tested in `tests/unit/dependency-range-policy.test.ts`.
+
+### Test directory layout
+
+All test files live under the root `tests/` tree — never under `src/`. Each test type has its
+own subdirectory:
+
+- `tests/unit` — Jest unit and component tests (`*.test.ts`, `*.test.tsx`, `*.spec.js`)
+- `tests/integration` — Jest composition tests across components
+- `tests/e2e` — Playwright end-to-end specs run against Storybook
+- `tests/visual` — Playwright visual-regression specs and their snapshots
+- `tests/load` — k6 load tests
+- `tests/memory-leak` — Memlab leak scenarios
+- `tests/bats` — Bats coverage for Makefile and CI shell flows
+
+`make lint-test-structure` enforces this layout: it fails when any `*.test.*` or `*.spec.*` file
+lives outside the root `tests/` tree. The check runs on every pull request through the static
+testing workflow, so a misplaced test file fails CI.
 
 ### Commit your update
 
@@ -93,6 +110,32 @@ Commit the changes once you are happy with them.
 Don't forget to self-review to speed up the review process :zap:.
 
 Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+
+### Docker base-image policy (Alpine)
+
+Every Dockerfile must use an Alpine-based image wherever an Alpine variant exists, for a
+smaller image and reduced attack surface.
+
+This is enforced by `scripts/ci/alpine_base_guard.sh scan`, run by the `alpine base guard`
+workflow on PRs to `main`. Run it locally before pushing:
+
+```bash
+bash scripts/ci/alpine_base_guard.sh scan
+```
+
+The guard checks every `Dockerfile`, `Dockerfile.<suffix>`, `<prefix>.Dockerfile`,
+`Containerfile`, and `Containerfile.<suffix>` in the repo. A base counts as Alpine when its tag
+or final repository segment says so (e.g. `oven/bun:1.3.14-alpine`, `alpine:3.19`); an
+Alpine-based image that does not advertise this in its name (e.g. `alpine/git`) still needs an
+exception.
+
+Exceptions (default-deny): when no Alpine variant is usable, add an inline
+`# alpine-exception: <reason>` comment to the Dockerfile (a reason is required), or apply the
+`docker-alpine-exception` PR label for emergencies. The marker is file-scoped — one marker
+waives every non-Alpine base in that file — so scrutinise multi-stage Dockerfiles carrying one.
+
+Current documented exception: `Dockerfile.playwright` — the official Playwright browser base
+is glibc-only, with no Alpine/musl variant published.
 
 ### Pull Request
 
@@ -115,6 +158,42 @@ When you're finished with the changes, create a pull request, also known as a PR
 - If you run into any merge issues, checkout this
   [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you
   resolve merge conflicts and other issues.
+
+### Dockerfile build performance
+
+If your change touches a Dockerfile or the gate's own config, CI rebuilds each
+configured image, measures its size and build time, and runs `dive` plus
+`hadolint` checks against per-image budgets. Budgets live in
+`.github/dockerfile-perf.json`, and exceptions are granted via an inline
+`# perf-exception[:gate]: <reason>` marker or a
+`docker-perf-exception[:name]` PR label.
+
+Current image matrix and thresholds:
+
+- `toolkit` -> `Dockerfile` -> 1550 MiB budget with 10% tolerance
+- `playwright` -> `Dockerfile.playwright` -> 1500 MiB budget with 15% tolerance
+
+All three gates are evaluated for every configured image:
+
+- final image size versus the configured budget and tolerance
+- `dive --ci` layer-efficiency checks from `.dive-ci`
+- `hadolint` warning-and-above checks from `.hadolint.yaml`
+
+The known documented exception in this repo is `Dockerfile.playwright`, which
+contains:
+
+`# perf-exception:size,dive: glibc-only Playwright vendor base`
+
+That exception keeps the Playwright runner measured and reported, but waives the
+`size` and `dive` gates that its glibc-only vendor base makes unavoidable: the
+image is far larger than any musl base and, at >99% layer efficiency, still
+trips dive's absolute wasted-bytes gate purely on scale. `hadolint` stays
+enforced, and other images are unaffected. Prefer the inline marker over PR
+labels because it documents the reason next to the Dockerfile. Use
+`docker-perf-exception` only when every image in the PR needs the waiver, or
+`docker-perf-exception:<name>` when only one configured image should be waived;
+a PR label grants a blanket waiver and widens any inline marker, so it waives
+every gate even when the Dockerfile documents a narrower exception.
 
 ### Your PR is merged
 
