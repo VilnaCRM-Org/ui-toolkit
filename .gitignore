@@ -67,3 +67,5 @@ tests/memory-leak/results
 # qlty (track the shared config only; ignore local cache and tooling)
 .qlty/*
 !.qlty/qlty.toml
+.ralph/logs/
+_bmad-output/
