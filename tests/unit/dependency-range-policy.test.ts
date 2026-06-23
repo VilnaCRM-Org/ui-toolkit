@@ -7,9 +7,9 @@ import {
   RangeViolation,
   SCANNED_DEPENDENCY_FIELDS,
   usesCaretRange,
-} from '../../scripts/ci/dependencyRangePolicy';
+} from '../../scripts/ci/dependency-range-policy';
 
-describe('dependencyRangePolicy', () => {
+describe('dependency-range-policy', () => {
   describe('regression guard against the real package.json', () => {
     it('reports no violations for the current package.json', () => {
       expect(findRangeViolations(pkg)).toHaveLength(0);

@@ -3,11 +3,11 @@
  *
  * Reads this repository's own `package.json` and exits `0` when every dependency
  * range complies, `1` on a policy violation, and `2` when the manifest cannot be
- * read or parsed. See {@link ./dependencyRangePolicy.ts} for the rules.
+ * read or parsed. See {@link ./dependency-range-policy.ts} for the rules.
  */
 import { readFileSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
-import { evaluatePackageJson } from './dependencyRangePolicy';
+import { evaluatePackageJson } from './dependency-range-policy';
 
 // The manifest filename is a fixed constant pointing at this repo's own
 // package.json. We still resolve it against the project root and assert
