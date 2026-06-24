@@ -149,6 +149,22 @@ workflow:
 lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-dep-cruiser
 ```
 
+#### CI enforcement and required status check
+
+The dedicated `.github/workflows/dependency-cruiser.yml` workflow runs `make lint-dep-cruiser` on
+every pull request targeting `main` — the same command and the same committed
+`.dependency-cruiser.js` policy as the local run, so local and CI always agree.
+
+To block merges on policy violations, a repository maintainer must register it as a required
+status check: **Settings → Branches → Branch protection rules → Require status checks to pass
+before merging**. The check appears in the list after the workflow has run at least once on
+`main`; select the entry whose name matches the workflow job exactly: `dependency-cruiser`.
+
+Once enabled, any pull request that introduces a graph violation fails the check and cannot be
+merged until the violation is fixed. The failure output names the offending file and the violated
+rule, identical to what `make lint-dep-cruiser` prints locally. The gate remains zero-tolerance:
+no `depcruise-baseline` file exists to suppress findings.
+
 #### Reading the output
 
 The default `text` reporter prints one line per finding naming the offending file and the
