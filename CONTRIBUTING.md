@@ -117,7 +117,7 @@ source file, component directory, and test file — for example:
 
 React **export identifiers** remain PascalCase (`export const UiButton`,
 `export const AuthSkeleton`) because that is the React component naming convention; only the
-file and directory *paths* are kebab-case. The public component API is unchanged.
+file and directory _paths_ are kebab-case. The public component API is unchanged.
 
 This convention is enforced by `make lint-dep-cruiser` via three `error`-severity rules:
 `no-uppercase-paths` (any uppercase character in a governed `src/` path), `component-name-kebab-case`

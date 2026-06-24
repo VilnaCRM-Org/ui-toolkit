@@ -6,7 +6,7 @@ import type { CardList } from '../ui-card-list/types';
 import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from './constants';
 
 const meta: Meta<typeof UiCardList> = {
-  title: 'UiComponents/ui-card-item',
+  title: 'UiComponents/UiCardItem',
   component: UiCardList,
   tags: ['autodocs'],
 };
