@@ -16,6 +16,7 @@ import skeletonInputStyles, {
   MD_INPUT_HEIGHT,
   XL_INPUT_HEIGHT,
 } from '../../src/components/ui-skeleton-input/styles';
+import getTextSkeletonStyles from '../../src/components/ui-skeleton-text/styles';
 import {
   baseSkeletonStyle,
   shadowPulseAnimation,
@@ -26,7 +27,6 @@ import {
   SMALL_MOBILE_BREAKPOINT,
   SMALL_MOBILE_BREAKPOINT_UPPER,
 } from '../../src/components/ui-skeletons/base';
-import getTextSkeletonStyles from '../../src/components/ui-skeleton-text/styles';
 
 function getById(container: HTMLElement, id: string): HTMLElement {
   // Skeleton primitives are decorative (no role/label); they expose a stable id only.
