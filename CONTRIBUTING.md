@@ -104,6 +104,71 @@ own subdirectory:
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
 
+### Dependency graph hygiene (dependency-cruiser)
+
+The `src/` dependency graph is gated by
+[dependency-cruiser](https://github.com/sverweij/dependency-cruiser). The gate is
+zero-tolerance: there is no `depcruise-baseline` file, so every violation surfaces on every run
+and must be fixed in code, never suppressed.
+
+It enforces (all `error`-severity rules, so they fail the gate):
+
+- **No circular dependencies** (`no-circular`) — import cycles within `src/`.
+- **No orphan modules** (`no-orphans`) — modules nothing imports (type declarations, stories,
+  `fonts.css`, and the entry barrels are allowlisted).
+- **Public-API / barrel discipline** (`components-public-api`) — a component is imported only
+  through its `index.ts`/`index.tsx` barrel at runtime, never by reaching into another
+  component's internals.
+- **`src/` must not depend on `tests/`** (`src-not-to-tests`, `not-to-spec`) — tests import
+  source, never the reverse.
+- **No production import of stories or dev dependencies** (`no-prod-import-of-stories`,
+  `not-to-dev-dep`) — `*.stories.tsx` and dev-only packages (jest, storybook, webpack, …) stay
+  out of shipped code.
+- **Type-only discipline** (`type-files-imported-as-type-only`, `type-files-no-runtime-imports`)
+  — `*.d.ts`/`types.ts` modules are imported with `import type` and themselves import only types.
+
+#### How it complements ESLint
+
+dependency-cruiser fills the gap ESLint leaves rather than duplicating it. `eslint-plugin-import`
+is active for `import/order` and `no-extraneous-dependencies`, but `import/no-cycle` is **not**
+enabled for source — so `no-circular` is a genuine, non-redundant addition. The gate owns cycle,
+orphan, boundary, barrel, and type-only discipline; it does not re-run the existing ESLint checks.
+
+#### Running it locally
+
+```bash
+make lint-dep-cruiser
+```
+
+No extra setup is required beyond the existing docker-compose `bun` workflow — `make start`
+brings the service up and the target runs inside it. The check is also part of the aggregate
+`make lint` chain and runs on every pull request through the dedicated `dependency-cruiser`
+workflow:
+
+```bash
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-dep-cruiser
+```
+
+#### Reading the output
+
+The default `text` reporter prints one line per finding naming the offending file and the
+violated rule, for all severities. Advisory `warn`/`info` findings (for example `peer-deps-used`
+and `no-duplicate-dep-types`, expected for a peer-dependency library) stay visible alongside
+`error` findings but do not fail the gate. A clean run prints nothing and exits `0`; any
+`error`-severity finding exits non-zero.
+
+Common fixes:
+
+- **Cycle** (`no-circular`) — extract the shared code into its own module or invert the
+  dependency; do not pull a sibling in through the top-level `@/components` barrel.
+- **Orphan** (`no-orphans`) — wire the module into the entry barrel, or remove it if unused.
+- **Leaked story / dev import** (`no-prod-import-of-stories`, `not-to-dev-dep`) — move the
+  `*.stories.tsx` or dev-only import out of the production path.
+- **Barrel breach** (`components-public-api`) — import the other component through its
+  `index.tsx`/`index.ts` barrel instead of its internal files.
+
+IDE/editor integration and visual/graph reporting (`dot`/`archi` output) are out of scope.
+
 ### Commit your update
 
 Commit the changes once you are happy with them.
