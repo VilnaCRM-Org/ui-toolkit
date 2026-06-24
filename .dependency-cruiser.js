@@ -7,13 +7,13 @@
  *
  * The `forbidden` rule set ports dependency-cruiser's generic-health rules,
  * adds this library's components-centric boundary rules and the type/runtime
- * split rules, and re-scopes `not-to-dev-dep` for a published component library
+ * split rules, re-scopes `not-to-dev-dep` for a published component library
  * that mirrors its runtime libraries into BOTH `devDependencies` and
- * `peerDependencies`. CRM bulletproof-react layering rules are intentionally
- * NOT ported (no modules/features/repositories layout exists here). The three
- * naming rules (`no-uppercase-paths`, `component-name-kebab-case`,
- * `test-name-kebab-case`) are deferred to Epic 4 — they cannot pass under
- * zero-tolerance until the PascalCase tree is migrated to kebab-case.
+ * `peerDependencies`, and enforces lowercase kebab-case naming across all
+ * governed `src/` and `tests/` paths via `no-uppercase-paths`,
+ * `component-name-kebab-case`, and `test-name-kebab-case`. CRM
+ * bulletproof-react layering rules are intentionally NOT ported (no
+ * modules/features/repositories layout exists here).
  *
  * `tsConfig.fileName` points at `tsconfig.json` (which `extends`
  * `tsconfig.paths.json`) so the `@/*` -> `./src/*` alias resolves during
@@ -211,6 +211,41 @@ module.exports = {
         '(value) imports — it should depend on types only.',
       from: { path: ['^src/.+\\.d\\.ts$', '^src/.+/types\\.ts$'] },
       to: { dependencyTypesNot: ['type-only'] },
+    },
+    // ---- Path and naming conventions (ported from CRM line 472 / src-*-name-kebab-case) ----
+    {
+      name: 'no-uppercase-paths',
+      severity: 'error',
+      comment:
+        'All source paths must be lowercase kebab-case. An uppercase character ' +
+        'in a file or directory name breaks naming consistency and is disallowed. ' +
+        'React export identifiers (e.g. `export const UiButton`) are unaffected — ' +
+        'this rule governs paths only.',
+      from: { path: '.*[A-Z].*' },
+      to: {},
+    },
+    {
+      name: 'component-name-kebab-case',
+      severity: 'error',
+      comment:
+        'Component directories under src/components/ must be named in lowercase ' +
+        'kebab-case (e.g. ui-button/, ui-card-item/). A top-level component dir ' +
+        'whose name is not entirely [a-z0-9-] is disallowed. Nested uppercase ' +
+        'paths are already caught by no-uppercase-paths; this rule adds the ' +
+        'kebab-shape guard for components-scoped non-lowercase-alphanumeric names.',
+      from: { path: '^src/components/(?![a-z0-9][a-z0-9-]*/)[^/]+/' },
+      to: {},
+    },
+    {
+      name: 'test-name-kebab-case',
+      severity: 'error',
+      comment:
+        'Test files and directories under tests/{unit,integration,e2e,visual}/ ' +
+        'must be named in lowercase kebab-case. An uppercase character in a test ' +
+        'path (e.g. AuthSkeleton.test.tsx, backToMain.spec.ts) is disallowed. ' +
+        'Ported from CRM tests-module-name-lowercase / tests-feature-name-lowercase.',
+      from: { path: '^tests/(?:unit|integration|e2e|visual)/.*[A-Z].*' },
+      to: {},
     },
   ],
   options: {
