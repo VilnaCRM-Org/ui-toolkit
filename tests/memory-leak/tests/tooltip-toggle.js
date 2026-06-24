@@ -1,4 +1,4 @@
-const ScenarioBuilder = require('../utils/ScenarioBuilder');
+const ScenarioBuilder = require('../utils/scenario-builder');
 
 const scenarioBuilder = new ScenarioBuilder();
 

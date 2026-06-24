@@ -1,6 +1,6 @@
 // Static image imports resolve to different shapes depending on the bundler:
 // Storybook's webpack `asset/inline` rule yields a data-URI string, while the
-// Jest `svgMock` yields a `{ src }` object (mirroring a framework static
+// Jest `svg-mock` yields a `{ src }` object (mirroring a framework static
 // import). Consumers must accept both shapes and normalize before use.
 export type StaticImageSrc = string | { src: string };
 

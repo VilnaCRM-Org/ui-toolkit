@@ -1,4 +1,4 @@
-const ScenarioBuilder = require('../memory-leak/utils/ScenarioBuilder');
+const ScenarioBuilder = require('../memory-leak/utils/scenario-builder');
 
 describe('ScenarioBuilder', () => {
   const originalMemlabWebsiteUrl = process.env.MEMLAB_WEBSITE_URL;
