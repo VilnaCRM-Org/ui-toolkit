@@ -43,6 +43,7 @@
     "@typescript-eslint/eslint-plugin": "^8.60.1",
     "@typescript-eslint/parser": "^8.60.1",
     "bats": "^1.13.0",
+    "dependency-cruiser": "^17.3.7",
     "dotenv": "^16.4.5",
     "esbuild": "^0.23.0",
     "esbuild-jest": "^0.5.0",
