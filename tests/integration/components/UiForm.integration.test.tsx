@@ -3,9 +3,9 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 
-import UiForm from '../../../src/components/UiForm';
-import UiInput from '../../../src/components/UiInput';
-import UiTextFieldForm from '../../../src/components/UiTextFieldForm';
+import UiForm from '../../../src/components/ui-form';
+import UiInput from '../../../src/components/ui-input';
+import UiTextFieldForm from '../../../src/components/ui-text-field-form';
 
 // Integration tier: render UiForm with its REAL composed children (UiInput and
 // UiTextFieldForm) inside the live react-hook-form context provided by UiForm.

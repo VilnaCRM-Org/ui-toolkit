@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiButton, UiCheckbox, UiInput, UiLink } from '../../src/components';
-import type { UiButtonProps } from '../../src/components/UiButton/types';
-import type { UiCheckboxProps } from '../../src/components/UiCheckbox/types';
-import type { UiInputProps } from '../../src/components/UiInput/types';
-import type { UiLinkProps } from '../../src/components/UiLink/types';
+import type { UiButtonProps } from '../../src/components/ui-button/types';
+import type { UiCheckboxProps } from '../../src/components/ui-checkbox/types';
+import type { UiInputProps } from '../../src/components/ui-input/types';
+import type { UiLinkProps } from '../../src/components/ui-link/types';
 
 const sharedSxFn: (theme: Theme) => { color: string } = (theme: Theme): { color: string } => ({
   color: theme.palette.primary.main,

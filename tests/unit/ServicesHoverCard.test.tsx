@@ -2,7 +2,7 @@ import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import ServicesHoverCard from '../../src/components/UiCardItem/ServicesHoverCard';
+import ServicesHoverCard from '../../src/components/ui-card-item/services-hover-card';
 
 const hoverCardtitle: string = 'Services';
 const hoverCardtext: string = 'Integrate in a few clicks';

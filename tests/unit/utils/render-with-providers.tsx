@@ -2,7 +2,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { render, RenderResult } from '@testing-library/react';
 import React from 'react';
 
-import websiteColorTheme from '@/components/UiColorTheme';
+import websiteColorTheme from '@/components/ui-color-theme';
 
 /**
  * Renders a component wrapped in the toolkit's default theme. The shared i18n

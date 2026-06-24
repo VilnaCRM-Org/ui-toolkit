@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import VilnaCRMEmail from '../../src/components/UiFooter/VilnaCRMEmail';
+import VilnaCRMEmail from '../../src/components/ui-footer/vilna-crm-email';
 
 import { mockEmail } from './constants';
 

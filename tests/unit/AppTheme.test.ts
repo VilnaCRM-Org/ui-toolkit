@@ -1,6 +1,6 @@
-import AppTheme from '../../src/components/AppTheme';
-import UiBreakpoints from '../../src/components/UiBreakpoints';
-import UiColorTheme from '../../src/components/UiColorTheme';
+import AppTheme from '../../src/components/app-theme';
+import UiBreakpoints from '../../src/components/ui-breakpoints';
+import UiColorTheme from '../../src/components/ui-color-theme';
 
 describe('AppTheme', () => {
   it('reuses the shared breakpoints and palette', () => {

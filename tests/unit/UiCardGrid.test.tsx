@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import CardGrid from '../../src/components/UiCardList/CardGrid';
-import gridStyles from '../../src/components/UiCardList/styles';
+import CardGrid from '../../src/components/ui-card-list/card-grid';
+import gridStyles from '../../src/components/ui-card-list/styles';
 
 import { cardList, largeCardList, smallCardList } from './constants';
 
@@ -28,9 +28,9 @@ jest.mock('@mui/material', () => {
   };
 });
 
-// CardGrid renders the local parity card (`./UiCardItem`), not the canonical
-// `src/components/UiCardItem`, so the mock must target the local module.
-jest.mock('../../src/components/UiCardList/UiCardItem', () => {
+// CardGrid renders the local parity card (`./ui-card-item`), not the canonical
+// `src/components/ui-card-item`, so the mock must target the local module.
+jest.mock('../../src/components/ui-card-list/ui-card-item', () => {
   const mockReact: typeof import('react') = jest.requireActual('react');
 
   return {

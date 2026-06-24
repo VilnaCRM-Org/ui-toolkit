@@ -2,8 +2,8 @@ import { useMediaQuery } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import UiCardList from '../../src/components/UiCardList';
-import CardSwiper from '../../src/components/UiCardList/CardSwiper';
+import UiCardList from '../../src/components/ui-card-list';
+import CardSwiper from '../../src/components/ui-card-list/card-swiper';
 
 import { cardList } from './constants';
 
@@ -12,7 +12,7 @@ jest.mock('@mui/material', () => ({
   useMediaQuery: jest.fn(),
 }));
 
-jest.mock('../../src/components/UiCardList/CardSwiper', () => {
+jest.mock('../../src/components/ui-card-list/card-swiper', () => {
   const mockReact: typeof import('react') = jest.requireActual('react');
 
   return jest.fn(() =>
@@ -22,7 +22,7 @@ jest.mock('../../src/components/UiCardList/CardSwiper', () => {
   );
 });
 
-jest.mock('../../src/components/UiCardList/CardGrid', () => {
+jest.mock('../../src/components/ui-card-list/card-grid', () => {
   const mockReact: typeof import('react') = jest.requireActual('react');
 
   return jest.fn(() =>

@@ -4,7 +4,7 @@ import UiBreakpoints, {
   heightBreakpoints,
   websiteBreakpointValues,
   websiteBreakpointsTheme,
-} from '../../src/components/UiBreakpoints';
+} from '../../src/components/ui-breakpoints';
 
 describe('UiBreakpoints', () => {
   it('defines the shared breakpoint values', () => {

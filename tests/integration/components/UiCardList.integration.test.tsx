@@ -3,12 +3,12 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
-import UiCardList from '../../../src/components/UiCardList';
+import UiCardList from '../../../src/components/ui-card-list';
 import {
   LARGE_CARDLIST_ARRAY,
   SMALL_CARDLIST_ARRAY,
-} from '../../../src/components/UiCardList/constants';
-import { UiCardItemData } from '../../../src/components/UiCardList/types';
+} from '../../../src/components/ui-card-list/constants';
+import { UiCardItemData } from '../../../src/components/ui-card-list/types';
 
 // Integration tier: render UiCardList with its REAL composed child chain
 // (CardGrid / CardSwiper -> UiCardItem -> CardContent -> UiImage / UiTooltip).

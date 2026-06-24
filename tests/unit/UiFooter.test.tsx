@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import UiFooter from '../../src/components/UiFooter';
+import UiFooter from '../../src/components/ui-footer';
 
 // UiFooter renders a single <footer> (role="contentinfo") that contains both
 // responsive variants: DefaultFooter (desktop) and Mobile. Each variant renders

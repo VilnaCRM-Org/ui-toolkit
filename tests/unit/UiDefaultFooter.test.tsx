@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import DefaultFooter from '../../src/components/UiFooter/DefaultFooter';
+import DefaultFooter from '../../src/components/ui-footer/default-footer';
 
 import { mockedSocialLinks, mockEmail, testTitle } from './constants';
 

@@ -2,8 +2,8 @@ import { Grid, SxProps, Theme } from '@mui/material';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 
-import CardSwiper from '../../src/components/UiCardList/CardSwiper';
-import gridStyles from '../../src/components/UiCardList/styles';
+import CardSwiper from '../../src/components/ui-card-list/card-swiper';
+import gridStyles from '../../src/components/ui-card-list/styles';
 
 import { largeCardList, smallCardList } from './constants';
 
@@ -65,9 +65,9 @@ function getSwiperWrapper(): HTMLElement {
   return screen.getByTestId('swiper').parentElement as HTMLElement;
 }
 
-// CardSwiper renders the local parity card (`./UiCardItem`), not the canonical
-// `src/components/UiCardItem`, so the mock must target the local module.
-jest.mock('../../src/components/UiCardList/UiCardItem', () => {
+// CardSwiper renders the local parity card (`./ui-card-item`), not the canonical
+// `src/components/ui-card-item`, so the mock must target the local module.
+jest.mock('../../src/components/ui-card-list/ui-card-item', () => {
   const mockReact: typeof import('react') = jest.requireActual('react');
 
   return {

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
-import WrapperUiTooltip from '../../src/components/UiTooltip/TooltipWrapper';
+import WrapperUiTooltip from '../../src/components/ui-tooltip/tooltip-wrapper';
 
 const triggerText: string = 'Trigger';
 const tooltipContent: string = 'Tooltip Text';

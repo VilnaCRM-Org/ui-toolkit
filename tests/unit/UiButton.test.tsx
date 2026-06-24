@@ -2,7 +2,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiButton } from '../../src/components';
-import { containedStyles, outlinedStyles } from '../../src/components/UiButton/theme';
+import { containedStyles, outlinedStyles } from '../../src/components/ui-button/theme';
 
 import { testText } from './constants';
 

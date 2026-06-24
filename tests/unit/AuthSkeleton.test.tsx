@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { AuthSkeleton } from '../../src/components';
-import authSkeletonStyles from '../../src/components/AuthSkeleton/styles';
+import authSkeletonStyles from '../../src/components/auth-skeleton/styles';
 
 // The skeleton primitives render as MUI Box divs (role="generic") identified
 // only by their `id`; resolve them through a semantic role query + id filter

@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import i18next from 'i18next';
 import React from 'react';
 
-import UiFooter from '../../../src/components/UiFooter';
+import UiFooter from '../../../src/components/ui-footer';
 
 // Integration tier: render the public, propless UiFooter with its REAL composed
 // children — DefaultFooter + Mobile, each containing SocialMediaItem links,

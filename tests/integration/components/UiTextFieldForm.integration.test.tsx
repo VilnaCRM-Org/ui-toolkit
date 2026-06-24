@@ -5,8 +5,8 @@ import { t } from 'i18next';
 import React from 'react';
 import { useForm, type Control } from 'react-hook-form';
 
-import UiTextFieldForm from '../../../src/components/UiTextFieldForm';
-import type { CustomTextField } from '../../../src/components/UiTextFieldForm/types';
+import UiTextFieldForm from '../../../src/components/ui-text-field-form';
+import type { CustomTextField } from '../../../src/components/ui-text-field-form/types';
 
 // Integration tier: render UiTextFieldForm with its REAL children — the
 // react-hook-form Controller, the real UiInput, and the MUI TextField it wraps

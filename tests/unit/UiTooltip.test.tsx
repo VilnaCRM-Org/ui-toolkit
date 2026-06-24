@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiTooltip } from '../../src/components';
-import theme from '../../src/components/UiTooltip/theme';
+import theme from '../../src/components/ui-tooltip/theme';
 
 import { testText } from './constants';
 

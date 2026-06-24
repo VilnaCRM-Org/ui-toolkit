@@ -1,6 +1,6 @@
 /**
  * Covers the `typeof Check === 'string'` branch in
- * src/components/UiCheckbox/styles.ts line 8.
+ * src/components/ui-checkbox/styles.ts line 8.
  *
  * The global SVG mock (tests/unit/mocks/svgMock.ts) resolves the imported
  * asset to an object `{ src }`, so the default test run only exercises the
@@ -18,7 +18,7 @@ interface CheckboxStyles {
 }
 
 function loadCheckedBoxRule(): CheckedBoxRule {
-  const styles: CheckboxStyles = require('@/components/UiCheckbox/styles').default;
+  const styles: CheckboxStyles = require('@/components/ui-checkbox/styles').default;
   return styles.checkbox['& .ui-checkbox-box.ui-checkbox-box--checked'];
 }
 

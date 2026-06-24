@@ -8,14 +8,14 @@ import {
   UiSkeletonInput,
   UiSkeletonText,
 } from '../../src/components';
-import websiteColorTheme from '../../src/components/UiColorTheme';
-import getBlockSkeletonStyles from '../../src/components/UiSkeletonBlock/styles';
-import skeletonButtonStyles from '../../src/components/UiSkeletonButton/styles';
+import websiteColorTheme from '../../src/components/ui-color-theme';
+import getBlockSkeletonStyles from '../../src/components/ui-skeleton-block/styles';
+import skeletonButtonStyles from '../../src/components/ui-skeleton-button/styles';
 import skeletonInputStyles, {
   BASE_INPUT_HEIGHT,
   MD_INPUT_HEIGHT,
   XL_INPUT_HEIGHT,
-} from '../../src/components/UiSkeletonInput/styles';
+} from '../../src/components/ui-skeleton-input/styles';
 import {
   baseSkeletonStyle,
   shadowPulseAnimation,
@@ -25,8 +25,8 @@ import {
   SKELETON_BORDER_RADIUS,
   SMALL_MOBILE_BREAKPOINT,
   SMALL_MOBILE_BREAKPOINT_UPPER,
-} from '../../src/components/UiSkeletons/base';
-import getTextSkeletonStyles from '../../src/components/UiSkeletonText/styles';
+} from '../../src/components/ui-skeletons/base';
+import getTextSkeletonStyles from '../../src/components/ui-skeleton-text/styles';
 
 function getById(container: HTMLElement, id: string): HTMLElement {
   // Skeleton primitives are decorative (no role/label); they expose a stable id only.

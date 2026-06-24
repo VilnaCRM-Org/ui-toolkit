@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import UiCardItem from '../../src/components/UiCardItem';
-import CardContent from '../../src/components/UiCardItem/CardContent';
-import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from '../../src/components/UiCardItem/constants';
+import UiCardItem from '../../src/components/ui-card-item';
+import CardContent from '../../src/components/ui-card-item/card-content';
+import { LARGE_CARD_ITEM, SMALL_CARD_ITEM } from '../../src/components/ui-card-item/constants';
 
 import { cardItem, largeCard, smallCard } from './constants';
 

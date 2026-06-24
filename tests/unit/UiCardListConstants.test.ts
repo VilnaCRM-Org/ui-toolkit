@@ -1,8 +1,8 @@
 import {
   LARGE_CARDLIST_ARRAY,
   SMALL_CARDLIST_ARRAY,
-} from '../../src/components/UiCardList/constants';
-import { UiCardItemData } from '../../src/components/UiCardList/types';
+} from '../../src/components/ui-card-list/constants';
+import { UiCardItemData } from '../../src/components/ui-card-list/types';
 
 // `constants.ts` is exported demo data with no runtime logic; importing it
 // executes the module (the SVG imports are resolved by the svg mock) and lets us

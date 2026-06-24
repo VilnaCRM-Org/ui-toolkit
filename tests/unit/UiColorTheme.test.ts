@@ -2,7 +2,7 @@ import UiColorTheme, {
   crmColorTheme,
   sharedPalette,
   websiteColorTheme,
-} from '../../src/components/UiColorTheme';
+} from '../../src/components/ui-color-theme';
 
 describe('UiColorTheme', () => {
   it('defines the shared palette tokens', () => {

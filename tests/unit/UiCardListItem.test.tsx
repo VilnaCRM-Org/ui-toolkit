@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import CardContent from '../../src/components/UiCardList/CardContent';
-import { UiCardItemData } from '../../src/components/UiCardList/types';
-import UiCardItem from '../../src/components/UiCardList/UiCardItem';
+import CardContent from '../../src/components/ui-card-list/card-content';
+import { UiCardItemData } from '../../src/components/ui-card-list/types';
+import UiCardItem from '../../src/components/ui-card-list/ui-card-item';
 
 // These tests render the local parity `CardContent` and `UiCardItem` directly
 // (no child mocks) so every branch of the title/text/tooltip rendering and the

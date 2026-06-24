@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import PrivacyPolicy from '../../src/components/UiFooter/PrivacyPolicy';
+import PrivacyPolicy from '../../src/components/ui-footer/privacy-policy';
 
 const defaultPrivacyPolicyUrl: string =
   'https://github.com/VilnaCRM-Org/website/blob/main/README.md#privacy-policy';
