@@ -104,6 +104,32 @@ own subdirectory:
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
 
+### File and directory naming
+
+All files and directories in this repository use lowercase kebab-case. This applies to every
+source file, component directory, and test file — for example:
+
+- `src/components/ui-button/index.tsx` — component directory and its barrel
+- `src/components/ui-card-item/card-content.tsx` — nested component file
+- `tests/unit/ui-button.test.tsx` — unit test file
+- `tests/integration/components/auth-skeleton.integration.test.tsx` — integration test file
+- `tests/e2e/back-to-main.spec.ts` — e2e spec file
+
+React **export identifiers** remain PascalCase (`export const UiButton`,
+`export const AuthSkeleton`) because that is the React component naming convention; only the
+file and directory *paths* are kebab-case. The public component API is unchanged.
+
+This convention is enforced by `make lint-dep-cruiser` via three `error`-severity rules:
+`no-uppercase-paths` (any uppercase character in a governed `src/` path), `component-name-kebab-case`
+(top-level `src/components/` directory names), and `test-name-kebab-case`
+(`tests/{unit,integration,e2e,visual}/` paths). Any violation causes the gate to exit non-zero
+and print the offending path and rule name. See
+[Dependency graph hygiene](#dependency-graph-hygiene-dependency-cruiser) for how to run the gate
+locally and interpret its output.
+
+When renaming an existing file or directory to fix a naming violation, use `git mv` instead of a
+plain filesystem rename so that git preserves the file history.
+
 ### Dependency graph hygiene (dependency-cruiser)
 
 The `src/` dependency graph is gated by
