@@ -104,6 +104,113 @@ own subdirectory:
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
 
+### File and directory naming
+
+All files and directories in this repository use lowercase kebab-case. This applies to every
+source file, component directory, and test file — for example:
+
+- `src/components/ui-button/index.tsx` — component directory and its barrel
+- `src/components/ui-card-item/card-content.tsx` — nested component file
+- `tests/unit/ui-button.test.tsx` — unit test file
+- `tests/integration/components/auth-skeleton.integration.test.tsx` — integration test file
+- `tests/e2e/back-to-main.spec.ts` — e2e spec file
+
+React **export identifiers** remain PascalCase (`export const UiButton`,
+`export const AuthSkeleton`) because that is the React component naming convention; only the
+file and directory _paths_ are kebab-case. The public component API is unchanged.
+
+This convention is enforced by `make lint-dep-cruiser` via three `error`-severity rules:
+`no-uppercase-paths` (any uppercase character in a governed `src/` path), `component-name-kebab-case`
+(top-level `src/components/` directory names), and `test-name-kebab-case`
+(`tests/{unit,integration,e2e,visual}/` paths). Any violation causes the gate to exit non-zero
+and print the offending path and rule name. See
+[Dependency graph hygiene](#dependency-graph-hygiene-dependency-cruiser) for how to run the gate
+locally and interpret its output.
+
+When renaming an existing file or directory to fix a naming violation, use `git mv` instead of a
+plain filesystem rename so that git preserves the file history.
+
+### Dependency graph hygiene (dependency-cruiser)
+
+The `src/` dependency graph is gated by
+[dependency-cruiser](https://github.com/sverweij/dependency-cruiser). The gate is
+zero-tolerance: there is no `depcruise-baseline` file, so every violation surfaces on every run
+and must be fixed in code, never suppressed.
+
+It enforces (all `error`-severity rules, so they fail the gate):
+
+- **No circular dependencies** (`no-circular`) — import cycles within `src/`.
+- **No orphan modules** (`no-orphans`) — modules nothing imports (type declarations, stories,
+  `fonts.css`, and the entry barrels are allowlisted).
+- **Public-API / barrel discipline** (`components-public-api`) — a component is imported only
+  through its `index.ts`/`index.tsx` barrel at runtime, never by reaching into another
+  component's internals.
+- **`src/` must not depend on `tests/`** (`src-not-to-tests`, `not-to-spec`) — tests import
+  source, never the reverse.
+- **No production import of stories or dev dependencies** (`no-prod-import-of-stories`,
+  `not-to-dev-dep`) — `*.stories.tsx` and dev-only packages (jest, storybook, webpack, …) stay
+  out of shipped code.
+- **Type-only discipline** (`type-files-imported-as-type-only`, `type-files-no-runtime-imports`)
+  — `*.d.ts`/`types.ts` modules are imported with `import type` and themselves import only types.
+
+#### How it complements ESLint
+
+dependency-cruiser fills the gap ESLint leaves rather than duplicating it. `eslint-plugin-import`
+is active for `import/order` and `no-extraneous-dependencies`, but `import/no-cycle` is **not**
+enabled for source — so `no-circular` is a genuine, non-redundant addition. The gate owns cycle,
+orphan, boundary, barrel, and type-only discipline; it does not re-run the existing ESLint checks.
+
+#### Running it locally
+
+```bash
+make lint-dep-cruiser
+```
+
+No extra setup is required beyond the existing docker-compose `bun` workflow — `make start`
+brings the service up and the target runs inside it. The check is also part of the aggregate
+`make lint` chain and runs on every pull request through the dedicated `dependency-cruiser`
+workflow:
+
+```bash
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-dep-cruiser
+```
+
+#### CI enforcement and required status check
+
+The dedicated `.github/workflows/dependency-cruiser.yml` workflow runs `make lint-dep-cruiser` on
+every pull request targeting `main` — the same command and the same committed
+`.dependency-cruiser.js` policy as the local run, so local and CI always agree.
+
+To block merges on policy violations, a repository maintainer must register it as a required
+status check: **Settings → Branches → Branch protection rules → Require status checks to pass
+before merging**. The check appears in the list after the workflow has run at least once on
+`main`; select the entry whose name matches the workflow job exactly: `dependency-cruiser`.
+
+Once enabled, any pull request that introduces a graph violation fails the check and cannot be
+merged until the violation is fixed. The failure output names the offending file and the violated
+rule, identical to what `make lint-dep-cruiser` prints locally. The gate remains zero-tolerance:
+no `depcruise-baseline` file exists to suppress findings.
+
+#### Reading the output
+
+The default `text` reporter prints one line per finding naming the offending file and the
+violated rule, for all severities. Advisory `warn`/`info` findings (for example `peer-deps-used`
+and `no-duplicate-dep-types`, expected for a peer-dependency library) stay visible alongside
+`error` findings but do not fail the gate. A clean run prints nothing and exits `0`; any
+`error`-severity finding exits non-zero.
+
+Common fixes:
+
+- **Cycle** (`no-circular`) — extract the shared code into its own module or invert the
+  dependency; do not pull a sibling in through the top-level `@/components` barrel.
+- **Orphan** (`no-orphans`) — wire the module into the entry barrel, or remove it if unused.
+- **Leaked story / dev import** (`no-prod-import-of-stories`, `not-to-dev-dep`) — move the
+  `*.stories.tsx` or dev-only import out of the production path.
+- **Barrel breach** (`components-public-api`) — import the other component through its
+  `index.tsx`/`index.ts` barrel instead of its internal files.
+
+IDE/editor integration and visual/graph reporting (`dot`/`archi` output) are out of scope.
+
 ### Commit your update
 
 Commit the changes once you are happy with them.
