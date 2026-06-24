@@ -4,7 +4,7 @@ import {
   SMALL_MOBILE_BREAKPOINT,
   SMALL_MOBILE_BREAKPOINT_UPPER,
   shadowPulseAnimation,
-} from '../UiSkeletons/base';
+} from '../UiSkeletons';
 
 import { fieldGapMargins, formSection, formWrapper } from './shared-styles';
 

@@ -2,7 +2,7 @@ import { TextField, ThemeProvider } from '@mui/material';
 import React from 'react';
 
 import theme from './theme';
-import { UiInputProps } from './types';
+import type { UiInputProps } from './types';
 
 type InputSlotProp = NonNullable<NonNullable<UiInputProps['slotProps']>['input']>;
 type InputSlotFn = Extract<InputSlotProp, (...args: never[]) => unknown>;

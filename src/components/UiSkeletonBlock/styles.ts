@@ -1,7 +1,7 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import { baseSkeletonStyle } from '../UiSkeletons/base';
+import { baseSkeletonStyle } from '../UiSkeletons';
 
 // Returns a plain style object (not `SxProps`) so it stays a valid element of a
 // merged `sx` array in UiSkeletonBlock — `SxProps` can itself be an array and is

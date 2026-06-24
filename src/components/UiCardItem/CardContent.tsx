@@ -6,7 +6,7 @@ import UiTypography from '../UiTypography';
 
 import ServicesHoverCard from './ServicesHoverCard';
 import styles from './styles';
-import { CardContentProps } from './types';
+import type { CardContentProps } from './types';
 
 function CardContent({
   item,

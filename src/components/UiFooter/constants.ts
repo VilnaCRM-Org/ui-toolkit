@@ -3,7 +3,7 @@ import GitHubFooterIcon from '@/assets/svg/social-icons/github.svg';
 import InstagramFooterIcon from '@/assets/svg/social-icons/instagram.svg';
 import LinkedinFooterIcon from '@/assets/svg/social-icons/linked-in.svg';
 
-import { SocialMedia } from './types';
+import type { SocialMedia } from './types';
 
 const socialLinks: SocialMedia[] = [
   {

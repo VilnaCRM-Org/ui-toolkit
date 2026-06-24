@@ -1,4 +1,4 @@
-import { SxProps, Theme } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import type { ElementType, HTMLAttributes, ReactNode } from 'react';
 
 export interface UiTypographyProps extends HTMLAttributes<HTMLElement> {

@@ -6,7 +6,12 @@ import breakpointsTheme from '../UiBreakpoints';
 import CardGrid from './CardGrid';
 import CardSwiper from './CardSwiper';
 import styles from './styles';
-import { UiCardListProps } from './types';
+import type { UiCardListProps } from './types';
+
+// Shared card styling owned by the card-list module; UiCardItem consumes it
+// through this public entry rather than reaching into ./sharedCardStyles
+// (components-public-api boundary rule).
+export * from './sharedCardStyles';
 
 export default function UiCardList({
   cardList,

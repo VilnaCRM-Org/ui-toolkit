@@ -1,7 +1,7 @@
 import { CSSObject } from '@mui/material';
 
 import breakpointsTheme from '../UiBreakpoints';
-import { SKELETON_BORDER_COLOR } from '../UiSkeletons/base';
+import { SKELETON_BORDER_COLOR } from '../UiSkeletons';
 
 export const fieldGapMargins: CSSObject = {
   marginBottom: '0.5rem',

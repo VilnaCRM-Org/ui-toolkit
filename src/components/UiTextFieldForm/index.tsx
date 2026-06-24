@@ -9,7 +9,7 @@ import {
 
 import UiInput from '../UiInput';
 
-import { CustomTextField } from './types';
+import type { CustomTextField } from './types';
 
 type RenderArgs<T extends FieldValues> = {
   field: ControllerRenderProps<T, Path<T>>;

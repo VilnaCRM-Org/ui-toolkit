@@ -8,7 +8,7 @@ import { resolveImageSrc } from '@/types/assets';
 
 import PrivacyPolicy from '../PrivacyPolicy';
 import SocialMediaItem from '../SocialMediaItem/SocialMediaItem';
-import { SocialMedia } from '../types';
+import type { SocialMedia } from '../types';
 import VilnaCRMEmail from '../VilnaCRMEmail';
 
 import styles from './styles';

@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import { StaticImageSrc } from '@/types/assets';
+import type { StaticImageSrc } from '@/types/assets';
 
 export interface SocialMedia {
   id: string;

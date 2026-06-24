@@ -4,7 +4,7 @@ import type { Theme } from '@mui/material/styles';
 import React from 'react';
 
 import styles from './styles';
-import { UiSkeletonInputProps } from './types';
+import type { UiSkeletonInputProps } from './types';
 
 export default function UiSkeletonInput({
   disableAnimation = false,

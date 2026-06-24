@@ -6,7 +6,7 @@ import UiImage from '../UiImage';
 
 import CardContent from './CardContent';
 import styles from './styles';
-import { UiCardItemProps } from './types';
+import type { UiCardItemProps } from './types';
 
 export default function UiCardItem({
   item,

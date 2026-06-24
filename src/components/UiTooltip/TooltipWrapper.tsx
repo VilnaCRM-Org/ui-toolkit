@@ -1,7 +1,7 @@
 import { ClickAwayListener, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import React from 'react';
 
-import { UiTooltipProps } from './types';
+import type { UiTooltipProps } from './types';
 
 export default function WrapperUiTooltip({
   title,

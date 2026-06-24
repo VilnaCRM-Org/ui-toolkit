@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import React from 'react';
 
 import getBlockSkeletonStyles from './styles';
-import { UiSkeletonBlockProps } from './types';
+import type { UiSkeletonBlockProps } from './types';
 
 export default function UiSkeletonBlock({
   id,

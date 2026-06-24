@@ -3,7 +3,7 @@ import React from 'react';
 
 import theme from './theme';
 import WrapperUiTooltip from './TooltipWrapper';
-import { UiTooltipProps } from './types';
+import type { UiTooltipProps } from './types';
 
 function UiTooltip({
   title,

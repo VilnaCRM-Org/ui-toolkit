@@ -5,7 +5,7 @@ import UiTooltip from '../UiTooltip';
 import UiTypography from '../UiTypography';
 
 import styles from './styles';
-import { HeadingLevel, UiCardItemData } from './types';
+import type { HeadingLevel, UiCardItemData } from './types';
 
 function renderContent(content: string | React.ReactNode): React.ReactNode {
   return typeof content === 'string' ? <Trans i18nKey={content} /> : content;

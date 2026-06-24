@@ -4,7 +4,7 @@ import {
   SKELETON_BORDER_RADIUS,
   SMALL_MOBILE_BREAKPOINT,
   baseSkeletonStyle,
-} from '../UiSkeletons/base';
+} from '../UiSkeletons';
 
 export default {
   buttonSkeleton: {

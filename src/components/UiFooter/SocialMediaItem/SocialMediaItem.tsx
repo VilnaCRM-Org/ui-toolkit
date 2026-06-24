@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { resolveImageSrc } from '@/types/assets';
 
-import { SocialMedia } from '../types';
+import type { SocialMedia } from '../types';
 
 import styles from './styles';
 

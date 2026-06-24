@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import React from 'react';
 
 import styles from './styles';
-import { UiSkeletonButtonProps } from './types';
+import type { UiSkeletonButtonProps } from './types';
 
 export default function UiSkeletonButton({
   id,

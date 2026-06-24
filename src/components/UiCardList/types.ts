@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { StaticImageSrc } from '@/types/assets';
+import type { StaticImageSrc } from '@/types/assets';
 
-import { CardItem, CardType, HeadingLevel } from '../UiCardItem/types';
+import type { CardItem, CardType, HeadingLevel } from '../UiCardItem/types';
 
 export type { CardItem, CardType, HeadingLevel };
 

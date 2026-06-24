@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 
 import UiButton from '../UiButton';
 
-import { CustomTextField } from './types';
+import type { CustomTextField } from './types';
 
 import UiTextFieldForm from './index';
 

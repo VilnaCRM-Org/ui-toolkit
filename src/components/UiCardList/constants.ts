@@ -9,7 +9,7 @@ import Ruby from '@/assets/svg/Gemstones/ruby.svg';
 import SmallDiamond from '@/assets/svg/Gemstones/smallDiamond.svg';
 import SmallRuby from '@/assets/svg/Gemstones/smallRuby.svg';
 
-import { NonEmptyCardList } from './types';
+import type { NonEmptyCardList } from './types';
 
 export const LARGE_CARDLIST_ARRAY: NonEmptyCardList = [
   {

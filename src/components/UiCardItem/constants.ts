@@ -9,7 +9,7 @@ import WooCommerce from '@/assets/svg/TooltipIcons/WooCommerce.svg';
 import WordPress from '@/assets/svg/TooltipIcons/WordPress.svg';
 import Zapier from '@/assets/svg/TooltipIcons/Zapier.svg';
 
-import { CardItem, CardType, ImageList } from './types';
+import type { CardItem, CardType, ImageList } from './types';
 
 export const SMALL_CARD_TEXT: CardType = 'smallCard';
 

@@ -1,5 +1,4 @@
-import { Control, FieldValues, Path, RegisterOptions } from 'react-hook-form';
-import type { PathValue } from 'react-hook-form';
+import type { Control, FieldValues, Path, PathValue, RegisterOptions } from 'react-hook-form';
 
 import type { UiInputProps } from '../UiInput/types';
 

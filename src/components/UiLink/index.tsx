@@ -2,7 +2,7 @@ import { Box, Link, ThemeProvider } from '@mui/material';
 import React from 'react';
 
 import theme from './theme';
-import { UiLinkProps } from './types';
+import type { UiLinkProps } from './types';
 
 const visuallyHidden: React.CSSProperties = {
   position: 'absolute',

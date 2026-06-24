@@ -2,7 +2,7 @@ import { Grid, SxProps, Theme } from '@mui/material';
 import React from 'react';
 
 import styles from './styles';
-import { UiCardListProps } from './types';
+import type { UiCardListProps } from './types';
 import UiCardItem from './UiCardItem';
 
 export default function CardGrid({

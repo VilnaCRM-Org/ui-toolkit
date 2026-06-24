@@ -2,7 +2,7 @@ import { Box, SxProps, Theme } from '@mui/material';
 import React from 'react';
 
 import styles from './styles';
-import { UiImageProps } from './types';
+import type { UiImageProps } from './types';
 
 function UiImage({ sx, alt, src }: UiImageProps): React.ReactElement {
   const imageUrl: string = typeof src === 'string' ? src : src.src;

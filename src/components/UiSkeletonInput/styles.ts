@@ -2,7 +2,7 @@ import { type Theme } from '@mui/material/styles';
 import { type SystemStyleObject } from '@mui/system';
 
 import breakpointsTheme from '../UiBreakpoints';
-import { SMALL_MOBILE_BREAKPOINT, baseSkeletonStyle } from '../UiSkeletons/base';
+import { SMALL_MOBILE_BREAKPOINT, baseSkeletonStyle } from '../UiSkeletons';
 
 export const BASE_INPUT_HEIGHT: number = 3;
 export const MD_INPUT_HEIGHT: number = 4.9375;

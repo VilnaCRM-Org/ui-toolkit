@@ -2,7 +2,7 @@ import { ThemeProvider, Typography } from '@mui/material';
 import React from 'react';
 
 import theme from './theme';
-import { UiTypographyProps } from './types';
+import type { UiTypographyProps } from './types';
 
 function UiTypography({
   sx,

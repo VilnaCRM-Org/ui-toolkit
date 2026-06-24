@@ -2,7 +2,7 @@ import { Checkbox, FormControlLabel } from '@mui/material';
 import React from 'react';
 
 import styles from './styles';
-import { UiCheckboxProps } from './types';
+import type { UiCheckboxProps } from './types';
 
 function UiCheckbox({
   label,

@@ -4,7 +4,7 @@ import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import styles from './styles';
-import { UiCardListProps } from './types';
+import type { UiCardListProps } from './types';
 import UiCardItem from './UiCardItem';
 
 import 'swiper/css';

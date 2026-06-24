@@ -168,13 +168,17 @@ module.exports = {
       name: 'components-public-api',
       severity: 'error',
       comment:
-        "Imports between components must go through the target component's " +
-        'public entry (index.ts|index.tsx), not reach into its internals. A ' +
-        'component may still import its own internals/subcomponents.',
+        'Runtime imports between components must go through the target ' +
+        "component's public entry (index.ts|index.tsx), not reach into its " +
+        'internals. A component may still import its own internals/subcomponents. ' +
+        'Scoped to runtime edges (dependencyTypesNot: type-only) — how type files ' +
+        'are imported across components is governed by the type-split rules, so ' +
+        'this rule targets value/runtime coupling only.',
       from: { path: '^src/components/([^/]+)/' },
       to: {
-        // any file inside SOME component dir ...
+        // any RUNTIME edge into a file inside SOME component dir ...
         path: '^src/components/[^/]+/',
+        dependencyTypesNot: ['type-only'],
         pathNot: [
           // ... but a component reaching into its OWN internals is fine ($1 = the
           // importing component captured in from.path) ...

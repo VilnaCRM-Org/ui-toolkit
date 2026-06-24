@@ -2,7 +2,7 @@ import React from 'react';
 
 import { resolveImageSrc } from '@/types/assets';
 
-import { ImageList } from '../../types';
+import type { ImageList } from '../../types';
 
 // `item.alt` is a brand name (e.g. "Wix", "WordPress") — a proper noun that is
 // intentionally NOT passed through i18next `t()`, unlike the translated alt

@@ -1,4 +1,4 @@
-import { StaticImageSrc } from '@/types/assets';
+import type { StaticImageSrc } from '@/types/assets';
 
 export type CardType = 'smallCard' | 'largeCard';
 

@@ -1,7 +1,7 @@
 import { Box, Link } from '@mui/material';
 import React from 'react';
 
-import { UiTypography } from '@/components/';
+import UiTypography from '@/components/UiTypography';
 
 import styles from './styles';
 

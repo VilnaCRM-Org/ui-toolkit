@@ -7,7 +7,7 @@ import UiImage from '../UiImage';
 import CardContent from './CardContent';
 import { SMALL_CARD_TEXT } from './constants';
 import styles from './styles';
-import { UiCardItemProps } from './types';
+import type { UiCardItemProps } from './types';
 
 function UiCardItem({ item, headingComponent }: Readonly<UiCardItemProps>): React.ReactElement {
   const { t } = useTranslation();
