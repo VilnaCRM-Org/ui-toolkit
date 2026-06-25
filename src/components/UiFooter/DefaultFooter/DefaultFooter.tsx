@@ -13,6 +13,55 @@ import VilnaCRMEmail from '../VilnaCRMEmail';
 
 import styles from './styles';
 
+function FooterTopBar({
+  logoUrl,
+  logoAlt,
+}: Readonly<{ logoUrl: string; logoAlt: string }>): React.ReactElement {
+  return (
+    <Stack direction="row" sx={{ height: '4.188rem', alignItems: 'center' }}>
+      <Box sx={styles.topWrapper}>
+        <Stack
+          direction="row"
+          sx={{ ...styles.topContent, justifyContent: 'space-between', alignItems: 'center' }}
+        >
+          <img src={logoUrl} alt={logoAlt} width={143} height={48} loading="lazy" />
+          <PrivacyPolicy />
+        </Stack>
+      </Box>
+    </Stack>
+  );
+}
+
+function FooterBottomBar({
+  socialLinks,
+  copyrightLabel,
+  currentYear,
+}: Readonly<{
+  socialLinks: SocialMedia[];
+  copyrightLabel: string;
+  currentYear: number;
+}>): React.ReactElement {
+  return (
+    <Box sx={styles.bottomWrapper}>
+      <Stack sx={styles.copyrightAndLinksWrapper}>
+        <Stack sx={styles.copyrightAndLinks}>
+          <UiTypography variant="medium15" sx={styles.copyright}>
+            {copyrightLabel}, <Box component="span">{currentYear}</Box>
+          </UiTypography>
+          <Stack direction="row" sx={{ gap: '0.875rem', alignItems: 'center' }}>
+            <VilnaCRMEmail />
+            <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
+              {socialLinks.map(item => (
+                <SocialMediaItem item={item} key={item.id} />
+              ))}
+            </Stack>
+          </Stack>
+        </Stack>
+      </Stack>
+    </Box>
+  );
+}
+
 function DefaultFooter({
   socialLinks,
 }: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
@@ -23,34 +72,12 @@ function DefaultFooter({
 
   return (
     <Stack sx={styles.footerWrapper}>
-      <Stack direction="row" sx={{ height: '4.188rem', alignItems: 'center' }}>
-        <Box sx={styles.topWrapper}>
-          <Stack
-            direction="row"
-            sx={{ ...styles.topContent, justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <img src={logoUrl} alt={t('footer.logo_alt')} width={143} height={48} loading="lazy" />
-            <PrivacyPolicy />
-          </Stack>
-        </Box>
-      </Stack>
-      <Box sx={styles.bottomWrapper}>
-        <Stack sx={styles.copyrightAndLinksWrapper}>
-          <Stack sx={styles.copyrightAndLinks}>
-            <UiTypography variant="medium15" sx={styles.copyright}>
-              {t('footer.copyright')}, <Box component="span">{currentYear}</Box>
-            </UiTypography>
-            <Stack direction="row" sx={{ gap: '0.875rem', alignItems: 'center' }}>
-              <VilnaCRMEmail />
-              <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
-                {socialLinks.map(item => (
-                  <SocialMediaItem item={item} key={item.id} />
-                ))}
-              </Stack>
-            </Stack>
-          </Stack>
-        </Stack>
-      </Box>
+      <FooterTopBar logoUrl={logoUrl} logoAlt={t('footer.logo_alt')} />
+      <FooterBottomBar
+        socialLinks={socialLinks}
+        copyrightLabel={t('footer.copyright')}
+        currentYear={currentYear}
+      />
     </Stack>
   );
 }

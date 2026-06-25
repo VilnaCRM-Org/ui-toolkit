@@ -44,18 +44,20 @@ type SubmitControlsProps = {
   submitLabel: string;
 };
 
+// Display props collected from UiForm via `...view` rest and passed as a single
+// prop. Their defaults are applied in FormBody's destructure (not UiForm's
+// signature), so a new display prop on UiFormProps must also be defaulted there.
+type FormViewProps<T extends FieldValues> = Omit<
+  UiFormProps<T>,
+  'onSubmit' | 'defaultValues' | 'formOptions' | 'isSubmitting' | 'resetOnSuccess' | 'children'
+>;
+
 type FormBodyProps<T extends FieldValues> = {
   methods: UseFormReturn<T>;
   handleSubmit: SubmitHandler<T>;
-  children: ReactNode;
-  error?: string | null;
-  title: ReactNode;
-  subtitle?: ReactNode;
-  showTitle: boolean;
-  showSubtitle: boolean;
   submitting: boolean;
-  isSubmitDisabled: boolean;
-  submitLabel: string;
+  children: ReactNode;
+  view: FormViewProps<T>;
 };
 
 function ErrorBanner({ error }: { error?: string | null }): React.ReactElement | null {
@@ -133,16 +135,20 @@ function SubmitControls({
 function FormBody<T extends FieldValues>({
   methods,
   handleSubmit,
-  children,
-  error,
-  title,
-  subtitle,
-  showTitle,
-  showSubtitle,
   submitting,
-  isSubmitDisabled,
-  submitLabel,
+  children,
+  view,
 }: FormBodyProps<T>): React.ReactElement {
+  const {
+    error = null,
+    title,
+    subtitle = null,
+    showTitle = true,
+    showSubtitle = true,
+    isSubmitDisabled = false,
+    submitLabel,
+  } = view;
+
   return (
     <form noValidate onSubmit={methods.handleSubmit(handleSubmit)}>
       <ErrorBanner error={error} />
@@ -165,17 +171,11 @@ function FormBody<T extends FieldValues>({
 export default function UiForm<T extends FieldValues>({
   onSubmit,
   defaultValues,
-  children,
   formOptions = {},
   isSubmitting = undefined,
-  error = null,
-  submitLabel,
-  title,
-  subtitle = null,
-  showTitle = true,
-  showSubtitle = true,
   resetOnSuccess = false,
-  isSubmitDisabled = false,
+  children,
+  ...view
 }: UiFormProps<T>): React.ReactElement {
   const methods: UseFormReturn<T> = useForm<T>({
     mode: 'onTouched',
@@ -192,18 +192,7 @@ export default function UiForm<T extends FieldValues>({
 
   return (
     <FormProviderBridge methods={methods}>
-      <FormBody
-        methods={methods}
-        handleSubmit={handleSubmit}
-        error={error}
-        title={title}
-        subtitle={subtitle}
-        showTitle={showTitle}
-        showSubtitle={showSubtitle}
-        submitting={submitting}
-        isSubmitDisabled={isSubmitDisabled}
-        submitLabel={submitLabel}
-      >
+      <FormBody methods={methods} handleSubmit={handleSubmit} submitting={submitting} view={view}>
         {children}
       </FormBody>
     </FormProviderBridge>

@@ -44,12 +44,7 @@ function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | 
   }
 }
 
-export default function CardSwiper({
-  cardList,
-  headingComponent,
-}: UiCardListProps): React.ReactElement {
-  const swiperRef: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null);
-
+function useTooltipPointerEventsSync(swiperRef: React.RefObject<HTMLDivElement | null>): void {
   useEffect(() => {
     const target: HTMLElement | null = document.querySelector('body');
 
@@ -62,7 +57,18 @@ export default function CardSwiper({
     }
 
     return (): void => observer.disconnect();
-  }, []);
+    // swiperRef is a stable useRef object, so this subscribes once on mount —
+    // equivalent to []. Keep it here to satisfy exhaustive-deps without a disable.
+  }, [swiperRef]);
+}
+
+export default function CardSwiper({
+  cardList,
+  headingComponent,
+}: UiCardListProps): React.ReactElement {
+  const swiperRef: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null);
+
+  useTooltipPointerEventsSync(swiperRef);
 
   // Layout is chosen once from the first item: the card list is expected to be
   // homogeneous (all small or all large cards).

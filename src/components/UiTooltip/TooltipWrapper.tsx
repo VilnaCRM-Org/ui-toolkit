@@ -3,14 +3,44 @@ import React from 'react';
 
 import { UiTooltipProps } from './types';
 
-export default function WrapperUiTooltip({
-  title,
-  placement,
-  arrow,
-  sx,
-  children,
-  triggerLabel,
-}: UiTooltipProps): React.ReactElement {
+type TooltipDisclosure = {
+  open: boolean;
+  tooltipId: string;
+  closeTooltip: () => void;
+  toggleTooltip: () => void;
+  handleKeyDown: (event: React.KeyboardEvent<HTMLSpanElement>) => void;
+};
+
+type KeyActionContext = {
+  open: boolean;
+  toggleTooltip: () => void;
+  closeTooltip: () => void;
+};
+
+function resolveKeyAction(key: string, context: KeyActionContext): (() => void) | null {
+  if (key === 'Enter' || key === ' ') {
+    return context.toggleTooltip;
+  }
+  if (key === 'Escape' && context.open) {
+    return context.closeTooltip;
+  }
+  return null;
+}
+
+function createKeyDownHandler(
+  context: KeyActionContext
+): (event: React.KeyboardEvent<HTMLSpanElement>) => void {
+  return event => {
+    const action: (() => void) | null = resolveKeyAction(event.key, context);
+
+    if (action) {
+      event.preventDefault();
+      action();
+    }
+  };
+}
+
+function useTooltipDisclosure(): TooltipDisclosure {
   const [open, setOpen] = React.useState(false);
   const tooltipId: string = React.useId();
   const isWideScreenMaxWidth: boolean = useMediaQuery('(max-width: 640px)');
@@ -22,16 +52,22 @@ export default function WrapperUiTooltip({
 
   const closeTooltip: () => void = () => setOpen(false);
   const toggleTooltip: () => void = () => setOpen(prev => !prev);
+  const handleKeyDown: (event: React.KeyboardEvent<HTMLSpanElement>) => void = createKeyDownHandler(
+    { open, toggleTooltip, closeTooltip }
+  );
 
-  const handleKeyDown: (event: React.KeyboardEvent<HTMLSpanElement>) => void = event => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      toggleTooltip();
-    } else if (event.key === 'Escape' && open) {
-      event.preventDefault();
-      closeTooltip();
-    }
-  };
+  return { open, tooltipId, closeTooltip, toggleTooltip, handleKeyDown };
+}
+
+export default function WrapperUiTooltip({
+  title,
+  placement,
+  arrow,
+  sx,
+  children,
+  triggerLabel,
+}: UiTooltipProps): React.ReactElement {
+  const { open, tooltipId, closeTooltip, toggleTooltip, handleKeyDown } = useTooltipDisclosure();
 
   return (
     <ClickAwayListener onClickAway={closeTooltip}>
