@@ -165,6 +165,11 @@ run_with_stub_and_env() {
   assert_output_contains "Scope: src/"
 }
 
+@test "passing output includes measured-metric summary table header" {
+  run_with_stub
+  assert_output_contains "| METRIC | VALUE | LIMIT |"
+}
+
 # ---- review-gate metrics non-blocking ---------------------------------------
 
 @test "low mi_original (review metric) does not cause exit 1" {

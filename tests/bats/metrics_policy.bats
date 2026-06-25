@@ -89,6 +89,24 @@ HARD_KEYS=(
   [ "$result" = "true" ]
 }
 
+# --- review min/max range ordering -------------------------------------------
+
+@test "review cloc_ratio_min is strictly less than cloc_ratio_max" {
+  min=$(jq '.review.cloc_ratio_min' "$POLICY")
+  max=$(jq '.review.cloc_ratio_max' "$POLICY")
+  [ -n "$min" ] && [ -n "$max" ]
+  result=$(jq -n --argjson min "$min" --argjson max "$max" '$min < $max')
+  [ "$result" = "true" ]
+}
+
+@test "review blank_ratio_min is strictly less than blank_ratio_max" {
+  min=$(jq '.review.blank_ratio_min' "$POLICY")
+  max=$(jq '.review.blank_ratio_max' "$POLICY")
+  [ -n "$min" ] && [ -n "$max" ]
+  result=$(jq -n --argjson min "$min" --argjson max "$max" '$min < $max')
+  [ "$result" = "true" ]
+}
+
 # --- no suppression file -----------------------------------------------------
 
 @test "no rca suppression or baseline file exists alongside the policy" {

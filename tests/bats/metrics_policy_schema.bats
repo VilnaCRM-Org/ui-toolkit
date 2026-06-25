@@ -140,3 +140,30 @@ HARD_KEYS=(
     "$POLICY")
   [ -z "$unknown" ]
 }
+
+# --- policy with review block omitted still validates ------------------------
+
+@test "policy with review block omitted produces no schema validation errors" {
+  local stripped_policy="$BATS_TEST_TMPDIR/policy-no-review.json"
+  jq 'del(.review)' "$POLICY" > "$stripped_policy"
+
+  local stub_dir="$BATS_TEST_TMPDIR/bin"
+  mkdir -p "$stub_dir"
+  cat > "$stub_dir/rca-stub" <<'EOF'
+#!/bin/sh
+printf '%s\n' "[]"
+EOF
+  chmod +x "$stub_dir/rca-stub"
+
+  run env \
+    PATH="$stub_dir:$PATH" \
+    RCA_BIN="$stub_dir/rca-stub" \
+    METRICS_POLICY="$stripped_policy" \
+    METRICS_POLICY_SCHEMA="$SCHEMA" \
+    RCA_SCOPE="src/" \
+    RCA_EXCLUDES="**/node_modules/**" \
+    sh "$PROJECT_ROOT/scripts/lint-metrics.sh"
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"policy validation failed"* ]]
+}
