@@ -131,7 +131,7 @@ must use least-privilege permissions and a pinned checkout that does not persist
 - Alpine base-image policy: `Dockerfile.rca` uses a glibc (Debian) base because
   `rust-code-analysis-cli` prebuilt releases are glibc-only, so it MUST carry an inline
   `# alpine-exception: <reason>` marker (mirroring `Dockerfile.playwright`), or the `alpine base
-  guard` workflow fails the gate's own pull request.
+guard` workflow fails the gate's own pull request.
 - docker-compose `rca` service: `profiles: [tools]`, `build` from `Dockerfile.rca`, source
   bind-mounted (`.:/app`) so local runs analyze the live tree, no host ports, no network needed.
 - Policy: a committed `config/metrics-policy.json` (`hard` required, `review` optional) validated
@@ -142,7 +142,7 @@ must use least-privilege permissions and a pinned checkout that does not persist
   the `tests/` tree, `src/assets/**`, and `*.d.ts` via `RCA_EXCLUDES`. Storybook `*.stories.tsx`
   remain in scope unless the baseline run shows they dominate noise.
 - Enforcement: `scripts/lint-metrics.sh` (POSIX sh, `set -eu`) runs `rust-code-analysis-cli -m -O
-  json -p src/ -X <excludes>`, evaluates every governed metric via `jq`, collects ALL violations
+json -p src/ -X <excludes>`, evaluates every governed metric via `jq`, collects ALL violations
   (never fail-fast), exits 1 on any hard violation or precondition failure (else 0); review-gate
   metrics are computed but never block and are excluded from the stdout summary.
 - Make targets: `lint-metrics` (runs `$(DOCKER_COMPOSE) run --rm rca make lint-metrics-run`, mounting

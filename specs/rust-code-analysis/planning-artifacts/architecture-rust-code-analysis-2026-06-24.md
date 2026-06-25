@@ -238,7 +238,7 @@ convention, and hardened workflow shape.
   `rust-code-analysis-linux-cli-x86_64.tar.gz` for `v0.0.25` and verify it against the pinned SHA-256
   (`9ec2a217b8ff191e02dab5d5f2eee6158b63fd975c532b2c5d67c2e6c7249894`) before extracting to
   `/usr/local/bin`. On other platforms (`arm64`), build with `cargo install --locked --version 0.0.25
-  rust-code-analysis-cli`. The image also installs `jq`, `make`, and `tar` for the enforcement script,
+rust-code-analysis-cli`. The image also installs `jq`, `make`, and `tar` for the enforcement script,
   and pins its base to the AWS ECR Docker mirror (matching CRM) to avoid Docker Hub rate limits.
 
   ```dockerfile
@@ -294,7 +294,7 @@ convention, and hardened workflow shape.
 - **Alpine-policy compliance:** Because `debian:12-slim` is non-Alpine, `Dockerfile.rca` MUST carry an
   inline `# alpine-exception: <reason>` marker (shown above). This mirrors the existing
   `Dockerfile.playwright` exception and is required for `alpine_base_guard.sh scan` (and the `alpine
-  base guard` workflow) to pass on this gate's own pull request. The alternative — an Alpine image that
+base guard` workflow) to pass on this gate's own pull request. The alternative — an Alpine image that
   `cargo install`s the CLI for musl — was considered and rejected as the primary path because it
   compiles the analyzer from source on every image build (slow) and adds a heavy Rust build toolchain;
   the documented exception is the lighter, CRM-faithful choice.
@@ -362,17 +362,18 @@ convention, and hardened workflow shape.
   estimated length, vocabulary, difficulty, level [min], effort, time, purity-ratio [range]). Every
   `review` threshold also has a hardcoded fallback default inside `scripts/lint-metrics.sh`, so an
   omitted `review` block still works.
+
 - **Schema (`config/metrics-policy.schema.json`):** Draft-07, `$id: "metrics-policy.schema.json"`,
   `type: object`, `required: ["hard"]`, `additionalProperties: false`, with `hard` and `review`
   sub-objects. `hard` is `additionalProperties: false` and `required` lists all 27 hard keys, each a
   `number` with bound constraints (count/size `*_max` keys `minimum: 1`; the Halstead `*_max` keys —
   including `halstead_bugs_file_max` (1.58) — `minimum: 0` with no upper bound; the COA/CDA ratio keys
   `class_coa_max`/`class_cda_max` `minimum: 0, maximum: 1`; `mi_visual_studio_min` `minimum: 0,
-  maximum: 100`). `review` is `additionalProperties:
-  false` with no `required` list (the entire block is optional).
+maximum: 100`). `review` is `additionalProperties:
+false` with no `required` list (the entire block is optional).
 - **Governed scope & exclusions (committed via the Makefile variables, Decision 5):** scope `src/`;
   excludes `**/node_modules/** **/build/** **/coverage/** **/storybook-static/** **/tests/** **/*.d.ts
-  **/src/assets/**`. Storybook `*.stories.tsx` files remain in scope unless the baseline run shows they
+**/src/assets/**`. Storybook `*.stories.tsx` files remain in scope unless the baseline run shows they
   dominate noise.
 - **Rationale:** A committed JSON policy validated by a committed schema satisfies the issue's
   acceptance criterion ("thresholds sourced from a committed `config/metrics-policy.json` validated
@@ -388,21 +389,21 @@ are computed but never block (Decision 4 / FR8). `*_max` is an upper bound (fail
 
 <!-- markdownlint-disable MD013 -->
 
-| Scope             | Metric (policy key)                                                                                   | Gate   | JSON path in `rust-code-analysis-cli` v0.0.25 output                                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
-| function/closure  | `cyclomatic_max`, `cognitive_max`                                                                     | hard   | `.metrics.cyclomatic.sum`; `.metrics.cognitive.sum` (or scalar)                                                         |
-| function/closure  | `abc_magnitude_max`                                                                                    | hard   | `.metrics.abc.magnitude`                                                                                                 |
-| function/closure  | `nargs_function_max`, `nargs_closure_max`                                                              | hard   | `.metrics.nargs.functions_max`; `.metrics.nargs.closures_max`                                                           |
-| function/closure  | `nexits_max`                                                                                          | hard   | `.metrics.nexits.average`                                                                                                |
-| function/closure  | `lloc_function_max`, `ploc_function_max`, `sloc_function_max`                                          | hard   | `.metrics.loc.lloc` / `.ploc` / `.sloc`                                                                                  |
-| function/closure  | `halstead_volume_function_max`, `halstead_bugs_function_max`                                           | hard   | `.metrics.halstead.volume` / `.bugs`                                                                                     |
-| file              | `nom_functions_file_max`, `nom_closures_file_max`, `nom_total_file_max`                                | hard   | `.metrics.nom.functions` / `.closures` (total = functions + closures)                                                   |
-| file              | `lloc_file_max`, `ploc_file_max`, `sloc_file_max`                                                      | hard   | `.metrics.loc.lloc` / `.ploc` / `.sloc`                                                                                  |
-| file              | `halstead_volume_file_max`, `halstead_bugs_file_max`                                                   | hard   | `.metrics.halstead.volume` / `.bugs`                                                                                     |
-| file              | `mi_visual_studio_min`                                                                                 | hard   | `.metrics.mi.mi_visual_studio` (tolerant of legacy `.metrics.maintanability_index`)                                     |
-| class             | `class_wmc_max`, `class_npm_max`, `class_npa_max`, `class_coa_max`, `class_cda_max`                    | hard   | `.metrics.wmc.classes_sum`; `.metrics.npm.classes`; `.metrics.npa.classes`; `.metrics.npm.classes_average`; `.metrics.npa.classes_average` |
-| interface         | `interface_npm_max`, `interface_npa_max`                                                               | hard   | `.metrics.npm.interfaces`; `.metrics.npa.interfaces`                                                                     |
-| function & file   | `mi_original_min`, `mi_sei_min`, `cloc_ratio` (range), `blank_ratio` (range), full Halstead detail     | review | `.metrics.mi.*`; derived `cloc/sloc`, `blank/sloc`; `.metrics.halstead.*`                                                |
+| Scope            | Metric (policy key)                                                                                | Gate   | JSON path in `rust-code-analysis-cli` v0.0.25 output                                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| function/closure | `cyclomatic_max`, `cognitive_max`                                                                  | hard   | `.metrics.cyclomatic.sum`; `.metrics.cognitive.sum` (or scalar)                                                                            |
+| function/closure | `abc_magnitude_max`                                                                                | hard   | `.metrics.abc.magnitude`                                                                                                                   |
+| function/closure | `nargs_function_max`, `nargs_closure_max`                                                          | hard   | `.metrics.nargs.functions_max`; `.metrics.nargs.closures_max`                                                                              |
+| function/closure | `nexits_max`                                                                                       | hard   | `.metrics.nexits.average`                                                                                                                  |
+| function/closure | `lloc_function_max`, `ploc_function_max`, `sloc_function_max`                                      | hard   | `.metrics.loc.lloc` / `.ploc` / `.sloc`                                                                                                    |
+| function/closure | `halstead_volume_function_max`, `halstead_bugs_function_max`                                       | hard   | `.metrics.halstead.volume` / `.bugs`                                                                                                       |
+| file             | `nom_functions_file_max`, `nom_closures_file_max`, `nom_total_file_max`                            | hard   | `.metrics.nom.functions` / `.closures` (total = functions + closures)                                                                      |
+| file             | `lloc_file_max`, `ploc_file_max`, `sloc_file_max`                                                  | hard   | `.metrics.loc.lloc` / `.ploc` / `.sloc`                                                                                                    |
+| file             | `halstead_volume_file_max`, `halstead_bugs_file_max`                                               | hard   | `.metrics.halstead.volume` / `.bugs`                                                                                                       |
+| file             | `mi_visual_studio_min`                                                                             | hard   | `.metrics.mi.mi_visual_studio` (tolerant of legacy `.metrics.maintanability_index`)                                                        |
+| class            | `class_wmc_max`, `class_npm_max`, `class_npa_max`, `class_coa_max`, `class_cda_max`                | hard   | `.metrics.wmc.classes_sum`; `.metrics.npm.classes`; `.metrics.npa.classes`; `.metrics.npm.classes_average`; `.metrics.npa.classes_average` |
+| interface        | `interface_npm_max`, `interface_npa_max`                                                           | hard   | `.metrics.npm.interfaces`; `.metrics.npa.interfaces`                                                                                       |
+| function & file  | `mi_original_min`, `mi_sei_min`, `cloc_ratio` (range), `blank_ratio` (range), full Halstead detail | review | `.metrics.mi.*`; derived `cloc/sloc`, `blank/sloc`; `.metrics.halstead.*`                                                                  |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -421,8 +422,8 @@ are computed but never block (Decision 4 / FR8). `*_max` is an upper bound (fail
   - **CRM-faithful extraction.** Two field choices mirror the shipped CRM script rather than the
     analyzer's most obvious field: `nexits_max` is enforced against `.metrics.nexits.average` (v0.0.25
     does not expose a per-space exit max), and `nom_total_file_max` is enforced against `nom_functions
-    + nom_closures` (CRM derives the total rather than reading a native `.metrics.nom.total`). Keep these
-    as CRM does for parity; the baseline run confirms they behave on this codebase.
+    - nom_closures`(CRM derives the total rather than reading a native`.metrics.nom.total`). Keep these
+      as CRM does for parity; the baseline run confirms they behave on this codebase.
 - **Baseline calibration:** Run `make lint-metrics` against current `main` before enabling the required
   check. If real code breaches a committed `hard` threshold, either remediate the code or raise that
   threshold to a passing baseline and defer tightening to a later effort — never introduce a
@@ -587,7 +588,7 @@ are computed but never block (Decision 4 / FR8). `*_max` is an upper bound (fail
   followed by a fixed-width measured-metric table (`METRIC GATE THRESHOLD MEASURED`, hard rows only)
   and a `Scope:` line. On a failing run, it prints `rust-code-analysis: N hard violation(s) found`,
   the measured-metric table, and a `Violations:` findings table (`GATE FILE SCOPE SUBJECT LINE METRIC
-  VALUE LIMIT`) listing only `FAIL` rows, then exits 1.
+VALUE LIMIT`) listing only `FAIL` rows, then exits 1.
 - **Secondary (`GITHUB_STEP_SUMMARY`):** When the env var is set (CI), the script appends a Markdown
   summary — on success a measured-metric table (`| Metric | Gate | Threshold | Measured |`), on failure
   a violation table (`| Gate | File | Scope | Subject | Line | Metric | Value | Limit |`). The Makefile
@@ -677,7 +678,7 @@ Seven areas where implementing agents could diverge — all locked below.
 
 - **Alpine policy:** `Dockerfile.rca` MUST carry an inline `# alpine-exception: <reason>` marker (its
   base is glibc-only, like `Dockerfile.playwright`). Never add it without the marker — the `alpine base
-  guard` workflow will fail the PR.
+guard` workflow will fail the PR.
 - **Recipe prefix:** recipes in this Makefile are **space-indented** (`.RECIPEPREFIX += `), not
   tab-indented. Honor this for the new targets.
 - **No `bun x`:** the analyzer is native; never attempt to run it through the `bun` service / `bun x`.
@@ -721,18 +722,18 @@ This initiative extends the existing `ui-toolkit` repository. No new project roo
 
 <!-- markdownlint-disable MD013 -->
 
-| File                                       | Change   | Purpose                                                                                                              |
-| ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| File                                       | Change   | Purpose                                                                                                                |
+| ------------------------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `Dockerfile.rca`                           | new      | Debian-based analyzer image; pins + integrity-verifies `rust-code-analysis-cli@0.0.25`; carries `# alpine-exception:`. |
-| `docker-compose.yml`                       | modified | Add the `rca` service (`profiles: [tools]`, `Dockerfile.rca`, bind-mount `.:/app`, no host ports).                  |
-| `config/metrics-policy.json`               | new      | Committed `hard` (+ optional `review`) per-metric thresholds; the single threshold source.                          |
-| `config/metrics-policy.schema.json`        | new      | Draft-07 schema contracting the policy; `required: ["hard"]`, `additionalProperties: false`.                        |
-| `scripts/lint-metrics.sh`                  | new      | POSIX-sh enforcement engine: schema self-validation, analysis, collect-all-then-fail, review non-blocking, reporting. |
-| `Makefile`                                 | modified | Add `RCA_*`/`METRICS_POLICY_PATH` vars, `lint-metrics` + `lint-metrics-run` targets, `.PHONY`, `lint:` append.      |
-| `.github/workflows/rust-code-analysis.yml` | new      | Dedicated PR → main required workflow running `make lint-metrics` (hardened, runtime-detection gate).               |
-| `tests/**`                                 | new      | Schema-validity test + `scripts/lint-metrics.sh` shell-flow coverage, per repo test conventions.                    |
-| `CONTRIBUTING.md`                          | modified | Document what the gate enforces, the governed scope, local `make lint-metrics` usage, and failure/summary reading.  |
-| `README.md`                                | modified | Brief mention of the metrics gate and pointer to `CONTRIBUTING.md`.                                                 |
+| `docker-compose.yml`                       | modified | Add the `rca` service (`profiles: [tools]`, `Dockerfile.rca`, bind-mount `.:/app`, no host ports).                     |
+| `config/metrics-policy.json`               | new      | Committed `hard` (+ optional `review`) per-metric thresholds; the single threshold source.                             |
+| `config/metrics-policy.schema.json`        | new      | Draft-07 schema contracting the policy; `required: ["hard"]`, `additionalProperties: false`.                           |
+| `scripts/lint-metrics.sh`                  | new      | POSIX-sh enforcement engine: schema self-validation, analysis, collect-all-then-fail, review non-blocking, reporting.  |
+| `Makefile`                                 | modified | Add `RCA_*`/`METRICS_POLICY_PATH` vars, `lint-metrics` + `lint-metrics-run` targets, `.PHONY`, `lint:` append.         |
+| `.github/workflows/rust-code-analysis.yml` | new      | Dedicated PR → main required workflow running `make lint-metrics` (hardened, runtime-detection gate).                  |
+| `tests/**`                                 | new      | Schema-validity test + `scripts/lint-metrics.sh` shell-flow coverage, per repo test conventions.                       |
+| `CONTRIBUTING.md`                          | modified | Document what the gate enforces, the governed scope, local `make lint-metrics` usage, and failure/summary reading.     |
+| `README.md`                                | modified | Brief mention of the metrics gate and pointer to `CONTRIBUTING.md`.                                                    |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -761,32 +762,32 @@ This initiative extends the existing `ui-toolkit` repository. No new project roo
 
 <!-- markdownlint-disable MD013 -->
 
-| FR   | Covered by                                                                                                                          |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------- |
-| FR1  | `Dockerfile.rca` + `rca` docker-compose service with the pinned binary pre-installed (Decision 1).                                |
-| FR2  | `RCA_VERSION` single-source pin + SHA-256 verification (amd64) / `cargo install --locked` (arm64); no ports/network (Decision 1). |
-| FR3  | `config/metrics-policy.json` — `hard` (+ optional `review`) thresholds (Decision 2).                                              |
-| FR4  | `config/metrics-policy.schema.json` + inline `jq` schema self-validation in the script (Decision 2/4).                            |
-| FR5  | `RCA_SCOPE=src/` + `RCA_EXCLUDES` (vendored/generated dirs, `tests/`, `src/assets/**`, `*.d.ts`) (Decision 2/5).                  |
-| FR6  | `scripts/lint-metrics.sh` runs the CLI + parses metrics with `jq` (Decision 4).                                                   |
-| FR7  | Collect-all-then-fail; exit 1 on any hard violation or precondition failure, else 0 (Decision 4/7).                               |
-| FR8  | `review` rows computed but non-blocking and excluded from the stdout summary (Decision 4/7).                                      |
-| FR9  | Tolerant key reading, null-safe comparisons, division guards, review fallback defaults (Decision 3/4).                            |
-| FR10 | `lint-metrics` (docker run + summary mount) and `lint-metrics-run` (in-container) targets (Decision 5).                           |
-| FR11 | Both targets in `.PHONY`; `lint-metrics` appended to `lint:` (Decision 5).                                                        |
-| FR12 | `make lint-metrics` as the single local entry point (Decision 5).                                                                 |
-| FR13 | `.github/workflows/rust-code-analysis.yml` — `pull_request` → `main` (Decision 6).                                               |
-| FR14 | Dedicated workflow/job `rust-code-analysis` registered as a required status check (Decision 6).                                  |
-| FR15 | `make lint-metrics` evaluates the full governed `src/` scope each run and fails on threshold breach (Decision 5/7).              |
+| FR   | Covered by                                                                                                                                 |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR1  | `Dockerfile.rca` + `rca` docker-compose service with the pinned binary pre-installed (Decision 1).                                         |
+| FR2  | `RCA_VERSION` single-source pin + SHA-256 verification (amd64) / `cargo install --locked` (arm64); no ports/network (Decision 1).          |
+| FR3  | `config/metrics-policy.json` — `hard` (+ optional `review`) thresholds (Decision 2).                                                       |
+| FR4  | `config/metrics-policy.schema.json` + inline `jq` schema self-validation in the script (Decision 2/4).                                     |
+| FR5  | `RCA_SCOPE=src/` + `RCA_EXCLUDES` (vendored/generated dirs, `tests/`, `src/assets/**`, `*.d.ts`) (Decision 2/5).                           |
+| FR6  | `scripts/lint-metrics.sh` runs the CLI + parses metrics with `jq` (Decision 4).                                                            |
+| FR7  | Collect-all-then-fail; exit 1 on any hard violation or precondition failure, else 0 (Decision 4/7).                                        |
+| FR8  | `review` rows computed but non-blocking and excluded from the stdout summary (Decision 4/7).                                               |
+| FR9  | Tolerant key reading, null-safe comparisons, division guards, review fallback defaults (Decision 3/4).                                     |
+| FR10 | `lint-metrics` (docker run + summary mount) and `lint-metrics-run` (in-container) targets (Decision 5).                                    |
+| FR11 | Both targets in `.PHONY`; `lint-metrics` appended to `lint:` (Decision 5).                                                                 |
+| FR12 | `make lint-metrics` as the single local entry point (Decision 5).                                                                          |
+| FR13 | `.github/workflows/rust-code-analysis.yml` — `pull_request` → `main` (Decision 6).                                                         |
+| FR14 | Dedicated workflow/job `rust-code-analysis` registered as a required status check (Decision 6).                                            |
+| FR15 | `make lint-metrics` evaluates the full governed `src/` scope each run and fails on threshold breach (Decision 5/7).                        |
 | FR16 | Hardened permissions, `actions/checkout@v4` + `persist-credentials: false`, timeout, runtime-detection gate, no `setup-node` (Decision 6). |
-| FR17 | Success measured-metric table on stdout + `GITHUB_STEP_SUMMARY` (Decision 7).                                                     |
-| FR18 | Failure findings table (file/subject/line/metric/value/limit) on stdout + `GITHUB_STEP_SUMMARY` (Decision 7).                     |
-| FR19 | Same `config/metrics-policy.json` + `src/` scope via the shared `make lint-metrics` (Decision 5).                                 |
-| FR20 | Canonical `RCA_VERSION`/`RCA_SHA256` pin in the Makefile, propagated to the image build via compose `build.args` (Decision 1/5). |
-| FR21 | Baseline-compliance run against `main`; calibrate to a passing baseline, no suppression file (Decision 3).                        |
-| FR22 | Schema-validity test + `scripts/lint-metrics.sh` shell-flow coverage test (Decision Impact step 6).                              |
-| FR23 | `CONTRIBUTING.md` — what the gate enforces, governed scope, no-suppression nature (Docs).                                         |
-| FR24 | `CONTRIBUTING.md` / `README.md` — local `make lint-metrics` usage + violation/summary interpretation (Docs).                     |
+| FR17 | Success measured-metric table on stdout + `GITHUB_STEP_SUMMARY` (Decision 7).                                                              |
+| FR18 | Failure findings table (file/subject/line/metric/value/limit) on stdout + `GITHUB_STEP_SUMMARY` (Decision 7).                              |
+| FR19 | Same `config/metrics-policy.json` + `src/` scope via the shared `make lint-metrics` (Decision 5).                                          |
+| FR20 | Canonical `RCA_VERSION`/`RCA_SHA256` pin in the Makefile, propagated to the image build via compose `build.args` (Decision 1/5).           |
+| FR21 | Baseline-compliance run against `main`; calibrate to a passing baseline, no suppression file (Decision 3).                                 |
+| FR22 | Schema-validity test + `scripts/lint-metrics.sh` shell-flow coverage test (Decision Impact step 6).                                        |
+| FR23 | `CONTRIBUTING.md` — what the gate enforces, governed scope, no-suppression nature (Docs).                                                  |
+| FR24 | `CONTRIBUTING.md` / `README.md` — local `make lint-metrics` usage + violation/summary interpretation (Docs).                               |
 
 <!-- markdownlint-enable MD013 -->
 

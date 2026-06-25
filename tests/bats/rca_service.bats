@@ -69,12 +69,15 @@ COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
 }
 
 @test "rca service does not expose any host ports" {
-  # Extract only the rca service block and ensure it has no 'ports:' key
-  python3 -c "
-import sys, yaml
-with open('$COMPOSE_FILE') as f:
-    data = yaml.safe_load(f)
-svc = data.get('services', {}).get('rca', {})
-assert 'ports' not in svc, 'rca service must not expose host ports'
-"
+  # Extract only the rca service block (from `  rca:` to the next sibling service
+  # or top-level key) and ensure it has no 'ports:' mapping. Uses awk rather than
+  # a YAML parser so the test has no PyYAML/python runtime dependency in CI.
+  local rca_block
+  rca_block="$(awk '
+    /^  rca:[[:space:]]*$/ { f=1; print; next }
+    f && (/^[^[:space:]]/ || /^  [^[:space:]]/) { f=0 }
+    f { print }
+  ' "$COMPOSE_FILE")"
+  [ -n "$rca_block" ]
+  ! grep -qE '^[[:space:]]*ports:' <<<"$rca_block"
 }

@@ -9,11 +9,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-         ca-certificates \
-         curl \
-         jq \
-         make \
-         tar \
+         ca-certificates=20230311+deb12u1 \
+         curl=7.88.1-10+deb12u14 \
+         jq=1.6-2.1+deb12u1 \
+         make=4.3-4.1 \
+         tar=1.34+dfsg-1.2+deb12u1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -27,13 +27,19 @@ RUN set -eux; \
       rm /tmp/rca.tar.gz; \
     else \
       apt-get update; \
-      apt-get install -y --no-install-recommends cargo rustc; \
+      apt-get install -y --no-install-recommends cargo=0.66.0+ds1-1 rustc=1.63.0+dfsg1-2; \
       rm -rf /var/lib/apt/lists/*; \
       cargo install --locked --version "${RCA_VERSION}" rust-code-analysis-cli; \
       cp "${HOME}/.cargo/bin/rust-code-analysis-cli" /usr/local/bin/rust-code-analysis-cli; \
       rm -rf "${HOME}/.cargo" "${HOME}/.rustup"; \
     fi
 
+# Run the analyzer as a non-root user; it only reads the bind-mounted source.
+RUN groupadd --system rca \
+    && useradd --system --gid rca --no-create-home --home-dir /app rca
+
 WORKDIR /app
+
+USER rca
 
 CMD ["sh", "-c", "while :; do sleep 3600; done"]
