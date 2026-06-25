@@ -37,3 +37,5 @@ test-visual	bats	tests/bats/makefile_targets.bats	Validated as the Storybook-bac
 up	ci	.github/workflows/static-testing.yml	Exercised transitively by workflows that call `make start`, which depends on `up`.
 update	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency update command.
 test-integration	bats	tests/bats/makefile_targets.bats	Validated for both the running-container and fresh-container branches.
+lint-metrics	bats	tests/bats/lint_metrics_make_targets.bats	Validated as the Docker-backed rca container dispatch target for the metrics gate.
+lint-metrics-run	bats	tests/bats/lint_metrics_make_targets.bats	Validated that the recipe exports RCA_BIN, RCA_SCOPE, METRICS_POLICY and runs lint-metrics.sh.

@@ -14,6 +14,12 @@ BUN = $(RUN_BUN) bun
 BUN_RUN = $(BUN) run
 BUN_X = $(BUN) x
 
+# rust-code-analysis metrics gate
+RCA_VERSION = 0.0.25
+RCA_SCOPE = src/
+RCA_EXCLUDES = **/node_modules/** **/dist/** **/build/**
+METRICS_POLICY_PATH = config/metrics-policy.json
+
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
@@ -22,7 +28,7 @@ BUN_X = $(BUN) x
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright \
-	lint-dep-ranges
+	lint-dep-ranges lint-metrics lint-metrics-run
 
 PLAYWRIGHT_TEST_ARGS =
 
@@ -46,7 +52,7 @@ help:
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-metrics ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
@@ -83,6 +89,17 @@ lint-dep-ranges: ## Enforce caret (^) version ranges in package.json inside the 
 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.
 	sh ./scripts/check-test-structure.sh
+
+lint-metrics: ## Run rust-code-analysis complexity gate inside the rca container.
+	$(DOCKER_COMPOSE) run --rm rca make lint-metrics-run
+
+lint-metrics-run: ## Evaluate metrics policy (run inside rca container via make lint-metrics).
+	export RCA_BIN=/usr/local/bin/rust-code-analysis-cli; \
+	export RCA_SCOPE=$(RCA_SCOPE); \
+	export RCA_EXCLUDES="$(RCA_EXCLUDES)"; \
+	export METRICS_POLICY=$(METRICS_POLICY_PATH); \
+	export METRICS_POLICY_SCHEMA=config/metrics-policy.schema.json; \
+	sh scripts/lint-metrics.sh
 
 git-hooks-install: ## Install git hooks.
 	$(BUN_X) husky install
