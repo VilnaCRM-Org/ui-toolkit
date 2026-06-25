@@ -1,0 +1,42 @@
+name: rust-code-analysis
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust-code-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Detect runtime project files
+        id: project
+        run: |
+          if [[ -f package.json && -f bun.lock && -f config/metrics-policy.json ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip metrics check
+        if: steps.project.outputs.present != 'true'
+        run: echo "Skipping metrics check because this bootstrap PR does not include the project runtime files yet."
+
+      - name: Run metrics gate
+        if: steps.project.outputs.present == 'true'
+        run: make lint-metrics

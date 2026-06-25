@@ -13,6 +13,18 @@ import VilnaCRMEmail from '../vilna-crm-email';
 
 import styles from './styles';
 
+function SocialLinksRow({
+  socialLinks,
+}: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
+  return (
+    <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
+      {socialLinks.map(item => (
+        <SocialMediaItem item={item} key={item.id} />
+      ))}
+    </Stack>
+  );
+}
+
 function Mobile({ socialLinks }: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
   const { t } = useTranslation();
   const logoUrl: string = resolveImageSrc(Logo);
@@ -21,11 +33,7 @@ function Mobile({ socialLinks }: Readonly<{ socialLinks: SocialMedia[] }>): Reac
     <Container sx={styles.wrapper}>
       <Stack sx={styles.content}>
         <img src={logoUrl} alt={t('footer.logo_alt')} width={131} height={44} loading="lazy" />
-        <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
-          {socialLinks.map(item => (
-            <SocialMediaItem item={item} key={item.id} />
-          ))}
-        </Stack>
+        <SocialLinksRow socialLinks={socialLinks} />
       </Stack>
       <VilnaCRMEmail />
       <PrivacyPolicy />

@@ -104,6 +104,48 @@ own subdirectory:
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
 
+### Complexity metrics gate
+
+`make lint-metrics` runs a complexity analysis over the `src/` scope using a pinned
+`rust-code-analysis-cli` instance inside the project's `rca` Docker service. The policy is
+committed at `config/metrics-policy.json` with thresholds validated by
+`config/metrics-policy.schema.json`. No additional setup beyond the repository's existing
+Docker workflow is required.
+
+Run the check locally before pushing:
+
+```bash
+make lint-metrics
+```
+
+**No suppression file is allowed.** There is no baseline or suppression mechanism — every file
+in `src/` must comply with the committed policy thresholds.
+
+When the gate finds violations it prints a findings table, one row per breach:
+
+| FILE | SUBJECT | LINE | METRIC | VALUE | THRESHOLD |
+| ---- | ------- | ---- | ------ | ----- | --------- |
+
+Each row names the file, the function or closure that violated the limit, the start line, the
+metric name (`cyclomatic_max`, `sloc_function_max`, …), the measured value, and the policy
+threshold.
+
+**Remediating common violations:**
+
+- **Over-complex functions (`cyclomatic_max`, `cognitive_max`)** — extract helper functions,
+  reduce branching, or refactor deeply nested logic into smaller well-named functions.
+- **Oversized files (`sloc_file_max`, `lloc_file_max`, `ploc_file_max`)** — split large files into focused
+  modules; move unrelated utilities to a separate file.
+- **Too many closures (`nom_closures_file_max`)** — lift inline closures into named functions
+  or move them to a shared utility module.
+
+On a passing run the script prints a measured-metric summary table with the header
+`| METRIC | VALUE | LIMIT |` so you can see the current headroom against each threshold.
+
+**Out of scope:** IDE/editor integration is explicitly out of scope for this gate. Run
+`make lint-metrics` from the command line or rely on CI — there is no language-server
+plugin.
+
 ### File and directory naming
 
 All files and directories in this repository use lowercase kebab-case. This applies to every
