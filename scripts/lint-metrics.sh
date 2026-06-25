@@ -100,7 +100,6 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
   --argjson hard "$hard" \
   --arg scope "$RCA_SCOPE" '
 
-  # helpers
   def number_or_null:
     if . == null then null
     elif type == "number" then .
@@ -120,7 +119,6 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
     then "FAIL|\(file)|\(scp)|\(subj)|\(ln)|\(metric)|\(val)|\($hard[metric])"
     else empty end;
 
-  # file-level metrics
   def eval_file(fname):
     . as $m |
     (
@@ -140,7 +138,6 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
         ($m.mi.mi_visual_studio // $m.maintanability_index.mi_visual_studio // null))
     );
 
-  # function/closure-level metrics
   def eval_fn(fname; sp):
     sp as $s |
     $s.metrics as $m |
@@ -171,7 +168,6 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
         $m.halstead.bugs // null)
     );
 
-  # class-level metrics
   def eval_class(fname; sp):
     sp as $s |
     $s.metrics as $m |
@@ -190,7 +186,6 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
         $m.npa.classes_average // null)
     );
 
-  # interface-level metrics
   def eval_iface(fname; sp):
     sp as $s |
     $s.metrics as $m |
@@ -203,7 +198,6 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
         $m.npa.interfaces // null)
     );
 
-  # recursive space evaluation
   def eval_spaces(fname):
     .[] |
     . as $sp |
@@ -221,9 +215,7 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
       if ($sp.spaces // []) | length > 0 then ($sp.spaces | eval_spaces(fname)) else empty end
     end;
 
-  # normalise input: accept single object or array
   if type == "object" then [.] else . end |
-
   .[] |
   . as $fo |
   ($fo.name // "unknown") as $fname |
@@ -233,6 +225,52 @@ findings=$(printf '%s' "$analyzer_out" | jq -r \
   )
 ' 2>&1) || die "metric evaluation failed"
 
+# ---- evaluate review metrics (non-blocking, advisory only) -------------------
+
+review_findings=$(printf '%s' "$analyzer_out" | jq -r \
+  --argjson review "$review" '
+
+  def chk_review_min(file; metric; val; threshold):
+    if threshold != null and val != null and (val < threshold)
+    then "REVIEW|\(file)|file|\(file)|0|\(metric)|\(val)|\(threshold)"
+    else empty end;
+
+  def chk_review_max(file; metric; val; threshold):
+    if threshold != null and val != null and (val > threshold)
+    then "REVIEW|\(file)|file|\(file)|0|\(metric)|\(val)|\(threshold)"
+    else empty end;
+
+  def eval_review(fname):
+    . as $m |
+    (($m.loc.sloc // 0) + ($m.loc.cloc // 0) + ($m.loc.blank // 0)) as $total |
+    (
+      chk_review_min(fname; "mi_original_min";
+        $m.mi.mi_original // null;
+        $review.mi_original_min // null),
+      chk_review_min(fname; "mi_sei_min";
+        $m.mi.mi_sei // null;
+        $review.mi_sei_min // null),
+      chk_review_min(fname; "cloc_ratio_min";
+        (if $total > 0 then ($m.loc.cloc // 0) / $total else null end);
+        $review.cloc_ratio_min // null),
+      chk_review_max(fname; "cloc_ratio_max";
+        (if $total > 0 then ($m.loc.cloc // 0) / $total else null end);
+        $review.cloc_ratio_max // null),
+      chk_review_min(fname; "blank_ratio_min";
+        (if $total > 0 then ($m.loc.blank // 0) / $total else null end);
+        $review.blank_ratio_min // null),
+      chk_review_max(fname; "blank_ratio_max";
+        (if $total > 0 then ($m.loc.blank // 0) / $total else null end);
+        $review.blank_ratio_max // null)
+    );
+
+  if type == "object" then [.] else . end |
+  .[] |
+  . as $fo |
+  ($fo.name // "unknown") as $fname |
+  ($fo.metrics | eval_review($fname))
+' 2>/dev/null) || true
+
 # ---- report results ----------------------------------------------------------
 
 printf 'rust-code-analysis: Scope: %s\n' "$RCA_SCOPE"
@@ -240,38 +278,37 @@ printf 'rust-code-analysis: Scope: %s\n' "$RCA_SCOPE"
 if [ -z "$findings" ]; then
   printf 'rust-code-analysis: all hard checks pass\n'
 
-  # Measured-metric summary (hard metrics that produced values)
   printf '\n%s\n' "| METRIC | VALUE | LIMIT |"
   printf '%s\n'   "| --- | --- | --- |"
   printf '%s' "$analyzer_out" | jq -r \
-    --argjson hard "$hard" \
-    --arg scope "$RCA_SCOPE" '
-    def number_or_null:
-      if . == null then null
-      elif type == "number" then .
-      elif type == "object" then (.sum // null)
-      else null end;
-
+    --argjson hard "$hard" '
     if type == "object" then [.] else . end |
-    .[] |
-    . as $fo |
-    $fo.metrics as $m |
+    .[] | . as $fo | $fo.metrics as $m |
     [
       if $m.loc.sloc != null then "| sloc_file_max | \($m.loc.sloc) | \($hard.sloc_file_max) |" else empty end,
       if $m.loc.lloc != null then "| lloc_file_max | \($m.loc.lloc) | \($hard.lloc_file_max) |" else empty end,
       if $m.nom != null then
         "| nom_total_file_max | \(($m.nom.functions // 0) + ($m.nom.closures // 0)) | \($hard.nom_total_file_max) |"
       else empty end,
-      if $m.mi.mi_visual_studio != null then
+      if ($m.mi.mi_visual_studio // null) != null then
         "| mi_visual_studio_min | \($m.mi.mi_visual_studio) | \($hard.mi_visual_studio_min) |"
       else empty end
     ] | .[]
   ' 2>/dev/null || true
 
-  # Mirror to GITHUB_STEP_SUMMARY when set and writable
-  if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -w "${GITHUB_STEP_SUMMARY:-/dev/null}" ] 2>/dev/null; then
-    printf '## rust-code-analysis: all hard checks pass\n\nScope: %s\n' "$RCA_SCOPE" \
-      >> "$GITHUB_STEP_SUMMARY"
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -w "$GITHUB_STEP_SUMMARY" ] 2>/dev/null; then
+    {
+      printf '## rust-code-analysis: all hard checks pass\n\nScope: %s\n' "$RCA_SCOPE"
+      if [ -n "$review_findings" ]; then
+        printf '\n### Review advisories (non-blocking)\n\n'
+        printf '| GATE | FILE | SCOPE | SUBJECT | LINE | METRIC | VALUE | LIMIT |\n'
+        printf '| --- | --- | --- | --- | --- | --- | --- | --- |\n'
+        printf '%s\n' "$review_findings" | while IFS='|' read -r gate file scp subj line metric val limit; do
+          printf '| %s | %s | %s | %s | %s | %s | %s | %s |\n' \
+            "$gate" "$file" "$scp" "$subj" "$line" "$metric" "$val" "$limit"
+        done
+      fi
+    } >> "$GITHUB_STEP_SUMMARY"
   fi
 
   exit 0
@@ -285,8 +322,7 @@ printf '%s\n' "$findings" | while IFS='|' read -r gate file scp subj line metric
     "$gate" "$file" "$scp" "$subj" "$line" "$metric" "$val" "$limit"
 done
 
-# Mirror to GITHUB_STEP_SUMMARY when set and writable
-if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -w "${GITHUB_STEP_SUMMARY:-/dev/null}" ] 2>/dev/null; then
+if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -w "$GITHUB_STEP_SUMMARY" ] 2>/dev/null; then
   {
     printf '## rust-code-analysis: hard check violations\n\nScope: %s\n\n' "$RCA_SCOPE"
     printf '| GATE | FILE | SCOPE | SUBJECT | LINE | METRIC | VALUE | LIMIT |\n'
