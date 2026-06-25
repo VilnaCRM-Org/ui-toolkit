@@ -1,5 +1,5 @@
-import { CardItem, CardType, NonEmptyCardList } from '@/components/UiCardList/types';
-import { SocialMedia } from '@/components/UiFooter/types';
+import { CardItem, CardType, NonEmptyCardList } from '@/components/ui-card-list/types';
+import { SocialMedia } from '@/components/ui-footer/types';
 
 export const testId: string = '00000000-0000-4000-8000-000000000000';
 export const testTitle: string = 'sample title';

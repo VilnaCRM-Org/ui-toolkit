@@ -1,5 +1,5 @@
 // Image imports resolve to a data-URI string under Storybook's webpack
-// `asset/inline` rule and to a `{ src }` object under the Jest `svgMock`.
+// `asset/inline` rule and to a `{ src }` object under the Jest `svg-mock`.
 // Type them as the union both shapes satisfy instead of an implicit `any`
 // (see src/types/assets.ts for the shared resolver).
 declare module '*.png' {

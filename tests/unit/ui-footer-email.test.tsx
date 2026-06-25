@@ -1,0 +1,65 @@
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+
+import VilnaCRMEmail from '../../src/components/ui-footer/vilna-crm-email';
+
+import { mockEmail } from './constants';
+
+describe('VilnaCRMEmail component', () => {
+  const originalEmail: string | undefined = process.env.REACT_APP_VILNACRM_GMAIL;
+
+  afterEach(() => {
+    if (originalEmail === undefined) {
+      delete process.env.REACT_APP_VILNACRM_GMAIL;
+      return;
+    }
+
+    process.env.REACT_APP_VILNACRM_GMAIL = originalEmail;
+  });
+
+  it('renders email address correctly', () => {
+    delete process.env.REACT_APP_VILNACRM_GMAIL;
+
+    render(<VilnaCRMEmail />);
+
+    const emailLink: HTMLElement = screen.getByText(mockEmail);
+    expect(emailLink).toBeInTheDocument();
+  });
+
+  it('uses the configured email for both text and mailto href', () => {
+    const configuredEmail: string = 'support@example.com';
+    process.env.REACT_APP_VILNACRM_GMAIL = configuredEmail;
+
+    render(<VilnaCRMEmail />);
+
+    expect(screen.getByRole('link', { name: configuredEmail })).toHaveAttribute(
+      'href',
+      `mailto:${configuredEmail}`
+    );
+  });
+});
+
+describe('VilnaCRMEmail whitespace handling', () => {
+  const originalGmail: string | undefined = process.env.REACT_APP_VILNACRM_GMAIL;
+
+  afterEach((): void => {
+    if (originalGmail === undefined) {
+      delete process.env.REACT_APP_VILNACRM_GMAIL;
+      return;
+    }
+
+    process.env.REACT_APP_VILNACRM_GMAIL = originalGmail;
+  });
+
+  it('falls back to the default email when env value is whitespace only', (): void => {
+    process.env.REACT_APP_VILNACRM_GMAIL = '   ';
+
+    render(<VilnaCRMEmail />);
+
+    expect(screen.getByRole('link', { name: mockEmail })).toHaveAttribute(
+      'href',
+      `mailto:${mockEmail}`
+    );
+    expect(screen.queryByRole('link', { name: '   ' })).not.toBeInTheDocument();
+  });
+});

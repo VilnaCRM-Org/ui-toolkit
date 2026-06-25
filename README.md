@@ -58,6 +58,20 @@ When you add or change a public Make target, update `tests/bats/make-target-cove
 same change. Either add or adjust direct Bats coverage for uncovered shell behavior, or point the
 manifest at the pull-request workflow that already exercises the target.
 
+### Dependency graph hygiene
+
+A zero-tolerance [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) gate guards
+the `src/` graph against cycles, orphans, cross-component barrel breaches, `src` → `tests`
+imports, leaked stories/dev dependencies, and type-only violations. Run it locally with:
+
+```bash
+make lint-dep-cruiser
+```
+
+See the
+[dependency graph hygiene guide](CONTRIBUTING.md#dependency-graph-hygiene-dependency-cruiser)
+in `CONTRIBUTING.md` for what it enforces, how it complements ESLint, and how to read its output.
+
 ## Project Layout
 
 - `src/components`: exported UI components, themes, and stories
