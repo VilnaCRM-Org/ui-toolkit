@@ -68,6 +68,18 @@ match.rules = [
 match.file_patterns = ["tests/memory-leak/**"]
 set.ignored = true
 
+# radarlint S7026 ("replace curl with ADD") is a non-blocking advisory that
+# conflicts with hadolint, which prefers curl for URL downloads and rejects the
+# `ADD --checksum` integrity form as an invalid flag. Dockerfile.rca uses curl
+# with an explicit sha256 check and an arch-conditional download (the prebuilt is
+# amd64-only; arm64 builds from source), which is the verified, hadolint-clean
+# approach, so this advisory does not apply here.
+[[triage]]
+match.plugins = ["radarlint-iac"]
+match.rules = ["radarlint-iac:docker:S7026"]
+match.file_patterns = ["Dockerfile.rca"]
+set.ignored = true
+
 [smells]
 mode = "comment"
 

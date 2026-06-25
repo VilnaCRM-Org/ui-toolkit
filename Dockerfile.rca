@@ -7,26 +7,25 @@ ARG TARGETARCH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Prebuilt amd64 binary (ADD replaces a curl download per radarlint S7026); its
-# SHA-256 is verified in the RUN below. The arm64 path builds from source via
-# cargo and ignores this artifact.
-ADD https://github.com/mozilla/rust-code-analysis/releases/download/v0.0.25/rust-code-analysis-linux-cli-x86_64.tar.gz \
-    /tmp/rca.tar.gz
-
-# Single RUN (no consecutive RUN instructions, per radarlint S7031): install
-# pinned tooling, place the analyzer for the build platform, then drop privileges.
+# Single RUN per radarlint S7031: install pinned tooling, fetch + verify + place
+# the analyzer (amd64 prebuilt, arm64 from source), then drop privileges.
 RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
       ca-certificates=20230311+deb12u1 \
+      curl=7.88.1-10+deb12u14 \
       jq=1.6-2.1+deb12u1 \
       make=4.3-4.1 \
       tar=1.34+dfsg-1.2+deb12u1; \
     rm -rf /var/lib/apt/lists/*; \
     ARCH="${TARGETARCH:-$(uname -m)}"; \
     if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
+      curl --retry 5 --retry-delay 2 -fsSL \
+        "https://github.com/mozilla/rust-code-analysis/releases/download/v${RCA_VERSION}/rust-code-analysis-linux-cli-x86_64.tar.gz" \
+        -o /tmp/rca.tar.gz; \
       echo "9ec2a217b8ff191e02dab5d5f2eee6158b63fd975c532b2c5d67c2e6c7249894  /tmp/rca.tar.gz" | sha256sum -c; \
       tar -xzf /tmp/rca.tar.gz -C /usr/local/bin rust-code-analysis-cli; \
+      rm /tmp/rca.tar.gz; \
     else \
       apt-get update; \
       apt-get install -y --no-install-recommends cargo=0.66.0+ds1-1 rustc=1.63.0+dfsg1-2; \
@@ -35,7 +34,6 @@ RUN set -eux; \
       cp "${HOME}/.cargo/bin/rust-code-analysis-cli" /usr/local/bin/rust-code-analysis-cli; \
       rm -rf "${HOME}/.cargo" "${HOME}/.rustup"; \
     fi; \
-    rm -f /tmp/rca.tar.gz; \
     groupadd --system rca; \
     useradd --system --gid rca --no-create-home --home-dir /app rca
 
