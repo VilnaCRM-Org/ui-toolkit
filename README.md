@@ -33,7 +33,11 @@ make test-e2e
 make test-visual
 make lighthouse-desktop
 make lighthouse-mobile
+make lint-metrics
 ```
+
+The `lint-metrics` target runs a `rust-code-analysis` complexity gate over `src/`. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the policy details and remediation guidance.
 
 ### Bats Shell Coverage
 
