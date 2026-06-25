@@ -1,0 +1,39 @@
+# alpine-exception: rust-code-analysis-cli prebuilt releases are glibc-only; Mozilla publishes no Alpine/musl binary for this tool, mirroring the Dockerfile.playwright glibc exception.
+
+FROM debian:bookworm-slim
+
+ARG RCA_VERSION=0.0.25
+ARG TARGETARCH
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+         ca-certificates \
+         curl \
+         jq \
+         make \
+         tar \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    ARCH="${TARGETARCH:-$(uname -m)}"; \
+    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
+      curl --retry 5 --retry-delay 2 -fsSL \
+        "https://github.com/mozilla/rust-code-analysis/releases/download/v${RCA_VERSION}/rust-code-analysis-linux-cli-x86_64.tar.gz" \
+        -o /tmp/rca.tar.gz; \
+      echo "9ec2a217b8ff191e02dab5d5f2eee6158b63fd975c532b2c5d67c2e6c7249894  /tmp/rca.tar.gz" | sha256sum -c; \
+      tar -xzf /tmp/rca.tar.gz -C /usr/local/bin rust-code-analysis-cli; \
+      rm /tmp/rca.tar.gz; \
+    else \
+      apt-get update; \
+      apt-get install -y --no-install-recommends cargo rustc; \
+      rm -rf /var/lib/apt/lists/*; \
+      cargo install --locked --version "${RCA_VERSION}" rust-code-analysis-cli; \
+      cp "${HOME}/.cargo/bin/rust-code-analysis-cli" /usr/local/bin/rust-code-analysis-cli; \
+      rm -rf "${HOME}/.cargo" "${HOME}/.rustup"; \
+    fi
+
+WORKDIR /app
+
+CMD ["sh", "-c", "while :; do sleep 3600; done"]

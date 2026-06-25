@@ -15,3 +15,11 @@ services:
     environment:
       REACT_APP_STORYBOOK_URL: http://storybook:6006
     ipc: host
+  rca:
+    build:
+      context: .
+      dockerfile: Dockerfile.rca
+    profiles:
+      - tools
+    volumes:
+      - .:/app
