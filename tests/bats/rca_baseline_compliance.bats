@@ -11,11 +11,10 @@ POLICY="$PROJECT_ROOT/config/metrics-policy.json"
 
 @test "no rca-baseline suppression file exists in the repository" {
   run find "$PROJECT_ROOT" \
-    -not \( -path "$PROJECT_ROOT/.git/*" -prune \) \
-    -not \( -path "$PROJECT_ROOT/node_modules/*" -prune \) \
+    \( -path "$PROJECT_ROOT/.git" -o -path "$PROJECT_ROOT/node_modules" \) -prune -o \
     \( -name '.rca-baseline' -o -name 'rca-baseline.json' \
        -o -name '.rca-suppress' -o -name '.rca-ignore' \
-       -o -name 'rca-suppressions*' \)
+       -o -name 'rca-suppressions*' \) -print
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }

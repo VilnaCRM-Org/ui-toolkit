@@ -421,9 +421,10 @@ are computed but never block (Decision 4 / FR8). `*_max` is an upper bound (fail
     kept as review-gate (range-band) metrics, not hard-fail, until validated against this codebase.
   - **CRM-faithful extraction.** Two field choices mirror the shipped CRM script rather than the
     analyzer's most obvious field: `nexits_max` is enforced against `.metrics.nexits.average` (v0.0.25
-    does not expose a per-space exit max), and `nom_total_file_max` is enforced against `nom_functions
-    - nom_closures`(CRM derives the total rather than reading a native`.metrics.nom.total`). Keep these
-      as CRM does for parity; the baseline run confirms they behave on this codebase.
+    does not expose a per-space exit max), and `nom_total_file_max` is enforced against
+    `nom_functions + nom_closures` (CRM derives the total rather than reading a native
+    `.metrics.nom.total`). Keep these as CRM does for parity; the baseline run confirms they behave on
+    this codebase.
 - **Baseline calibration:** Run `make lint-metrics` against current `main` before enabling the required
   check. If real code breaches a committed `hard` threshold, either remediate the code or raise that
   threshold to a passing baseline and defer tightening to a later effort — never introduce a

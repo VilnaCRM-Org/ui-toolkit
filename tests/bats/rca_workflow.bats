@@ -46,12 +46,21 @@ WORKFLOW="$PROJECT_ROOT/.github/workflows/rust-code-analysis.yml"
 
 # ---- checkout step -----------------------------------------------------------
 
-@test "workflow uses actions/checkout@v4" {
-  grep -q 'actions/checkout@v4' "$WORKFLOW"
+@test "workflow pins actions/checkout to the repo-standard immutable SHA" {
+  grep -qE 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' "$WORKFLOW"
 }
 
 @test "checkout step sets persist-credentials: false" {
   grep -q 'persist-credentials: false' "$WORKFLOW"
+}
+
+@test "workflow sets a job timeout-minutes guardrail" {
+  grep -qE '^[[:space:]]*timeout-minutes:[[:space:]]*[0-9]+' "$WORKFLOW"
+}
+
+@test "workflow declares a concurrency group with cancel-in-progress" {
+  grep -qE '^concurrency:' "$WORKFLOW"
+  grep -qE 'cancel-in-progress:[[:space:]]*true' "$WORKFLOW"
 }
 
 @test "workflow does not include a setup-node step" {

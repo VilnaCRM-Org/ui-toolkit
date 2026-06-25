@@ -52,14 +52,32 @@ schema_errors=$(jq -r --slurpfile schema "$METRICS_POLICY_SCHEMA" '
         then "hard.\(.key): expected number, got \(.value | type)"
         else null end),
       (($p.hard | keys) - ($s.properties.hard.properties // {} | keys) | .[] |
-        "hard: unknown key: \(.)")
+        "hard: unknown key: \(.)"),
+      ($p.hard | to_entries | .[] | .key as $k | .value as $v |
+        ($s.properties.hard.properties[$k] // {}) as $spec |
+        if ($v | type) == "number" and ($spec.minimum != null) and ($v < $spec.minimum)
+        then "hard.\($k): \($v) is below schema minimum \($spec.minimum)" else null end),
+      ($p.hard | to_entries | .[] | .key as $k | .value as $v |
+        ($s.properties.hard.properties[$k] // {}) as $spec |
+        if ($v | type) == "number" and ($spec.maximum != null) and ($v > $spec.maximum)
+        then "hard.\($k): \($v) is above schema maximum \($spec.maximum)" else null end)
     else null end,
 
     if ($p | has("review")) and (($p.review | type) == "object") then
       ($p.review | to_entries | .[] |
         if (.value | type) != "number"
         then "review.\(.key): expected number, got \(.value | type)"
-        else null end)
+        else null end),
+      (($p.review | keys) - ($s.properties.review.properties // {} | keys) | .[] |
+        "review: unknown key: \(.)"),
+      ($p.review | to_entries | .[] | .key as $k | .value as $v |
+        ($s.properties.review.properties[$k] // {}) as $spec |
+        if ($v | type) == "number" and ($spec.minimum != null) and ($v < $spec.minimum)
+        then "review.\($k): \($v) is below schema minimum \($spec.minimum)" else null end),
+      ($p.review | to_entries | .[] | .key as $k | .value as $v |
+        ($s.properties.review.properties[$k] // {}) as $spec |
+        if ($v | type) == "number" and ($spec.maximum != null) and ($v > $spec.maximum)
+        then "review.\($k): \($v) is above schema maximum \($spec.maximum)" else null end)
     else null end
   ] | map(select(. != null)) | .[]
 ' "$METRICS_POLICY" 2>&1) || true
@@ -242,7 +260,7 @@ review_findings=$(printf '%s' "$analyzer_out" | jq -r \
 
   def eval_review(fname):
     . as $m |
-    (($m.loc.sloc // 0) + ($m.loc.cloc // 0) + ($m.loc.blank // 0)) as $total |
+    ($m.loc.sloc // 0) as $sloc |
     (
       chk_review_min(fname; "mi_original_min";
         $m.mi.mi_original // null;
@@ -251,16 +269,16 @@ review_findings=$(printf '%s' "$analyzer_out" | jq -r \
         $m.mi.mi_sei // null;
         $review.mi_sei_min // null),
       chk_review_min(fname; "cloc_ratio_min";
-        (if $total > 0 then ($m.loc.cloc // 0) / $total else null end);
+        (if $sloc > 0 then ($m.loc.cloc // 0) / $sloc else null end);
         $review.cloc_ratio_min // null),
       chk_review_max(fname; "cloc_ratio_max";
-        (if $total > 0 then ($m.loc.cloc // 0) / $total else null end);
+        (if $sloc > 0 then ($m.loc.cloc // 0) / $sloc else null end);
         $review.cloc_ratio_max // null),
       chk_review_min(fname; "blank_ratio_min";
-        (if $total > 0 then ($m.loc.blank // 0) / $total else null end);
+        (if $sloc > 0 then ($m.loc.blank // 0) / $sloc else null end);
         $review.blank_ratio_min // null),
       chk_review_max(fname; "blank_ratio_max";
-        (if $total > 0 then ($m.loc.blank // 0) / $total else null end);
+        (if $sloc > 0 then ($m.loc.blank // 0) / $sloc else null end);
         $review.blank_ratio_max // null)
     );
 
@@ -278,9 +296,7 @@ printf 'rust-code-analysis: Scope: %s\n' "$RCA_SCOPE"
 if [ -z "$findings" ]; then
   printf 'rust-code-analysis: all hard checks pass\n'
 
-  printf '\n%s\n' "| METRIC | VALUE | LIMIT |"
-  printf '%s\n'   "| --- | --- | --- |"
-  printf '%s' "$analyzer_out" | jq -r \
+  metric_summary=$(printf '%s' "$analyzer_out" | jq -r \
     --argjson hard "$hard" '
     if type == "object" then [.] else . end |
     .[] | . as $fo | $fo.metrics as $m |
@@ -294,11 +310,18 @@ if [ -z "$findings" ]; then
         "| mi_visual_studio_min | \($m.mi.mi_visual_studio) | \($hard.mi_visual_studio_min) |"
       else empty end
     ] | .[]
-  ' 2>/dev/null || true
+  ' 2>/dev/null || true)
+
+  printf '\n%s\n' "| METRIC | VALUE | LIMIT |"
+  printf '%s\n'   "| --- | --- | --- |"
+  printf '%s\n' "$metric_summary"
 
   if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -w "$GITHUB_STEP_SUMMARY" ] 2>/dev/null; then
     {
       printf '## rust-code-analysis: all hard checks pass\n\nScope: %s\n' "$RCA_SCOPE"
+      printf '\n| METRIC | VALUE | LIMIT |\n'
+      printf '| --- | --- | --- |\n'
+      printf '%s\n' "$metric_summary"
       if [ -n "$review_findings" ]; then
         printf '\n### Review advisories (non-blocking)\n\n'
         printf '| GATE | FILE | SCOPE | SUBJECT | LINE | METRIC | VALUE | LIMIT |\n'

@@ -134,7 +134,7 @@ threshold.
 
 - **Over-complex functions (`cyclomatic_max`, `cognitive_max`)** — extract helper functions,
   reduce branching, or refactor deeply nested logic into smaller well-named functions.
-- **Oversized files (`sloc_file_max`, `loc_file_max`)** — split large files into focused
+- **Oversized files (`sloc_file_max`, `lloc_file_max`, `ploc_file_max`)** — split large files into focused
   modules; move unrelated utilities to a separate file.
 - **Too many closures (`nom_closures_file_max`)** — lift inline closures into named functions
   or move them to a shared utility module.

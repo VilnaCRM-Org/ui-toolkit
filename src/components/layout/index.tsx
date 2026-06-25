@@ -70,12 +70,21 @@ function restoreDocumentMetadata(
   }
 }
 
-function useDocumentMetadata(pageTitle?: string, metaDescription?: string): void {
-  React.useEffect(() => {
-    const snapshot: MetadataSnapshot = applyDocumentMetadata(pageTitle, metaDescription);
+// Treat blank/whitespace-only values as "not provided" so the gate never sets an
+// empty document.title (WCAG 2.4.2) or a whitespace-only meta description.
+function normalizeMetadataValue(value?: string): string | undefined {
+  return value?.trim() || undefined;
+}
 
-    return (): void => restoreDocumentMetadata(snapshot, pageTitle, metaDescription);
-  }, [metaDescription, pageTitle]);
+function useDocumentMetadata(pageTitle?: string, metaDescription?: string): void {
+  const title: string | undefined = normalizeMetadataValue(pageTitle);
+  const description: string | undefined = normalizeMetadataValue(metaDescription);
+
+  React.useEffect(() => {
+    const snapshot: MetadataSnapshot = applyDocumentMetadata(title, description);
+
+    return (): void => restoreDocumentMetadata(snapshot, title, description);
+  }, [description, title]);
 }
 
 export default function Layout({

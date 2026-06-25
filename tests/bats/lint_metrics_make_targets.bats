@@ -29,9 +29,7 @@ setup() {
 # ---- .PHONY declarations ------------------------------------------------------
 
 @test "lint-metrics is declared in .PHONY" {
-  grep -q 'lint-metrics' "$MAKEFILE" | grep -q 'PHONY' || \
-    grep -E '\.PHONY.*lint-metrics|lint-metrics.*\.PHONY' "$MAKEFILE" -q || \
-    awk '/^\.PHONY/{buf=""; flag=1} flag{buf=buf $0; if(/\\$/)next; if(buf ~ /lint-metrics/ && flag){found=1; exit}} END{exit !found}' "$MAKEFILE"
+  awk '/^\.PHONY/{buf=""; flag=1} flag{buf=buf $0; if(/\\$/)next; if(buf ~ /lint-metrics([^-]|$)/ && flag){found=1; exit}} END{exit !found}' "$MAKEFILE"
 }
 
 @test "lint-metrics-run is declared in .PHONY" {
