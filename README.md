@@ -65,7 +65,7 @@ the `src/` graph against cycles, orphans, cross-component barrel breaches, `src`
 imports, leaked stories/dev dependencies, and type-only violations. Run it locally with:
 
 ```bash
-make lint-dep-cruiser
+make lint-deps
 ```
 
 See the

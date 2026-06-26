@@ -35,7 +35,7 @@ jobs:
 
       - name: Run dependency-cruiser
         if: steps.project.outputs.present == 'true'
-        run: make lint-dep-cruiser
+        run: make lint-deps
 
       - name: Stop docker test environment
         if: always() && steps.project.outputs.present == 'true'

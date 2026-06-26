@@ -11,7 +11,7 @@ install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency in
 lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.
 lighthouse-mobile	bats	tests/bats/makefile_targets.bats	Validated as the mobile Lighthouse shell entrypoint.
 lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the static testing workflow's individual lint targets.
-lint-dep-cruiser	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
+lint-deps	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
 lint-md	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-next	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-tsc	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.

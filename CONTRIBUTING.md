@@ -161,7 +161,7 @@ React **export identifiers** remain PascalCase (`export const UiButton`,
 `export const AuthSkeleton`) because that is the React component naming convention; only the
 file and directory _paths_ are kebab-case. The public component API is unchanged.
 
-This convention is enforced by `make lint-dep-cruiser` via three `error`-severity rules:
+This convention is enforced by `make lint-deps` via three `error`-severity rules:
 `no-uppercase-paths` (any uppercase character in a governed `src/` path), `component-name-kebab-case`
 (top-level `src/components/` directory names), and `test-name-kebab-case`
 (`tests/{unit,integration,e2e,visual}/` paths). Any violation causes the gate to exit non-zero
@@ -205,7 +205,7 @@ orphan, boundary, barrel, and type-only discipline; it does not re-run the exist
 #### Running it locally
 
 ```bash
-make lint-dep-cruiser
+make lint-deps
 ```
 
 No extra setup is required beyond the existing docker-compose `bun` workflow — `make start`
@@ -214,12 +214,12 @@ brings the service up and the target runs inside it. The check is also part of t
 workflow:
 
 ```bash
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-dep-cruiser
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps
 ```
 
 #### CI enforcement and required status check
 
-The dedicated `.github/workflows/dependency-cruiser.yml` workflow runs `make lint-dep-cruiser` on
+The dedicated `.github/workflows/dependency-cruiser.yml` workflow runs `make lint-deps` on
 every pull request targeting `main` — the same command and the same committed
 `.dependency-cruiser.js` policy as the local run, so local and CI always agree.
 
@@ -230,7 +230,7 @@ before merging**. The check appears in the list after the workflow has run at le
 
 Once enabled, any pull request that introduces a graph violation fails the check and cannot be
 merged until the violation is fixed. The failure output names the offending file and the violated
-rule, identical to what `make lint-dep-cruiser` prints locally. The gate remains zero-tolerance:
+rule, identical to what `make lint-deps` prints locally. The gate remains zero-tolerance:
 no `depcruise-baseline` file exists to suppress findings.
 
 #### Reading the output
