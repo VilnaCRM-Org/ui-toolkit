@@ -4,6 +4,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-cruiser:
     runs-on: ubuntu-latest
@@ -27,7 +31,7 @@ jobs:
 
       - name: Start docker test environment
         if: steps.project.outputs.present == 'true'
-        run: make start
+        run: make start-bun
 
       - name: Run dependency-cruiser
         if: steps.project.outputs.present == 'true'

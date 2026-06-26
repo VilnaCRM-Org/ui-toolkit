@@ -5,11 +5,20 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   performance:
+    name: lighthouse ${{ matrix.formFactor }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        formFactor: [desktop, mobile]
     env:
       CI: true
       INSTALL_CHROMIUM: 'true'
@@ -33,17 +42,13 @@ jobs:
         if: steps.project.outputs.present != 'true'
         run: echo "Skipping performance tests because this bootstrap PR does not include the project runtime files yet."
 
-      - name: Start docker test environment
+      - name: Start bun service
         if: steps.project.outputs.present == 'true'
-        run: make start
+        run: make start-bun
 
-      - name: Run desktop Lighthouse audit
+      - name: Run ${{ matrix.formFactor }} Lighthouse audit
         if: steps.project.outputs.present == 'true'
-        run: make lighthouse-desktop
-
-      - name: Run mobile Lighthouse audit
-        if: steps.project.outputs.present == 'true'
-        run: make lighthouse-mobile
+        run: make lighthouse-${{ matrix.formFactor }}
 
       - name: Stop docker test environment
         if: always() && steps.project.outputs.present == 'true'

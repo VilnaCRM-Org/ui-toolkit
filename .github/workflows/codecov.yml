@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   codecov:
     runs-on: ubuntu-latest
@@ -30,7 +34,7 @@ jobs:
 
       - name: Start docker test environment
         if: steps.project.outputs.present == 'true'
-        run: make start
+        run: make start-bun
 
       - name: Run unit tests
         if: steps.project.outputs.present == 'true'
