@@ -163,14 +163,13 @@ copy-coverage: ## Copy the Jest coverage directory from the docker container.
 test-mutation: ## Run mutation tests inside the docker container.
 	$(BUN_X) stryker run
 
-test-mutation-shard: ## Run mutation shard MUTATION_SHARD_INDEX of MUTATION_SHARD_TOTAL inside the docker container.
-	@env_flags="-e MUTATION_SHARD_INDEX=$(MUTATION_SHARD_INDEX) -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL)"; \
-	container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
-	if [ -n "$$container_id" ]; then \
-		$(DOCKER_COMPOSE) exec -T $$env_flags bun bun x stryker run stryker.shard.config.mjs; \
-	else \
-		$(DOCKER_COMPOSE) run --rm $$env_flags bun bun x stryker run stryker.shard.config.mjs; \
-	fi
+test-mutation-shard: ## Run mutation shard MUTATION_SHARD_INDEX of MUTATION_SHARD_TOTAL in the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first so the shard report can be copied out"; \
+		exit 1; \
+	fi; \
+	$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_INDEX=$(MUTATION_SHARD_INDEX) -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun x stryker run stryker.shard.config.mjs
 
 copy-mutation-report: ## Copy mutation shard MUTATION_SHARD_INDEX's JSON report from the docker container to the host.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
@@ -190,13 +189,13 @@ stage-mutation-reports: ## Copy host shard reports into the running bun containe
 	$(DOCKER_COMPOSE) exec -T bun mkdir -p $(MUTATION_REPORTS_DIR); \
 	$(DOCKER_COMPOSE) cp "$(MUTATION_REPORTS_DIR)/." "bun:/app/$(MUTATION_REPORTS_DIR)"
 
-merge-mutation-reports: ## Merge mutation shard reports and enforce the mutation-score gate inside the docker container.
+merge-mutation-reports: ## Merge mutation shard reports and enforce the mutation-score gate in the running bun container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
-	if [ -n "$$container_id" ]; then \
-		$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts; \
-	else \
-		$(DOCKER_COMPOSE) run --rm -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts; \
-	fi
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first"; \
+		exit 1; \
+	fi; \
+	$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts
 
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	INSTALL_CHROMIUM=true $(DOCKER_COMPOSE) build bun

@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
@@ -42,10 +42,9 @@ jobs:
         if: steps.project.outputs.present != 'true'
         run: echo "Skipping performance tests because this bootstrap PR does not include the project runtime files yet."
 
-      - name: Start bun service
-        if: steps.project.outputs.present == 'true'
-        run: make start-bun
-
+      # Lighthouse targets run in their own `docker compose run --rm` container
+      # (RUN_BUN_SH) and build Storybook themselves, so no long-lived service is
+      # needed here.
       - name: Run ${{ matrix.formFactor }} Lighthouse audit
         if: steps.project.outputs.present == 'true'
         run: make lighthouse-${{ matrix.formFactor }}

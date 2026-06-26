@@ -153,9 +153,11 @@ EOF
   run_make_target start-bun
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose up -d --build bun'
+  assert_log_not_contains 'storybook'
+  assert_log_not_contains 'playwright'
 }
 
-@test "test-mutation-shard prefers docker compose exec when the bun service is running" {
+@test "test-mutation-shard runs in the running bun container via docker compose exec" {
   reset_command_log
   run_make_target_with_env test-mutation-shard FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
@@ -164,12 +166,12 @@ EOF
   assert_log_not_contains 'docker compose run --rm'
 }
 
-@test "test-mutation-shard falls back to docker compose run when the bun service is not running" {
+@test "test-mutation-shard fails clearly when the bun service is not running" {
   reset_command_log
   run_make_target test-mutation-shard
-  [ "$status" -eq 0 ]
-  assert_log_contains 'docker compose run --rm -e MUTATION_SHARD_INDEX=0 -e MUTATION_SHARD_TOTAL=1 bun bun x stryker run stryker.shard.config.mjs'
-  assert_log_not_contains 'docker compose exec -T'
+  [ "$status" -ne 0 ]
+  assert_output_contains 'bun service is not running'
+  assert_log_not_contains 'docker compose run --rm'
 }
 
 @test "copy-mutation-report fails clearly when the bun service is not running" {
@@ -202,7 +204,7 @@ EOF
   assert_log_contains 'docker compose cp reports/mutation/. bun:/app/reports/mutation'
 }
 
-@test "merge-mutation-reports prefers docker compose exec when the bun service is running" {
+@test "merge-mutation-reports runs in the running bun container via docker compose exec" {
   reset_command_log
   run_make_target_with_env merge-mutation-reports FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
@@ -210,10 +212,10 @@ EOF
   assert_log_not_contains 'docker compose run --rm'
 }
 
-@test "merge-mutation-reports falls back to docker compose run when the bun service is not running" {
+@test "merge-mutation-reports fails clearly when the bun service is not running" {
   reset_command_log
   run_make_target merge-mutation-reports
-  [ "$status" -eq 0 ]
-  assert_log_contains 'docker compose run --rm -e MUTATION_SHARD_TOTAL=1 bun bun scripts/ci/merge-mutation-reports.ts'
+  [ "$status" -ne 0 ]
+  assert_output_contains 'bun service is not running'
   assert_log_not_contains 'docker compose exec -T'
 }
