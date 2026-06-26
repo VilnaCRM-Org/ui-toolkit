@@ -5,15 +5,34 @@ on:
     branches:
       - main
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  mutation-testing:
+  shard:
+    name: shard ${{ matrix.index }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # To change shard count, keep this list and MUTATION_SHARD_TOTAL (here and
+        # in the merge job) in lock-step: index must be [0 .. TOTAL-1]. A mismatch
+        # fails closed at the merge gate's shard-count/index check, never silently.
+        index: [0, 1, 2, 3]
+    env:
+      MUTATION_SHARD_TOTAL: '4'
+      MUTATION_SHARD_INDEX: ${{ matrix.index }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Detect runtime project files
         id: project
@@ -28,13 +47,90 @@ jobs:
         if: steps.project.outputs.present != 'true'
         run: echo "Skipping mutation testing because this bootstrap PR does not include the project runtime files yet."
 
-      - name: Start docker test environment
+      - name: Start bun service
         if: steps.project.outputs.present == 'true'
-        run: make start
+        run: make start-bun
 
-      - name: Run mutation testing
+      - name: Run mutation shard
         if: steps.project.outputs.present == 'true'
-        run: make test-mutation
+        run: make test-mutation-shard
+
+      - name: Copy shard report
+        if: steps.project.outputs.present == 'true'
+        run: make copy-mutation-report
+
+      - name: Upload shard report
+        if: steps.project.outputs.present == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mutation-shard-${{ matrix.index }}
+          path: reports/mutation/mutation-shard-${{ matrix.index }}.json
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Stop docker test environment
+        if: always() && steps.project.outputs.present == 'true'
+        run: make down
+
+  merge:
+    name: merge and enforce gate
+    needs: shard
+    # Run even when a shard failed so the gate fails CLOSED. Without this the job
+    # would be SKIPPED on shard failure, and branch protection treats a skipped
+    # required check as passing — silently bypassing the mutation gate.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      MUTATION_SHARD_TOTAL: '4'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Detect runtime project files
+        id: project
+        run: |
+          if [[ -f package.json && -f bun.lock ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip mutation gate
+        if: steps.project.outputs.present != 'true'
+        run: echo "Skipping mutation gate because this bootstrap PR does not include the project runtime files yet."
+
+      - name: Fail if any mutation shard did not succeed
+        if: steps.project.outputs.present == 'true' && needs.shard.result != 'success'
+        env:
+          SHARD_RESULT: ${{ needs.shard.result }}
+        run: |
+          echo "::error::Mutation shards did not all succeed (result=$SHARD_RESULT); failing the gate."
+          exit 1
+
+      - name: Download shard reports
+        if: steps.project.outputs.present == 'true'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: mutation-shard-*
+          path: reports/mutation
+          merge-multiple: true
+
+      - name: Start bun service
+        if: steps.project.outputs.present == 'true'
+        run: make start-bun
+
+      - name: Stage shard reports in the container
+        if: steps.project.outputs.present == 'true'
+        run: make stage-mutation-reports
+
+      - name: Merge reports and enforce mutation-score gate
+        if: steps.project.outputs.present == 'true'
+        run: make merge-mutation-reports
 
       - name: Stop docker test environment
         if: always() && steps.project.outputs.present == 'true'

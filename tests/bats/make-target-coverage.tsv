@@ -11,7 +11,7 @@ install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency in
 lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.
 lighthouse-mobile	bats	tests/bats/makefile_targets.bats	Validated as the mobile Lighthouse shell entrypoint.
 lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the static testing workflow's individual lint targets.
-lint-dep-cruiser	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
+lint-deps	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
 lint-md	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-next	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-tsc	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
@@ -40,3 +40,8 @@ update	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency upd
 test-integration	bats	tests/bats/makefile_targets.bats	Validated for both the running-container and fresh-container branches.
 lint-metrics	bats	tests/bats/lint_metrics_make_targets.bats	Validated as the Docker-backed rca container dispatch target for the metrics gate.
 lint-metrics-run	bats	tests/bats/lint_metrics_make_targets.bats	Validated that the recipe exports RCA_BIN, RCA_SCOPE, METRICS_POLICY and runs lint-metrics.sh.
+start-bun	bats	tests/bats/makefile_targets.bats	Validated as the Bun-only Docker Compose start target for fast bun jobs.
+test-mutation-shard	bats	tests/bats/makefile_targets.bats	Validated for the running-container and fresh-container branches of the mutation shard run.
+copy-mutation-report	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the copy-success branch.
+stage-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the host-to-container copy branch.
+merge-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the running-container and fresh-container branches of the merge gate.

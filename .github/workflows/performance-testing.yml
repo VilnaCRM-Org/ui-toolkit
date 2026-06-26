@@ -5,18 +5,27 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   performance:
+    name: lighthouse ${{ matrix.formFactor }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        formFactor: [desktop, mobile]
     env:
       CI: true
       INSTALL_CHROMIUM: 'true'
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
@@ -33,17 +42,12 @@ jobs:
         if: steps.project.outputs.present != 'true'
         run: echo "Skipping performance tests because this bootstrap PR does not include the project runtime files yet."
 
-      - name: Start docker test environment
+      # Lighthouse targets run in their own `docker compose run --rm` container
+      # (RUN_BUN_SH) and build Storybook themselves, so no long-lived service is
+      # needed here.
+      - name: Run ${{ matrix.formFactor }} Lighthouse audit
         if: steps.project.outputs.present == 'true'
-        run: make start
-
-      - name: Run desktop Lighthouse audit
-        if: steps.project.outputs.present == 'true'
-        run: make lighthouse-desktop
-
-      - name: Run mobile Lighthouse audit
-        if: steps.project.outputs.present == 'true'
-        run: make lighthouse-mobile
+        run: make lighthouse-${{ matrix.formFactor }}
 
       - name: Stop docker test environment
         if: always() && steps.project.outputs.present == 'true'

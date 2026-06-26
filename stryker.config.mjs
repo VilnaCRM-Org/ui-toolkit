@@ -15,6 +15,9 @@ const config = {
     configFile: 'jest.mutation.config.ts',
     enableFindRelatedTests: false,
   },
+  // If you change this set, update stryker.shard.config.mjs's collectTsxFiles walk
+  // to match: the sharded CI gate derives its file set independently, and a drift
+  // here would silently drop mutants from the merged score (a hidden gate weaken).
   mutate: ['./src/components/**/*.tsx', '!./src/components/**/*.stories.tsx'],
   // Keep the Stryker sandbox copy from choking on non-source dirs (the `.qlty`
   // log dir in particular triggers an EISDIR copyfile error).
