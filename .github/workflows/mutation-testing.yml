@@ -102,8 +102,10 @@ jobs:
 
       - name: Fail if any mutation shard did not succeed
         if: steps.project.outputs.present == 'true' && needs.shard.result != 'success'
+        env:
+          SHARD_RESULT: ${{ needs.shard.result }}
         run: |
-          echo "::error::Mutation shards did not all succeed (result=${{ needs.shard.result }}); failing the gate."
+          echo "::error::Mutation shards did not all succeed (result=$SHARD_RESULT); failing the gate."
           exit 1
 
       - name: Download shard reports

@@ -14,11 +14,22 @@
  * vacuously). The merge math lives in {@link ./mutation-report.ts}.
  */
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import { type MutationReport, scoreReports } from './mutation-report';
 
 const SHARD_FILE = /^mutation-shard-\d+\.json$/;
+const PROJECT_ROOT = resolve(process.cwd());
+
+/** Resolve the report directory and prove it stays inside the project root. */
+function resolveReportDir(input: string): string {
+  const dir = resolve(PROJECT_ROOT, input);
+  const rel = relative(PROJECT_ROOT, dir);
+  if (rel.startsWith('..') || isAbsolute(rel)) {
+    throw new Error(`Refusing to read mutation reports outside the project root: ${dir}`);
+  }
+  return dir;
+}
 
 /** Read and parse every `mutation-shard-*.json` report in `dir`. */
 function loadShardReports(dir: string): { name: string; report: MutationReport }[] {
@@ -31,7 +42,7 @@ function loadShardReports(dir: string): { name: string; report: MutationReport }
 
   return entries
     .filter(name => SHARD_FILE.test(name))
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .map(name => {
       const raw = readFileSync(join(dir, name), 'utf8');
       try {
@@ -49,15 +60,15 @@ async function resolveBreakThreshold(): Promise<number> {
   };
   const breakThreshold = base.thresholds?.break;
   if (typeof breakThreshold !== 'number') {
-    throw new Error(
-      'stryker.config.mjs does not define a numeric thresholds.break; refusing to gate without a known threshold.'
+    throw new TypeError(
+      'stryker.config.mjs has no numeric thresholds.break; refusing to gate without a threshold.'
     );
   }
   return breakThreshold;
 }
 
 async function main(): Promise<void> {
-  const dir = process.argv[2] ?? 'reports/mutation';
+  const dir = resolveReportDir(process.argv[2] ?? 'reports/mutation');
 
   // The expected shard count is mandatory: without it the completeness check
   // below would be skipped and any subset of shards scoring >= break would pass
@@ -65,7 +76,7 @@ async function main(): Promise<void> {
   const expectedShards = Number.parseInt(process.env.MUTATION_SHARD_TOTAL ?? '', 10);
   if (!Number.isInteger(expectedShards) || expectedShards <= 0) {
     throw new Error(
-      'MUTATION_SHARD_TOTAL must be a positive integer so the gate can verify every shard is present.'
+      'MUTATION_SHARD_TOTAL must be a positive integer so the gate can verify every shard.'
     );
   }
 
@@ -102,8 +113,9 @@ async function main(): Promise<void> {
     [
       `Merged ${shards.length} mutation shard(s) over ${fileCount} source file(s):`,
       `  killed=${tally.killed} timeout=${tally.timeout} ` +
-        `survived=${tally.survived} noCoverage=${tally.noCoverage} ` +
-        `compileError=${tally.compileError} runtimeError=${tally.runtimeError} ignored=${tally.ignored}`,
+        `survived=${tally.survived} noCoverage=${tally.noCoverage}`,
+      `  compileError=${tally.compileError} runtimeError=${tally.runtimeError} ` +
+        `ignored=${tally.ignored}`,
       `  detected=${tally.detected} valid=${tally.valid} mutationScore=${score}%`,
       '',
     ].join('\n')
@@ -111,7 +123,7 @@ async function main(): Promise<void> {
 
   if (mutationScore < breakThreshold) {
     process.stderr.write(
-      `Mutation score ${score}% is below the break threshold ${breakThreshold}%. Failing the gate.\n`
+      `Mutation score ${score}% is below the break threshold ${breakThreshold}%. Gate failed.\n`
     );
     process.exitCode = 1;
     return;

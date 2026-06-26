@@ -76,6 +76,17 @@ export function mergeReportFiles(reports: readonly MutationReport[]): Map<string
   return byFile;
 }
 
+/** Map each Stryker mutant status to its tally counter. */
+const STATUS_TALLY_KEYS = new Map<string, keyof StatusTally>([
+  ['Killed', 'killed'],
+  ['Timeout', 'timeout'],
+  ['Survived', 'survived'],
+  ['NoCoverage', 'noCoverage'],
+  ['CompileError', 'compileError'],
+  ['RuntimeError', 'runtimeError'],
+  ['Ignored', 'ignored'],
+]);
+
 /** Tally mutant statuses across the merged source files. */
 export function tallyMutants(mutantsByFile: ReadonlyMap<string, ReportMutant[]>): StatusTally {
   const tally: StatusTally = {
@@ -94,32 +105,12 @@ export function tallyMutants(mutantsByFile: ReadonlyMap<string, ReportMutant[]>)
 
   for (const mutants of mutantsByFile.values()) {
     for (const mutant of mutants) {
-      switch (mutant.status) {
-        case 'Killed':
-          tally.killed += 1;
-          break;
-        case 'Timeout':
-          tally.timeout += 1;
-          break;
-        case 'Survived':
-          tally.survived += 1;
-          break;
-        case 'NoCoverage':
-          tally.noCoverage += 1;
-          break;
-        case 'CompileError':
-          tally.compileError += 1;
-          break;
-        case 'RuntimeError':
-          tally.runtimeError += 1;
-          break;
-        case 'Ignored':
-          tally.ignored += 1;
-          break;
-        default:
-          // `Pending` or any unrecognised status: not a settled, valid result.
-          tally.pending += 1;
-          break;
+      const key = mutant.status === undefined ? undefined : STATUS_TALLY_KEYS.get(mutant.status);
+      if (key === undefined) {
+        // `Pending` or any unrecognised status: not a settled, valid result.
+        tally.pending += 1;
+      } else {
+        tally[key] += 1;
       }
     }
   }
