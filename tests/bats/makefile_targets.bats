@@ -206,7 +206,7 @@ EOF
   reset_command_log
   run_make_target_with_env merge-mutation-reports FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
-  assert_log_contains 'docker compose exec -T -e MUTATION_SHARD_TOTAL=1 bun bun scripts/ci/merge-mutation-reports.ts reports/mutation'
+  assert_log_contains 'docker compose exec -T -e MUTATION_SHARD_TOTAL=1 bun bun scripts/ci/merge-mutation-reports.ts'
   assert_log_not_contains 'docker compose run --rm'
 }
 
@@ -214,6 +214,6 @@ EOF
   reset_command_log
   run_make_target merge-mutation-reports
   [ "$status" -eq 0 ]
-  assert_log_contains 'docker compose run --rm -e MUTATION_SHARD_TOTAL=1 bun bun scripts/ci/merge-mutation-reports.ts reports/mutation'
+  assert_log_contains 'docker compose run --rm -e MUTATION_SHARD_TOTAL=1 bun bun scripts/ci/merge-mutation-reports.ts'
   assert_log_not_contains 'docker compose exec -T'
 }

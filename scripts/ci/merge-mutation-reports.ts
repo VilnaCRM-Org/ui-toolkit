@@ -14,22 +14,18 @@
  * vacuously). The merge math lives in {@link ./mutation-report.ts}.
  */
 import { readdirSync, readFileSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { type MutationReport, scoreReports } from './mutation-report';
 
 const SHARD_FILE = /^mutation-shard-\d+\.json$/;
-const PROJECT_ROOT = resolve(process.cwd());
 
-/** Resolve the report directory and prove it stays inside the project root. */
-function resolveReportDir(input: string): string {
-  const dir = resolve(PROJECT_ROOT, input);
-  const rel = relative(PROJECT_ROOT, dir);
-  if (rel.startsWith('..') || isAbsolute(rel)) {
-    throw new Error(`Refusing to read mutation reports outside the project root: ${dir}`);
-  }
-  return dir;
-}
+// Fixed location of the shard reports, resolved from the working directory.
+// Deliberately NOT taken from argv or any other external input: a caller-
+// controlled path is a path-injection vector (Sonar S8707), and this gate only
+// ever reads its own shard reports. Keep in sync with the Makefile's
+// MUTATION_REPORTS_DIR.
+const REPORTS_DIR = resolve(process.cwd(), 'reports', 'mutation');
 
 /** Read and parse every `mutation-shard-*.json` report in `dir`. */
 function loadShardReports(dir: string): { name: string; report: MutationReport }[] {
@@ -68,7 +64,7 @@ async function resolveBreakThreshold(): Promise<number> {
 }
 
 async function main(): Promise<void> {
-  const dir = resolveReportDir(process.argv[2] ?? 'reports/mutation');
+  const dir = REPORTS_DIR;
 
   // The expected shard count is mandatory: without it the completeness check
   // below would be skipped and any subset of shards scoring >= break would pass

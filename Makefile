@@ -193,9 +193,9 @@ stage-mutation-reports: ## Copy host shard reports into the running bun containe
 merge-mutation-reports: ## Merge mutation shard reports and enforce the mutation-score gate inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
-		$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts $(MUTATION_REPORTS_DIR); \
+		$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts; \
 	else \
-		$(DOCKER_COMPOSE) run --rm -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts $(MUTATION_REPORTS_DIR); \
+		$(DOCKER_COMPOSE) run --rm -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts; \
 	fi
 
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
