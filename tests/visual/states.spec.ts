@@ -68,6 +68,12 @@ test.describe('Visual states (Figma state grid)', () => {
     });
   }
 
+  test('input hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiinput--input');
+    await page.getByRole('textbox').hover();
+    await shoot(page, 'input-hover.png');
+  });
+
   test('input focus-visible', async ({ page }) => {
     await openStory(page, 'uicomponents-uiinput--input');
     await page.keyboard.press('Tab');
@@ -100,10 +106,24 @@ test.describe('Visual states (Figma state grid)', () => {
     await shoot(page, 'checkbox-disabled.png');
   });
 
+  test('checkbox hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uicheckbox--checkbox');
+    await page.getByRole('checkbox').hover();
+    await shoot(page, 'checkbox-hover.png');
+  });
+
   test('link hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link');
     await page.getByRole('link').hover();
     await shoot(page, 'link-hover.png');
+  });
+
+  test('link active', async ({ page }) => {
+    await openStory(page, 'uicomponents-uilink--link');
+    await page.getByRole('link').hover();
+    await page.mouse.down();
+    await shoot(page, 'link-active.png');
+    await page.mouse.up();
   });
 
   test('link focus-visible', async ({ page }) => {
