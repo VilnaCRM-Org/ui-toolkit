@@ -30,7 +30,7 @@ so that users get consistent behavior and visuals across company applications.
   - [x] Verify `disabled` → `disabled` attribute and `error` → `aria-invalid` are asserted by existing unit specs for the relevant controls.
   - [x] Make no public prop or behavior changes; states are already styled from central `crm`-canonical tokens.
 - [x] Document parity decisions and track residual gaps (AC: 2, 3)
-  - [x] Record the documented deviations (input `active` ≡ `Mui-focused`; link `disabled`/`error` N/A; button `error` N/A) with rationale.
+  - [x] Record the documented deviations (input `active` ≡ `Mui-focused`; link `disabled`/`error` props not exposed per contract; button `error/invalid` optional/deferred per FR-04) with rationale.
   - [x] Add the four core controls to `specs/planning-artifacts/component-provenance.md` with their canonical source and deviations.
   - [x] Track the deferred `socialButton` per-state visual coverage as a non-blocking follow-up note.
 - [x] Finalize Story 1.2 evidence (AC: 3)
@@ -42,25 +42,25 @@ so that users get consistent behavior and visuals across company applications.
 ### Story Foundation
 
 - Story 1.2 builds on the stable contract/export baseline from Story 1.1; it is about completing the **state machine** (rest/hover/active/disabled/error) for `UiButton`, `UiInput`, `UiCheckbox`, and `UiLink`, not the contract surface. [Source: specs/planning-artifacts/epics.md#story-12-core-control-state-parity-completion]
-- The authoritative per-control state lists come from the PRD board requirements: Button `rest, hover, active, disabled` (no error); Input `rest, hover, active, disabled, error`; Link and Checkbox states per their board rows. [Source: specs/planning-artifacts/prd.md#78] [Source: specs/planning-artifacts/prd.md#95]
+- The authoritative per-control state lists come from the PRD board requirements (§4.1/§4.2): Button `rest, hover, active, disabled` (Board A; `error/invalid` optional per FR-04, only in form-validation contexts); Input `rest, hover, active, disabled, error`; Link and Checkbox states per their board rows. [Source: specs/planning-artifacts/prd.md#78] [Source: specs/planning-artifacts/prd.md#95] [Source: specs/planning-artifacts/prd.md#179]
 - Behavior aligns to canonical `crm`; `website` only fills visual/variant gaps. Any deviation must be documented as provenance/rationale. [Source: specs/planning-artifacts/prd.md#32-reuse-first-delivery-rule-hard-constraint] [Source: specs/planning-artifacts/architecture.md#requirements-to-structure-mapping]
 
 ### State Coverage Matrix (evidence)
 
-Legend: `IMPL+TEST` styled and demonstrated by a test · `N/A` not valid for the role · all required cells are covered after this story.
+Legend: `IMPL+TEST` styled and demonstrated by a test · `N/A` not valid for the role · `Deferred`/`Not exposed` out of board/contract scope · all required cells are covered after this story.
 
-| Control                         | rest                                                        | hover                                                             | active                                                                               | disabled                                                                                   | error                                                                                     |
-| ------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `UiButton` (contained/outlined) | IMPL+TEST (`ui-button/theme.ts`, `visual.spec.ts`)          | IMPL+TEST (`theme.ts:20-22,37-40`, `states.spec.ts` button hover) | IMPL+TEST (`theme.ts:23-25,41-43`, `states.spec.ts` button active)                   | IMPL+TEST (`theme.ts:26-29,44-48`, `states.spec.ts` + `ui-button.test.tsx` `toBeDisabled`) | N/A (button role; PRD omits error)                                                        |
-| `UiInput`                       | IMPL+TEST (`ui-input/theme.ts:29-31`, `visual.spec.ts`)     | IMPL+TEST (`theme.ts:12-14,32-34`, **new** `input-hover`)         | IMPL+TEST via `Mui-focused` (`theme.ts:15-17`, `input-focus`) — deviation documented | IMPL+TEST (`theme.ts:21-27,70-74`, `states.spec.ts` + `ui-input.test.tsx` `toBeDisabled`)  | IMPL+TEST (`theme.ts:18-20,83-91`, `states.spec.ts` + `ui-input.test.tsx` `aria-invalid`) |
-| `UiCheckbox`                    | IMPL+TEST (`ui-checkbox/styles.ts:48-51`, `visual.spec.ts`) | IMPL+TEST (`styles.ts:34-37`, **new** `checkbox-hover`)           | N/A (no pressed state in the grid)                                                   | IMPL+TEST (`styles.ts:38-42`, `states.spec.ts` + `ui-check-box.test.tsx` `toBeDisabled`)   | IMPL+TEST (`styles.ts:53-59` + `index.tsx:27` `aria-invalid`, `states.spec.ts` + unit)    |
-| `UiLink`                        | IMPL+TEST (`ui-link/theme.ts:11-17`, `visual.spec.ts`)      | IMPL+TEST (`theme.ts:24-26`, `states.spec.ts` link hover)         | IMPL+TEST (`theme.ts:27-29`, **new** `link-active`)                                  | N/A (documented exception, `ui-link/types.ts`)                                             | N/A (documented exception, `ui-link/types.ts`)                                            |
+| Control                         | rest                                                        | hover                                                             | active                                                                               | disabled                                                                                   | error                                                                                                      |
+| ------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `UiButton` (contained/outlined) | IMPL+TEST (`ui-button/theme.ts`, `visual.spec.ts`)          | IMPL+TEST (`theme.ts:20-22,37-40`, `states.spec.ts` button hover) | IMPL+TEST (`theme.ts:23-25,41-43`, `states.spec.ts` button active)                   | IMPL+TEST (`theme.ts:26-29,44-48`, `states.spec.ts` + `ui-button.test.tsx` `toBeDisabled`) | Deferred — optional per FR-04 (`prd.md:179`), form-validation only; outside Board A scope, not implemented |
+| `UiInput`                       | IMPL+TEST (`ui-input/theme.ts:29-31`, `visual.spec.ts`)     | IMPL+TEST (`theme.ts:12-14,32-34`, **new** `input-hover`)         | IMPL+TEST via `Mui-focused` (`theme.ts:15-17`, `input-focus`) — deviation documented | IMPL+TEST (`theme.ts:21-27,70-74`, `states.spec.ts` + `ui-input.test.tsx` `toBeDisabled`)  | IMPL+TEST (`theme.ts:18-20,83-91`, `states.spec.ts` + `ui-input.test.tsx` `aria-invalid`)                  |
+| `UiCheckbox`                    | IMPL+TEST (`ui-checkbox/styles.ts:48-51`, `visual.spec.ts`) | IMPL+TEST (`styles.ts:34-37`, **new** `checkbox-hover`)           | N/A (no pressed state in the grid)                                                   | IMPL+TEST (`styles.ts:38-42`, `states.spec.ts` + `ui-check-box.test.tsx` `toBeDisabled`)   | IMPL+TEST (`styles.ts:53-59` + `index.tsx:27` `aria-invalid`, `states.spec.ts` + unit)                     |
+| `UiLink`                        | IMPL+TEST (`ui-link/theme.ts:11-17`, `visual.spec.ts`)      | IMPL+TEST (`theme.ts:24-26`, `states.spec.ts` link hover)         | IMPL+TEST (`theme.ts:27-29`, **new** `link-active`)                                  | Not exposed — contract exception (`ui-link/types.ts`)                                      | Not exposed — contract exception (`ui-link/types.ts`)                                                      |
 
 ### Documented Deviations (AC 2)
 
 - **Input `active` ≡ `Mui-focused`.** An MUI text field has no distinct CSS `:active`/pressed appearance separate from focus; the board "active/typing" cell maps to `&.Mui-focused` (`src/components/ui-input/theme.ts:15-17`), already baselined as `input-focus.png`. This is a visual-parity mapping, not a keyboard-semantics change (which is Story 1.3 scope).
-- **Link `disabled`/`error` = N/A.** A link has no disabled or error semantics; these are already declared contract exceptions in `src/components/ui-link/types.ts`.
-- **Button `error` = N/A.** The button role has no error state per the PRD board list (`prd.md:78`).
+- **Link `disabled`/`error` — not exposed.** Declared contract exceptions in `src/components/ui-link/types.ts` (Story 1.1). FR-04 (`prd.md:182`) lists `disabled` for link and marks `error/invalid` optional; reconciling the link `disabled` prop with FR-04 is a contract decision, not a Story 1.2 visual-state gap.
+- **Button `error`/`invalid` — optional, deferred.** Board A (`prd.md:78`) scopes the button to rest/hover/active/disabled; FR-04 (`prd.md:179`) makes `error/invalid` optional, applicable only in form-validation contexts. It is outside this story's board scope and not implemented — deferred, not a parity gap.
 
 ### crm Parity Notes
 
@@ -105,7 +105,7 @@ Claude Opus 4.8 (Claude Code)
 
 - Story 1.2 was already ~90% implemented in code; the delivered work is demonstrability + documentation, with no public prop or behavior change (fully backward compatible).
 - Added `input-hover`, `checkbox-hover`, and `link-active` visual baselines so every required state is demonstrable for all four controls.
-- Documented three role-based deviations (input active≡focus, link disabled/error N/A, button error N/A) here and in the new component-provenance record.
+- Documented the role-based deviations (input active≡focus; link `disabled`/`error` not exposed per contract; button `error/invalid` optional/deferred per FR-04) here and in the new component-provenance record.
 - Deferred `socialButton` per-state visual coverage as a tracked, non-blocking follow-up.
 
 ### File List
