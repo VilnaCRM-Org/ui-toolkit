@@ -55,6 +55,12 @@ strength, Stryker), `make test-bats` (Makefile and CI shell flows), `make test-m
 (leaks), `make load-tests` (traffic, K6), and `make lighthouse-desktop` /
 `make lighthouse-mobile` (performance, accessibility, best practices).
 
+`make test-mutation` runs the full, gated Stryker suite locally. In CI it is sharded across a
+parallel matrix (`make test-mutation-shard`) and a final job merges the per-shard reports and
+re-enforces the same `break` threshold (`make merge-mutation-reports`) — same gate, much faster.
+Every workflow cancels superseded runs via `concurrency`, so a new push aborts the previous one.
+See CONTRIBUTING.md ("CI speed and the mutation-testing gate") for the full flow.
+
 ### Step 2 — Cover Every Applicable Scenario Class
 
 For each layer you touch, cover all three scenario classes that apply to the change. Positive

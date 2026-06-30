@@ -20,6 +20,14 @@ RCA_SCOPE = src/
 RCA_EXCLUDES = **/node_modules/** **/dist/** **/build/**
 METRICS_POLICY_PATH = config/metrics-policy.json
 
+# Mutation testing shards: CI fans test-mutation-shard out into MUTATION_SHARD_TOTAL
+# parallel jobs, then merge-mutation-reports re-enforces the real break gate once
+# over the union of every shard. See stryker.shard.config.mjs and
+# scripts/ci/merge-mutation-reports.ts.
+MUTATION_SHARD_TOTAL ?= 1
+MUTATION_SHARD_INDEX ?= 0
+MUTATION_REPORTS_DIR = reports/mutation
+
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
@@ -27,8 +35,9 @@ METRICS_POLICY_PATH = config/metrics-policy.json
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
-	up down sh ps logs new-logs start stop build-k6-docker load-tests run-storybook-playwright \
-	lint-dep-ranges lint-dep-cruiser lint-metrics lint-metrics-run
+	up down sh ps logs new-logs start start-bun stop build-k6-docker load-tests run-storybook-playwright \
+	lint-dep-ranges lint-deps lint-metrics lint-metrics-run \
+	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports
 
 PLAYWRIGHT_TEST_ARGS =
 
@@ -52,7 +61,7 @@ help:
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-dep-cruiser lint-metrics ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps lint-metrics ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
@@ -90,7 +99,7 @@ lint-dep-ranges: ## Enforce caret (^) version ranges in package.json inside the 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.
 	sh ./scripts/check-test-structure.sh
 
-lint-dep-cruiser: ## Run dependency-cruiser graph-hygiene gate inside the docker container.
+lint-deps: ## Run dependency-cruiser graph-hygiene gate inside the docker container.
 	$(BUN_X) depcruise --config .dependency-cruiser.js src
 
 lint-metrics: ## Run rust-code-analysis complexity gate inside the rca container.
@@ -154,6 +163,40 @@ copy-coverage: ## Copy the Jest coverage directory from the docker container.
 test-mutation: ## Run mutation tests inside the docker container.
 	$(BUN_X) stryker run
 
+test-mutation-shard: ## Run mutation shard MUTATION_SHARD_INDEX of MUTATION_SHARD_TOTAL in the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first so the shard report can be copied out"; \
+		exit 1; \
+	fi; \
+	$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_INDEX=$(MUTATION_SHARD_INDEX) -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun x stryker run stryker.shard.config.mjs
+
+copy-mutation-report: ## Copy mutation shard MUTATION_SHARD_INDEX's JSON report from the docker container to the host.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; start docker before copying the report"; \
+		exit 1; \
+	fi; \
+	mkdir -p $(MUTATION_REPORTS_DIR); \
+	$(DOCKER_COMPOSE) cp "bun:/app/$(MUTATION_REPORTS_DIR)/mutation-shard-$(MUTATION_SHARD_INDEX).json" "$(MUTATION_REPORTS_DIR)/mutation-shard-$(MUTATION_SHARD_INDEX).json"
+
+stage-mutation-reports: ## Copy host shard reports into the running bun container ahead of the merge gate.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; start docker before staging reports"; \
+		exit 1; \
+	fi; \
+	$(DOCKER_COMPOSE) exec -T bun mkdir -p $(MUTATION_REPORTS_DIR); \
+	$(DOCKER_COMPOSE) cp "$(MUTATION_REPORTS_DIR)/." "bun:/app/$(MUTATION_REPORTS_DIR)"
+
+merge-mutation-reports: ## Merge mutation shard reports and enforce the mutation-score gate in the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first"; \
+		exit 1; \
+	fi; \
+	$(DOCKER_COMPOSE) exec -T -e MUTATION_SHARD_TOTAL=$(MUTATION_SHARD_TOTAL) bun bun scripts/ci/merge-mutation-reports.ts
+
 test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	INSTALL_CHROMIUM=true $(DOCKER_COMPOSE) build bun
 	@$(RUN_BUN_SH) '\
@@ -214,6 +257,9 @@ new-logs: ## Show live docker compose logs without history.
 	@$(DOCKER_COMPOSE) logs --tail=0 --follow
 
 start: up ## Start docker.
+
+start-bun: ## Build and start only the Bun service (skips Storybook/Playwright builds for bun-only jobs).
+	$(DOCKER_COMPOSE) up -d --build bun
 
 stop: ## Stop docker services.
 	$(DOCKER_COMPOSE) stop

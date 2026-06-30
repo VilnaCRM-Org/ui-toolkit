@@ -161,7 +161,7 @@ React **export identifiers** remain PascalCase (`export const UiButton`,
 `export const AuthSkeleton`) because that is the React component naming convention; only the
 file and directory _paths_ are kebab-case. The public component API is unchanged.
 
-This convention is enforced by `make lint-dep-cruiser` via three `error`-severity rules:
+This convention is enforced by `make lint-deps` via three `error`-severity rules:
 `no-uppercase-paths` (any uppercase character in a governed `src/` path), `component-name-kebab-case`
 (top-level `src/components/` directory names), and `test-name-kebab-case`
 (`tests/{unit,integration,e2e,visual}/` paths). Any violation causes the gate to exit non-zero
@@ -205,7 +205,7 @@ orphan, boundary, barrel, and type-only discipline; it does not re-run the exist
 #### Running it locally
 
 ```bash
-make lint-dep-cruiser
+make lint-deps
 ```
 
 No extra setup is required beyond the existing docker-compose `bun` workflow — `make start`
@@ -214,12 +214,12 @@ brings the service up and the target runs inside it. The check is also part of t
 workflow:
 
 ```bash
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-dep-cruiser
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps
 ```
 
 #### CI enforcement and required status check
 
-The dedicated `.github/workflows/dependency-cruiser.yml` workflow runs `make lint-dep-cruiser` on
+The dedicated `.github/workflows/dependency-cruiser.yml` workflow runs `make lint-deps` on
 every pull request targeting `main` — the same command and the same committed
 `.dependency-cruiser.js` policy as the local run, so local and CI always agree.
 
@@ -230,7 +230,7 @@ before merging**. The check appears in the list after the workflow has run at le
 
 Once enabled, any pull request that introduces a graph violation fails the check and cannot be
 merged until the violation is fixed. The failure output names the offending file and the violated
-rule, identical to what `make lint-dep-cruiser` prints locally. The gate remains zero-tolerance:
+rule, identical to what `make lint-deps` prints locally. The gate remains zero-tolerance:
 no `depcruise-baseline` file exists to suppress findings.
 
 #### Reading the output
@@ -252,6 +252,48 @@ Common fixes:
   `index.tsx`/`index.ts` barrel instead of its internal files.
 
 IDE/editor integration and visual/graph reporting (`dot`/`archi` output) are out of scope.
+
+### CI speed and the mutation-testing gate
+
+GitHub runs the pull-request workflows in parallel, so PR feedback is gated by the slowest single
+job. Two things keep that fast without dropping or weakening any check — every gate still runs on
+every PR.
+
+**Cancel superseded runs.** Every workflow declares a `concurrency` group keyed on the workflow and
+the PR (or ref) with `cancel-in-progress: true`, so pushing a new commit aborts the previous run for
+that PR instead of letting it finish. The release workflows (`autorelease`, `autoprerelease`) use
+`cancel-in-progress: false` so a half-finished release is never cancelled. Bun-only jobs start just
+the `bun` service with `make start-bun` rather than `make start`, which also builds the Storybook and
+Playwright images they do not need.
+
+**Mutation testing is sharded, not slowed.** Stryker over the whole component surface took close to
+an hour as one job. `mutation-testing.yml` now fans `make test-mutation-shard` across a 4-way matrix;
+each shard mutates a deterministic, disjoint slice of the same file set (`stryker.shard.config.mjs`)
+and uploads a per-shard JSON report. A final `merge and enforce gate` job runs
+`make merge-mutation-reports`, which unions the shard reports and re-enforces the **unchanged**
+Stryker `break` threshold (`stryker.config.mjs` — `break: 80`) over the whole set, computing the
+mutation score exactly as an unsharded run would. Sharding by file is score-preserving: each mutant
+runs against the full suite regardless of which shard owns it. A missing shard report makes the merge
+fail (it never passes the gate vacuously). The merge math is unit-tested in
+`tests/unit/mutation-report.test.ts`.
+
+Run it locally either way:
+
+```bash
+make test-mutation                                   # full, gated, single-process run
+# or reproduce the sharded CI flow against a running bun service:
+make start-bun
+make test-mutation-shard MUTATION_SHARD_TOTAL=4 MUTATION_SHARD_INDEX=0   # repeat for 1..3
+make merge-mutation-reports MUTATION_SHARD_TOTAL=4
+```
+
+**Required status checks.** When mutation testing is a required check, the gate is now the
+`merge and enforce gate` job (the old single `mutation-testing` check no longer exists). A maintainer
+must update **Settings → Branches → Branch protection rules** to require that job, plus the parallel
+Lighthouse matrix jobs (`lighthouse desktop` / `lighthouse mobile`), so branch protection points at
+jobs that actually run. The merge job runs `if: ${{ !cancelled() }}` and fails closed if any shard
+did not succeed (a skipped required check would otherwise count as a pass), so requiring just
+`merge and enforce gate` is sufficient — a crashed shard turns the gate red rather than bypassing it.
 
 ### Commit your update
 
