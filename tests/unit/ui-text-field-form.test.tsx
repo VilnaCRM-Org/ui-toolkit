@@ -9,16 +9,11 @@ import colorTheme from '../../src/components/ui-color-theme';
 import textFieldFormStyles from '../../src/components/ui-text-field-form/styles';
 
 import { testPlaceholder, testText } from './constants';
+import mockConsoleWarn from './utils/mock-console-warn';
 
 // UiTextFieldForm wraps UiInput; silence UiInput's dev-only accessible-name
 // guidance for these fixtures so it does not clutter the output.
-beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-});
-
-afterEach(() => {
-  jest.restoreAllMocks();
-});
+mockConsoleWarn();
 
 describe('UiTextFieldForm', () => {
   function TestWrapper(): React.ReactElement {

@@ -5,6 +5,7 @@ import React from 'react';
 import { UiButton, UiCheckbox, UiInput, UiLink } from '../../src/components';
 
 import { testText } from './constants';
+import mockConsoleWarn from './utils/mock-console-warn';
 
 // Story 1.3 — Accessibility and Interaction Consistency Hardening (Epic 1 gate).
 //
@@ -24,13 +25,7 @@ const noop: () => void = () => undefined;
 // These specs focus on keyboard/focus/disabled/error behaviour and render
 // deliberately minimal inputs; silence UiInput's dev-only accessible-name
 // guidance so it does not clutter the suite output.
-beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-});
-
-afterEach(() => {
-  jest.restoreAllMocks();
-});
+mockConsoleWarn();
 
 // Renders `control` between two links and asserts Tab jumps straight from the
 // leading link to the trailing one, i.e. the control is not in the tab order.

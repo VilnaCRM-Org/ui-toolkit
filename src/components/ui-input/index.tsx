@@ -32,23 +32,39 @@ function hasAccessibleName(props: UiInputProps): boolean {
 
 // Development-only accessibility guidance; stripped in production to keep the
 // published bundle quiet. Backward compatible — nothing is enforced at runtime.
-function warnInputAccessibility(props: UiInputProps): void {
+function emitInputAccessibilityWarnings(
+  nameWarning: string | null,
+  errorWarning: string | null
+): void {
   if (process.env.NODE_ENV === 'production') {
     return;
   }
-  if (!hasAccessibleName(props)) {
-    console.warn(MISSING_NAME_WARNING);
+  if (nameWarning) {
+    console.warn(nameWarning);
   }
-  if (props.error && props.helperText == null) {
-    console.warn(ERROR_WITHOUT_HELPER_WARNING);
+  if (errorWarning) {
+    console.warn(errorWarning);
   }
+}
+
+// Emitted from an effect keyed to the derived warning state (not raw props) so a
+// normal re-render does not re-log, but a prop change into/out of a warning state
+// does.
+function useInputAccessibilityWarnings(props: UiInputProps): void {
+  const nameWarning: string | null = hasAccessibleName(props) ? null : MISSING_NAME_WARNING;
+  const errorWarning: string | null =
+    props.error && props.helperText == null ? ERROR_WITHOUT_HELPER_WARNING : null;
+
+  React.useEffect((): void => {
+    emitInputAccessibilityWarnings(nameWarning, errorWarning);
+  }, [nameWarning, errorWarning]);
 }
 
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>((props, ref) => {
   const { InputProps, slotProps, ...rest } = props;
-  warnInputAccessibility(props);
+  useInputAccessibilityWarnings(props);
 
   const mergedSlotProps: UiInputProps['slotProps'] = InputProps
     ? {
