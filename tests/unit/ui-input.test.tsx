@@ -4,8 +4,14 @@ import React from 'react';
 import { UiInput } from '../../src/components';
 
 import { testText, testEmail, testPlaceholder } from './constants';
+import mockConsoleWarn from './utils/mock-console-warn';
 
 const testType: string = 'email';
+
+// UiInput emits dev-only accessibility guidance via console.warn; silence it for
+// the whole file (existing specs render deliberately minimal inputs) and let the
+// dedicated blocks below assert on the spy.
+const warn = mockConsoleWarn();
 
 describe('UiInput', () => {
   it('renders the input with the provided props', () => {
@@ -108,5 +114,82 @@ describe('UiInput', () => {
 
     expect(inputElement).toHaveAttribute('aria-describedby', 'obj-desc');
     expect(inputElement).toHaveAttribute('aria-label', 'input-props-wins');
+  });
+});
+
+describe('UiInput accessible-name guidance', () => {
+  it('warns when the input has no accessible name', () => {
+    render(<UiInput />);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('no accessible name'));
+  });
+
+  it('stays quiet when a label prop is provided', () => {
+    render(<UiInput label="Email" />);
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
+  it('emits nothing at all for a labelled input that is not in error', () => {
+    // No warning of any kind — guards against emitting `console.warn(null)` when
+    // there is nothing to report.
+    render(<UiInput label="Email" />);
+    expect(warn.spy).not.toHaveBeenCalled();
+  });
+
+  it('stays quiet when an id links an external label', () => {
+    render(
+      <>
+        <label htmlFor="email-field">Email</label>
+        <UiInput id="email-field" />
+      </>
+    );
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
+  it('stays quiet when an aria-label is supplied via slotProps.input', () => {
+    render(<UiInput slotProps={{ input: { 'aria-label': 'Email' } }} />);
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
+  it('stays quiet when the input slot is configured via InputProps', () => {
+    render(<UiInput InputProps={{ inputProps: { 'aria-label': 'Email' } }} />);
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
+  it('emits no warnings in production even without an accessible name', () => {
+    const originalEnv: string | undefined = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      render(<UiInput />);
+      expect(warn.spy).not.toHaveBeenCalled();
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
+  });
+
+  it('re-logs the name warning when an accessible name is removed on re-render', () => {
+    // The guidance lives in an effect keyed to the derived warning state, so a
+    // named→unnamed transition must re-log (guards against a stale mount-only cache).
+    const { rerender } = render(<UiInput label="Email" />);
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+
+    rerender(<UiInput />);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+});
+
+describe('UiInput error-description guidance', () => {
+  it('warns when the error state has no helperText to explain it', () => {
+    render(<UiInput label="Email" error />);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('helperText'));
+  });
+
+  it('stays quiet when the error state is paired with a helperText', () => {
+    render(<UiInput label="Email" error helperText="Enter a valid email" />);
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('helperText'));
+  });
+
+  it('does not warn about helperText when the field is not in error', () => {
+    render(<UiInput label="Email" />);
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('helperText'));
   });
 });

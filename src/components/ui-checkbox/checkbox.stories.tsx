@@ -26,6 +26,16 @@ const meta: Meta<typeof UiCheckbox> = {
       description: 'Whether the checkbox is in error state',
       control: { type: 'boolean' },
     },
+    required: {
+      type: 'boolean',
+      description: 'Marks the checkbox as required for assistive technology',
+      control: { type: 'boolean' },
+    },
+    helperText: {
+      type: 'string',
+      description: 'Description linked via aria-describedby (e.g. the reason it is invalid)',
+      control: { type: 'text' },
+    },
   },
 };
 

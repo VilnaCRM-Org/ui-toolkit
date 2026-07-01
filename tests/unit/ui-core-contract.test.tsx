@@ -8,6 +8,12 @@ import type { UiCheckboxProps } from '../../src/components/ui-checkbox/types';
 import type { UiInputProps } from '../../src/components/ui-input/types';
 import type { UiLinkProps } from '../../src/components/ui-link/types';
 
+import mockConsoleWarn from './utils/mock-console-warn';
+
+// These contract specs render minimal controls; silence UiInput's dev-only
+// accessible-name guidance so it does not clutter the output.
+mockConsoleWarn();
+
 const sharedSxFn: (theme: Theme) => { color: string } = (theme: Theme): { color: string } => ({
   color: theme.palette.primary.main,
 });

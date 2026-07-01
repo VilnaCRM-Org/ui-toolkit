@@ -50,3 +50,52 @@ describe('UiCheckbox', () => {
     expect(checkboxInput).not.toBeChecked();
   });
 });
+
+describe('UiCheckbox required (accessibility)', () => {
+  it('marks the underlying input as required for assistive technology', () => {
+    render(<UiCheckbox required onChange={mockOnChange} label={testText} />);
+    expect(screen.getByRole('checkbox')).toBeRequired();
+  });
+
+  it('leaves the input optional by default', () => {
+    render(<UiCheckbox onChange={mockOnChange} label={testText} />);
+    expect(screen.getByRole('checkbox')).not.toBeRequired();
+  });
+});
+
+describe('UiCheckbox helperText (accessibility)', () => {
+  const helperMessage: string = 'You must accept the terms';
+
+  it('renders a helper text linked to the input via aria-describedby', () => {
+    render(<UiCheckbox helperText={helperMessage} onChange={mockOnChange} label={testText} />);
+
+    const checkbox: HTMLElement = screen.getByRole('checkbox');
+    const helper: HTMLElement = screen.getByText(helperMessage);
+
+    // The generated id must carry the `-helper-text` suffix and be the exact
+    // target of aria-describedby, so screen readers announce the description.
+    expect(helper.id).toMatch(/-helper-text$/);
+    expect(checkbox).toHaveAttribute('aria-describedby', helper.id);
+  });
+
+  it('associates the helper text alongside the aria-invalid error flag', () => {
+    render(
+      <UiCheckbox error helperText={helperMessage} onChange={mockOnChange} label={testText} />
+    );
+
+    const checkbox: HTMLElement = screen.getByRole('checkbox');
+    expect(checkbox).toHaveAttribute('aria-invalid', 'true');
+    expect(checkbox).toHaveAttribute('aria-describedby', screen.getByText(helperMessage).id);
+  });
+
+  it('renders no helper text and no aria-describedby when helperText is omitted', () => {
+    render(<UiCheckbox onChange={mockOnChange} label={testText} />);
+
+    const checkbox: HTMLElement = screen.getByRole('checkbox');
+    expect(checkbox).not.toHaveAttribute('aria-describedby');
+    // Without helperText the component must return the bare control — not the
+    // FormHelperText wrapper (an empty helper `<p>` would still be a11y noise).
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(document.querySelector('.MuiFormHelperText-root')).not.toBeInTheDocument();
+  });
+});
