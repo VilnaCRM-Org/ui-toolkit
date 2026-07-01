@@ -245,3 +245,70 @@ Gaps to 5/5:
   license-gate work above.
 - PR #67 (dependabot, 28 updates in one batch) illustrates the catch-all-group problem in
   attribute 8.
+
+## Follow-up: full Wikipedia system-quality-attribute scorecard (2026-07-01)
+
+Per the follow-up request, all 92 attributes from
+<https://en.wikipedia.org/wiki/List_of_system_quality_attributes> were scored by a 9-cluster
+subagent fan-out (every attribute mapped to exactly one cluster), and one GitHub issue was filed
+per problem blocking a 5/5. Issues: #71–#103 (33 total; one draft merged as a duplicate).
+"N/A = 5" means satisfied by vacuity for a stateless published component library.
+
+### Reliability & Fault Tolerance — issues #71 #74 #77 #80
+
+reliability 3, availability 2, fault-tolerance 2, robustness 3, resilience 2, recoverability 2,
+redundancy 3, degradability 3, failure transparency 2, dependability 3, stability 2,
+durability 5 (N/A), survivability 2
+
+### Maintainability & Evolution — issues #83 #86 #89 #92
+
+maintainability 3, modifiability 3, evolvability 3, extensibility 2, flexibility 2,
+adaptability 3, agility 3, modularity 4, orthogonality 3, composability 3, reusability 3,
+simplicity 4, analyzability 4, understandability 3, repairability 3, serviceability 3
+
+### Testing, Correctness & Verification — issues #96 (P0) #98 #100 #103
+
+testability 4, correctness 4, accuracy 3, precision 3, fidelity 4, provability 3, repeatability 4,
+reproducibility 4, determinability 2, predictability 3, demonstrability 4, debuggability 4,
+inspectability 3
+
+### Security, Integrity & Auditability — issues #73 (P0) #76 #79 #82
+
+securability 3, confidentiality 3, integrity 3, vulnerability 2, accountability 3, auditability 3,
+safety 4
+
+### Usability & Developer Experience — issues #85 #88 #91 (a11y closure via #66)
+
+usability 2, accessibility 3, learnability 2, intuitiveness 3, familiarity 3, convenience 2,
+interactivity 3, discoverability 2, operability 3, seamlessness 2, relevance 4, credibility 2,
+transparency 2
+
+### Performance, Efficiency & Scalability — issues #94 #97 #101
+
+efficiency 2, effectiveness 3, responsiveness 3, timeliness 3, scalability 2, elasticity 5 (N/A)
+
+### Configurability, Customization & Localization — issues #72 #75 #78
+
+configurability 2, customizability 2, tailorability 2, localizability 2
+
+### Portability, Compatibility & Release — issues #81 (P0) #84 #87 #90
+
+portability 3, compatibility 3, interoperability 2, interchangeability 2, installability 1,
+deployability 1, distributability 1, mobility 5 (N/A), ubiquity 2, upgradability 2,
+standards compliance 2
+
+### Operations, Process & Governance — issues #93 #95 #99 #102
+
+manageability 3, administrability 2, observability 2, operability (CI) 3, autonomy 3,
+self-sustainability 2, sustainability 2, affordability 4, producibility 2, process capabilities 3,
+traceability 4
+
+### Notable corrections vs the first-pass audit
+
+- `i18n/localization.json` contains two complete locales (`en` and `uk`, 116 leaf keys each) —
+  the delivery contract is what is broken, not the content (#75).
+- `crmColorTheme` and `websiteColorTheme` are byte-identical; the CRM breakpoint values differ but
+  are unreachable (#72).
+- `scripts/localizationGenerator.js` scans a nonexistent `src/features` directory (#78).
+- `package.json` exports point at `./build/index.mjs`, which no repo script produces —
+  installability/deployability/distributability scored 1 (#81, #84).
