@@ -10,7 +10,7 @@ ENV BUN_INSTALL_CACHE_DIR=/home/pwuser/.bun-cache
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-      curl=7.81.0-1ubuntu1.24 \
+      curl=7.81.0-1ubuntu1.25 \
       g++=4:11.2.0-1ubuntu1 \
       make=4.3-4.1build1 \
       procps=2:3.3.17-6ubuntu2.1 \
