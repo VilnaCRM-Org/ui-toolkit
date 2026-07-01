@@ -8,6 +8,16 @@ import type { UiCheckboxProps } from '../../src/components/ui-checkbox/types';
 import type { UiInputProps } from '../../src/components/ui-input/types';
 import type { UiLinkProps } from '../../src/components/ui-link/types';
 
+// These contract specs render minimal controls; silence UiInput's dev-only
+// accessible-name guidance so it does not clutter the output.
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 const sharedSxFn: (theme: Theme) => { color: string } = (theme: Theme): { color: string } => ({
   color: theme.palette.primary.main,
 });

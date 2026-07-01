@@ -43,7 +43,7 @@ development_status:
   epic-1: in-progress
   1-1-core-contract-and-export-baseline: review
   1-2-core-control-state-parity-completion: review
-  1-3-accessibility-and-interaction-consistency-hardening: backlog
+  1-3-accessibility-and-interaction-consistency-hardening: review
   1-4-epic-1-quality-gate-closure: backlog
   epic-1-retrospective: optional
   epic-2: backlog

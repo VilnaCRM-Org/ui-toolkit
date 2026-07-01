@@ -10,6 +10,16 @@ import textFieldFormStyles from '../../src/components/ui-text-field-form/styles'
 
 import { testPlaceholder, testText } from './constants';
 
+// UiTextFieldForm wraps UiInput; silence UiInput's dev-only accessible-name
+// guidance for these fixtures so it does not clutter the output.
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 describe('UiTextFieldForm', () => {
   function TestWrapper(): React.ReactElement {
     const { control, handleSubmit } = useForm();
