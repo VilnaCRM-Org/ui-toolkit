@@ -19,22 +19,24 @@ Install dependencies:
 bun install
 ```
 
-Run the common workflows through `make`:
+`make help` prints the authoritative, self-documenting list of every target — run it first:
 
 ```bash
-make build
-make lint
-make lint-next
-make lint-tsc
-make storybook-start
-make storybook-build
-make test-unit
-make test-e2e
-make test-visual
-make lighthouse-desktop
-make lighthouse-mobile
-make lint-metrics
+make help
 ```
+
+Every pull request must pass the gating targets below; run the ones your change touches
+locally before pushing. See [agents.md](agents.md) for which test layer a given change needs.
+
+| Target                  | What it gates                                                |
+| ----------------------- | ------------------------------------------------------------ |
+| `make lint`             | ESLint, TypeScript, markdownlint, Prettier, dependency gates |
+| `make test-unit`        | Jest unit suite (components, hooks, pure logic) in jsdom     |
+| `make test-integration` | Jest composition suite: composed components, real children   |
+| `make test-e2e`         | Playwright behavior against a Storybook build                |
+| `make test-visual`      | Playwright visual-regression snapshots                       |
+| `make test-mutation`    | Stryker mutation-strength gate                               |
+| `make test-bats`        | Bats coverage of Makefile shell flows and their contracts    |
 
 The `lint-metrics` target runs a `rust-code-analysis` complexity gate over `src/`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the policy details and remediation guidance.
@@ -84,6 +86,8 @@ in `CONTRIBUTING.md` for what it enforces, how it complements ESLint, and how to
 
 - This repository is a React UI library, not a Next.js app.
 - Source code lives under `src`; there is no `pages` app surface.
+- `make lint-next` runs ESLint. The name predates the library split — it is not
+  Next.js-specific — and is kept only to avoid renaming churn across CI and tooling.
 
 ## Security
 

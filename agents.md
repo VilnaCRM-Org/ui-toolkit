@@ -29,21 +29,26 @@ ONLY with a recorded, concrete justification (see Step 3) — never by silent om
 Choose the layer(s) that actually exercise the change; a single component change often needs
 more than one. Match the change to the suite and run its verification command.
 
-| Test layer        | Use it for                                      | Command            |
-| ----------------- | ----------------------------------------------- | ------------------ |
-| Unit              | Components, hooks, theme, and pure client logic | `make test-unit`   |
-| End-to-end (e2e)  | Storybook-driven component behavior end to end  | `make test-e2e`    |
-| Visual regression | Any change to rendered UI, layout, or styling   | `make test-visual` |
+| Test layer        | Use it for                                      | Command                 |
+| ----------------- | ----------------------------------------------- | ----------------------- |
+| Unit              | Components, hooks, theme, and pure client logic | `make test-unit`        |
+| Integration       | Composed components rendered with real children | `make test-integration` |
+| End-to-end (e2e)  | Storybook-driven component behavior end to end  | `make test-e2e`         |
+| Visual regression | Any change to rendered UI, layout, or styling   | `make test-visual`      |
 
 Unit tests run on Jest with React Testing Library in a jsdom env; specs are centralized in
-`tests/unit/**/*.test.tsx` (and `*.test.ts` for non-render logic). E2e and visual specs are
-Playwright run against a Storybook build (`tests/e2e/**`, `tests/visual/**`); visual snapshots
-sit in adjacent `*-snapshots/` folders. There is no separate `make test-integration` target:
-integration-level coverage (component composition and interaction) lives in the Jest unit
-suite via React Testing Library — exercise composed behavior there, not just isolated units.
-Every test file lives under the root `tests/` tree, and `make lint-test-structure` (run on
-every pull request) fails on any `*.test.*` or `*.spec.*` file placed outside it — see
-CONTRIBUTING.md for the canonical layout.
+`tests/unit/**/*.test.tsx` (and `*.test.ts` for non-render logic). Integration specs live in
+`tests/integration/**/*.integration.test.tsx` and run via `make test-integration` (Jest with
+`jest.integration.config.ts`): they render composed components with their real children — no
+child mocks — to verify cross-component behavior, and enforce a 100% coverage gate scoped to
+the composition/orchestration components (AuthSkeleton, Layout, UiForm, UiTextFieldForm, and
+the UiFooter / UiCardList subtrees). Reach for the integration layer when a change wires
+components together or changes how a container drives its children; a change contained to a
+single leaf component needs only the unit layer. E2e and visual specs are Playwright run
+against a Storybook build (`tests/e2e/**`, `tests/visual/**`); visual snapshots sit in
+adjacent `*-snapshots/` folders. Every test file lives under the root `tests/` tree, and
+`make lint-test-structure` (run on every pull request) fails on any `*.test.*` or `*.spec.*`
+file placed outside it — see CONTRIBUTING.md for the canonical layout.
 
 Storybook is a first-class coverage layer here, not just documentation. Every new or enhanced
 component MUST ship stories that render its full state matrix (see Step 2); e2e and visual
@@ -114,6 +119,7 @@ pass. Run the layer commands you touched, then the project lint gate.
 ```bash
 bun x prettier . --write   # Auto-format (lint runs format-check, so format first)
 make test-unit             # Jest unit suite (jsdom)
+make test-integration      # Jest composition suite (for cross-component changes)
 make test-e2e              # Storybook-driven behavior (for behavior changes)
 make test-visual           # Visual regression (for UI or styling changes)
 make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
