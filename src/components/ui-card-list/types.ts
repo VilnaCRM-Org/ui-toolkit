@@ -20,6 +20,12 @@ export type UiCardItemData = {
 };
 
 export interface UiCardListProps {
+  /**
+   * Cards to render. The type is strict, but the component degrades gracefully
+   * on runtime data: a nullish `cardList` is normalized to an empty list — the
+   * grid/swiper mounts with no cards instead of crashing on `.map` — and logs a
+   * development-only `console.warn`.
+   */
   cardList: UiCardItemData[];
   /**
    * Overrides the rendered heading element of every card title so consumers can

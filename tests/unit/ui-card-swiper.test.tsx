@@ -4,8 +4,10 @@ import React from 'react';
 
 import CardSwiper from '../../src/components/ui-card-list/card-swiper';
 import gridStyles from '../../src/components/ui-card-list/styles';
+import type { UiCardItemData } from '../../src/components/ui-card-list/types';
 
-import { largeCardList, smallCardList } from './constants';
+import { largeCardList, smallCard, smallCardList } from './constants';
+import mockConsoleWarn from './utils/mock-console-warn';
 
 type ObserverCallback = MutationCallback;
 
@@ -225,6 +227,7 @@ jest.mock('swiper/react', () => {
       children?: React.ReactNode;
       pagination?: { clickable?: boolean };
       modules?: unknown[];
+      loop?: boolean;
     }>
   ): React.ReactElement {
     const pagination: { clickable?: boolean } | undefined = props.pagination;
@@ -237,6 +240,7 @@ jest.mock('swiper/react', () => {
         'data-pagination-has-clickable-key': String(hasClickableKey),
         'data-pagination-clickable': String(pagination?.clickable === true),
         'data-modules-count': String(Array.isArray(props.modules) ? props.modules.length : -1),
+        'data-loop': String(props.loop === true),
       },
       props.children
     );
@@ -400,5 +404,44 @@ describe('CardSwiper tooltip mutation detection', () => {
 
     querySpy.mockRestore();
     observeSpy.mockRestore();
+  });
+});
+
+describe('CardSwiper loop configuration', () => {
+  const warn = mockConsoleWarn();
+
+  // Two cards with distinct ids so the multi-item case has real wrap-around and
+  // no duplicate React keys. smallCardList/largeCardList are single-item.
+  const multiCardList: UiCardItemData[] = [smallCard, { ...smallCard, id: 'second-card-id' }];
+
+  it('disables loop for an empty list', () => {
+    render(React.createElement(CardSwiper, { cardList: [] }));
+
+    // Kills the `> 1` -> `>= 1` boundary mutant (0 >= 1 is false, so this alone
+    // does not; the single-item case below does) and the `-> true` collapse.
+    expect(screen.getByTestId('swiper')).toHaveAttribute('data-loop', 'false');
+  });
+
+  it('disables loop for a single-item list', () => {
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+
+    // Kills `> 1` -> `>= 1` (1 >= 1 would be true) and the literal-`true` collapse.
+    expect(screen.getByTestId('swiper')).toHaveAttribute('data-loop', 'false');
+  });
+
+  it('enables loop when there is more than one card', () => {
+    render(React.createElement(CardSwiper, { cardList: multiCardList }));
+
+    // Kills `> 1` -> `< 1` and the literal-`false` collapse.
+    expect(screen.getByTestId('swiper')).toHaveAttribute('data-loop', 'true');
+  });
+
+  it('emits no Swiper loop warning for a single-item list', () => {
+    // With loop disabled, real Swiper would not log its loop warning. The stub
+    // cannot emit it, so the `data-loop='false'` assertions above are the real
+    // guarantee; this guards against the component itself warning about loop.
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('loop'));
   });
 });

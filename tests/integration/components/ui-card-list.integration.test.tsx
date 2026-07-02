@@ -227,3 +227,37 @@ describe('UiCardList grid content edge cases', () => {
     expect(screen.getByText('Custom node body')).toBeInTheDocument();
   });
 });
+
+describe('UiCardList nullish cardList degradation (real children)', () => {
+  // A nullish runtime value (CMS/API data) that the strict type forbids must
+  // degrade to an empty grid/swiper through the real composed chain, not crash.
+  const nullishCardList: UiCardItemData[] = undefined as unknown as UiCardItemData[];
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach((): void => {
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation((): void => undefined);
+  });
+
+  afterEach((): void => {
+    warnSpy.mockRestore();
+  });
+
+  it('renders an empty grid and dev-warns when cardList is nullish', () => {
+    setLargeScreen();
+
+    render(<UiCardList cardList={nullishCardList} />);
+
+    expect(screen.queryByTestId('swiper')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('img', HIDDEN)).toHaveLength(0);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nullish'));
+  });
+
+  it('renders an empty swiper when cardList is nullish', () => {
+    setSmallScreen();
+
+    render(<UiCardList cardList={nullishCardList} />);
+
+    expect(screen.getByTestId('swiper')).toBeInTheDocument();
+    expect(screen.queryAllByTestId('swiper-slide')).toHaveLength(0);
+  });
+});

@@ -51,6 +51,9 @@ function FooterBottomBar({
           <Stack direction="row" sx={{ gap: '0.875rem', alignItems: 'center' }}>
             <VilnaCRMEmail />
             <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
+              {/* socialLinks is sourced from the propless UiFooter's internal
+                  ./constants, never from consumer input, so no nullish guard is
+                  needed here (unlike UiImage.src / UiCardList.cardList). */}
               {socialLinks.map(item => (
                 <SocialMediaItem item={item} key={item.id} />
               ))}

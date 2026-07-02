@@ -21,6 +21,9 @@ function ServicesHoverCard(): React.ReactElement {
         {t('unlimited_possibilities.service_text.text')}
       </UiTypography>
       <Box sx={styles.listWrapper}>
+        {/* imageList is an internal ../constants import, never consumer-supplied,
+            so no nullish guard is needed here (unlike UiImage.src /
+            UiCardList.cardList). */}
         {imageList.map(item => (
           <ImageItem item={item} key={item.alt} />
         ))}
