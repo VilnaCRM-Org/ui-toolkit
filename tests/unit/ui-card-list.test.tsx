@@ -3,9 +3,12 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiCardList from '../../src/components/ui-card-list';
+import CardGrid from '../../src/components/ui-card-list/card-grid';
 import CardSwiper from '../../src/components/ui-card-list/card-swiper';
+import type { UiCardItemData } from '../../src/components/ui-card-list/types';
 
 import { cardList } from './constants';
+import mockConsoleWarn from './utils/mock-console-warn';
 
 jest.mock('@mui/material', () => ({
   ...jest.requireActual('@mui/material'),
@@ -89,5 +92,60 @@ describe('UiCardList media query argument', () => {
     render(React.createElement(UiCardList, { cardList }));
 
     expect(mockedUseMediaQuery).not.toHaveBeenCalledWith('');
+  });
+});
+
+describe('UiCardList nullish cardList degradation', () => {
+  const warn = mockConsoleWarn();
+  const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
+  const mockedCardGrid: jest.Mock = CardGrid as jest.Mock;
+  const mockedCardSwiper: jest.Mock = CardSwiper as jest.Mock;
+
+  // The strict `cardList` type forbids nullish values, but runtime data can
+  // supply one; the entry must normalize it to [] so neither child crashes.
+  const nullishCardList: UiCardItemData[] = undefined as unknown as UiCardItemData[];
+
+  afterEach((): void => {
+    jest.clearAllMocks();
+  });
+
+  it('normalizes a nullish cardList to an empty array for the grid branch', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList: nullishCardList }));
+
+    expect(mockedCardGrid.mock.calls[0][0]).toEqual(expect.objectContaining({ cardList: [] }));
+  });
+
+  it('normalizes a nullish cardList to an empty array for the swiper branch', () => {
+    mockedUseMediaQuery.mockReturnValue(true);
+
+    render(React.createElement(UiCardList, { cardList: nullishCardList }));
+
+    expect(mockedCardSwiper.mock.calls[0][0]).toEqual(expect.objectContaining({ cardList: [] }));
+  });
+
+  it('forwards the real cardList unchanged to the grid when one is provided', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList }));
+
+    expect(mockedCardGrid.mock.calls[0][0]).toEqual(expect.objectContaining({ cardList }));
+  });
+
+  it('warns in development when cardList is nullish', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList: nullishCardList }));
+
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('nullish'));
+  });
+
+  it('stays silent when a valid cardList is provided', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList }));
+
+    expect(warn.spy).not.toHaveBeenCalled();
   });
 });

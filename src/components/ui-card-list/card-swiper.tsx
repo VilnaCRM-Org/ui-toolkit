@@ -82,7 +82,9 @@ export default function CardSwiper({
         modules={[Pagination]}
         spaceBetween={12}
         slidesPerView={1.04}
-        loop
+        // Looping is meaningless with 0-1 slides and makes Swiper log a warning
+        // on every mount; only enable it once there is more than one card to wrap.
+        loop={cardList.length > 1}
       >
         {cardList.map(item => (
           <SwiperSlide key={item.id}>

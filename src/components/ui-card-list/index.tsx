@@ -1,22 +1,33 @@
 import { Box, useMediaQuery } from '@mui/material';
 import React from 'react';
 
+import { useDevWarning } from '@/utils/dev-warn';
+
 import breakpointsTheme from '../ui-breakpoints';
 
 import CardGrid from './card-grid';
 import CardSwiper from './card-swiper';
 import styles from './styles';
-import type { UiCardListProps } from './types';
+import type { UiCardItemData, UiCardListProps } from './types';
 
 // Shared card styling owned by the card-list module; UiCardItem consumes it
 // through this public entry rather than reaching into ./shared-card-styles
 // (components-public-api boundary rule).
 export * from './shared-card-styles';
 
+const MISSING_CARD_LIST_WARNING: string =
+  'UiCardList received a nullish `cardList`; rendering an empty list. Pass an array of card items.';
+
 export default function UiCardList({
   cardList,
   headingComponent,
 }: UiCardListProps): React.ReactElement {
+  useDevWarning(cardList ? null : MISSING_CARD_LIST_WARNING);
+  // Normalize once at the public entry so both children keep their simple
+  // `UiCardItemData[]` contract; a nullish runtime value degrades to an empty
+  // grid/swiper instead of crashing the whole subtree on `.map`.
+  const safeCardList: UiCardItemData[] = cardList ?? [];
+
   // Render exactly one variant. Gating CardGrid on `!isSmallScreen` (rather than
   // mounting it always and hiding it with CSS) avoids rendering the whole card
   // tree twice on mobile, matching how CardSwiper is gated.
@@ -28,12 +39,12 @@ export default function UiCardList({
     <>
       <Box sx={styles.gridContainerLargeScreen}>
         {isSmallScreen ? null : (
-          <CardGrid cardList={cardList} headingComponent={headingComponent} />
+          <CardGrid cardList={safeCardList} headingComponent={headingComponent} />
         )}
       </Box>
       <Box sx={styles.swiperContainerSmallScreen}>
         {isSmallScreen ? (
-          <CardSwiper cardList={cardList} headingComponent={headingComponent} />
+          <CardSwiper cardList={safeCardList} headingComponent={headingComponent} />
         ) : null}
       </Box>
     </>
