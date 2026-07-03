@@ -1,8 +1,9 @@
 import { Autocomplete, ThemeProvider } from '@mui/material';
 import React from 'react';
 
+import { outlinedFieldTheme } from '../field-controls';
+
 import { ChevronDownGlyph } from './icons';
-import theme from './theme';
 import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
 import { useSelectField } from './use-select-field';
 import { useSelectAccessibilityWarnings } from './use-warnings';
@@ -21,7 +22,7 @@ function UiSelectWithSearch(props: UiSelectWithSearchProps): React.ReactElement 
   const field: ReturnType<typeof useSelectField> = useSelectField(props);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={outlinedFieldTheme}>
       <Autocomplete
         options={props.options}
         value={props.value ?? null}
