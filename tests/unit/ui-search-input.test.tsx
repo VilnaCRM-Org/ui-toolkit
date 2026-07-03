@@ -91,6 +91,11 @@ describe('UiSearchInput — rendering and accessible name', () => {
     expect(screen.getByRole('combobox', { name: 'Find' })).toBeInTheDocument();
   });
 
+  it('falls back to aria-label when the label is empty', () => {
+    render(<UiSearchInput label="" aria-label="Search" />);
+    expect(screen.getByRole('combobox', { name: 'Search' })).toBeInTheDocument();
+  });
+
   it('exposes its display name', () => {
     expect(UiSearchInput.displayName).toBe('UiSearchInput');
   });

@@ -67,6 +67,11 @@ describe('UiSelectWithSearch — rendering and accessible name', () => {
     expect(screen.getByRole('combobox', { name: 'City' })).toBeInTheDocument();
   });
 
+  it('falls back to aria-label when the label is empty', () => {
+    render(<UiSelectWithSearch options={options} label="" aria-label="City" onChange={noop} />);
+    expect(screen.getByRole('combobox', { name: 'City' })).toBeInTheDocument();
+  });
+
   it('exposes its display name', () => {
     expect(UiSelectWithSearch.displayName).toBe('UiSelectWithSearch');
   });

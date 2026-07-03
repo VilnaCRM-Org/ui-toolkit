@@ -37,6 +37,14 @@ const outlinedFieldTheme: Theme = createTheme({
             borderColor: colorTheme.palette.grey300.main,
           },
         },
+        input: {
+          '&::placeholder': {
+            color: colorTheme.palette.grey300.main,
+            opacity: 1,
+            fontFamily: 'Inter',
+            fontWeight: '500',
+          },
+        },
       },
     },
 

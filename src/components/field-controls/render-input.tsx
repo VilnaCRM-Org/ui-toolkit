@@ -2,6 +2,8 @@ import { TextField } from '@mui/material';
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
+import { hasText } from './has-text';
+
 export interface FieldRenderInputConfig {
   label?: string;
   placeholder?: string;
@@ -37,7 +39,7 @@ export function createFieldRenderInput(
           input: { ...params.slotProps.input, startAdornment: config.startAdornment },
           htmlInput: {
             ...params.slotProps.htmlInput,
-            'aria-label': config.label == null ? config.ariaLabel : undefined,
+            'aria-label': hasText(config.label) ? undefined : config.ariaLabel,
           },
         }}
       />

@@ -17,14 +17,6 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
             color: colorTheme.palette.primary.main,
           },
         },
-        input: {
-          '&::placeholder': {
-            color: colorTheme.palette.grey300.main,
-            opacity: 1,
-            fontFamily: 'Inter',
-            fontWeight: '500',
-          },
-        },
       },
     },
   },
