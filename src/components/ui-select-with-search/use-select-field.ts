@@ -1,10 +1,13 @@
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import { createSelectRenderInput } from './render-input';
-import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
+import {
+  createFieldRenderInput,
+  useListboxSlotProps,
+  type ListboxSlotProps,
+} from '../field-controls';
 
-type ListboxSlotProps = { listbox: { 'aria-label'?: string } };
+import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
 
 export interface SelectField {
   handleChange: (event: React.SyntheticEvent, next: UiSelectWithSearchOption | null) => void;
@@ -28,7 +31,7 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
 
   const renderInput: SelectField['renderInput'] = React.useMemo(
     () =>
-      createSelectRenderInput({
+      createFieldRenderInput({
         label,
         placeholder,
         required,
@@ -40,10 +43,7 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
     [label, placeholder, required, error, helperText, variant, ariaLabel]
   );
 
-  const slotProps: ListboxSlotProps = React.useMemo(
-    () => ({ listbox: { 'aria-label': label ?? ariaLabel } }),
-    [label, ariaLabel]
-  );
+  const slotProps: ListboxSlotProps = useListboxSlotProps(label, ariaLabel);
 
   return { handleChange, renderInput, slotProps };
 }

@@ -1,10 +1,10 @@
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
+import { useListboxSlotProps, type ListboxSlotProps } from '../field-controls';
+
 import { createSearchRenderInput } from './render-input';
 import type { UiSearchInputProps } from './types';
-
-type ListboxSlotProps = { listbox: { 'aria-label'?: string } };
 
 export interface SearchField {
   handleInputChange: (event: React.SyntheticEvent, next: string) => void;
@@ -31,10 +31,7 @@ export function useSearchField(props: UiSearchInputProps): SearchField {
     [label, placeholder, required, error, helperText, ariaLabel]
   );
 
-  const slotProps: ListboxSlotProps = React.useMemo(
-    () => ({ listbox: { 'aria-label': label ?? ariaLabel } }),
-    [label, ariaLabel]
-  );
+  const slotProps: ListboxSlotProps = useListboxSlotProps(label, ariaLabel);
 
   return { handleInputChange, renderInput, slotProps };
 }

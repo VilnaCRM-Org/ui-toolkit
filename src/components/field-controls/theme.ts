@@ -2,11 +2,12 @@ import { Theme, createTheme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
 
-// Outline / focus / error / disabled parity with `UiInput` (ui-input/theme.ts),
-// reusing the shared `ui-color-theme` tokens. The fixed input height/padding
-// from the UiInput theme is intentionally omitted here — MUI `Autocomplete`
-// manages the input padding to make room for the popup/clear indicators.
-const theme: Theme = createTheme({
+// Shared outlined-field theme for the Autocomplete-based controls (search /
+// select): 8px radius, `#D0D4D8` stroke, hover/focus/error/disabled parity with
+// `UiInput`, and the error helper-text treatment. Individual controls extend it
+// with `createTheme(outlinedFieldTheme, {...})` for their own bits (e.g. the
+// search magnifier focus colour).
+const outlinedFieldTheme: Theme = createTheme({
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
@@ -57,4 +58,4 @@ const theme: Theme = createTheme({
   },
 });
 
-export default theme;
+export default outlinedFieldTheme;
