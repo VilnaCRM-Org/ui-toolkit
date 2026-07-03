@@ -10,6 +10,8 @@ export { default as UiFooter } from './ui-footer';
 export { default as UiInput } from './ui-input';
 export { default as Layout } from './layout';
 export { default as UiLink } from './ui-link';
+export { default as UiSearchInput } from './ui-search-input';
+export { default as UiSelectWithSearch } from './ui-select-with-search';
 export { default as UiTypography } from './ui-typography';
 export { default as UiImage } from './ui-image';
 export { default as UiForm } from './ui-form';
