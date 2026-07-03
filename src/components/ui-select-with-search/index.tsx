@@ -17,7 +17,7 @@ function isOptionEqualToValue(
   return option.value === value.value;
 }
 
-function UiSelectWithSearch(props: UiSelectWithSearchProps): React.ReactElement {
+function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.ReactElement {
   useSelectAccessibilityWarnings(props);
   const field: ReturnType<typeof useSelectField> = useSelectField(props);
 

@@ -8,7 +8,7 @@ import { useSearchWarnings } from './use-warnings';
 
 const EMPTY_OPTIONS: string[] = [];
 
-function UiSearchInput(props: UiSearchInputProps): React.ReactElement {
+function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement {
   useSearchWarnings(props);
   const field: ReturnType<typeof useSearchField> = useSearchField(props);
 
@@ -24,7 +24,7 @@ function UiSearchInput(props: UiSearchInputProps): React.ReactElement {
         sx={props.sx}
         id={props.id}
         popupIcon={null}
-        clearIcon={null}
+        disableClearable
         noOptionsText={props.noOptionsText}
         renderInput={field.renderInput}
         slotProps={field.slotProps}
