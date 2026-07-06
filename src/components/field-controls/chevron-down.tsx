@@ -1,10 +1,11 @@
 import React from 'react';
 
-// Decorative inline chevron-down for the combobox popup indicator (Figma
-// "select с поиском"). The repo has no `@mui/icons-material` dependency. Hidden
-// from assistive tech (`aria-hidden` + `focusable="false"`); MUI's popup
-// indicator button carries the accessible name. `fill`/`stroke` use
-// `currentColor` so the theme tints it.
+// Decorative inline chevron-down for the Autocomplete popup indicator (Figma
+// "select с поиском" / "Multiselect" glyph). Shared by the search/select-style
+// controls so the thin chevron is defined once. The repo has no
+// `@mui/icons-material` dependency. Hidden from assistive tech (`aria-hidden` +
+// `focusable="false"`); MUI's popup indicator button carries the accessible name.
+// `stroke` uses `currentColor` so the theme tints it.
 const CHEVRON_PATH: string = 'M5 8l5 5 5-5';
 
 export function ChevronDownGlyph(): React.ReactElement {

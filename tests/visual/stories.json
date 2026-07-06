@@ -198,5 +198,10 @@
     "id": "uicomponents-uiselectwithsearch--select-with-search",
     "title": "UiComponents/UiSelectWithSearch",
     "name": "Select With Search"
+  },
+  {
+    "id": "uicomponents-uimultiselect--multi-select",
+    "title": "UiComponents/UiMultiSelect",
+    "name": "Multi Select"
   }
 ]
