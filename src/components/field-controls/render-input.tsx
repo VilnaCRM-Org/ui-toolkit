@@ -36,7 +36,12 @@ export function createFieldRenderInput(
         variant={config.variant}
         slotProps={{
           ...params.slotProps,
-          input: { ...params.slotProps.input, startAdornment: config.startAdornment },
+          input: {
+            ...params.slotProps.input,
+            // A caller-provided adornment (e.g. the search magnifier) wins; otherwise
+            // keep MUI's own — the selected chips a multi-select renders here.
+            startAdornment: config.startAdornment ?? params.slotProps.input.startAdornment,
+          },
           htmlInput: {
             ...params.slotProps.htmlInput,
             'aria-label': hasText(config.label) ? undefined : config.ariaLabel,
