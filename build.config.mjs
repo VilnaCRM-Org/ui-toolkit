@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createRequire } from 'module';
@@ -58,6 +58,16 @@ async function generateTypeDeclarations() {
   if (!result.succeeded) {
     throw new Error(
       `API Extractor failed with ${result.errorCount} error(s) and ${result.warningCount} warning(s).`
+    );
+  }
+
+  // Invariant: the rollup must be self-contained. Fail the build if any internal
+  // `@/*` path-alias import leaked through instead of being inlined — such a file
+  // would not resolve for consumers of the published package.
+  const rollupPath = path.resolve(currentDir, 'build', 'index.d.ts');
+  if (/\bfrom\s+['"]@\//.test(readFileSync(rollupPath, 'utf8'))) {
+    throw new Error(
+      'build/index.d.ts contains unresolved "@/..." path-alias imports; the API Extractor rollup did not inline them.'
     );
   }
 }
