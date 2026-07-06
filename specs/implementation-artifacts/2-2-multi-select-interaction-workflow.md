@@ -11,12 +11,14 @@ Deliver `UiMultiSelect` (`src/components/ui-multi-select`) — a multi-value sea
 combobox where selected options render as removable chips. It reuses the shared
 `field-controls` internals from Story 2.1 and follows the same conventions.
 
-Delivered after Stories 2.1 and 2.3 were opened as PRs, so this PR is **stacked on
-the 2.3 branch** (`feat/issue-15-calendar-multi-select`) to reuse `field-controls`
-and stay conflict-free with both open PRs (#106, #107); its diff is 2.2-only and it
-introduces no dependency on any future Epic 2 story (the multi-select code depends
-only on the 2.1 field-controls, not on the calendar). GitHub retargets it up the
-stack as the earlier PRs merge.
+Because the multi-select code depends only on Story 2.1's `field-controls` (not on
+the calendar), this PR is **stacked directly on the 2.1 branch**
+(`feat/issue-13-search-and-select-foundation`) in epic order, with Story 2.3
+(calendar) restacked on top of it: `main ← 2.1 ← 2.2 ← 2.3`. Its diff is 2.2-only,
+it stays conflict-free with the other open PRs, and it introduces no dependency on a
+future Epic 2 story. This branch also adds the shared `hasText` and `ChevronDownGlyph`
+exports to `field-controls` (2.2 is the first control below the calendar to need
+them). GitHub retargets each PR up the stack as the one below it merges.
 
 ## Design decisions
 
