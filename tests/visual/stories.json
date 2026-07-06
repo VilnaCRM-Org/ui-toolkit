@@ -203,5 +203,10 @@
     "id": "uicomponents-uimultiselect--multi-select",
     "title": "UiComponents/UiMultiSelect",
     "name": "Multi Select"
+  },
+  {
+    "id": "uicomponents-uicalendarmultiselect--calendar-multi-select",
+    "title": "UiComponents/UiCalendarMultiSelect",
+    "name": "Calendar Multi Select"
   }
 ]

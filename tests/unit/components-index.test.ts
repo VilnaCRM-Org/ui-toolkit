@@ -10,6 +10,7 @@ const expectedPublicExports: string[] = [
   'UiBackToMain',
   'UiBreakpoints',
   'UiButton',
+  'UiCalendarMultiSelect',
   'UiCardList',
   'UiCheckbox',
   'UiColorTheme',

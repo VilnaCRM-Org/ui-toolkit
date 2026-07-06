@@ -3,6 +3,7 @@ import './fonts.css';
 export { default as AuthSkeleton } from './auth-skeleton';
 export { default as UiBackToMain } from './ui-back-to-main';
 export { default as UiButton } from './ui-button';
+export { default as UiCalendarMultiSelect } from './ui-calendar-multi-select';
 export { default as UiCardList } from './ui-card-list';
 export { default as UiCheckbox } from './ui-checkbox';
 export { default as UiContainer } from './ui-container';
