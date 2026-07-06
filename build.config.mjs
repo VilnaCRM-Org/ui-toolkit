@@ -3,6 +3,7 @@ import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createRequire } from 'module';
+import { execFileSync } from 'child_process';
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDir = path.dirname(currentFile);
@@ -33,6 +34,32 @@ if (!existsSync(entryPoint)) {
     'Skipping build because this bootstrap PR does not include src/components/index.ts yet.\n'
   );
   process.exit(0);
+}
+
+async function generateTypeDeclarations() {
+  // esbuild does not emit type declarations, so the library's published `.d.ts`
+  // is produced in two steps: tsc emits per-file declarations (keeping the `@/*`
+  // path aliases) under temp/dts, then API Extractor rolls them into a single
+  // self-contained build/index.d.ts (resolving the aliases and inlining internals).
+  const tscBin = require.resolve('typescript/bin/tsc');
+  execFileSync(process.execPath, [tscBin, '-p', path.resolve(currentDir, 'tsconfig.dts.json')], {
+    stdio: 'inherit',
+    cwd: currentDir,
+  });
+
+  const { Extractor, ExtractorConfig } = await import('@microsoft/api-extractor');
+  const extractorConfig = ExtractorConfig.loadFileAndPrepare(
+    path.resolve(currentDir, 'api-extractor.json')
+  );
+  const result = Extractor.invoke(extractorConfig, {
+    localBuild: true,
+    showVerboseMessages: false,
+  });
+  if (!result.succeeded) {
+    throw new Error(
+      `API Extractor failed with ${result.errorCount} error(s) and ${result.warningCount} warning(s).`
+    );
+  }
 }
 
 esbuild
@@ -74,7 +101,8 @@ esbuild
       'process.env.NODE_ENV': '"production"',
     },
   })
+  .then(generateTypeDeclarations)
   .catch(error => {
-    process.stderr.write(`esbuild failed: ${error.message ?? error}\n`);
+    process.stderr.write(`Build failed: ${error.message ?? error}\n`);
     process.exit(1);
   });
