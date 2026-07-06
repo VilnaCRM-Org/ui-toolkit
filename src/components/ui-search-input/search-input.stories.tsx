@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
 
+import {
+  booleanControlArgType,
+  textControlArgType,
+} from '../../../.storybook/field-story-arg-types';
+
 import UiSearchInput from './index';
 
 const suggestions: string[] = ['Top performers', 'Top sales this month', 'Top sales this year'];
@@ -10,26 +15,10 @@ const meta: Meta<typeof UiSearchInput> = {
   component: UiSearchInput,
   tags: ['autodocs'],
   argTypes: {
-    placeholder: {
-      type: 'string',
-      description: 'Placeholder text for the search field',
-      control: { type: 'text' },
-    },
-    value: {
-      type: 'string',
-      description: 'Controlled search text',
-      control: { type: 'text' },
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Whether the search field is disabled',
-      control: { type: 'boolean' },
-    },
-    error: {
-      type: 'boolean',
-      description: 'Whether the search field is in error state',
-      control: { type: 'boolean' },
-    },
+    placeholder: textControlArgType('Placeholder text for the search field'),
+    value: textControlArgType('Controlled search text'),
+    disabled: booleanControlArgType('Whether the search field is disabled'),
+    error: booleanControlArgType('Whether the search field is in error state'),
   },
 };
 
