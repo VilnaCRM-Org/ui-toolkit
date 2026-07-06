@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, rmSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createRequire } from 'module';
@@ -41,6 +41,13 @@ async function generateTypeDeclarations() {
   // is produced in two steps: tsc emits per-file declarations (keeping the `@/*`
   // path aliases) under temp/dts, then API Extractor rolls them into a single
   // self-contained build/index.d.ts (resolving the aliases and inlining internals).
+  //
+  // tsc does not prune stale declarations for deleted/renamed sources, so a reused
+  // temp/dts could feed API Extractor leftover files and make the rollup depend on
+  // build history. Start from a clean intermediate directory for a deterministic result.
+  const dtsOutDir = path.resolve(currentDir, 'temp', 'dts');
+  rmSync(dtsOutDir, { recursive: true, force: true });
+
   const tscBin = require.resolve('typescript/bin/tsc');
   execFileSync(process.execPath, [tscBin, '-p', path.resolve(currentDir, 'tsconfig.dts.json')], {
     stdio: 'inherit',
@@ -62,10 +69,12 @@ async function generateTypeDeclarations() {
   }
 
   // Invariant: the rollup must be self-contained. Fail the build if any internal
-  // `@/*` path-alias import leaked through instead of being inlined — such a file
-  // would not resolve for consumers of the published package.
+  // `@/*` path-alias reference leaked through instead of being inlined — such a file
+  // would not resolve for consumers of the published package. Covers every alias form
+  // emitted into a `.d.ts`: `from "@/…"`, side-effect `import "@/…"`, and inline
+  // dynamic-import types `import("@/…").Type`.
   const rollupPath = path.resolve(currentDir, 'build', 'index.d.ts');
-  if (/\bfrom\s+['"]@\//.test(readFileSync(rollupPath, 'utf8'))) {
+  if (/(?:\bfrom\s+|\bimport\s*\(?\s*)['"]@\//.test(readFileSync(rollupPath, 'utf8'))) {
     throw new Error(
       'build/index.d.ts contains unresolved "@/..." path-alias imports; the API Extractor rollup did not inline them.'
     );
