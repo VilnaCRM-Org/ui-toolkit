@@ -14,11 +14,12 @@ per-component theme tokens, dev-only accessibility warnings, the shared
 `field-controls` internals) where relevant, and introduces no dependency on
 future Epic 2 stories.
 
-This story is stacked on top of Story 2.1 (`feat/issue-13-search-and-select-foundation`,
-PR #106) so it can reuse the shared `field-controls` module (`outlinedFieldTheme`,
-`hasText`) and follow the exact same conventions; the PR targets the 2.1 branch so
-its diff is 2.1-only and there is no merge conflict with the open PR. GitHub
-retargets it to `main` automatically once #106 merges.
+This story is the top of the Epic 2 stack `main ← 2.1 ← 2.2 ← 2.3`: it targets the
+Story 2.2 branch (`feat/issue-14-multi-select`), which is itself on Story 2.1
+(`feat/issue-13-search-and-select-foundation`). It reuses the shared `field-controls`
+module (`outlinedFieldTheme`, `hasText`) and follows the same conventions; its diff is
+2.3-only and, as a linear stack, there is no merge conflict with the PRs below it.
+GitHub retargets each PR up the stack as the one below it merges.
 
 ## Design decisions
 
