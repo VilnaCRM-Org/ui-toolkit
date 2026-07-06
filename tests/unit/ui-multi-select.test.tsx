@@ -379,6 +379,26 @@ describe('UiMultiSelect — accessibility guidance', () => {
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('helperText'));
   });
 
+  it('warns in error when helperText is blank whitespace', () => {
+    render(
+      <UiMultiSelect options={options} aria-label="Cities" error helperText="   " onChange={noop} />
+    );
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('helperText'));
+  });
+
+  it('stays quiet in error when helperText is a non-text node', () => {
+    render(
+      <UiMultiSelect
+        options={options}
+        aria-label="Cities"
+        error
+        helperText={<span>Pick a city</span>}
+        onChange={noop}
+      />
+    );
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('helperText'));
+  });
+
   it('emits no warnings in production even without a name', () => {
     const originalEnv: string | undefined = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
