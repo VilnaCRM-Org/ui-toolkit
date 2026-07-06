@@ -115,15 +115,15 @@ implemented as follows:
 
 ## Shared-contract coverage
 
-| Field      | UiCalendarMultiSelect                       |
-| ---------- | ------------------------------------------- |
-| `value`    | ✅ `string[]` (ISO `YYYY-MM-DD`)            |
-| `onChange` | ✅ `(value: string[])`                      |
-| `disabled` | ✅                                          |
+| Field      | UiCalendarMultiSelect                              |
+| ---------- | -------------------------------------------------- |
+| `value`    | ✅ `string[]` (ISO `YYYY-MM-DD`)                   |
+| `onChange` | ✅ `(value: string[])`                             |
+| `disabled` | ✅                                                 |
 | `error`    | ✅ (via alert helper + border, not `aria-invalid`) |
-| `size`     | ✅ (`small` \| `medium`)                    |
-| `variant`  | — (N/A for a calendar surface — documented) |
-| `sx`       | ✅                                          |
+| `size`     | ✅ (`small` \| `medium`)                           |
+| `variant`  | — (N/A for a calendar surface — documented)        |
+| `sx`       | ✅                                                 |
 
 ## Provenance
 
