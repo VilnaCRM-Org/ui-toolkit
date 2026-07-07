@@ -399,6 +399,11 @@ describe('UiMultiSelect — accessibility guidance', () => {
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('no accessible name'));
   });
 
+  it('warns when the label is blank whitespace and nothing else names it', () => {
+    render(<UiMultiSelect options={options} label="   " onChange={noop} />);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
   it('stays quiet when a label, aria-label or id is provided', () => {
     const { rerender } = render(<UiMultiSelect options={options} label="Cities" onChange={noop} />);
     rerender(<UiMultiSelect options={options} aria-label="Cities" onChange={noop} />);
