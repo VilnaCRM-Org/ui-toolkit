@@ -95,14 +95,20 @@ export function initialCalendarState(seed: CalendarSeed): {
   visibleMonth: Date;
   focusedISO: string;
 } {
+  // Seed the month and roving focus from only the in-range selection, so a stale
+  // out-of-range selected date can neither choose the opening month nor land the
+  // initial tab stop on a disabled day.
+  const inRangeSelected: string[] = seed.selectedSorted.filter(iso =>
+    inRange(iso, seed.minISO, seed.maxISO)
+  );
   const visibleMonth: Date = clampMonthToRange(
-    initialMonth(seed.defaultMonth, seed.selectedSorted[0], seed.today),
+    initialMonth(seed.defaultMonth, inRangeSelected[0], seed.today),
     seed.minISO,
     seed.maxISO
   );
   const focusedISO: string = initialFocus({
     visibleMonth,
-    selectedSorted: seed.selectedSorted,
+    selectedSorted: inRangeSelected,
     today: seed.today,
     minISO: seed.minISO,
     maxISO: seed.maxISO,
