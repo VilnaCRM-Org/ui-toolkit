@@ -107,6 +107,26 @@ describe('UiMultiSelect — removable chips', () => {
     expect(remove).toHaveAttribute('tabindex', '-1');
   });
 
+  it('removes the focused chip with ArrowLeft then Delete', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[options[0], options[1]]}
+        aria-label="Cities"
+        onChange={onChange}
+      />
+    );
+
+    const combobox: HTMLElement = await openListbox(user);
+    await user.keyboard('{Escape}'); // close the popup, keep focus on the input
+    await user.keyboard('{ArrowLeft}'); // roving focus onto the last chip (Lviv)
+    await user.keyboard('{Delete}');
+    expect(onChange).toHaveBeenCalledWith([options[0]]);
+    expect(combobox).toHaveFocus();
+  });
+
   it('removes a chip through onChange when its delete control is clicked', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
@@ -163,6 +183,31 @@ describe('UiMultiSelect — listbox and multi-selection', () => {
     await openListbox(user);
     expect(screen.getByRole('option', { name: 'Kyiv' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('option', { name: 'Lviv' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('matches selection by value rather than object identity', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    // A fresh object, structurally equal to options[0] but NOT the same reference —
+    // the real controlled-consumer case (value rebuilt from a separate fetch). This
+    // only holds because isOptionEqualToValue matches by `.value`, not identity.
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[{ label: 'Kyiv', value: 'kyiv' }]}
+        aria-label="Cities"
+        onChange={onChange}
+      />
+    );
+    expect(screen.getByText('Kyiv')).toBeInTheDocument();
+
+    await openListbox(user);
+    expect(screen.getByRole('option', { name: 'Kyiv' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('option', { name: 'Lviv' })).toHaveAttribute('aria-selected', 'false');
+    // Re-picking the value-equal option deselects it (would duplicate under
+    // reference equality).
+    await user.click(screen.getByRole('option', { name: 'Kyiv' }));
+    expect(onChange).toHaveBeenCalledWith([]);
   });
 
   it('adds an option and keeps the popup open on selection', async () => {

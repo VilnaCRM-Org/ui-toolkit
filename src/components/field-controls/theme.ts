@@ -42,7 +42,8 @@ const outlinedFieldTheme: Theme = createTheme({
             color: colorTheme.palette.grey300.main,
             opacity: 1,
             fontFamily: 'Inter',
-            fontWeight: '500',
+            // Figma collapsed-field placeholder is Inter Regular (400); matches UiInput.
+            fontWeight: '400',
           },
         },
       },
@@ -50,14 +51,18 @@ const outlinedFieldTheme: Theme = createTheme({
 
     MuiFormHelperText: {
       styleOverrides: {
+        // Shared typography for both resting and error helper text so the resting
+        // state stays in the Inter/token system instead of falling back to MUI's
+        // default Roboto/rgba; error only swaps the colour.
         root: {
+          margin: '0.25rem 0 0 0',
+          fontFamily: 'Inter',
+          fontWeight: '500',
+          fontSize: '0.875rem',
+          lineHeight: '1.125rem',
+          letterSpacing: 0,
+          color: colorTheme.palette.grey250.main,
           '&.Mui-error': {
-            margin: '0.25rem 0 0 0',
-            fontFamily: 'Inter',
-            fontWeight: '500',
-            fontSize: '0.875rem',
-            lineHeight: '1.125rem',
-            letterSpacing: 0,
             color: colorTheme.palette.error.main,
           },
         },
