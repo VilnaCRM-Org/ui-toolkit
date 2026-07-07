@@ -130,6 +130,9 @@ const dayStaticSx = {
     backgroundColor: 'transparent',
     boxShadow: 'none',
     cursor: 'default',
+    // Higher-specificity than the base `&:hover` so a disabled/out-of-range day
+    // shows no hover fill (it is not an interactive affordance).
+    '&:hover': { backgroundColor: 'transparent' },
   },
   '&:focus-visible': { boxShadow: FOCUS_RING },
 } as const;
