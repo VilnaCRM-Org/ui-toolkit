@@ -511,6 +511,26 @@ describe('UiCalendarMultiSelect — min/max range', () => {
 
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  it('seeds the roving tab stop on the first enabled day, not a disabled 1st', () => {
+    // minDate falls mid-month and there is no selection, so the 1st is disabled;
+    // the initial tabbable cell must be the first *enabled* day, not day 1.
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        minDate="2025-09-10"
+        onChange={noop}
+      />
+    );
+
+    const tabbable: HTMLElement[] = screen
+      .getAllByRole('gridcell')
+      .filter(cell => cell.getAttribute('tabindex') === '0');
+    expect(tabbable).toHaveLength(1);
+    expect(tabbable[0]).toHaveAccessibleName('10 September 2025');
+    expect(tabbable[0]).not.toHaveAttribute('aria-disabled', 'true');
+  });
 });
 
 describe('UiCalendarMultiSelect — prop plumbing', () => {

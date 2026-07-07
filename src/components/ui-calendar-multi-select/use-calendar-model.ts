@@ -35,7 +35,13 @@ export function useCalendarModel(props: UiCalendarMultiSelectProps): CalendarMod
     initialMonth(defaultMonth, selectedSorted[0], today)
   );
   const [focusedISO, setFocusedISO] = React.useState<string>(() =>
-    initialFocus(initialMonth(defaultMonth, selectedSorted[0], today), selectedSorted, today)
+    initialFocus({
+      visibleMonth: initialMonth(defaultMonth, selectedSorted[0], today),
+      selectedSorted,
+      today,
+      minISO: toBoundISO(minDate),
+      maxISO: toBoundISO(maxDate),
+    })
   );
   const [announcement, setAnnouncement] = React.useState<string>('');
 
