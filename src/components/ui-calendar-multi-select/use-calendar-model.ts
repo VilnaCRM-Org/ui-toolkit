@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { initialFocus, initialMonth, toBoundISO } from './calendar-init';
+import { initialCalendarState, toBoundISO } from './calendar-init';
 import { sanitizeSelection } from './selection';
 import type { UiCalendarMultiSelectProps } from './types';
 
@@ -31,26 +31,26 @@ export function useCalendarModel(props: UiCalendarMultiSelectProps): CalendarMod
     [selectedSorted]
   );
 
-  const [visibleMonth, setVisibleMonth] = React.useState<Date>(() =>
-    initialMonth(defaultMonth, selectedSorted[0], today)
-  );
-  const [focusedISO, setFocusedISO] = React.useState<string>(() =>
-    initialFocus({
-      visibleMonth: initialMonth(defaultMonth, selectedSorted[0], today),
-      selectedSorted,
-      today,
-      minISO: toBoundISO(minDate),
-      maxISO: toBoundISO(maxDate),
-    })
-  );
+  const minISO: string | undefined = toBoundISO(minDate);
+  const maxISO: string | undefined = toBoundISO(maxDate);
+  const seed = initialCalendarState({
+    defaultMonth,
+    selectedSorted,
+    today,
+    minISO,
+    maxISO,
+  });
+
+  const [visibleMonth, setVisibleMonth] = React.useState<Date>(() => seed.visibleMonth);
+  const [focusedISO, setFocusedISO] = React.useState<string>(() => seed.focusedISO);
   const [announcement, setAnnouncement] = React.useState<string>('');
 
   return {
     today,
     selectedSorted,
     selectedSet,
-    minISO: toBoundISO(minDate),
-    maxISO: toBoundISO(maxDate),
+    minISO,
+    maxISO,
     visibleMonth,
     setVisibleMonth,
     focusedISO,

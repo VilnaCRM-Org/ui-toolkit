@@ -30,9 +30,9 @@ function inRange(iso: string, minISO?: string, maxISO?: string): boolean {
 
 // First *selectable* day of the visible month: its 1st, nudged up to `minISO` when
 // that bound falls mid-month, so the roving seed never lands on a disabled day
-// while an enabled one exists in view. If the whole month is out of range there is
-// no enabled day, so the 1st is kept (that degenerate case is a `visibleMonth`
-// concern, handled by `initialMonth`).
+// while an enabled one exists in view. The initial visible month is clamped into
+// range by `clampMonthToRange`, so a fully-disabled month only arises when the user
+// navigates to one; there the 1st is kept as the (inert) roving target.
 function firstFocusableISO(visibleMonth: Date, minISO?: string, maxISO?: string): string {
   const year: number = visibleMonth.getFullYear();
   const month: number = visibleMonth.getMonth();
@@ -67,4 +67,45 @@ export function initialFocus(seed: FocusSeed): string {
     return todayISO;
   }
   return firstFocusableISO(visibleMonth, minISO, maxISO);
+}
+
+/** Clamps a month into [min, max] so the initial view opens on a month that
+ *  actually contains selectable days (min/max may exclude the base month). */
+export function clampMonthToRange(month: Date, minISO?: string, maxISO?: string): Date {
+  const monthISO: string = formatISO(startOfMonth(month));
+  if (minISO != null && monthISO < formatISO(startOfMonth(parseISO(minISO)))) {
+    return startOfMonth(parseISO(minISO));
+  }
+  if (maxISO != null && monthISO > formatISO(startOfMonth(parseISO(maxISO)))) {
+    return startOfMonth(parseISO(maxISO));
+  }
+  return month;
+}
+
+export interface CalendarSeed {
+  defaultMonth?: string;
+  selectedSorted: string[];
+  today: Date;
+  minISO?: string;
+  maxISO?: string;
+}
+
+/** Initial (uncontrolled) visible month + roving-focus day, both clamped into [min, max]. */
+export function initialCalendarState(seed: CalendarSeed): {
+  visibleMonth: Date;
+  focusedISO: string;
+} {
+  const visibleMonth: Date = clampMonthToRange(
+    initialMonth(seed.defaultMonth, seed.selectedSorted[0], seed.today),
+    seed.minISO,
+    seed.maxISO
+  );
+  const focusedISO: string = initialFocus({
+    visibleMonth,
+    selectedSorted: seed.selectedSorted,
+    today: seed.today,
+    minISO: seed.minISO,
+    maxISO: seed.maxISO,
+  });
+  return { visibleMonth, focusedISO };
 }

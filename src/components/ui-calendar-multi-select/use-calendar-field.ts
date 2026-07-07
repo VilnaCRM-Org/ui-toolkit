@@ -34,7 +34,7 @@ function appendRequired(name: string | undefined, required: boolean): string | u
 // component renders from — kept out of the component so each stays small.
 export function useCalendarField(props: UiCalendarMultiSelectProps): CalendarField {
   const reactId: string = React.useId();
-  const base: string = props.id ?? reactId;
+  const base: string = props.id != null && props.id.trim() !== '' ? props.id : reactId;
   const disabled: boolean = props.disabled ?? false;
   const required: boolean = props.required ?? false;
   const hasVisibleLabel: boolean = hasText(props.label);
