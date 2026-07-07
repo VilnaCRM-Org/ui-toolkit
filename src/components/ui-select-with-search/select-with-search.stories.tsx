@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
 
+import {
+  booleanControlArgType,
+  textControlArgType,
+} from '../../../.storybook/field-story-arg-types';
+
 import type { UiSelectWithSearchOption } from './types';
 
 import UiSelectWithSearch from './index';
@@ -17,26 +22,10 @@ const meta: Meta<typeof UiSelectWithSearch> = {
   component: UiSelectWithSearch,
   tags: ['autodocs'],
   argTypes: {
-    label: {
-      type: 'string',
-      description: 'Visible label / accessible name for the combobox',
-      control: { type: 'text' },
-    },
-    placeholder: {
-      type: 'string',
-      description: 'Placeholder text shown when nothing is selected',
-      control: { type: 'text' },
-    },
-    disabled: {
-      type: 'boolean',
-      description: 'Whether the control is disabled',
-      control: { type: 'boolean' },
-    },
-    error: {
-      type: 'boolean',
-      description: 'Whether the control is in error state',
-      control: { type: 'boolean' },
-    },
+    label: textControlArgType('Visible label / accessible name for the combobox'),
+    placeholder: textControlArgType('Placeholder text shown when nothing is selected'),
+    disabled: booleanControlArgType('Whether the control is disabled'),
+    error: booleanControlArgType('Whether the control is in error state'),
   },
 };
 

@@ -13,7 +13,11 @@ export const chipSx: SxProps<Theme> = {
   backgroundColor: palette.grey500.main,
   color: palette.grey200.main,
   fontFamily: 'Inter',
+  // Inter Medium 14/18 keeps the chip label on the Figma form-UI type scale;
+  // without an explicit size MUI's small Chip renders the label at 13px (off scale).
+  fontSize: '0.875rem',
   fontWeight: 500,
+  lineHeight: '1.125rem',
   '&.Mui-disabled': { opacity: 0.6 },
 };
 
