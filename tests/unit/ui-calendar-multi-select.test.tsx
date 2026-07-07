@@ -77,6 +77,18 @@ describe('UiCalendarMultiSelect — structure and accessible names', () => {
     expect(screen.getByRole('grid', { name: 'August 2025' })).toBeInTheDocument();
   });
 
+  it('prefers defaultMonth over the first selected date when they are in different months', () => {
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth="2025-12-01"
+        value={['2025-09-05']}
+        onChange={noop}
+      />
+    );
+    expect(screen.getByRole('grid', { name: 'December 2025' })).toBeInTheDocument();
+  });
+
   it('renders Monday-first weekday column headers with full names', () => {
     render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
     const headers: HTMLElement[] = screen.getAllByRole('columnheader');
@@ -216,6 +228,31 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
     expect(gridcell('5 October 2025')).toHaveFocus();
   });
 
+  it('jumps a whole year with Shift+PageDown and follows focus', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(
+      <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={SELECTED} onChange={noop} />
+    );
+
+    gridcell('5 September 2025').focus();
+    // Shift plumbs through to nextFocusedDate as a 12-month step (not a 1-month one).
+    await user.keyboard('{Shift>}{PageDown}{/Shift}');
+    expect(screen.getByRole('grid', { name: 'September 2026' })).toBeInTheDocument();
+    expect(gridcell('5 September 2026')).toHaveFocus();
+  });
+
+  it('crosses into the previous month when ArrowUp leaves the first week', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(
+      <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={SELECTED} onChange={noop} />
+    );
+
+    gridcell('5 September 2025').focus();
+    await user.keyboard('{ArrowUp}'); // one week up from the first week crosses the boundary
+    expect(screen.getByRole('grid', { name: 'August 2025' })).toBeInTheDocument();
+    expect(gridcell('29 August 2025')).toHaveFocus();
+  });
+
   it('toggles the focused day with Enter and Space', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
@@ -230,9 +267,13 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
 
     gridcell('5 September 2025').focus();
     await user.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenLastCalledWith(['2025-09-12', '2025-09-20']);
 
+    // The controlled value is static, so Space repeats the payload; asserting the
+    // call count proves Space is actually handled (the check was tautological before).
     await user.keyboard('[Space]');
+    expect(onChange).toHaveBeenCalledTimes(2);
     expect(onChange).toHaveBeenLastCalledWith(['2025-09-12', '2025-09-20']);
   });
 
@@ -272,6 +313,27 @@ describe('UiCalendarMultiSelect — month navigation buttons', () => {
     expect(screen.getByRole('grid', { name: 'October 2025' })).toBeInTheDocument();
     expect(next).toHaveFocus();
     expect(screen.getByRole('status')).toHaveTextContent('October 2025');
+  });
+
+  it('keeps focus on the month button after a no-op Home at a week edge', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        value={['2025-09-01']}
+        onChange={noop}
+      />
+    );
+
+    gridcell('1 September 2025').focus(); // Monday — already at the start of the week
+    await user.keyboard('{Home}'); // resolves to the same day: a no-op move
+    const next: HTMLElement = screen.getByRole('button', { name: 'Next month' });
+    await user.click(next);
+    // A no-op Home must not arm the roving-focus flag; otherwise this click would
+    // have its focus stolen onto a day cell in the new month.
+    expect(next).toHaveFocus();
+    expect(screen.getByRole('grid', { name: 'October 2025' })).toBeInTheDocument();
   });
 
   it('goes to the previous month', async () => {
