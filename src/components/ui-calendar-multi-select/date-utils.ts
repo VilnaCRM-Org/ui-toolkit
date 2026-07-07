@@ -12,7 +12,8 @@ export function pad2(value: number): string {
 
 /** Formats a local-midnight `Date` as `YYYY-MM-DD`. */
 export function formatISO(date: Date): string {
-  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+  const year: string = String(date.getFullYear()).padStart(4, '0');
+  return `${year}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
 /** `true` for a well-formed `YYYY-MM-DD` string that names a real calendar day. */

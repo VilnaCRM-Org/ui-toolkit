@@ -1,5 +1,7 @@
 import { useDevWarning } from '@/utils/dev-warn';
 
+import { hasText } from '../field-controls';
+
 import type { UiCalendarMultiSelectProps } from './types';
 
 // Dev-only accessibility guidance (stripped in production), mirroring the sibling
@@ -16,7 +18,7 @@ const ERROR_WITHOUT_HELPER_WARNING: string =
 // cannot target a `role="group"` div, and the `id` prop only seeds the internal
 // label/caption/helper element ids — it is never rendered onto the group itself.
 function hasAccessibleName(props: UiCalendarMultiSelectProps): boolean {
-  return props.label != null || props['aria-label'] != null;
+  return hasText(props.label) || hasText(props['aria-label']);
 }
 
 export function useCalendarWarnings(props: UiCalendarMultiSelectProps): void {

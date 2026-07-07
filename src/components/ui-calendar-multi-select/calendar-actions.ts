@@ -54,23 +54,33 @@ function trySelectKey(ctx: ActionContext, event: React.KeyboardEvent): boolean {
   return true;
 }
 
-function tryNavigateKey(ctx: ActionContext, event: React.KeyboardEvent): void {
+// The day keyboard focus should move to, or null when the key is not actionable.
+// Null cases: a modifier combo (Ctrl/Alt/Meta — left to the browser / AT; Shift is
+// allowed, it steps a year), a non-navigation key, and a week-edge Home/End that
+// resolves to the same day. Bailing on that no-op is what keeps a later prev/next
+// month-button click from losing focus: arming the roving-focus flag on a no-op
+// leaves it stuck (React's same-value setFocusedISO never re-invokes the ref).
+function navigationTarget(ctx: ActionContext, event: React.KeyboardEvent): Date | null {
+  if (event.altKey || event.ctrlKey || event.metaKey) {
+    return null;
+  }
   const next: Date | null = nextFocusedDate(
     event.key,
     parseISO(ctx.model.focusedISO),
     event.shiftKey
   );
+  if (next == null || formatISO(next) === ctx.model.focusedISO) {
+    return null;
+  }
+  return next;
+}
+
+function tryNavigateKey(ctx: ActionContext, event: React.KeyboardEvent): void {
+  const next: Date | null = navigationTarget(ctx, event);
   if (next == null) {
     return;
   }
   event.preventDefault();
-  // A week-edge Home/End (already on Monday / Sunday) resolves to the same day.
-  // Bailing here avoids arming the roving-focus flag on a no-op move — otherwise
-  // React's same-value setFocusedISO never re-invokes the roving ref to consume
-  // it, and a later prev/next month-button click would steal focus off the button.
-  if (formatISO(next) === ctx.model.focusedISO) {
-    return;
-  }
   ctx.focus.requestFocus(); // focus follows keyboard navigation
   ctx.model.setAnnouncement(''); // the newly focused cell self-announces
   moveFocus(ctx, next);

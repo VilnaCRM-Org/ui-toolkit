@@ -20,6 +20,13 @@ function gridcell(name: string): HTMLElement {
   return screen.getByRole('gridcell', { name });
 }
 
+// State-matrix coverage (agents.md Step 3). Covered below: default, selected,
+// disabled, error, empty, boundary (min/max), keyboard/focus and accessibility.
+// - Loading — Not applicable: the calendar renders synchronously from props; it has
+//   no async data source or loading state.
+// - Success — Not applicable: there is no success/confirmation variant; the selected
+//   state is asserted through `value` / `aria-selected`.
+
 describe('UiCalendarMultiSelect — structure and accessible names', () => {
   it('renders a group named by a visible label', () => {
     render(<UiCalendarMultiSelect label="Available dates" defaultMonth={MONTH} onChange={noop} />);
@@ -294,6 +301,18 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
     expect(gridcell('5 September 2025')).toHaveFocus();
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('ignores navigation keys pressed with a Ctrl/Alt/Meta modifier', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(
+      <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={SELECTED} onChange={noop} />
+    );
+
+    gridcell('5 September 2025').focus();
+    // Ctrl+Arrow is a browser/AT shortcut — the grid must not hijack it.
+    await user.keyboard('{Control>}{ArrowRight}{/Control}');
+    expect(gridcell('5 September 2025')).toHaveFocus();
+  });
 });
 
 describe('UiCalendarMultiSelect — month navigation buttons', () => {
@@ -394,6 +413,21 @@ describe('UiCalendarMultiSelect — error, helper and required semantics', () =>
     );
     expect(screen.getByRole('grid')).toHaveAccessibleDescription('Choose your availability');
     expect(screen.getByRole('alert')).toBeEmptyDOMElement();
+  });
+
+  it('treats a blank id as absent so ARIA ids stay unique (no "-helper-text")', () => {
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        id=""
+        defaultMonth={MONTH}
+        helperText="Pick a date"
+        onChange={noop}
+      />
+    );
+    const describedBy: string = screen.getByRole('grid').getAttribute('aria-describedby') ?? '';
+    expect(describedBy).not.toBe('');
+    expect(describedBy.startsWith('-')).toBe(false);
   });
 
   it('folds the required state into a visible-label accessible name', () => {
@@ -531,6 +565,25 @@ describe('UiCalendarMultiSelect — min/max range', () => {
     expect(tabbable[0]).toHaveAccessibleName('10 September 2025');
     expect(tabbable[0]).not.toHaveAttribute('aria-disabled', 'true');
   });
+
+  it('opens on the nearest in-range month when today is outside min/max', () => {
+    // No defaultMonth or value, and today is before the range, so the calendar must
+    // open on minDate's month (which has selectable days), not today's empty month.
+    jest.useFakeTimers().setSystemTime(new Date(2025, 0, 15)); // 15 Jan 2025
+    try {
+      render(
+        <UiCalendarMultiSelect
+          label="Dates"
+          minDate="2025-09-10"
+          maxDate="2025-09-25"
+          onChange={noop}
+        />
+      );
+      expect(screen.getByRole('grid', { name: 'September 2025' })).toBeInTheDocument();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
 });
 
 describe('UiCalendarMultiSelect — prop plumbing', () => {
@@ -584,6 +637,11 @@ describe('UiCalendarMultiSelect — accessibility guidance', () => {
 
   it('warns when only an id is given (an id does not name the group)', () => {
     render(<UiCalendarMultiSelect id="cal" defaultMonth={MONTH} onChange={noop} />);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
+  it('warns when the label is blank whitespace', () => {
+    render(<UiCalendarMultiSelect label="   " defaultMonth={MONTH} onChange={noop} />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
   });
 

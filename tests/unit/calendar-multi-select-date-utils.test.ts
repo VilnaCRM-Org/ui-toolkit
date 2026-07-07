@@ -54,6 +54,12 @@ describe('calendar date-utils — formatISO / parseISO round-trip', () => {
     expect(formatISO(new Date(2026, 11, 9))).toBe('2026-12-09');
   });
 
+  it('pads the year to four digits for early dates', () => {
+    const early: Date = new Date(2026, 6, 15);
+    early.setFullYear(50);
+    expect(formatISO(early)).toBe('0050-07-15');
+  });
+
   it('parses YYYY-MM-DD to the same local calendar day regardless of timezone', () => {
     const date: Date = parseISO('2026-07-15');
     expect(date.getFullYear()).toBe(2026);
