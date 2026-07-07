@@ -64,6 +64,13 @@ function tryNavigateKey(ctx: ActionContext, event: React.KeyboardEvent): void {
     return;
   }
   event.preventDefault();
+  // A week-edge Home/End (already on Monday / Sunday) resolves to the same day.
+  // Bailing here avoids arming the roving-focus flag on a no-op move — otherwise
+  // React's same-value setFocusedISO never re-invokes the roving ref to consume
+  // it, and a later prev/next month-button click would steal focus off the button.
+  if (formatISO(next) === ctx.model.focusedISO) {
+    return;
+  }
   ctx.focus.requestFocus(); // focus follows keyboard navigation
   ctx.model.setAnnouncement(''); // the newly focused cell self-announces
   moveFocus(ctx, next);
