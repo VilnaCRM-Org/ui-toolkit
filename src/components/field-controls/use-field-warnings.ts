@@ -18,7 +18,7 @@ interface FieldWarningProps {
 }
 
 function hasAccessibleName(props: FieldWarningProps): boolean {
-  return props.label != null || props['aria-label'] != null || props.id != null;
+  return hasText(props.label) || hasText(props['aria-label']) || hasText(props.id);
 }
 
 // Blank/whitespace-only helper text is treated as missing so `error` cannot ship
