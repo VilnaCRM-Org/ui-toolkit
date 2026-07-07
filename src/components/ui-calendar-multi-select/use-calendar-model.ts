@@ -33,16 +33,14 @@ export function useCalendarModel(props: UiCalendarMultiSelectProps): CalendarMod
 
   const minISO: string | undefined = toBoundISO(minDate);
   const maxISO: string | undefined = toBoundISO(maxDate);
-  const seed = initialCalendarState({
-    defaultMonth,
-    selectedSorted,
-    today,
-    minISO,
-    maxISO,
-  });
+  // The seed does non-trivial date work but is only needed on mount, so compute it
+  // once with a lazy initializer instead of on every render.
+  const [seed] = React.useState(() =>
+    initialCalendarState({ defaultMonth, selectedSorted, today, minISO, maxISO })
+  );
 
-  const [visibleMonth, setVisibleMonth] = React.useState<Date>(() => seed.visibleMonth);
-  const [focusedISO, setFocusedISO] = React.useState<string>(() => seed.focusedISO);
+  const [visibleMonth, setVisibleMonth] = React.useState<Date>(seed.visibleMonth);
+  const [focusedISO, setFocusedISO] = React.useState<string>(seed.focusedISO);
   const [announcement, setAnnouncement] = React.useState<string>('');
 
   return {

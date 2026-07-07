@@ -584,6 +584,26 @@ describe('UiCalendarMultiSelect — min/max range', () => {
       jest.useRealTimers();
     }
   });
+
+  it('does not seed roving focus on a selected day outside min/max', () => {
+    // 5 Sep is selected but before minDate — the roving seed must skip the disabled
+    // selection for the first enabled day (10 Sep).
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        value={['2025-09-05']}
+        minDate="2025-09-10"
+        onChange={noop}
+      />
+    );
+    const tabbable: HTMLElement[] = screen
+      .getAllByRole('gridcell')
+      .filter(cell => cell.getAttribute('tabindex') === '0');
+    expect(tabbable).toHaveLength(1);
+    expect(tabbable[0]).toHaveAccessibleName('10 September 2025');
+    expect(tabbable[0]).not.toHaveAttribute('aria-disabled', 'true');
+  });
 });
 
 describe('UiCalendarMultiSelect — prop plumbing', () => {
