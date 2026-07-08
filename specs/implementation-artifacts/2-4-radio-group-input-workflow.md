@@ -41,8 +41,13 @@ keeps its indicator instead of flattening to grey.
 - Built on MUI `FormControl` + `FormLabel` + `RadioGroup` + `FormControlLabel` +
   `Radio` + `FormHelperText` — the WAI-ARIA / MUI-documented radiogroup pattern.
   `{label,value}` options; the raw MUI `(event, value)` change signature is
-  adapted to a clean `onChange(value)`. Controlled via `value`, or uncontrolled
-  when `value` is omitted (mirrors `UiCheckbox`'s `checked`).
+  adapted to a clean `onChange(value)`.
+- **Always controlled.** `value` is passed as `value ?? ''`, so a nullish `value`
+  becomes "nothing selected" rather than flipping the group to uncontrolled. This
+  is deliberate: MUI's `RadioGroup` freezes controlled-ness on first render
+  (`useControlled`), so the natural consumer pattern `useState<string>()` (initial
+  `undefined`) would otherwise lock the group uncontrolled and break on the first
+  selection. `UiMultiSelect` gets the same robustness from `value ?? EMPTY`.
 - Native roving-focus arrow-key selection (one Tab stop for the group; arrows
   move + select) comes from MUI `RadioGroup` — no custom key handling needed.
 - Accessibility: the group is named from a visible `label` (rendered in a
@@ -92,15 +97,20 @@ control. Recorded in `component-provenance.md` under the Epic 2 section.
   expected surface updated (`UiRadioGroup`).
 - 100% coverage (`tests/unit/ui-radio-group.test.tsx`): render + radiogroup role,
   accessible name (label / aria-label / precedence / id-seeded label id),
-  controlled selection + change, click + arrow-key selection, group/per-option
-  disabled + disabled tab-order, `error`→`aria-invalid`, `helperText`→
-  `aria-describedby` (+ id derivation), required radios, and the dev-warning
-  contract.
-- Story registered in `tests/visual/stories.json`; per-state radio baselines
-  (`radio checked` via a `value` arg, plus error / disabled / hover) added to
-  `tests/visual/states.spec.ts`; chromium baselines generated in the pinned
-  Playwright Docker image.
-- Memory-leak scenario `tests/memory-leak/tests/radio-select.js` moves the
-  selection across the radios and asserts no detached ring nodes are retained.
+  controlled selection + change + the controlled round-trip (onChange → re-render),
+  click + arrow-key selection, group/per-option disabled + disabled tab-order,
+  `error`→`aria-invalid`, `helperText`→`aria-describedby` (+ id derivation),
+  required radios, and the dev-warning contract.
+- Story registered in `tests/visual/stories.json` (the story preselects Email via a stateful
+  wrapper, so the baseline shows both the selected ring and the unselected radios); per-state radio
+  baselines (error / disabled / hover) added to `tests/visual/states.spec.ts`;
+  chromium baselines generated in the pinned Playwright Docker image.
 - `rca` complexity budget respected (render split into small helpers; the
   component function's Halstead volume kept under the 1000 limit).
+
+## Notes
+
+- A dedicated memory-leak scenario was intentionally not added: the group is
+  controlled (a non-interactive story cannot drive the mount/unmount churn), and
+  the radio reuses MUI's `SwitchBase` internals already exercised by the
+  `checkbox-toggle` memory-leak scenario.

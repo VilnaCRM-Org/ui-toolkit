@@ -63,7 +63,7 @@ function renderRadioGroup(
     <RadioGroup
       row={props.row}
       name={props.name}
-      value={props.value}
+      value={props.value ?? ''}
       onChange={field.handleChange}
       aria-labelledby={field.named ? field.labelId : undefined}
       aria-label={field.ariaLabel}

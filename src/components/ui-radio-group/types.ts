@@ -28,7 +28,13 @@ export interface UiRadioOption {
 export interface UiRadioGroupProps {
   /** Selectable options rendered as radios, in order. */
   options: UiRadioOption[];
-  /** Controlled selected value (omit / `undefined` leaves the group uncontrolled). */
+  /**
+   * Controlled selected `value`. The group is **always controlled**: `''` (or
+   * omitting the prop) means "no option selected", and the next value must be
+   * fed back via `onChange` (like `UiCheckbox` / `UiMultiSelect`). A nullish
+   * `value` is coerced to `''`, so a group that starts empty never silently
+   * flips to uncontrolled on the first selection.
+   */
   value?: string;
   /** Called with the newly selected option's `value` whenever the choice changes. */
   onChange?: (value: string) => void;

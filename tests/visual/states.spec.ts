@@ -112,12 +112,6 @@ test.describe('Visual states (Figma state grid)', () => {
     await shoot(page, 'checkbox-hover.png');
   });
 
-  test('radio checked', async ({ page }) => {
-    await openStory(page, 'uicomponents-uiradiogroup--radio-group', 'value:email');
-    await expect(page.getByRole('radio', { name: 'Email' })).toBeChecked();
-    await shoot(page, 'radio-checked.png');
-  });
-
   test('radio error', async ({ page }) => {
     await openStory(page, 'uicomponents-uiradiogroup--radio-group', 'error:!true');
     await shoot(page, 'radio-error.png');
@@ -130,7 +124,8 @@ test.describe('Visual states (Figma state grid)', () => {
 
   test('radio hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uiradiogroup--radio-group');
-    await page.getByRole('radio', { name: 'Email' }).hover();
+    // Hover an unselected radio so the hover affordance (primary border) shows.
+    await page.getByRole('radio', { name: 'SMS' }).hover();
     await shoot(page, 'radio-hover.png');
   });
 

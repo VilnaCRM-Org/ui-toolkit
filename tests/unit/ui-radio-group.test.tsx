@@ -19,6 +19,13 @@ const options: UiRadioOption[] = [
 
 const noop: (value: string) => void = () => undefined;
 
+// Thin stateful wrapper for the controlled round-trip / keyboard tests: the group
+// is always controlled, so a real consumer feeds the next value back via onChange.
+function ControlledGroup(): React.ReactElement {
+  const [value, setValue] = React.useState<string>('');
+  return <UiRadioGroup options={options} aria-label="Contact" value={value} onChange={setValue} />;
+}
+
 describe('UiRadioGroup — rendering and accessible name', () => {
   it('renders a radiogroup with a radio per option', () => {
     render(<UiRadioGroup options={options} aria-label="Contact" onChange={noop} />);
@@ -73,6 +80,11 @@ describe('UiRadioGroup — selection', () => {
     expect(screen.getByRole('radio', { name: 'Push' })).not.toBeChecked();
   });
 
+  it('stays controlled when nothing is selected (empty, not uncontrolled)', () => {
+    render(<UiRadioGroup options={options} value="" aria-label="Contact" onChange={noop} />);
+    screen.getAllByRole('radio').forEach((radio: HTMLElement) => expect(radio).not.toBeChecked());
+  });
+
   it('moves the selection when the controlled value changes', () => {
     const { rerender } = render(
       <UiRadioGroup options={options} value="email" aria-label="Contact" onChange={noop} />
@@ -87,30 +99,41 @@ describe('UiRadioGroup — selection', () => {
   it('calls onChange with the option value when a radio is clicked', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
-    render(<UiRadioGroup options={options} aria-label="Contact" onChange={onChange} />);
+    render(<UiRadioGroup options={options} value="" aria-label="Contact" onChange={onChange} />);
 
     await user.click(screen.getByRole('radio', { name: 'SMS' }));
     expect(onChange).toHaveBeenCalledWith('sms');
   });
 
-  it('selects the next option with the arrow keys', async () => {
+  it('reflects a selection fed back through onChange (controlled round-trip)', async () => {
     const user: UserEvent = userEvent.setup();
-    const onChange: jest.Mock = jest.fn();
-    render(<UiRadioGroup options={options} aria-label="Contact" onChange={onChange} />);
+    render(<ControlledGroup />);
+
+    await user.click(screen.getByRole('radio', { name: 'SMS' }));
+    expect(screen.getByRole('radio', { name: 'SMS' })).toBeChecked();
+
+    await user.click(screen.getByRole('radio', { name: 'Push' }));
+    expect(screen.getByRole('radio', { name: 'Push' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'SMS' })).not.toBeChecked();
+  });
+
+  it('selects an option with the arrow keys', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledGroup />);
 
     await user.tab();
     expect(screen.getByRole('radio', { name: 'Email' })).toHaveFocus();
     await user.keyboard('{ArrowDown}');
-    expect(onChange).toHaveBeenCalledWith('sms');
     expect(screen.getByRole('radio', { name: 'SMS' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'SMS' })).toHaveFocus();
   });
 
   it('does not throw when selecting without an onChange handler', async () => {
     const user: UserEvent = userEvent.setup();
-    render(<UiRadioGroup options={options} aria-label="Contact" />);
+    render(<UiRadioGroup options={options} value="" aria-label="Contact" />);
 
     await user.click(screen.getByRole('radio', { name: 'Email' }));
-    expect(screen.getByRole('radio', { name: 'Email' })).toBeChecked();
+    expect(screen.getByRole('radiogroup')).toBeInTheDocument();
   });
 });
 
