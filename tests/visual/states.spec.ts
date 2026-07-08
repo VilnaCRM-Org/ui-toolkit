@@ -112,6 +112,28 @@ test.describe('Visual states (Figma state grid)', () => {
     await shoot(page, 'checkbox-hover.png');
   });
 
+  test('radio checked', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiradiogroup--radio-group', 'value:email');
+    await expect(page.getByRole('radio', { name: 'Email' })).toBeChecked();
+    await shoot(page, 'radio-checked.png');
+  });
+
+  test('radio error', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiradiogroup--radio-group', 'error:!true');
+    await shoot(page, 'radio-error.png');
+  });
+
+  test('radio disabled', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiradiogroup--radio-group', 'disabled:!true');
+    await shoot(page, 'radio-disabled.png');
+  });
+
+  test('radio hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiradiogroup--radio-group');
+    await page.getByRole('radio', { name: 'Email' }).hover();
+    await shoot(page, 'radio-hover.png');
+  });
+
   test('link hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link');
     await page.getByRole('link').hover();
