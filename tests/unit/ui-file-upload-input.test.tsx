@@ -133,11 +133,16 @@ describe('UiFileUploadInput — rendering and accessible wiring', () => {
     const glyph: SVGElement | null = document.querySelector('.ui-file-upload-pill svg');
     expect(glyph).not.toBeNull();
     expect(glyph).toHaveAttribute('aria-hidden', 'true');
+    expect(glyph).toHaveAttribute('focusable', 'false');
+    expect(glyph).toHaveAttribute('viewBox', '0 0 18.3333 16.6668');
+
     // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
-    expect(document.querySelector('.ui-file-upload-pill svg path')).toHaveAttribute(
-      'stroke-width',
-      '1.66667'
-    );
+    const path: Element | null = document.querySelector('.ui-file-upload-pill svg path');
+    expect(path).toHaveAttribute('stroke-width', '1.66667');
+    // `currentColor` is what lets the pill's colour tint the glyph, including
+    // the greyed disabled treatment.
+    expect(path).toHaveAttribute('stroke', 'currentColor');
+    expect(path).toHaveAttribute('stroke-linecap', 'round');
   });
 
   it('honours custom placeholder and button text', () => {
