@@ -168,7 +168,7 @@ describe('UiFileUploadInput — rendering and accessible wiring', () => {
     renderField({ id: 'logo' });
 
     expect(fileInput()).not.toHaveAttribute('aria-describedby');
-    // eslint-disable-next-line testing-library/no-node-access -- an absent element has no text to query
+    // eslint-disable-next-line testing-library/no-node-access -- absent element, nothing to query
     expect(document.getElementById('logo-message')).toBeNull();
   });
 
@@ -558,6 +558,19 @@ describe('UiFileUploadInput — repeated rejection', () => {
     expect(first).not.toBe(before);
     expect(second).not.toBe(first);
     expect(second).toHaveTextContent('is not an accepted file type');
+  });
+
+  it('does not remount the live region for a valid pick', () => {
+    const onFilesChange: jest.Mock = jest.fn();
+    renderField({ onFilesChange });
+    const before: HTMLElement = screen.getByRole('status');
+
+    pickFiles([PNG]);
+
+    // A consumer may apply `onFilesChange` asynchronously; remounting here would
+    // announce the *previous* selection before the new `files` prop arrives.
+    expect(screen.getByRole('status')).toBe(before);
+    expect(onFilesChange).toHaveBeenCalledWith([PNG]);
   });
 });
 
