@@ -1,10 +1,12 @@
-// Chip and delete-affordance styling for the multi-select, plus the sr-only
-// helper for the live region. Colours come from the shared theme; contrast
-// hardening of the chip/delete tokens is deferred to the accessibility-visuals
-// PR (see Story 1.3), consistent with the other Epic 2 controls.
+// Chip and delete-affordance styling for the multi-select. Colours come from the
+// shared theme; contrast hardening of the chip/delete tokens is deferred to the
+// accessibility-visuals PR (see Story 1.3), consistent with the other Epic 2
+// controls. The sr-only helper for the live region is shared via field-controls.
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+
+export { srOnlySx } from '../field-controls';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -32,17 +34,4 @@ export const deleteButtonSx: SxProps<Theme> = {
   cursor: 'pointer',
   color: palette.grey300.main,
   '&:hover': { color: palette.grey200.main },
-};
-
-/** Visually hidden but exposed to assistive tech (for the status live region). */
-export const srOnlySx: SxProps<Theme> = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  padding: 0,
-  margin: '-1px',
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-  border: 0,
 };

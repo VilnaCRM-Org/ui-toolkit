@@ -8,6 +8,7 @@ export { default as UiCardList } from './ui-card-list';
 export { default as UiCheckbox } from './ui-checkbox';
 export { default as UiContainer } from './ui-container';
 export { default as UiFooter } from './ui-footer';
+export { default as UiFileUploadInput } from './ui-file-upload-input';
 export { default as UiInput } from './ui-input';
 export { default as Layout } from './layout';
 export { default as UiLink } from './ui-link';

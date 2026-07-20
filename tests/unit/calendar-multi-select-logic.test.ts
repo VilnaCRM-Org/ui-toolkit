@@ -1,3 +1,8 @@
+import {
+  clampMonthToRange,
+  initialFocus,
+  initialMonth,
+} from '../../src/components/ui-calendar-multi-select/calendar-init';
 import { formatISO } from '../../src/components/ui-calendar-multi-select/date-utils';
 import {
   SELECT_KEYS,
@@ -154,5 +159,46 @@ describe('calendar view-model — buildCellRows', () => {
     expect(dayByIso(rows, '2026-07-10').disabled).toBe(false);
     expect(dayByIso(rows, '2026-07-25').disabled).toBe(false);
     expect(dayByIso(rows, '2026-07-26').disabled).toBe(true);
+  });
+});
+
+describe('calendar init — initialMonth', () => {
+  it("falls back to today's month when there is neither a defaultMonth nor a selection", () => {
+    expect(formatISO(initialMonth(undefined, undefined, new Date(2025, 8, 15)))).toBe('2025-09-01');
+  });
+});
+
+describe('calendar init — clampMonthToRange', () => {
+  it('leaves a month that already sits inside the range untouched', () => {
+    const month: Date = new Date(2025, 8, 1);
+    expect(clampMonthToRange(month, '2025-09-10', '2025-09-25')).toBe(month);
+  });
+
+  it('clamps a month that starts before the range up to the min month', () => {
+    expect(formatISO(clampMonthToRange(new Date(2025, 0, 1), '2025-09-10', '2025-09-25'))).toBe(
+      '2025-09-01'
+    );
+  });
+
+  it('clamps a month that starts after the range down to the max month', () => {
+    expect(formatISO(clampMonthToRange(new Date(2025, 11, 1), '2025-09-10', '2025-09-25'))).toBe(
+      '2025-09-01'
+    );
+  });
+});
+
+describe('calendar init — initialFocus', () => {
+  it('keeps the 1st as an inert seed for a month that holds no selectable day', () => {
+    // October sits entirely past maxISO — the state the user reaches by navigating
+    // out of range — so the roving seed falls back to the (disabled) 1st.
+    expect(
+      initialFocus({
+        visibleMonth: new Date(2025, 9, 1),
+        selectedSorted: [],
+        today: new Date(2025, 0, 15),
+        minISO: '2025-09-10',
+        maxISO: '2025-09-25',
+      })
+    ).toBe('2025-10-01');
   });
 });
