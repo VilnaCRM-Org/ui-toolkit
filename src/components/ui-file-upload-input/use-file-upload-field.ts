@@ -15,7 +15,7 @@ export interface FileUploadField {
   inputAttrs: FileInputAttrs;
   model: FileUploadModel;
   announcement: string;
-  /** Remounts the live region so a repeated, identical message is re-announced. */
+  /** Remounts the live region so a repeated, identical *rejection* is re-announced. */
   announcementKey: number;
 }
 
@@ -39,6 +39,6 @@ export function useFileUploadField(
     inputAttrs: buildInputAttrs(props, ids, model),
     model,
     announcement: buildUploadAnnouncement(props.status ?? 'idle', model.fileNames, validationError),
-    announcementKey: selection.attempt,
+    announcementKey: selection.rejections,
   };
 }
