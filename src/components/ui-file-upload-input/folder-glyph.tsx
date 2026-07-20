@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Glyph } from '../field-controls';
+
 // Decorative folder glyph from the Figma file-upload trigger (node 449:25747,
 // icon 251:8666), traced at its native 18.333x16.667 viewBox so the stroke
 // weight matches the design exactly. Inline rather than an asset because the
@@ -19,23 +21,5 @@ const FOLDER_PATH: string =
   '14.4685C0.833335 13.9337 0.833335 13.2336 0.833335 11.8335V4.16685Z';
 
 export function FolderGlyph(): React.ReactElement {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="20"
-      height="20"
-      viewBox="0 0 18.3333 16.6668"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d={FOLDER_PATH}
-        stroke="currentColor"
-        strokeWidth="1.66667"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return <Glyph path={FOLDER_PATH} viewBox="0 0 18.3333 16.6668" strokeWidth="1.66667" />;
 }
