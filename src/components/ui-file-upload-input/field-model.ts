@@ -16,6 +16,8 @@ export interface FileUploadModel {
   invalid: boolean;
   /** Normalised here so the presentational components carry no boolean coercion. */
   disabled: boolean;
+  /** Whether the field is showing a chosen file rather than the placeholder. */
+  hasSelection: boolean;
 }
 
 // A validation rejection, an explicit `error` and a failed upload are three
@@ -44,5 +46,6 @@ export function buildFileUploadModel(
     message: validationError ?? props.helperText,
     invalid: isInvalid(props, validationError),
     disabled: props.disabled === true,
+    hasSelection: fileNames.length > 0,
   };
 }

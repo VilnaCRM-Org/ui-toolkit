@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import React from 'react';
 
 import NativeFileInput from './native-file-input';
-import styles, { dropzoneSx } from './styles';
+import { dropzoneSx, fileTextSx } from './styles';
 import type { UiFileUploadInputProps } from './types';
 import type { DragAndDrop } from './use-drag-and-drop';
 import type { FileUploadField } from './use-file-upload-field';
@@ -35,7 +35,11 @@ function FileUploadDropzone({
       onDragLeave={drag.onDragLeave}
       onDrop={drag.onDrop}
     >
-      <Box component="span" className="ui-file-upload-name" sx={styles.fileName}>
+      <Box
+        component="span"
+        className="ui-file-upload-name"
+        sx={fileTextSx(field.model.hasSelection)}
+      >
         {field.model.displayText}
       </Box>
       <NativeFileInput field={field} upload={upload} onFiles={onFiles} />
