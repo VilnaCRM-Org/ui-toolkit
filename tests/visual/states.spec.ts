@@ -129,6 +129,17 @@ test.describe('Visual states (Figma state grid)', () => {
     await shoot(page, 'radio-hover.png');
   });
 
+  test('file upload disabled', async ({ page }) => {
+    await openStory(page, 'uicomponents-uifileuploadinput--file-upload-input', 'disabled:!true');
+    await shoot(page, 'file-upload-disabled.png');
+  });
+
+  test('file upload pill hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uifileuploadinput--file-upload-input');
+    await page.getByText('Choose file').hover();
+    await shoot(page, 'file-upload-hover.png');
+  });
+
   test('link hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link');
     await page.getByRole('link').hover();

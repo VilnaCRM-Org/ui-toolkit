@@ -7,6 +7,8 @@ import colorTheme from '@/components/ui-color-theme';
 
 import type { DayDescriptor } from './view-model';
 
+export { srOnlySx } from '../field-controls';
+
 // Design tokens reused from the shared colour theme so the calendar matches the
 // field controls (8px radius, grey400 stroke, brand-blue selection, danger error
 // stroke, disabled greying) without duplicating hex values.
@@ -30,19 +32,6 @@ export const labelSx: SxProps<Theme> = {
   fontWeight: 500,
   fontSize: '0.875rem',
   color: palette.grey200.main,
-};
-
-/** Visually hidden but exposed to assistive tech (for the month announcer live region). */
-export const srOnlySx: SxProps<Theme> = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  padding: 0,
-  margin: '-1px',
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-  border: 0,
 };
 
 /** The bordered calendar surface; error swaps the stroke, disabled greys it. */

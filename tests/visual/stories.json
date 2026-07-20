@@ -213,5 +213,25 @@
     "id": "uicomponents-uiradiogroup--radio-group",
     "title": "UiComponents/UiRadioGroup",
     "name": "Radio Group"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--file-upload-input",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "File Upload Input"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--uploading",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "Uploading"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--success",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "Success"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--upload-error",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "Upload Error"
   }
 ]
