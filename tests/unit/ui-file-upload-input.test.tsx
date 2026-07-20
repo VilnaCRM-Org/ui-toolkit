@@ -41,7 +41,7 @@ function pickFiles(files: File[]): void {
 
 /** The native input — reached through its accessible name, not a test hook. */
 function fileInput(): HTMLInputElement {
-  return screen.getByLabelText(/choose file/i);
+  return screen.getByLabelText(/upload/i);
 }
 
 function renderField(props: Partial<UiFileUploadInputProps> = {}): void {
@@ -76,13 +76,13 @@ describe('UiFileUploadInput — rendering and accessible wiring', () => {
 
     expect(screen.getByText(LABEL)).toBeInTheDocument();
     expect(screen.getByText('No file selected')).toBeInTheDocument();
-    expect(screen.getByText('Choose file')).toBeInTheDocument();
+    expect(screen.getByText('Upload')).toBeInTheDocument();
   });
 
   it('names the input from the visible label plus the pill text', () => {
     renderField();
 
-    expect(screen.getByLabelText(`${LABEL} Choose file`)).toBe(fileInput());
+    expect(screen.getByLabelText(`${LABEL} Upload`)).toBe(fileInput());
   });
 
   it('falls back to aria-label when there is no visible label', () => {
@@ -126,6 +126,20 @@ describe('UiFileUploadInput — rendering and accessible wiring', () => {
     expect(screen.queryByText('No file selected')).not.toBeInTheDocument();
   });
 
+  it('renders the folder glyph inside the trigger, hidden from assistive tech', () => {
+    renderField();
+
+    // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+    const glyph: SVGElement | null = document.querySelector('.ui-file-upload-pill svg');
+    expect(glyph).not.toBeNull();
+    expect(glyph).toHaveAttribute('aria-hidden', 'true');
+    // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+    expect(document.querySelector('.ui-file-upload-pill svg path')).toHaveAttribute(
+      'stroke-width',
+      '1.66667'
+    );
+  });
+
   it('honours custom placeholder and button text', () => {
     renderField({ placeholder: 'Nothing yet', buttonLabel: 'Browse' });
 
@@ -145,8 +159,12 @@ describe('UiFileUploadInput — rendering and accessible wiring', () => {
     // the input's value after every pick, which would pin a native `required`
     // input at `:invalid` and block form submission forever.
     expect(input).toHaveAttribute('aria-required', 'true');
-    expect(input).not.toHaveAttribute('required');
+    // `toBeRequired` is satisfied through aria-required. The native attribute is
+    // deliberately absent: the change handler clears the input's value, so a
+    // natively required file input would report `valueMissing` forever and block
+    // form submission even after the user has picked a valid file.
     expect(input).toBeRequired();
+    expect(input.validity.valueMissing).toBe(false);
   });
 
   it('leaves the input enabled and unmarked by default', () => {
@@ -155,7 +173,6 @@ describe('UiFileUploadInput — rendering and accessible wiring', () => {
     const input: HTMLInputElement = fileInput();
     expect(input).toBeEnabled();
     expect(input).not.toBeRequired();
-    expect(input).not.toHaveAttribute('aria-required');
     expect(input.multiple).toBe(false);
     expect(input).not.toHaveAttribute('aria-invalid');
   });

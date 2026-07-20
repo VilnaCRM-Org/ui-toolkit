@@ -1,12 +1,13 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
+import { FolderGlyph } from './folder-glyph';
 import type { FileInputAttrs } from './input-attrs';
 import styles from './styles';
 import type { UiFileUploadInputProps } from './types';
 import type { FileUploadField } from './use-file-upload-field';
 
-const DEFAULT_BUTTON_LABEL: string = 'Choose file';
+const DEFAULT_BUTTON_LABEL: string = 'Upload';
 
 export interface NativeFileInputProps {
   field: FileUploadField;
@@ -62,6 +63,7 @@ function NativeFileInput({ field, upload, onFiles }: NativeFileInputProps): Reac
 
   return (
     <Box component="label" className="ui-file-upload-pill" sx={styles.pill}>
+      <FolderGlyph />
       <span id={field.ids.buttonText}>{upload.buttonLabel ?? DEFAULT_BUTTON_LABEL}</span>
       {renderFileInput(field.inputAttrs, inputRef, handleChange)}
     </Box>

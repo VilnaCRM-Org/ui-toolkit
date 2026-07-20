@@ -5,8 +5,8 @@ import { hasText } from '../field-controls';
 import { buildUploadAnnouncement } from './announce';
 import { buildFileUploadModel, type FileUploadModel } from './field-model';
 import { buildIds, buildInputAttrs, type FileInputAttrs, type FileUploadIds } from './input-attrs';
-import type { FileSelection } from './use-file-selection';
 import type { UiFileUploadInputProps } from './types';
+import type { FileSelection } from './use-file-selection';
 
 export interface FileUploadField {
   ids: FileUploadIds;

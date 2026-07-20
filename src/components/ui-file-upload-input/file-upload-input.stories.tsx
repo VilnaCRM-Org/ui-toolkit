@@ -47,10 +47,10 @@ const meta: Meta<typeof UiFileUploadInput> = {
   component: UiFileUploadInput,
   tags: ['autodocs'],
   // The control is fluid so it fits whatever form hosts it; the stories pin it to
-  // the Figma field width (304px, node 193:4763) the way a consumer would.
+  // the Figma field width (422px, node 449:25703) the way a consumer would.
   decorators: [
     (Story: React.ComponentType): React.ReactElement => (
-      <Box sx={{ maxWidth: '19rem' }}>
+      <Box sx={{ maxWidth: '26.375rem' }}>
         <Story />
       </Box>
     ),
