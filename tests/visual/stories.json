@@ -208,5 +208,10 @@
     "id": "uicomponents-uicalendarmultiselect--calendar-multi-select",
     "title": "UiComponents/UiCalendarMultiSelect",
     "name": "Calendar Multi Select"
+  },
+  {
+    "id": "uicomponents-uiradiogroup--radio-group",
+    "title": "UiComponents/UiRadioGroup",
+    "name": "Radio Group"
   }
 ]
