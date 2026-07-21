@@ -26,9 +26,12 @@ export function createFieldRenderInput(
 ): (params: AutocompleteRenderInputParams) => React.ReactElement {
   return function renderFieldInput(params: AutocompleteRenderInputParams): React.ReactElement {
     return (
+      // No `label` prop: the Figma family renders the label as an external
+      // `<label>` ABOVE the field (see `FieldLabel`), not inside MUI's notched
+      // outline. A label-less field (e.g. search) still names its input via the
+      // `aria-label` merged into `htmlInput` below.
       <TextField
         {...params}
-        label={config.label}
         placeholder={config.placeholder}
         required={config.required}
         error={config.error}

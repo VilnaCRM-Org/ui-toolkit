@@ -71,12 +71,12 @@ function renderField(props: Partial<UiFileUploadInputProps> = {}): void {
 }
 
 describe('UiFileUploadInput — rendering and accessible wiring', () => {
-  it('renders the visible label, the placeholder and the picker pill', () => {
+  it('renders the visible label and the picker pill, with no placeholder by default', () => {
     renderField();
 
     expect(screen.getByText(LABEL)).toBeInTheDocument();
-    expect(screen.getByText('No file selected')).toBeInTheDocument();
     expect(screen.getByText('Upload')).toBeInTheDocument();
+    expect(screen.queryByText('No file selected')).not.toBeInTheDocument();
   });
 
   it('names the input from the visible label plus the pill text', () => {
@@ -697,7 +697,7 @@ describe('buildFileUploadModel', () => {
     const model: ReturnType<typeof buildFileUploadModel> = buildFileUploadModel({}, null);
 
     expect(model.fileNames).toEqual([]);
-    expect(model.displayText).toBe('No file selected');
+    expect(model.displayText).toBe('');
     expect(model.invalid).toBe(false);
     expect(model.message).toBeUndefined();
   });
@@ -716,22 +716,25 @@ describe('buildFileUploadModel', () => {
 describe('mergeRootSx', () => {
   // The field is fluid by default; a consumer's sx is layered on top of that
   // rather than replacing it, so constraining the width cannot accidentally
-  // reinstate the shrink-wrapping the fluid root exists to prevent.
-  const root: Record<string, string> = { width: '100%' };
+  // reinstate the shrink-wrapping the fluid root exists to prevent. The root also
+  // carries the FormHelperText treatment, so assert the fluid width is present
+  // (toMatchObject) rather than pinning the whole root object.
 
   it('keeps the fluid root when the consumer passes nothing', () => {
-    expect(mergeRootSx(undefined)).toEqual([root, {}]);
+    const [rootPart, consumer] = mergeRootSx(undefined) as Record<string, unknown>[];
+    expect(rootPart).toMatchObject({ width: '100%' });
+    expect(consumer).toEqual({});
   });
 
   it('layers an object sx on top of the root', () => {
-    expect(mergeRootSx({ maxWidth: '10rem' })).toEqual([root, { maxWidth: '10rem' }]);
+    const [rootPart, consumer] = mergeRootSx({ maxWidth: '10rem' }) as Record<string, unknown>[];
+    expect(rootPart).toMatchObject({ width: '100%' });
+    expect(consumer).toEqual({ maxWidth: '10rem' });
   });
 
   it('flattens an array sx on top of the root', () => {
-    expect(mergeRootSx([{ maxWidth: '10rem' }, { margin: 1 }])).toEqual([
-      root,
-      { maxWidth: '10rem' },
-      { margin: 1 },
-    ]);
+    const parts = mergeRootSx([{ maxWidth: '10rem' }, { margin: 1 }]) as Record<string, unknown>[];
+    expect(parts[0]).toMatchObject({ width: '100%' });
+    expect(parts.slice(1)).toEqual([{ maxWidth: '10rem' }, { margin: 1 }]);
   });
 });

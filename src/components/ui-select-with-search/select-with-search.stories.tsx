@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { t } from 'i18next';
 
 import {
   booleanControlArgType,
@@ -11,10 +10,10 @@ import type { UiSelectWithSearchOption } from './types';
 import UiSelectWithSearch from './index';
 
 const options: UiSelectWithSearchOption[] = [
-  { label: 'Kyiv', value: 'kyiv' },
-  { label: 'Lviv', value: 'lviv' },
-  { label: 'Odesa', value: 'odesa' },
-  { label: 'Kharkiv', value: 'kharkiv' },
+  { label: 'Київ', value: 'kyiv' },
+  { label: 'Львів', value: 'lviv' },
+  { label: 'Одеса', value: 'odesa' },
+  { label: 'Харків', value: 'kharkiv' },
 ];
 
 const meta: Meta<typeof UiSelectWithSearch> = {
@@ -25,7 +24,6 @@ const meta: Meta<typeof UiSelectWithSearch> = {
     label: textControlArgType('Visible label / accessible name for the combobox'),
     placeholder: textControlArgType('Placeholder text shown when nothing is selected'),
     disabled: booleanControlArgType('Whether the control is disabled'),
-    error: booleanControlArgType('Whether the control is in error state'),
   },
 };
 
@@ -36,8 +34,9 @@ type Story = StoryObj<typeof UiSelectWithSearch>;
 export const SelectWithSearch: Story = {
   args: {
     options,
-    label: t('City'),
-    placeholder: t('Search city'),
-    error: false,
+    // Figma "select с поиском" has no visible top label — the field is named for
+    // assistive tech via `aria-label`, and the placeholder carries the prompt.
+    'aria-label': 'Місто',
+    placeholder: 'Оберіть місто',
   },
 };

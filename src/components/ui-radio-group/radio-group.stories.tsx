@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { t } from 'i18next';
 import React from 'react';
 
 import {
@@ -12,9 +11,9 @@ import type { UiRadioGroupProps, UiRadioOption } from './types';
 import UiRadioGroup from './index';
 
 const options: UiRadioOption[] = [
-  { label: 'Email', value: 'email' },
+  { label: 'Електронна пошта', value: 'email' },
   { label: 'SMS', value: 'sms' },
-  { label: 'Push notification', value: 'push' },
+  { label: 'Сповіщення', value: 'push' },
 ];
 
 // The group is always controlled, so a stateful wrapper seeds the selection from
@@ -43,7 +42,6 @@ const meta: Meta<typeof UiRadioGroup> = {
   argTypes: {
     label: textControlArgType('Visible group label / accessible name for the radio group'),
     disabled: booleanControlArgType('Whether the whole group is disabled'),
-    error: booleanControlArgType('Whether the group is in error state'),
     required: booleanControlArgType('Marks the group required for assistive technology'),
   },
 };
@@ -55,8 +53,7 @@ type Story = StoryObj<typeof UiRadioGroup>;
 export const RadioGroup: Story = {
   args: {
     options,
-    label: t('Preferred contact method'),
-    error: false,
+    label: "Бажаний спосіб зв'язку",
   },
   render: (args: UiRadioGroupProps): React.ReactElement => <RadioGroupStory args={args} />,
 };

@@ -2,7 +2,9 @@ import type React from 'react';
 
 import type { UiFileUploadInputProps } from './types';
 
-const DEFAULT_PLACEHOLDER: string = 'No file selected';
+// Figma's empty field shows just the pill — no placeholder text — so the default
+// is blank; a consumer can still pass an explicit `placeholder`.
+const DEFAULT_PLACEHOLDER: string = '';
 const NO_FILES: readonly File[] = [];
 
 export interface FileUploadModel {

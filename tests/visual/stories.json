@@ -220,18 +220,13 @@
     "name": "File Upload Input"
   },
   {
-    "id": "uicomponents-uifileuploadinput--uploading",
-    "title": "UiComponents/UiFileUploadInput",
-    "name": "Uploading"
-  },
-  {
-    "id": "uicomponents-uifileuploadinput--success",
-    "title": "UiComponents/UiFileUploadInput",
-    "name": "Success"
-  },
-  {
     "id": "uicomponents-uifileuploadinput--upload-error",
     "title": "UiComponents/UiFileUploadInput",
     "name": "Upload Error"
+  },
+  {
+    "id": "showcase-new-components-figma-parity--figma-parity",
+    "title": "Showcase/New Components (Figma parity)",
+    "name": "Figma Parity"
   }
 ]
