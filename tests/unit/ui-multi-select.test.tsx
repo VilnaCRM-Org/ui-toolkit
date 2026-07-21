@@ -468,4 +468,9 @@ describe('UiMultiSelect — accessibility guidance', () => {
     rerender(<UiMultiSelect options={options} onChange={noop} />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
   });
+
+  it('force-opens the dropdown inline (demo props)', () => {
+    render(<UiMultiSelect aria-label="Roles" options={options} open disablePortal />);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
 });

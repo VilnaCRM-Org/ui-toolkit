@@ -1,29 +1,39 @@
 import { isValidISO } from './date-utils';
 
-// Selection is a sorted list of ISO `YYYY-MM-DD` strings. Lexicographic order of
-// zero-padded ISO dates is also chronological order, so sorting keeps the value
-// tidy and deterministic (stable snapshots, easy assertions). An explicit
-// `localeCompare` comparator is used (the codepoint order is identical for these
-// ASCII strings) so the sort is reliable regardless of default locale.
+// The calendar is a two-endpoint DATE RANGE picker: the value is the range's
+// endpoints as ISO `YYYY-MM-DD` strings — `[]` (empty), `[start]` (a pending
+// range) or `[start, end]` (a complete range, sorted). The days strictly between
+// the endpoints are the in-range band and are computed, never stored.
+// Lexicographic order of zero-padded ISO dates is also chronological order, so a
+// plain `localeCompare` sort keeps the endpoints tidy and deterministic.
 function compareISO(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-/** Normalises an incoming value: drops invalid/duplicate days and sorts. */
+/** Normalises an incoming range value: keeps at most two valid, sorted endpoints. */
 export function sanitizeSelection(value: string[] | undefined): string[] {
   if (value == null) {
     return [];
   }
-  return [...new Set(value.filter(isValidISO))].sort(compareISO);
+  const valid: string[] = [...new Set(value.filter(isValidISO))].sort(compareISO);
+  if (valid.length <= 2) {
+    return valid;
+  }
+  // More than two endpoints is not a valid range — keep the earliest and latest.
+  return [valid[0], valid[valid.length - 1]];
 }
 
-/** Toggles `iso` in the selection, returning a new sorted array. */
-export function toggleSelection(current: string[], iso: string): string[] {
-  const next: Set<string> = new Set(current);
-  if (next.has(iso)) {
-    next.delete(iso);
-  } else {
-    next.add(iso);
+/**
+ * Applies a click at `iso` to the range endpoints. With none — or a complete range
+ * — it begins a fresh range at `iso`; with one endpoint pending it completes the
+ * range (sorted); re-clicking the pending endpoint keeps it as the sole endpoint.
+ */
+export function applyRangeEndpoint(current: string[], iso: string): string[] {
+  if (current.length !== 1) {
+    return [iso];
   }
-  return [...next].sort(compareISO);
+  if (current[0] === iso) {
+    return [iso];
+  }
+  return [current[0], iso].sort(compareISO);
 }

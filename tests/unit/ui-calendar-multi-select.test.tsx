@@ -12,12 +12,16 @@ const warn = mockConsoleWarn();
 
 // A fixed month (no real "today" in it) keeps the tests deterministic.
 const MONTH = '2025-09-15';
-const SELECTED: string[] = ['2025-09-05', '2025-09-12', '2025-09-20'];
+// A completed range (start 5th, end 20th) — the days between are the in-range band.
+const SELECTED: string[] = ['2025-09-05', '2025-09-20'];
 
 const noop: (value: string[]) => void = () => undefined;
 
+// Matches a day cell by its date, tolerating the range-role name suffix (e.g.
+// "5 September 2025, range start" / "…, in range" / "…, range end").
 function gridcell(name: string): HTMLElement {
-  return screen.getByRole('gridcell', { name });
+  const escaped: string = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return screen.getByRole('gridcell', { name: new RegExp(`^${escaped}(,|$)`) });
 }
 
 // State-matrix coverage (agents.md Step 3). Covered below: default, selected,
@@ -68,9 +72,11 @@ describe('UiCalendarMultiSelect — structure and accessible names', () => {
     expect(UiCalendarMultiSelect.displayName).toBe('UiCalendarMultiSelect');
   });
 
-  it('renders a multiselectable grid named by the month caption', () => {
+  it('renders a range grid named by the month caption, marked multiselectable', () => {
     render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
     const grid: HTMLElement = screen.getByRole('grid', { name: 'September 2025' });
+    // A completed range marks both endpoints aria-selected, so the grid declares
+    // aria-multiselectable to stay consistent with its selection model (WAI-ARIA).
     expect(grid).toHaveAttribute('aria-multiselectable', 'true');
     // No helper text → the grid is not described by anything.
     expect(grid).not.toHaveAttribute('aria-describedby');
@@ -110,19 +116,44 @@ describe('UiCalendarMultiSelect — structure and accessible names', () => {
     expect(gridcell('1 September 2025')).toBeInTheDocument();
     expect(gridcell('30 September 2025')).toBeInTheDocument();
   });
+
+  it('localises the month caption and weekday headers from the locale', () => {
+    render(
+      <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} locale="uk-UA" onChange={noop} />
+    );
+    expect(screen.getByRole('grid', { name: /вересень 2025/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('columnheader')[0]).toHaveTextContent('Пн');
+  });
 });
 
-describe('UiCalendarMultiSelect — selection semantics', () => {
-  it('marks selected days and leaves other in-month days explicitly unselected', () => {
+describe('UiCalendarMultiSelect — range selection semantics', () => {
+  it('marks the two endpoints selected and the in-range days explicitly unselected', () => {
     render(
       <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={SELECTED} onChange={noop} />
     );
+    // Only the endpoints carry aria-selected; the band (e.g. 12th) does not.
     expect(gridcell('5 September 2025')).toHaveAttribute('aria-selected', 'true');
-    expect(gridcell('12 September 2025')).toHaveAttribute('aria-selected', 'true');
-    expect(gridcell('6 September 2025')).toHaveAttribute('aria-selected', 'false');
+    expect(gridcell('20 September 2025')).toHaveAttribute('aria-selected', 'true');
+    expect(gridcell('12 September 2025')).toHaveAttribute('aria-selected', 'false');
+    expect(gridcell('3 September 2025')).toHaveAttribute('aria-selected', 'false');
   });
 
-  it('adds an unselected day through onChange, keeping the result sorted', async () => {
+  it('names the endpoints and the in-range days for assistive tech', () => {
+    render(
+      <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={SELECTED} onChange={noop} />
+    );
+    expect(
+      screen.getByRole('gridcell', { name: '5 September 2025, range start' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('gridcell', { name: '20 September 2025, range end' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('gridcell', { name: '12 September 2025, in range' })
+    ).toBeInTheDocument();
+  });
+
+  it('starts a fresh range when a day is clicked with a range already complete', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
     render(
@@ -135,23 +166,23 @@ describe('UiCalendarMultiSelect — selection semantics', () => {
     );
 
     await user.click(gridcell('6 September 2025'));
-    expect(onChange).toHaveBeenCalledWith(['2025-09-05', '2025-09-06', '2025-09-12', '2025-09-20']);
+    expect(onChange).toHaveBeenCalledWith(['2025-09-06']);
   });
 
-  it('removes an already-selected day through onChange', async () => {
+  it('completes a range with a second endpoint, kept sorted', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
     render(
       <UiCalendarMultiSelect
         label="Dates"
         defaultMonth={MONTH}
-        value={SELECTED}
+        value={['2025-09-10']}
         onChange={onChange}
       />
     );
 
-    await user.click(gridcell('5 September 2025'));
-    expect(onChange).toHaveBeenCalledWith(['2025-09-12', '2025-09-20']);
+    await user.click(gridcell('4 September 2025'));
+    expect(onChange).toHaveBeenCalledWith(['2025-09-04', '2025-09-10']);
   });
 
   it('does not throw when a day is clicked without an onChange handler', async () => {
@@ -177,6 +208,27 @@ describe('UiCalendarMultiSelect — selection semantics', () => {
     );
     expect(gridcell('5 September 2025')).toHaveAttribute('aria-selected', 'true');
   });
+
+  it('uses the locale for month-nav and selection announcements', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        locale="uk-UA"
+        value={[]}
+        onChange={noop}
+      />
+    );
+
+    // Month-nav announcement is localised (stepMonth).
+    await user.click(screen.getByRole('button', { name: 'Next month' }));
+    expect(screen.getByRole('status')).toHaveTextContent(/жовтень 2025/i);
+
+    // Selecting a day localises the range announcement too (selectDay).
+    await user.click(screen.getByRole('gridcell', { name: /^5 жовтень 2025/ }));
+    expect(screen.getByRole('status')).toHaveTextContent(/5 жовтень 2025/i);
+  });
 });
 
 describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', () => {
@@ -188,8 +240,8 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
       .getAllByRole('gridcell')
       .filter(cell => cell.getAttribute('tabindex') === '0');
     expect(tabbable).toHaveLength(1);
-    // Roving target seeds from the earliest selected day in view.
-    expect(tabbable[0]).toHaveAccessibleName('5 September 2025');
+    // Roving target seeds from the range's start (the earliest endpoint in view).
+    expect(tabbable[0]).toHaveAccessibleName(/^5 September 2025/);
   });
 
   it('moves focus by a day and by a week with arrow keys', async () => {
@@ -260,7 +312,7 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
     expect(gridcell('29 August 2025')).toHaveFocus();
   });
 
-  it('toggles the focused day with Enter and Space', async () => {
+  it('sets a range endpoint with Enter and Space', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
     render(
@@ -272,16 +324,17 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
       />
     );
 
+    // With a range already complete, activating the focused day starts a fresh range.
     gridcell('5 September 2025').focus();
     await user.keyboard('{Enter}');
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenLastCalledWith(['2025-09-12', '2025-09-20']);
+    expect(onChange).toHaveBeenLastCalledWith(['2025-09-05']);
 
     // The controlled value is static, so Space repeats the payload; asserting the
-    // call count proves Space is actually handled (the check was tautological before).
+    // call count proves Space is actually handled.
     await user.keyboard('[Space]');
     expect(onChange).toHaveBeenCalledTimes(2);
-    expect(onChange).toHaveBeenLastCalledWith(['2025-09-12', '2025-09-20']);
+    expect(onChange).toHaveBeenLastCalledWith(['2025-09-05']);
   });
 
   it('does not react to unrelated keys', async () => {
@@ -312,6 +365,48 @@ describe('UiCalendarMultiSelect — roving tabindex and keyboard navigation', ()
     // Ctrl+Arrow is a browser/AT shortcut — the grid must not hijack it.
     await user.keyboard('{Control>}{ArrowRight}{/Control}');
     expect(gridcell('5 September 2025')).toHaveFocus();
+  });
+
+  it('cancels a pending range with Escape, clearing the selection', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        value={['2025-09-05']}
+        onChange={onChange}
+      />
+    );
+
+    gridcell('5 September 2025').focus();
+    await user.keyboard('{Escape}');
+    expect(onChange).toHaveBeenCalledWith([]);
+  });
+
+  it('leaves a completed range untouched on Escape (nothing pending)', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        value={SELECTED}
+        onChange={onChange}
+      />
+    );
+
+    gridcell('5 September 2025').focus();
+    await user.keyboard('{Escape}');
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('does not throw when Escape cancels a pending range without an onChange handler', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={['2025-09-05']} />);
+    gridcell('5 September 2025').focus();
+    await user.keyboard('{Escape}');
+    expect(gridcell('5 September 2025')).toBeInTheDocument();
   });
 });
 
@@ -527,11 +622,11 @@ describe('UiCalendarMultiSelect — min/max range', () => {
     const onChange: jest.Mock = jest.fn();
     renderRange(onChange);
 
-    // Roving target seeds on the in-range selected day; toggling it works.
+    // Roving target seeds on the in-range endpoint; activating it is allowed.
     gridcell('15 September 2025').focus();
     await user.keyboard('{Enter}');
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenLastCalledWith([]);
+    expect(onChange).toHaveBeenLastCalledWith(['2025-09-15']);
 
     // Navigate up a week to a day below the min — Enter is a no-op there.
     await user.keyboard('{ArrowUp}');

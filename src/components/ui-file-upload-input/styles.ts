@@ -38,8 +38,22 @@ const TINT: number = 0.1;
 // The field fills its container instead of shrink-wrapping its contents, so its
 // width does not jump as file names change — and so the name can actually
 // ellipsize rather than stretching the box. Consumers constrain it via `sx`.
-// Only merged into the consumer sx by `mergeRootSx`, so kept module-local.
-const rootSx: SystemStyleObject<Theme> = { width: '100%' };
+// Only merged into the consumer sx by `mergeRootSx`, so kept module-local. It also
+// styles the descendant FormHelperText: this control has no ThemeProvider of its
+// own, so without this the message falls back to MUI's Roboto 12px — Figma wants
+// the shared Inter Medium 14/18 treatment, grey250, #DC3939 on error.
+const rootSx: SystemStyleObject<Theme> = {
+  width: '100%',
+  '& .MuiFormHelperText-root': {
+    margin: '0.25rem 0 0 0',
+    fontFamily: 'Inter',
+    fontWeight: 500,
+    fontSize: '0.875rem',
+    lineHeight: '1.125rem',
+    color: palette.grey250.main,
+    '&.Mui-error': { color: palette.error.main },
+  },
+};
 
 export function mergeRootSx(consumer: SxProps<Theme> | undefined): SxProps<Theme> {
   const extra: SxProps<Theme> = consumer ?? {};
@@ -207,5 +221,8 @@ export default {
     lineHeight: '1.125rem',
     color: palette.grey250.main,
     '&.Mui-disabled': { color: palette.grey400.main },
+    // Figma keeps the label grey250 in the error state (the red stroke + message
+    // carry the error), so suppress MUI's default red `.Mui-error` label.
+    '&.Mui-error': { color: palette.grey250.main },
   },
 };

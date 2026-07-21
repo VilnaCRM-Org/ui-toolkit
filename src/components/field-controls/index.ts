@@ -5,6 +5,8 @@ export type { GlyphProps } from './glyph';
 export { hasText } from './has-text';
 export { createFieldRenderInput } from './render-input';
 export type { FieldRenderInputConfig } from './render-input';
+export { FieldLabel } from './field-label';
+export type { FieldLabelProps } from './field-label';
 export { srOnlySx } from './sr-only';
 export { useListboxSlotProps } from './use-listbox-slot-props';
 export type { ListboxSlotProps } from './use-listbox-slot-props';

@@ -64,5 +64,29 @@ export default {
     fontWeight: 500,
     fontSize: '0.875rem',
     lineHeight: '1.125rem',
+    color: palette.grey200.main,
+    '&.Mui-focused': { color: palette.grey200.main },
+  },
+  // Figma "radiobutton" group (node 448:25598): the options are stacked with a
+  // 16px row gap.
+  group: {
+    gap: '1rem',
+  },
+  // Each option: no MUI negative offset (so the radio aligns to the group edge),
+  // an 8px radio→label gap (owned by the radio's marginRight), and an Inter Medium
+  // 16/18 #1B2327 label.
+  option: {
+    marginLeft: 0,
+    marginRight: 0,
+    '& .MuiFormControlLabel-label': {
+      fontFamily: 'Inter',
+      fontWeight: 500,
+      fontSize: '1rem',
+      lineHeight: '1.125rem',
+      color: palette.darkSecondary.main,
+    },
+    '& .MuiFormControlLabel-label.Mui-disabled': {
+      color: palette.darkSecondary.main,
+    },
   },
 };

@@ -1,6 +1,5 @@
 import { Box } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react';
-import { t } from 'i18next';
 import React from 'react';
 
 import {
@@ -10,16 +9,14 @@ import {
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
 
-import type { UiFileUploadInputProps, UiUploadStatus } from './types';
+import type { UiFileUploadInputProps } from './types';
 
 import UiFileUploadInput from './index';
 
 const ACCEPT: string = '.png,.jpg,.jpeg';
 const MAX_SIZE_BYTES: number = 2 * 1024 * 1024;
-const CONSTRAINT_HINT: string = 'PNG or JPG, up to 2 MB.';
-const SAMPLE_FILES: readonly File[] = [
-  new File(['sample'], 'design-brief.png', { type: 'image/png' }),
-];
+const LABEL: string = 'Логотип проєкту';
+const BUTTON_LABEL: string = 'Загрузити';
 
 // The selection is always controlled, so the interactive story seeds it from
 // local state. Props are threaded explicitly (the repo forbids prop-spreading).
@@ -87,42 +84,22 @@ type Story = StoryObj<typeof UiFileUploadInput>;
  */
 export const FileUploadInput: Story = {
   args: {
-    label: t('Project logo'),
-    helperText: CONSTRAINT_HINT,
+    label: LABEL,
+    buttonLabel: BUTTON_LABEL,
     accept: ACCEPT,
     maxSizeBytes: MAX_SIZE_BYTES,
-    error: false,
   },
   render: (args: UiFileUploadInputProps): React.ReactElement => <FileUploadStory args={args} />,
 };
 
-/** Long-running upload: the determinate bar reports progress, the pill the state. */
-export const Uploading: Story = {
-  args: {
-    label: t('Project logo'),
-    helperText: CONSTRAINT_HINT,
-    files: SAMPLE_FILES,
-    status: 'uploading' as UiUploadStatus,
-    progress: 45,
-  },
-};
-
-/** The upload finished; the status pill keeps reporting it as text, not colour alone. */
-export const Success: Story = {
-  args: {
-    label: t('Project logo'),
-    helperText: CONSTRAINT_HINT,
-    files: SAMPLE_FILES,
-    status: 'success' as UiUploadStatus,
-  },
-};
-
-/** The upload request failed; `helperText` carries the actionable reason. */
+/** Figma's only file-upload error state: a red stroke plus the reason below the
+ * field (no status pill). */
 export const UploadError: Story = {
   args: {
-    label: t('Project logo'),
-    helperText: t('Upload failed — the server rejected the file. Try again.'),
-    files: SAMPLE_FILES,
-    status: 'error' as UiUploadStatus,
+    label: LABEL,
+    buttonLabel: BUTTON_LABEL,
+    error: true,
+    helperText: 'Виникла помилка. Перевірте ще раз',
   },
+  render: (args: UiFileUploadInputProps): React.ReactElement => <FileUploadStory args={args} />,
 };

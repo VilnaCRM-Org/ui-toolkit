@@ -271,4 +271,11 @@ describe('UiSearchInput — accessibility guidance', () => {
     rerender(<UiSearchInput />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
   });
+
+  it('force-opens the suggestions dropdown inline (demo props)', () => {
+    render(
+      <UiSearchInput aria-label="Search" options={suggestions} value="Top" open disablePortal />
+    );
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
 });
