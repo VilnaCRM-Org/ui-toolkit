@@ -18,11 +18,6 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           fontSize: '1rem',
           lineHeight: '1.125rem',
           color: colorTheme.palette.darkPrimary.main,
-          // The multi-select field keeps its grey300 stroke on hover (Figma only
-          // restyles the chips), overriding the shared theme's grey400 hover pin.
-          '&:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline': {
-            borderColor: colorTheme.palette.grey300.main,
-          },
         },
         input: {
           '&::placeholder': {
@@ -31,10 +26,11 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           },
         },
         notchedOutline: {
-          // Figma "Multiselect" field stroke is grey300 (#969B9D) — a step darker
-          // than the search/select grey400 — and it does not change on hover (only
-          // the chips react).
-          borderColor: colorTheme.palette.grey300.main,
+          // Figma "Multiselect" EMPTY-field stroke is grey400 (#D0D4D8, node
+          // 535:37450); it darkens to grey300 (#969B9D) once chips fill the field.
+          // The empty value is set here; the filled override is applied from the
+          // component (which knows the selection count) via FILLED_STROKE_SX.
+          borderColor: colorTheme.palette.grey400.main,
         },
       },
     },
@@ -100,6 +96,16 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
             color: colorTheme.palette.darkPrimary.main,
             '&.Mui-focused': {
               backgroundColor: '#FBFBFB',
+            },
+            // A chosen row (rendered as a chip) is aria-selected: give it the brand
+            // faint-blue wash that matches its chip, so chosen items read as chosen and
+            // stay distinct from the grey focus wash. The combined selected+highlighted
+            // rule beats MUI's equal-specificity default (which would tint it #1976D2).
+            '&[aria-selected="true"]': {
+              backgroundColor: 'rgba(30, 174, 255, 0.1)',
+            },
+            '&[aria-selected="true"].Mui-focused': {
+              backgroundColor: 'rgba(30, 174, 255, 0.1)',
             },
           },
         },

@@ -4,7 +4,7 @@ import React from 'react';
 import { srOnlySx } from '../field-controls';
 
 import FileUploadDropzone from './file-upload-dropzone';
-import styles, { mergeRootSx } from './styles';
+import styles, { groupLabelActiveColor, mergeRootSx } from './styles';
 import type { UiFileUploadInputProps, UiUploadStatus } from './types';
 import UploadProgress from './upload-progress';
 import UploadStatusPill from './upload-status-pill';
@@ -23,9 +23,12 @@ interface FileUploadView {
   progress: number | undefined;
 }
 
-function renderLabel(id: string, label: string | undefined): React.ReactElement {
+function renderLabel(id: string, label: string | undefined, active: boolean): React.ReactElement {
+  // Figma steps the label to grey250 while the field is active (a file dragging
+  // over it); at rest/hover it is grey200 (styles.groupLabel).
+  const sx = active ? [styles.groupLabel, { color: groupLabelActiveColor }] : styles.groupLabel;
   return (
-    <FormLabel id={id} sx={styles.groupLabel}>
+    <FormLabel id={id} sx={sx}>
       {label}
     </FormLabel>
   );
@@ -71,7 +74,7 @@ function renderFileUploadField(
       required={props.required}
       sx={mergeRootSx(props.sx)}
     >
-      {view.field.named ? renderLabel(view.field.ids.label, props.label) : null}
+      {view.field.named ? renderLabel(view.field.ids.label, props.label, view.drag.active) : null}
       <FileUploadDropzone
         field={view.field}
         upload={props}

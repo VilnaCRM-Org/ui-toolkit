@@ -44,6 +44,7 @@ function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.Rea
           options={props.options}
           value={props.value ?? null}
           onChange={field.handleChange}
+          onInputChange={field.handleInputChange}
           disabled={props.disabled}
           size={props.size}
           sx={props.sx}

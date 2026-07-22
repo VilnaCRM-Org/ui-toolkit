@@ -1,7 +1,12 @@
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import { createFieldRenderInput, hasText } from '../field-controls';
+import {
+  createFieldOptionRenderer,
+  createFieldRenderInput,
+  hasText,
+  type FieldOptionRenderer,
+} from '../field-controls';
 
 import { announceChange } from './announce';
 import { createChipRenderer, type ChipRenderer } from './chip-renderer';
@@ -17,6 +22,7 @@ export interface MultiSelectField {
   handleChange: (event: React.SyntheticEvent, next: UiMultiSelectOption[]) => void;
   renderInput: (params: AutocompleteRenderInputParams) => React.ReactElement;
   renderValue: ChipRenderer;
+  renderOption: FieldOptionRenderer<UiMultiSelectOption>;
   slotProps: MultiListboxSlotProps;
 }
 
@@ -53,9 +59,13 @@ export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField
 
   const renderValue: ChipRenderer = createChipRenderer(disabled === true);
 
+  // Dropdown rows split into a dark typed prefix + grey completion (Figma 535:37501).
+  const renderOption: FieldOptionRenderer<UiMultiSelectOption> =
+    createFieldOptionRenderer<UiMultiSelectOption>(option => option.label);
+
   const slotProps: MultiListboxSlotProps = {
     listbox: { 'aria-label': hasText(label) ? label : ariaLabel, 'aria-multiselectable': true },
   };
 
-  return { status, handleChange, renderInput, renderValue, slotProps };
+  return { status, handleChange, renderInput, renderValue, renderOption, slotProps };
 }
