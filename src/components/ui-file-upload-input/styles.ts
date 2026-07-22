@@ -6,14 +6,15 @@ import colorTheme from '@/components/ui-color-theme';
 
 import type { UiUploadStatus } from './types';
 
-// Figma source: the file-upload control, nodes 449:25703 (active), 449:25717
-// (hover), 449:25724 (disabled) and 449:25759 (error). The cluster is detached
-// from every page in the file, so it is reachable only by direct node id — which
-// is why a page-tree search reports "no upload component".
+// Figma source: the file-upload control, nodes 449:25710 (rest), 449:25717
+// (hover), 449:25703 (active), 449:25724 (disabled) and 449:25676 (error). The
+// cluster is detached from every page in the file, so it is reachable only by
+// direct node id — which is why a page-tree search reports "no upload component".
 //
-// - Field: 422x64, white, 1px SOLID #969B9D, 8px radius. Not a dashed dropzone;
-//   the design has no drag affordance at all (drag-and-drop is a behavioural
-//   addition required by the story, styled with the design's own tint recipe).
+// - Field: 422x64, white, 8px radius, 1px stroke #D0D4D8 (grey400) at rest; Figma
+//   darkens the stroke to #969B9D on hover/active. Not a dashed dropzone; the
+//   design has no drag affordance at all (drag-and-drop is a behavioural addition
+//   required by the story, styled with the design's own tint recipe).
 // - Label: Inter Medium 14/18 #57595B, 9px above the field.
 // - Trigger: pill (57px radius) inset 9px from the right, 12px/24px padding,
 //   an 8px gap, a 20px folder glyph and Golos Text Medium 15/18 white.
@@ -71,8 +72,16 @@ const dropzone: SystemStyleObject<Theme> = {
   paddingLeft: '1.75rem',
   paddingRight: '0.5625rem',
   backgroundColor: palette.white.main,
-  border: `1px solid ${palette.grey300.main}`,
+  border: `1px solid ${palette.grey400.main}`,
   borderRadius: '0.5rem',
+};
+
+// Figma darkens the field stroke to #969B9D (grey300) on hover and on press
+// (the "Active" state, node 449:25703). Applied only in the plain rest state (see
+// dropzoneSx), so it never overrides the drag tint, the error stroke or the
+// border-less disabled surface.
+const dropzoneInteract: SystemStyleObject<Theme> = {
+  '&:hover, &:active': { borderColor: palette.grey300.main },
 };
 
 const dropzoneActive: SystemStyleObject<Theme> = {
@@ -99,6 +108,7 @@ const dropzoneDisabled: SystemStyleObject<Theme> = {
 export function dropzoneSx(active: boolean, invalid: boolean, disabled: boolean): SxProps<Theme> {
   return [
     dropzone,
+    !active && !invalid && !disabled && dropzoneInteract,
     active && dropzoneActive,
     invalid && dropzoneInvalid,
     disabled && dropzoneDisabled,

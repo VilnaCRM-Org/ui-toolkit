@@ -29,6 +29,7 @@ function FileUploadDropzone({
   return (
     <Box
       id={field.ids.dropzone}
+      className="ui-file-upload-dropzone"
       sx={dropzoneSx(drag.active, field.model.invalid, field.model.disabled)}
       onDragEnter={drag.onDragEnter}
       onDragOver={drag.onDragOver}
