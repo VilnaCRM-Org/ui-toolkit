@@ -279,3 +279,37 @@ describe('UiSearchInput — accessibility guidance', () => {
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 });
+
+describe('UiSearchInput — suggestion highlighting', () => {
+  it('splits a matching suggestion into a dark typed prefix and a grey completion', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSearch options={suggestions} />);
+    await user.type(screen.getByRole('combobox'), 'Top perf');
+    const runs: NodeListOf<HTMLSpanElement> = (
+      await screen.findByRole('option', { name: 'Top performers' })
+    ).querySelectorAll('span');
+    expect(runs).toHaveLength(2);
+    expect(runs[0].textContent).toBe('Top perf');
+    expect(runs[1].textContent).toBe('ormers');
+  });
+
+  it('renders a non-prefix match fully in the dark run', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSearch options={suggestions} />);
+    await user.type(screen.getByRole('combobox'), 'sales');
+    const runs: NodeListOf<HTMLSpanElement> = (
+      await screen.findByRole('option', { name: 'Top sales this month' })
+    ).querySelectorAll('span');
+    expect(runs[0].textContent).toBe('Top sales this month');
+    expect(runs[1].textContent).toBe('');
+  });
+
+  it('renders a suggestion fully dark before anything is typed', () => {
+    render(<UiSearchInput aria-label="Search" options={suggestions} value="" open disablePortal />);
+    const runs: NodeListOf<HTMLSpanElement> = screen
+      .getByRole('option', { name: 'Top performers' })
+      .querySelectorAll('span');
+    expect(runs[0].textContent).toBe('Top performers');
+    expect(runs[1].textContent).toBe('');
+  });
+});
