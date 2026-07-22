@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import React from 'react';
 
 import { Glyph } from '../field-controls';
@@ -20,6 +21,29 @@ const FOLDER_PATH: string =
   '15.8335 2.73314 15.8335 2.19836 15.561C1.72795 15.3213 1.3455 14.9389 1.10582 ' +
   '14.4685C0.833335 13.9337 0.833335 13.2336 0.833335 11.8335V4.16685Z';
 
+// Figma seats the 18.333x16.667 glyph inside a 20px "folder" frame (node
+// 449:25747). Keeping that 20px slot is what holds the pill at its 44px height —
+// without it the shorter glyph lets the 18px label drive the pill down to 42px.
 export function FolderGlyph(): React.ReactElement {
-  return <Glyph path={FOLDER_PATH} viewBox="0 0 18.3333 16.6668" strokeWidth="1.66667" />;
+  return (
+    <Box
+      component="span"
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        width: '1.25rem',
+        height: '1.25rem',
+      }}
+    >
+      <Glyph
+        path={FOLDER_PATH}
+        viewBox="0 0 18.3333 16.6668"
+        strokeWidth="1.66667"
+        width="18.3333"
+        height="16.6668"
+      />
+    </Box>
+  );
 }
