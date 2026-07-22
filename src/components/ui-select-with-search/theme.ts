@@ -44,11 +44,27 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
         // card's grey400 (not the closed-state focus grey250), so field + list read as
         // one continuous card (Figma node 448:25553).
         root: {
+          // Open state (focus-independent): square the bottom corners and take the
+          // card's grey400 stroke so field + list read as one continuous card. Must
+          // NOT be gated on focus, or a forced-open-but-unfocused field keeps its
+          // rounded bottom corners.
           '&.Mui-expanded .MuiOutlinedInput-notchedOutline': {
             borderColor: colorTheme.palette.grey400.main,
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
           },
+          // When the open field is ALSO focused, the shared field-controls focus
+          // stroke (grey250) has equal specificity and would win by source order, so
+          // re-assert grey400 at higher specificity to keep the "one card" stroke.
+          '&.Mui-expanded .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: colorTheme.palette.grey400.main,
+          },
+          // Closed + focused: Figma leaves the stroke unchanged (no darkening), so pin
+          // focus back to the resting Brand-gray, overriding the shared focus stroke.
+          '&:not(.Mui-expanded) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline':
+            {
+              borderColor: colorTheme.palette.brandGray.main,
+            },
         },
         inputRoot: {
           height: '3rem',
