@@ -1,15 +1,16 @@
 import { Autocomplete, Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { FieldLabel, hasText } from '../field-controls';
+import { createFieldOptionRenderer, FieldLabel, hasText } from '../field-controls';
 
-import { renderSearchOption } from './search-option';
 import theme from './theme';
 import type { UiSearchInputProps } from './types';
 import { useSearchField } from './use-search-field';
 import { useSearchWarnings } from './use-warnings';
 
 const EMPTY_OPTIONS: string[] = [];
+// Suggestion rows split into a dark typed prefix + grey completion (Figma 439:19399).
+const renderSearchOption = createFieldOptionRenderer<string>(option => option);
 const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
 // When the dropdown is force-opened for a static demo, keep it pinned below the
 // field (no viewport flip) so it renders predictably in showcase/state tiles.
@@ -38,7 +39,7 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
         <Autocomplete
           freeSolo
           options={props.options ?? EMPTY_OPTIONS}
-          inputValue={props.value}
+          inputValue={field.text}
           onInputChange={field.handleInputChange}
           disabled={props.disabled}
           size={props.size}

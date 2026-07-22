@@ -15,7 +15,7 @@ import type { UiUploadStatus } from './types';
 //   darkens the stroke to #969B9D on hover/active. Not a dashed dropzone; the
 //   design has no drag affordance at all (drag-and-drop is a behavioural addition
 //   required by the story, styled with the design's own tint recipe).
-// - Label: Inter Medium 14/18 #57595B, 9px above the field.
+// - Label: Inter Medium 14/18 #404142 (rest/hover) -> #57595B (active/error), 9px above.
 // - Trigger: pill (57px radius) inset 9px from the right, 12px/24px padding,
 //   an 8px gap, a 20px folder glyph and Golos Text Medium 15/18 white.
 //   Rest #1EAEFF, hover #00A3FF, active #0399ED — the shared button tokens.
@@ -36,6 +36,9 @@ const palette: Theme['palette'] = colorTheme.palette;
 /** The design's tint strength for a state-coloured surface. */
 const TINT: number = 0.1;
 
+/** Figma steps the label to grey250 while the field is active (a file dragging over). */
+export const groupLabelActiveColor: string = palette.grey250.main;
+
 // The field fills its container instead of shrink-wrapping its contents, so its
 // width does not jump as file names change — and so the name can actually
 // ellipsize rather than stretching the box. Consumers constrain it via `sx`.
@@ -51,6 +54,9 @@ const rootSx: SystemStyleObject<Theme> = {
     fontWeight: 500,
     fontSize: '0.875rem',
     lineHeight: '1.125rem',
+    // Figma "14 medium" tracks at 0; without this the helper text inherits MUI's
+    // default caption letterSpacing (0.03333em), reading looser than the design.
+    letterSpacing: 0,
     color: palette.grey250.main,
     '&.Mui-error': { color: palette.error.main },
   },
@@ -222,7 +228,9 @@ export default {
     fontWeight: 500,
     fontSize: '0.875rem',
     lineHeight: '1.125rem',
-    color: palette.grey250.main,
+    // Figma "file upload" label is grey200 (#404142) at rest/hover (nodes 449:25710
+    // / 25717); grey250 (#57595B) while active/error, grey400 when disabled.
+    color: palette.grey200.main,
     '&.Mui-disabled': { color: palette.grey400.main },
     // Figma keeps the label grey250 in the error state (the red stroke + message
     // carry the error), so suppress MUI's default red `.Mui-error` label.

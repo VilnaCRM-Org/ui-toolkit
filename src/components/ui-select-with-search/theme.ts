@@ -61,10 +61,11 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           },
           // Closed + focused: Figma leaves the stroke unchanged (no darkening), so pin
           // focus back to the resting Brand-gray, overriding the shared focus stroke.
-          '&:not(.Mui-expanded) .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline':
-            {
+          '&:not(.Mui-expanded)': {
+            '.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: colorTheme.palette.brandGray.main,
             },
+          },
         },
         inputRoot: {
           height: '3rem',
@@ -87,10 +88,14 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           marginRight: '0.5rem',
         },
         // Open popup (Figma node 448:25553): the options list joins flush under the
-        // field with square corners — no top radius (it butts against the field, whose
-        // bottom edge is the divider) and no bottom radius either — and no shadow.
+        // field — top corners square (it butts against the field, whose bottom edge is
+        // the divider), bottom corners 8px — so field + list read as one rounded card,
+        // no shadow. `overflow: hidden` clips the last row's wash to the rounded corner.
         paper: {
           borderRadius: 0,
+          borderBottomLeftRadius: '0.5rem',
+          borderBottomRightRadius: '0.5rem',
+          overflow: 'hidden',
           border: `1px solid ${colorTheme.palette.grey400.main}`,
           borderTop: 'none',
           boxShadow: 'none',
@@ -113,6 +118,9 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
               backgroundColor: colorTheme.palette.grey500.main,
             },
             '&[aria-selected="true"]': {
+              backgroundColor: colorTheme.palette.grey500.main,
+            },
+            '&[aria-selected="true"].Mui-focused': {
               backgroundColor: colorTheme.palette.grey500.main,
             },
           },

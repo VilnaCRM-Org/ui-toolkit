@@ -19,6 +19,34 @@ const options: UiMultiSelectOption[] = [
 
 const noop: (value: UiMultiSelectOption[]) => void = () => undefined;
 
+describe('UiMultiSelect — filled-field stroke merge', () => {
+  it('merges a consumer sx object while chips fill the field', () => {
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[options[0]]}
+        aria-label="Cities"
+        onChange={noop}
+        sx={{ marginTop: '4px' }}
+      />
+    );
+    expect(screen.getByRole('combobox', { name: 'Cities' })).toBeInTheDocument();
+  });
+
+  it('merges a consumer sx array while chips fill the field', () => {
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[options[0]]}
+        aria-label="Cities"
+        onChange={noop}
+        sx={[{ marginTop: '4px' }]}
+      />
+    );
+    expect(screen.getByRole('combobox', { name: 'Cities' })).toBeInTheDocument();
+  });
+});
+
 async function openListbox(user: UserEvent): Promise<HTMLElement> {
   const combobox: HTMLElement = screen.getByRole('combobox');
   await user.click(combobox);
