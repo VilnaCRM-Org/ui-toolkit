@@ -46,7 +46,7 @@ function renderFileInput(
  * as the Figma pill. The label opens the OS picker on click for free, and the
  * input keeps native keyboard operation and the platform's "file upload button"
  * semantics — none of it re-implemented. It is clipped rather than hidden so it
- * stays focusable; the pill wears the focus ring on its behalf.
+ * stays focusable and present in the accessibility tree.
  */
 function NativeFileInput({ field, upload, onFiles }: NativeFileInputProps): React.ReactElement {
   const inputRef: React.RefObject<HTMLInputElement | null> = React.useRef<HTMLInputElement>(null);

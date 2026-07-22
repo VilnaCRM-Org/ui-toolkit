@@ -173,13 +173,6 @@ export default {
     cursor: 'pointer',
     '&:hover': { backgroundColor: palette.containedButtonHover.main },
     '&:active': { backgroundColor: palette.containedButtonActive.main },
-    // The native input is clipped, so its own focus ring would be invisible;
-    // the pill it labels wears the ring instead, keeping keyboard focus
-    // visible (WCAG 2.4.7).
-    '&:focus-within': {
-      outline: `2px solid ${palette.darkPrimary.main}`,
-      outlineOffset: '2px',
-    },
     // Clipped rather than `display: none`, so the input stays focusable and in
     // the accessibility tree — it is the real, keyboard-operable control.
     '& .ui-file-upload-native': {
