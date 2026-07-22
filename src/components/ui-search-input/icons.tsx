@@ -2,14 +2,28 @@ import React from 'react';
 
 // Decorative inline magnifier — the repo has no `@mui/icons-material` dependency.
 // Hidden from assistive tech (`aria-hidden` + `focusable="false"` to kill the
-// legacy phantom tab stop); the combobox carries the real accessible name, so
-// the glyph is never announced or focusable and carries no `<title>`/`role="img"`.
-// `stroke="currentColor"` lets the theme tint it (grey at rest, brand-blue on
-// focus). Drawn as a thin *outline* magnifier — a lens circle plus a diagonal
-// handle — to match the Figma "Magnifier / 24 / Outline" glyph (stroked, not a
-// filled donut); `strokeWidth` stays 1.5 (non-text-contrast floor, WCAG 1.4.11).
-const LENS_D: string = 'M9 3a6 6 0 100 12 6 6 0 000-12z';
-const HANDLE_D: string = 'M17 17l-3.6-3.6';
+// legacy phantom tab stop); the combobox carries the real accessible name, so the
+// glyph is never announced or focusable and carries no `<title>`/`role="img"`.
+// Traced from the Figma glyph: a 17x17 FILLED magnifier (fill #969B9D) — a solid
+// lens ring plus handle, not a thin outline — centred in the 20px icon box via the
+// viewBox offset. `fill` uses `currentColor` so the theme tints it (grey at rest,
+// brand-blue on hover/focus). The box stays 20px so the theme's responsive
+// `svg { width/height }` sizing (24px tablet) keeps working.
+const MAGNIFIER_PATH: string =
+  'M16.4424 15.2591L13.3507 12.1924C14.5508 10.6961 15.132 8.79683 14.9748 6.88517C14.8175 ' +
+  '4.9735 13.9338 3.19474 12.5054 1.91462C11.0769 0.634506 9.21226 -0.0496579 7.29485 ' +
+  '0.00280914C5.37745 0.0552761 3.55302 0.840385 2.1967 2.1967C0.840385 3.55302 0.0552761 ' +
+  '5.37745 0.00280914 7.29485C-0.0496579 9.21226 0.634505 11.0769 1.91462 12.5054C3.19474 ' +
+  '13.9338 4.9735 14.8175 6.88517 14.9748C8.79683 15.132 10.6961 14.5508 12.1924 13.3508L15.2591 ' +
+  '16.4174C15.3366 16.4955 15.4287 16.5575 15.5303 16.5998C15.6318 16.6421 15.7407 16.6639 ' +
+  '15.8507 16.6639C15.9608 16.6639 16.0697 16.6421 16.1712 16.5998C16.2728 16.5575 16.3649 ' +
+  '16.4955 16.4424 16.4174C16.5926 16.262 16.6766 16.0544 16.6766 15.8383C16.6766 15.6221 ' +
+  '16.5926 15.4145 16.4424 15.2591ZM7.51742 13.3508C6.36369 13.3508 5.23588 13.0086 4.27659 ' +
+  '12.3677C3.3173 11.7267 2.56963 10.8156 2.12812 9.74974C1.68661 8.68384 1.57109 7.51095 ' +
+  '1.79617 6.37939C2.02125 5.24784 2.57682 4.20843 3.39263 3.39263C4.20843 2.57682 5.24783 ' +
+  '2.02125 6.37939 1.79617C7.51095 1.57109 8.68384 1.68661 9.74974 2.12812C10.8156 2.56963 ' +
+  '11.7267 3.3173 12.3677 4.27659C13.0086 5.23588 13.3507 6.36369 13.3507 7.51742C13.3507 ' +
+  '9.06451 12.7362 10.5482 11.6422 11.6422C10.5482 12.7362 9.06451 13.3508 7.51742 13.3508Z';
 
 export function SearchGlyph(): React.ReactElement {
   return (
@@ -18,18 +32,11 @@ export function SearchGlyph(): React.ReactElement {
       focusable="false"
       width="20"
       height="20"
-      viewBox="0 0 20 20"
+      viewBox="-1.5 -1.5 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d={LENS_D}
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d={HANDLE_D} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d={MAGNIFIER_PATH} fill="currentColor" />
     </svg>
   );
 }
