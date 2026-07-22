@@ -31,6 +31,7 @@ function FileUploadStory({ args }: { args: UiFileUploadInputProps }): React.Reac
       maxSizeBytes={args.maxSizeBytes}
       multiple={args.multiple}
       label={args.label}
+      buttonLabel={args.buttonLabel}
       helperText={args.helperText}
       disabled={args.disabled}
       required={args.required}

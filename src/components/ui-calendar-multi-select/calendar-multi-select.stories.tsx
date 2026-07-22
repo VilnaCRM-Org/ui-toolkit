@@ -1,6 +1,27 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
+
+import type { UiCalendarMultiSelectProps } from './types';
 
 import UiCalendarMultiSelect from './index';
+
+// The range is always controlled, so the interactive story seeds it from local
+// state (clicking days is a no-op without it). The initial value matches the args
+// below, so the first render — and thus the visual baseline — is unchanged.
+function CalendarStory({ args }: { args: UiCalendarMultiSelectProps }): React.ReactElement {
+  const [value, setValue] = React.useState<string[]>(args.value ?? []);
+
+  return (
+    <UiCalendarMultiSelect
+      label={args.label}
+      defaultMonth={args.defaultMonth}
+      locale={args.locale}
+      value={value}
+      onChange={setValue}
+      disabled={args.disabled}
+    />
+  );
+}
 
 const meta: Meta<typeof UiCalendarMultiSelect> = {
   title: 'UiComponents/UiCalendarMultiSelect',
@@ -37,4 +58,5 @@ export const CalendarMultiSelect: Story = {
     value: ['2025-09-05', '2025-09-20'],
     disabled: false,
   },
+  render: (args: UiCalendarMultiSelectProps): React.ReactElement => <CalendarStory args={args} />,
 };
