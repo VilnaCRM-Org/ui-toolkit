@@ -51,6 +51,13 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           '&:hover:not(.Mui-focused):not(.Mui-disabled)': {
             boxShadow: '0px 4px 9px 0px rgba(74, 78, 95, 0.1)',
           },
+          // Figma leaves the field stroke unchanged when the search is focused/
+          // active, so pin focus back to the resting grey400 stroke — overriding the
+          // shared field-controls focus darkening (the brand-blue caret + magnifier
+          // remain the focus accents Figma does draw).
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            border: `1px solid ${colorTheme.palette.grey400.main}`,
+          },
         },
         input: {
           '&::placeholder': {
@@ -86,20 +93,28 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
         input: {
           padding: 0,
           minWidth: 0,
+          // MUI pads the first Autocomplete input `padding-left: 6px` at a higher
+          // specificity than the bare `padding: 0`, offsetting the placeholder ~5px
+          // past the Figma text baseline (the 10px gap after the 20px magnifier box).
+          // Re-zero it at matching specificity so the text sits flush to that gap.
+          '&:first-of-type': { paddingLeft: 0 },
         },
-        // Open suggestions (Figma "Search" active, node 439:19397): a detached card
-        // with a 2px Brand-gray stroke, 12px radius and the soft landing shadow. The
-        // gap below the field tightens per breakpoint (4px desktop / 9px tablet / 8px
-        // mobile), and the list is a fixed 473px — so on tablet it is WIDER than the
-        // 360px field (Figma) — collapsing to the 355px field width on mobile.
+        // Open suggestions (Figma "Search" active): a detached card with a 2px
+        // Brand-gray stroke, 12px radius and the soft landing shadow. Figma's auto-
+        // layout gap is 4/9/8px per breakpoint, but its 2px card stroke is drawn
+        // OUTWARD, so the visible field→card gap renders 2px tighter (measured 2px
+        // desktop); our CSS stroke sits inside the box, so the margin carries the
+        // visible gap directly — 2px desktop, 7px tablet, 6px mobile. The list is a
+        // fixed 473px — wider than the 360px tablet field — collapsing to the field
+        // width on mobile.
         paper: {
           borderRadius: '0.75rem',
           border: `2px solid ${colorTheme.palette.brandGray.main}`,
           boxShadow: '0px 8px 13.5px 0px rgba(49, 59, 67, 0.14)',
           minWidth: '29.5625rem',
-          marginTop: '0.25rem',
-          [TABLET_MAX]: { marginTop: '0.5625rem' },
-          [MOBILE_MAX]: { marginTop: '0.5rem', minWidth: 0 },
+          marginTop: '0.125rem',
+          [TABLET_MAX]: { marginTop: '0.4375rem' },
+          [MOBILE_MAX]: { marginTop: '0.375rem', minWidth: 0 },
         },
         // Rows follow the field's responsive type: 52px / Inter Medium 14px / 19px
         // inset on desktop, growing to 62px / 16px / 22px on tablet; the active row

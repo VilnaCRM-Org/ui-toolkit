@@ -3,6 +3,7 @@ import React from 'react';
 
 import { FieldLabel, hasText } from '../field-controls';
 
+import { renderSearchOption } from './search-option';
 import theme from './theme';
 import type { UiSearchInputProps } from './types';
 import { useSearchField } from './use-search-field';
@@ -48,6 +49,7 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
           open={props.open}
           disablePortal={props.disablePortal}
           noOptionsText={props.noOptionsText}
+          renderOption={renderSearchOption}
           renderInput={field.renderInput}
           slotProps={props.open ? { ...field.slotProps, popper: OPEN_POPPER } : field.slotProps}
         />
