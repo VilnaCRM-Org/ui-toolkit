@@ -38,7 +38,7 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
         <Autocomplete
           freeSolo
           options={props.options ?? EMPTY_OPTIONS}
-          inputValue={props.value ?? ''}
+          inputValue={props.value}
           onInputChange={field.handleInputChange}
           disabled={props.disabled}
           size={props.size}
