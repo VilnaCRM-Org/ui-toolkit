@@ -87,10 +87,13 @@ export const headerSx: SxProps<Theme> = {
   gap: '0.5rem',
 };
 
+// Chevron spacing: Figma's gap-24 spec renders ~1px wider between the drawn glyphs
+// (measured 41.5px vs 40px centre-to-centre), so the gap is 25px to match the
+// design's visual chevron separation.
 export const navGroupSx: SxProps<Theme> = {
   display: 'flex',
   alignItems: 'center',
-  gap: '1.5rem',
+  gap: '1.5625rem',
 };
 
 /** 1px rule under the month header (Figma separates header from the grid), 18px
@@ -117,7 +120,7 @@ export const captionSx: SxProps<Theme> = {
   userSelect: 'none',
 };
 
-// The chevrons are 16px flush to the right (no button padding, Figma), 24px apart
+// The chevrons are 16px flush to the right (no button padding, Figma), 25px apart
 // (the navGroup gap), so they sit tight against the card's right inset.
 export const navButtonSx: SxProps<Theme> = {
   color: palette.grey300.main,
