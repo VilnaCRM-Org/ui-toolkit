@@ -203,15 +203,5 @@
     "id": "uicomponents-uitypography--typography",
     "title": "UiComponents/UiTypography",
     "name": "Typography"
-  },
-  {
-    "id": "uicomponents-uisearchinput--search-input",
-    "title": "UiComponents/UiSearchInput",
-    "name": "Search Input"
-  },
-  {
-    "id": "uicomponents-uiselectwithsearch--select-with-search",
-    "title": "UiComponents/UiSelectWithSearch",
-    "name": "Select With Search"
   }
 ]
