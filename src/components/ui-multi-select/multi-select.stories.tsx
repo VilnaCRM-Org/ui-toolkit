@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 
 import {
   booleanControlArgType,
+  objectControlArgType,
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
 
@@ -24,6 +26,12 @@ const meta: Meta<typeof UiMultiSelect> = {
     label: textControlArgType('Visible label / accessible name for the combobox'),
     placeholder: textControlArgType('Placeholder text shown when nothing is selected'),
     disabled: booleanControlArgType('Whether the control is disabled'),
+    options: objectControlArgType(
+      'The selectable options ({ label, value }) — edit to supply your own'
+    ),
+    // Selection is driven by the story's own state (so picking/removing chips
+    // works); the initial chips come from `args.value`, so its panel control is off.
+    value: { control: false },
   },
 };
 
@@ -38,5 +46,22 @@ export const MultiSelect: Story = {
     value: [options[0], options[2]],
     label: 'Роль',
     placeholder: 'Почніть вводити',
+  },
+  // A stateful wrapper so the combobox is actually interactive in Storybook —
+  // UiMultiSelect is controlled, so without local state nothing would change when
+  // you pick an option or hit the chip delete / clear-all. `options` still comes
+  // from args, so editing it in the Controls panel supplies your own items.
+  render: function Render(args): React.ReactElement {
+    const [value, setValue] = React.useState<UiMultiSelectOption[]>(args.value ?? []);
+    return (
+      <UiMultiSelect
+        options={args.options}
+        label={args.label}
+        placeholder={args.placeholder}
+        disabled={args.disabled}
+        value={value}
+        onChange={setValue}
+      />
+    );
   },
 };

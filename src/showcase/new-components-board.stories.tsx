@@ -65,6 +65,10 @@ const SEARCH_HOVER_SX = {
 const SEARCH_TABLET_SX = {
   '& .MuiOutlinedInput-root': { height: '3.25rem', minHeight: '3.25rem', fontSize: '1rem' },
   '& .MuiInputAdornment-positionStart svg': { width: '1.5rem', height: '1.5rem' },
+  // The ghost overlay's typed mirror, completion and caret are viewport-media-gated
+  // too, so the forced-tablet tile re-applies the tablet sizes (16px runs, 2px caret)
+  // — otherwise the desktop 14px mirror leaves the caret 7px short of the typed text.
+  '& .ui-ghost-run': { fontSize: '1rem' },
   // The dropdown's tablet sizing is media-gated too: 7px visible gap, 62px rows,
   // 16px text, 22px inset (Figma node 439:19410).
   '& .MuiAutocomplete-paper': { marginTop: '0.4375rem' },
