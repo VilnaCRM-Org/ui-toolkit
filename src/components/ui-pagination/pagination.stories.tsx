@@ -14,8 +14,12 @@ import UiPagination from './index';
 // The navigator is always controlled, so a stateful wrapper owns the current page
 // and feeds it back through `onChange`, keeping the story interactive. Props are
 // threaded explicitly (the repo forbids prop-spreading).
-function PaginationStory({ args }: { args: UiPaginationProps }): React.ReactElement {
+function PaginationStory({ args }: Readonly<{ args: UiPaginationProps }>): React.ReactElement {
   const [page, setPage] = React.useState<number>(args.value);
+  // Adopt `value` changes from Storybook Controls while keeping clicks interactive.
+  React.useEffect((): void => {
+    setPage(args.value);
+  }, [args.value]);
   return (
     <UiPagination
       value={page}

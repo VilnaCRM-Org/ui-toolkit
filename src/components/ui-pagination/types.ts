@@ -24,9 +24,12 @@ import type { SxProps, Theme } from '@mui/material';
  * primitive.
  */
 export interface UiPaginationProps {
-  /** Current page, 1-based. Always controlled — feed the next page back via `onChange`. */
+  /**
+   * Current page, 1-based. Always controlled — feed the next page back via
+   * `onChange`. Out-of-range values are clamped into `[1, count]`.
+   */
   value: number;
-  /** Total number of pages (`>= 1`). */
+  /** Total number of pages (`>= 1`; lower or non-finite values normalise to 1). */
   count: number;
   /** Called with the newly selected page number whenever the page changes. */
   onChange?: (page: number) => void;

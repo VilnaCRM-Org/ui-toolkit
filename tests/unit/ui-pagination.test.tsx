@@ -382,4 +382,43 @@ describe('usePaginationModel — selection guards and flags', () => {
   it('builds the page items from count and value', () => {
     expect(usePaginationModel({ value: 1, count: 5 }).items).toEqual([1, 2, 3, 4, 5]);
   });
+
+  // An out-of-range or malformed controlled `value` must not strip
+  // `aria-current` from every cell or freeze a navigation direction.
+  it('clamps a below-range value to the first page', () => {
+    const model: PaginationModel = usePaginationModel({ value: 0, count: 5 });
+    expect(model.isCurrent(1)).toBe(true);
+    expect(model.prevAtBoundary).toBe(true);
+    expect(model.nextDisabled).toBe(false);
+  });
+
+  it('clamps an above-range value to the last page', () => {
+    const model: PaginationModel = usePaginationModel({ value: 99, count: 5 });
+    expect(model.isCurrent(5)).toBe(true);
+    expect(model.nextAtBoundary).toBe(true);
+    expect(model.prevDisabled).toBe(false);
+  });
+
+  it('rounds a fractional value to the nearest page', () => {
+    expect(usePaginationModel({ value: 2.4, count: 5 }).isCurrent(2)).toBe(true);
+    expect(usePaginationModel({ value: 2.5, count: 5 }).isCurrent(3)).toBe(true);
+  });
+
+  it('falls back to the first page for a non-finite value', () => {
+    const model: PaginationModel = usePaginationModel({ value: Number.NaN, count: 5 });
+    expect(model.isCurrent(1)).toBe(true);
+    expect(model.items).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('normalises a sub-1 count to a single page', () => {
+    const model: PaginationModel = usePaginationModel({ value: 3, count: 0 });
+    expect(model.items).toEqual([1]);
+    expect(model.isCurrent(1)).toBe(true);
+    expect(model.prevAtBoundary).toBe(true);
+    expect(model.nextAtBoundary).toBe(true);
+  });
+
+  it('normalises a non-finite count to a single page', () => {
+    expect(usePaginationModel({ value: 1, count: Number.NaN }).items).toEqual([1]);
+  });
 });

@@ -130,4 +130,9 @@ section.
   internals, search/select hooks, calendar helpers, the showcase board file
   budgets) introduced by earlier stack commits — that remediation is owned by
   Story 2.6 (Epic 2 Quality Gate Closure), matching how the pre-existing
-  coverage gap was handled in Story 2.4A.
+  coverage gap was handled in Story 2.4A. The same applies to 11 pre-existing
+  stale visual baselines (June-era button/link/radio/file-upload state shots
+  and the CardList story) that fail on the base branch independently of this
+  story — e.g. the committed `radio-error` baseline still shows the English
+  labels the radio story dropped in the 2026-07-21 parity pass; every
+  pagination/showcase baseline added here passes.

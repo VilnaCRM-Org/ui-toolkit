@@ -35,10 +35,26 @@ interface ResolvedPagination {
   navLabel: string;
 }
 
+// A navigator always has at least one page — a non-finite or sub-1 `count`
+// normalises to a single page instead of producing an empty range.
+function toPageCount(raw: number): number {
+  if (!Number.isFinite(raw)) return 1;
+  return Math.max(Math.round(raw), 1);
+}
+
+// Clamps the controlled page into `[1, count]` (non-finite input falls back to
+// the first page), so an out-of-range consumer `value` cannot strip
+// `aria-current` from every cell or freeze a navigation direction.
+function toBoundedPage(raw: number, count: number): number {
+  if (!Number.isFinite(raw)) return 1;
+  return Math.min(Math.max(Math.round(raw), 1), count);
+}
+
 function resolveProps(props: UiPaginationProps): ResolvedPagination {
+  const count: number = toPageCount(props.count);
   return {
-    value: props.value,
-    count: props.count,
+    value: toBoundedPage(props.value, count),
+    count,
     disabled: props.disabled ?? false,
     siblingCount: props.siblingCount ?? 1,
     boundaryCount: props.boundaryCount ?? 1,
