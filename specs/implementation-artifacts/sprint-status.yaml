@@ -51,7 +51,7 @@ development_status:
   2-2-multi-select-interaction-workflow: in-progress
   2-3-calendar-multi-select-variant: in-progress
   2-4-radio-group-input-workflow: in-progress
-  2-4a-file-upload-input-workflows: backlog
+  2-4a-file-upload-input-workflows: review
   2-5-pagination-workflow-component-delivery: backlog
   2-6-epic-2-quality-gate-closure: backlog
   epic-2-retrospective: optional
