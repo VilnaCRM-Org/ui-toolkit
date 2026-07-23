@@ -7,6 +7,7 @@ import {
   UiCalendarMultiSelect,
   UiFileUploadInput,
   UiMultiSelect,
+  UiPagination,
   UiRadioGroup,
   UiSearchInput,
   UiSelectWithSearch,
@@ -104,6 +105,16 @@ const MS_CHIP_HOVER_SX = {
 // tile re-applies it to one day (the 5th, found by its accessible-name prefix).
 const CAL_HOVER_SX = {
   '& [aria-label^="5 "] .ui-day-circle': { backgroundColor: 'rgba(30, 174, 255, 0.1)' },
+} as const;
+// Forced page-cell hover: the theme scopes the light-blue fill to `:hover`, so a
+// static tile re-applies the Figma hover recipe (Primary @10% fill, no border,
+// Primary ink) to one rest cell (page 3), found by its accessible name.
+const PAGINATION_HOVER_SX = {
+  '& [aria-label="Сторінка 3"]': {
+    backgroundColor: 'rgba(30, 174, 255, 0.1)',
+    borderColor: 'transparent',
+    color: '#1EAEFF',
+  },
 } as const;
 
 interface StateSpec {
@@ -329,6 +340,23 @@ const GROUPS: GroupSpec[] = [
           />
         ),
       },
+    ],
+  },
+  {
+    title: 'Пагінація',
+    width: 685,
+    states: [
+      { label: 'Rest', node: <UiPagination value={1} count={7} /> },
+      {
+        label: 'Hover',
+        node: (
+          <Box sx={PAGINATION_HOVER_SX}>
+            <UiPagination value={1} count={7} />
+          </Box>
+        ),
+      },
+      { label: 'Current', node: <UiPagination value={2} count={7} /> },
+      { label: 'Disabled', node: <UiPagination value={2} count={7} disabled /> },
     ],
   },
   {

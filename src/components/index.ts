@@ -13,6 +13,7 @@ export { default as UiInput } from './ui-input';
 export { default as Layout } from './layout';
 export { default as UiLink } from './ui-link';
 export { default as UiMultiSelect } from './ui-multi-select';
+export { default as UiPagination } from './ui-pagination';
 export { default as UiRadioGroup } from './ui-radio-group';
 export { default as UiSearchInput } from './ui-search-input';
 export { default as UiSelectWithSearch } from './ui-select-with-search';
