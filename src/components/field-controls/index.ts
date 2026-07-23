@@ -8,7 +8,7 @@ export type { FieldRenderInputConfig } from './render-input';
 export { FieldLabel } from './field-label';
 export type { FieldLabelProps } from './field-label';
 export { srOnlySx } from './sr-only';
-export { firstGhostCompletion, isPrefixMatch, isGhostAcceptKey } from './ghost-completion';
+export { firstGhostMatch, isPrefixMatch, isGhostAcceptKey } from './ghost-completion';
 export { GhostOverlay } from './ghost-overlay';
 export type { GhostOverlayProps } from './ghost-overlay';
 export { createFieldOptionRenderer } from './field-option';

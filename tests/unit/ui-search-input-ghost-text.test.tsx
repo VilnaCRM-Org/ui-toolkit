@@ -117,6 +117,18 @@ describe('UiSearchInput — inline ghost completion', () => {
     expect(onChange).toHaveBeenCalledWith('Top performers');
   });
 
+  it('commits the option in its canonical casing when the typed prefix is lowercase', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(<ControlledSearch onChange={onChange} />);
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    await user.type(combobox, 'top');
+    await user.keyboard('{Tab}');
+    // The lowercase 'top' is corrected to the option's own casing on accept.
+    expect(combobox).toHaveValue('Top performers');
+    expect(onChange).toHaveBeenCalledWith('Top performers');
+  });
+
   it('does not accept on Shift+Tab and lets focus move backward', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();

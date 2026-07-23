@@ -18,6 +18,13 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           fontSize: '1rem',
           lineHeight: '1.125rem',
           color: colorTheme.palette.darkPrimary.main,
+          // Figma "Multiselect" hover (node 535:37484): the stroke is grey300 #969B9D,
+          // for both the empty and the filled field. This overrides the shared field
+          // theme's deliberate "pin hover to grey400"; the filled field's darker
+          // resting stroke (also grey300) is applied from the component.
+          '&:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline': {
+            borderColor: colorTheme.palette.grey300.main,
+          },
         },
         input: {
           '&::placeholder': {

@@ -38,9 +38,9 @@ const PICKED = [ROLES[0], ROLES[2]];
 // Three chips wrap onto two rows (the chevron + clear-X reserve the right edge).
 const PICKED3 = [ROLES[0], ROLES[1], ROLES[2]];
 const CONTACT = [
-  { label: 'Електронна пошта', value: 'email' },
-  { label: 'SMS', value: 'sms' },
-  { label: 'Сповіщення', value: 'push' },
+  { label: 'Пропозиція 1', value: 'email' },
+  { label: 'Пропозиція 1', value: 'sms' },
+  { label: 'Пропозиція 1', value: 'push' },
 ];
 const SUGGESTIONS = ['Топ продажники', 'Топ продажі за місяць', 'Топ продажі за рік'];
 // Calendar showcase states, all on August 2022 — it starts on a Monday and has 31

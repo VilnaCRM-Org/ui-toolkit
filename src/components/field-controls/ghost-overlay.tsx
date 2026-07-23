@@ -3,12 +3,9 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
-import { crmBreakpointValues } from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
 const palette: (typeof colorTheme)['palette'] = colorTheme.palette;
-const TABLET_MAX: string = `@media (max-width: ${crmBreakpointValues.md}px)`;
-const MOBILE_MAX: string = `@media (max-width: ${crmBreakpointValues.sm}px)`;
 
 // Pins the ghost overlay over the native input: the transparent typed mirror then
 // sits exactly on top of the real (dark) typed text, so the grey completion begins
@@ -22,10 +19,27 @@ export function alignGhostOverlay(overlay: HTMLElement): void {
   if (!(input instanceof HTMLElement)) return;
   const wrapperRect: DOMRect = wrapper.getBoundingClientRect();
   const inputRect: DOMRect = input.getBoundingClientRect();
+  // The mirror must begin where the input's TEXT begins, not at its border box: the
+  // multi-select gives its input a left padding (chips and typed text need different
+  // insets), which would otherwise push the completion left, under the last typed
+  // letters. Search/select keep the input padding at 0, so this folds in as a no-op.
+  const cs: CSSStyleDeclaration = getComputedStyle(input);
+  const padLeft: number = parseFloat(cs.paddingLeft) || 0;
   Object.assign(overlay.style, {
-    left: `${inputRect.left - wrapperRect.left}px`,
+    left: `${inputRect.left - wrapperRect.left + padLeft}px`,
     top: `${inputRect.top - wrapperRect.top}px`,
     height: `${inputRect.height}px`,
+    // Mirror the input's own type onto the overlay (the runs inherit it) so the ghost
+    // matches whatever field hosts it — search uses Inter 14, select Golos Text 15,
+    // multi-select Inter 16. Copying the computed font keeps the completion the same
+    // family/size/metrics as the typed value (and the transparent mirror the same
+    // width, so the completion starts exactly after it — not on top of it, and not
+    // vertically offset by a different font's metrics).
+    fontFamily: cs.fontFamily,
+    fontSize: cs.fontSize,
+    fontWeight: cs.fontWeight,
+    lineHeight: cs.lineHeight,
+    letterSpacing: cs.letterSpacing,
   });
 }
 
@@ -46,18 +60,13 @@ export function useGhostAlignment(
   }, [ref, completion]);
 }
 
-// The typed mirror and the completion share the input's type: Inter Medium 14/18,
-// 16 on tablet — so the transparent mirror occupies exactly the real typed width and
-// the completion reads at the same size as the value. The `ui-ghost-run` class lets a
-// forced-responsive showcase tile re-apply the tablet size directly.
+// The runs inherit their type (family/size/weight/line-height/letter-spacing) from the
+// overlay, which `alignGhostOverlay` copies off the field's own input — so the mirror is
+// exactly as wide as the typed text and the completion reads at the value's size, in
+// whatever field hosts it. Only the non-inherited bit lives here. The `ui-ghost-run`
+// class stays as a hook for a forced-responsive showcase tile.
 const runFont: SystemStyleObject<Theme> = {
-  fontFamily: 'Inter',
-  fontWeight: 500,
-  fontSize: '0.875rem',
-  lineHeight: '1.125rem',
   whiteSpace: 'pre',
-  [TABLET_MAX]: { fontSize: '1rem' },
-  [MOBILE_MAX]: { fontSize: '0.875rem' },
 };
 
 // The completion overlays the input, its left edge pinned to the input's text start

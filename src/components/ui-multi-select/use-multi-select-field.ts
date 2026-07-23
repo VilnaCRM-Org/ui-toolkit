@@ -4,6 +4,7 @@ import React from 'react';
 import {
   createFieldOptionRenderer,
   createFieldRenderInput,
+  GhostOverlay,
   hasText,
   type FieldOptionRenderer,
 } from '../field-controls';
@@ -11,6 +12,7 @@ import {
 import { announceChange } from './announce';
 import { createChipRenderer, type ChipRenderer } from './chip-renderer';
 import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
+import { useMultiSelectGhost, type MultiSelectGhost } from './use-multi-select-ghost';
 
 /** Listbox slot props: named from the field, and multi-selectable (MUI omits this). */
 export interface MultiListboxSlotProps {
@@ -19,7 +21,10 @@ export interface MultiListboxSlotProps {
 
 export interface MultiSelectField {
   status: string;
+  /** The controlled typed text (the ghost owns it), threaded back as `inputValue`. */
+  text: string;
   handleChange: (event: React.SyntheticEvent, next: UiMultiSelectOption[]) => void;
+  handleInputChange: MultiSelectGhost['handleInputChange'];
   renderInput: (params: AutocompleteRenderInputParams) => React.ReactElement;
   renderValue: ChipRenderer;
   renderOption: FieldOptionRenderer<UiMultiSelectOption>;
@@ -28,44 +33,68 @@ export interface MultiSelectField {
 
 const EMPTY: UiMultiSelectOption[] = [];
 
+// The inline ghost overlay, shown only while a completion is active (kept out of the
+// hook so the hook stays under the metrics budget).
+function ghostOverlay(ghost: MultiSelectGhost): React.ReactNode {
+  return ghost.active
+    ? React.createElement(GhostOverlay, { typed: ghost.typed, completion: ghost.completion })
+    : null;
+}
+
+// The `renderInput` factory, wired with the ghost overlay + its input key/focus
+// handlers. Placeholder shows only while empty; `required` is native only while empty
+// so a filled multi-select does not spuriously block submit (§4.4 of the spec).
+function buildRenderInput(
+  props: UiMultiSelectProps,
+  ghost: MultiSelectGhost
+): (params: AutocompleteRenderInputParams) => React.ReactElement {
+  const filled: boolean = (props.value ?? EMPTY).length > 0;
+  return createFieldRenderInput({
+    label: props.label,
+    variant: props.variant,
+    error: props.error,
+    helperText: props.helperText,
+    ariaLabel: props['aria-label'],
+    placeholder: filled ? undefined : props.placeholder,
+    required: props.required === true && !filled,
+    overlay: ghostOverlay(ghost),
+    htmlInputProps: {
+      onKeyDown: ghost.handleKeyDown,
+      onFocus: ghost.handleFocus,
+      onBlur: ghost.handleBlur,
+    },
+  });
+}
+
 // Derives the change handler (which also updates the live-region status), the
-// `renderInput`/`renderValue` callbacks and the listbox slot props for
-// UiMultiSelect, keeping the component itself small for the complexity gate.
-// These are cheap to build and MUI calls them every render, so they are not
-// memoised (memo dependency lists would otherwise blow the complexity budget).
+// controlled input text + its ghost typeahead, and the render callbacks / listbox
+// slot props for UiMultiSelect, keeping the component itself small for the
+// complexity gate. These are cheap to build and MUI calls them every render, so
+// they are not memoised (memo dependency lists would otherwise blow the budget).
 export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField {
-  const { value, onChange, label, placeholder, required, error, helperText, variant, disabled } =
-    props;
+  const { value, onChange, label } = props;
   const ariaLabel: string | undefined = props['aria-label'];
-  const selectedCount: number = (value ?? EMPTY).length;
+  const selected: UiMultiSelectOption[] = value ?? EMPTY;
   const [status, setStatus] = React.useState<string>('');
 
-  const handleChange: MultiSelectField['handleChange'] = (_event, next): void => {
+  const applySelection = (next: UiMultiSelectOption[]): void => {
     onChange?.(next);
-    setStatus(announceChange(value ?? EMPTY, next));
+    setStatus(announceChange(selected, next));
   };
+  const ghost: MultiSelectGhost = useMultiSelectGhost(props.options, selected, option =>
+    applySelection([...selected, option])
+  );
 
-  // Placeholder only while empty; `required` is native only while empty so a
-  // filled multi-select does not spuriously block submit (§4.4 of the spec).
-  const renderInput: MultiSelectField['renderInput'] = createFieldRenderInput({
-    label,
-    variant,
-    error,
-    helperText,
-    ariaLabel,
-    placeholder: selectedCount === 0 ? placeholder : undefined,
-    required: required === true && selectedCount === 0,
-  });
-
-  const renderValue: ChipRenderer = createChipRenderer(disabled === true);
-
-  // Dropdown rows split into a dark typed prefix + grey completion (Figma 535:37501).
-  const renderOption: FieldOptionRenderer<UiMultiSelectOption> =
-    createFieldOptionRenderer<UiMultiSelectOption>(option => option.label);
-
-  const slotProps: MultiListboxSlotProps = {
-    listbox: { 'aria-label': hasText(label) ? label : ariaLabel, 'aria-multiselectable': true },
+  return {
+    status,
+    text: ghost.typed,
+    handleChange: (_event, next): void => applySelection(next),
+    handleInputChange: ghost.handleInputChange,
+    renderInput: buildRenderInput(props, ghost),
+    renderValue: createChipRenderer(props.disabled === true),
+    renderOption: createFieldOptionRenderer<UiMultiSelectOption>(option => option.label),
+    slotProps: {
+      listbox: { 'aria-label': hasText(label) ? label : ariaLabel, 'aria-multiselectable': true },
+    },
   };
-
-  return { status, handleChange, renderInput, renderValue, renderOption, slotProps };
 }

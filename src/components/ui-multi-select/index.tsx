@@ -15,14 +15,13 @@ import { useMultiSelectWarnings } from './use-warnings';
 const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
 const EMPTY: UiMultiSelectOption[] = [];
 const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
-// Figma darkens the field stroke from grey400 (empty, set in the theme) to grey300
-// once chips fill it (node 535:37491). Applied from the component, which knows the
-// selection count; covers the resting and hover strokes.
+// Figma "Multiselect": the empty field stroke is grey400 #D0D4D8 (set in the theme);
+// once chips fill it the stroke is grey300 #969B9D (the filled/"active" node
+// 535:37491). Hover is grey300 for BOTH the empty and the filled field (node
+// 535:37484) and is handled by the theme, so the filled state only needs its darker
+// resting stroke here.
 const FILLED_STROKE_SX: SystemStyleObject<Theme> = {
   '& .MuiOutlinedInput-notchedOutline': { borderColor: colorTheme.palette.grey300.main },
-  '&:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline': {
-    borderColor: colorTheme.palette.grey300.main,
-  },
 };
 // When force-opened for a static demo, pin the dropdown below the field (no flip).
 const OPEN_POPPER = {
@@ -70,6 +69,8 @@ function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement 
           options={props.options}
           value={props.value ?? EMPTY}
           onChange={field.handleChange}
+          inputValue={field.text}
+          onInputChange={field.handleInputChange}
           disabled={props.disabled}
           size={props.size}
           sx={rootSx}
