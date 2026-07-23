@@ -1,5 +1,10 @@
 [
   {
+    "id": "showcase-new-components-figma-parity--figma-parity",
+    "title": "Showcase/New Components (Figma parity)",
+    "name": "Figma Parity"
+  },
+  {
     "id": "uicomponents-authskeleton--animated",
     "title": "UiComponents/AuthSkeleton",
     "name": "Animated"
@@ -55,6 +60,11 @@
     "name": "Social Button"
   },
   {
+    "id": "uicomponents-uicalendarmultiselect--calendar-multi-select",
+    "title": "UiComponents/UiCalendarMultiSelect",
+    "name": "Calendar Multi Select"
+  },
+  {
     "id": "uicomponents-uicarditem--card-item-large",
     "title": "UiComponents/UiCardItem",
     "name": "Card Item Large"
@@ -83,6 +93,16 @@
     "id": "uicomponents-uicontainer--default",
     "title": "UiComponents/UiContainer",
     "name": "Default"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--file-upload-input",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "File Upload Input"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--upload-error",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "Upload Error"
   },
   {
     "id": "uicomponents-uifooter--footer",
@@ -123,6 +143,51 @@
     "id": "uicomponents-uilink--link",
     "title": "UiComponents/UiLink",
     "name": "Link"
+  },
+  {
+    "id": "uicomponents-uimultiselect--multi-select",
+    "title": "UiComponents/UiMultiSelect",
+    "name": "Multi Select"
+  },
+  {
+    "id": "uicomponents-uipagination--disabled",
+    "title": "UiComponents/UiPagination",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uipagination--first-page",
+    "title": "UiComponents/UiPagination",
+    "name": "First Page"
+  },
+  {
+    "id": "uicomponents-uipagination--last-page",
+    "title": "UiComponents/UiPagination",
+    "name": "Last Page"
+  },
+  {
+    "id": "uicomponents-uipagination--many-pages-with-ellipsis",
+    "title": "UiComponents/UiPagination",
+    "name": "Many Pages With Ellipsis"
+  },
+  {
+    "id": "uicomponents-uipagination--pagination",
+    "title": "UiComponents/UiPagination",
+    "name": "Pagination"
+  },
+  {
+    "id": "uicomponents-uiradiogroup--radio-group",
+    "title": "UiComponents/UiRadioGroup",
+    "name": "Radio Group"
+  },
+  {
+    "id": "uicomponents-uisearchinput--search-input",
+    "title": "UiComponents/UiSearchInput",
+    "name": "Search Input"
+  },
+  {
+    "id": "uicomponents-uiselectwithsearch--select-with-search",
+    "title": "UiComponents/UiSelectWithSearch",
+    "name": "Select With Search"
   },
   {
     "id": "uicomponents-uiskeletonblock--circle",
@@ -188,45 +253,5 @@
     "id": "uicomponents-uitypography--typography",
     "title": "UiComponents/UiTypography",
     "name": "Typography"
-  },
-  {
-    "id": "uicomponents-uisearchinput--search-input",
-    "title": "UiComponents/UiSearchInput",
-    "name": "Search Input"
-  },
-  {
-    "id": "uicomponents-uiselectwithsearch--select-with-search",
-    "title": "UiComponents/UiSelectWithSearch",
-    "name": "Select With Search"
-  },
-  {
-    "id": "uicomponents-uimultiselect--multi-select",
-    "title": "UiComponents/UiMultiSelect",
-    "name": "Multi Select"
-  },
-  {
-    "id": "uicomponents-uicalendarmultiselect--calendar-multi-select",
-    "title": "UiComponents/UiCalendarMultiSelect",
-    "name": "Calendar Multi Select"
-  },
-  {
-    "id": "uicomponents-uiradiogroup--radio-group",
-    "title": "UiComponents/UiRadioGroup",
-    "name": "Radio Group"
-  },
-  {
-    "id": "uicomponents-uifileuploadinput--file-upload-input",
-    "title": "UiComponents/UiFileUploadInput",
-    "name": "File Upload Input"
-  },
-  {
-    "id": "uicomponents-uifileuploadinput--upload-error",
-    "title": "UiComponents/UiFileUploadInput",
-    "name": "Upload Error"
-  },
-  {
-    "id": "showcase-new-components-figma-parity--figma-parity",
-    "title": "Showcase/New Components (Figma parity)",
-    "name": "Figma Parity"
   }
 ]
