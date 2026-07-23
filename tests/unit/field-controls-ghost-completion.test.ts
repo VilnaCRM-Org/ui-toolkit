@@ -3,7 +3,7 @@ import type React from 'react';
 import {
   isPrefixMatch,
   splitOnPrefix,
-  firstGhostCompletion,
+  firstGhostMatch,
   isGhostAcceptKey,
 } from '../../src/components/field-controls/ghost-completion';
 
@@ -48,31 +48,31 @@ describe('splitOnPrefix', () => {
   });
 });
 
-describe('firstGhostCompletion', () => {
+describe('firstGhostMatch', () => {
   const options: string[] = ['Top performers', 'Top sales this month', 'Top sales this year'];
 
-  it('returns the completion of the first prefix-matching option', () => {
-    expect(firstGhostCompletion('Top perf', options)).toBe('ormers');
+  it('returns the whole first prefix-matching option', () => {
+    expect(firstGhostMatch('Top perf', options)).toBe('Top performers');
   });
 
-  it('preserves the original option casing in the completion', () => {
-    expect(firstGhostCompletion('top perf', options)).toBe('ormers');
+  it('returns the option in its canonical casing for a lowercase query', () => {
+    expect(firstGhostMatch('top perf', options)).toBe('Top performers');
   });
 
   it('skips options whose completion is empty (an exact match)', () => {
-    expect(firstGhostCompletion('Top performers', options)).toBe('');
+    expect(firstGhostMatch('Top performers', options)).toBe('');
   });
 
   it('returns empty when nothing prefix-matches', () => {
-    expect(firstGhostCompletion('zzz', options)).toBe('');
+    expect(firstGhostMatch('zzz', options)).toBe('');
   });
 
   it('returns empty for an empty query', () => {
-    expect(firstGhostCompletion('', options)).toBe('');
+    expect(firstGhostMatch('', options)).toBe('');
   });
 
   it('returns empty when there are no options', () => {
-    expect(firstGhostCompletion('Top', [])).toBe('');
+    expect(firstGhostMatch('Top', [])).toBe('');
   });
 });
 

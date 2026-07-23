@@ -21,15 +21,16 @@ export function splitOnPrefix(option: string, query: string): [string, string] {
 }
 
 /**
- * The ghost completion for the field: the remainder of the first option that
- * `query` prefix-matches with a non-empty completion, preserving the option's own
- * casing. Empty when nothing matches, the query is empty, or the only match is
- * exact.
+ * The first option that `query` prefix-matches with a non-empty completion, returned
+ * WHOLE in its own (canonical) casing. The field draws the remainder after the typed
+ * length as the grey ghost, and the accept gesture commits this full option — so
+ * typing `top` and accepting yields `Top performers`, not `top performers`. Empty
+ * when nothing matches, the query is empty, or the only match is exact.
  */
-export function firstGhostCompletion(query: string, options: readonly string[]): string {
+export function firstGhostMatch(query: string, options: readonly string[]): string {
   for (const option of options) {
     if (isPrefixMatch(query, option) && option.length > query.length) {
-      return option.slice(query.length);
+      return option;
     }
   }
   return '';

@@ -83,6 +83,9 @@ export default {
       fontWeight: 500,
       fontSize: '1rem',
       lineHeight: '1.125rem',
+      // Figma sets no tracking on the label; drop MUI's default body1 letter
+      // spacing (0.00938em) so the copy matches the design 1:1.
+      letterSpacing: 0,
       color: palette.darkSecondary.main,
     },
     '& .MuiFormControlLabel-label.Mui-disabled': {

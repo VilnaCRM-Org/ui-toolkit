@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { firstGhostCompletion, isGhostAcceptKey } from '../field-controls';
+import { firstGhostMatch, isGhostAcceptKey } from '../field-controls';
 
 import type { UiSearchInputProps } from './types';
 
@@ -19,7 +19,7 @@ export interface GhostText {
   handleKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-// Accept the ghost (Tab / ArrowRight-at-end) by committing typed + completion.
+// Accept the ghost (Tab / ArrowRight-at-end) by committing the matched option.
 // `preventDefault` cancels the browser's focus/caret move; we deliberately do NOT
 // `stopPropagation`, so an ancestor focus-trap or shortcut still sees the key.
 function acceptCompletion(
@@ -45,7 +45,8 @@ export function useGhostText(props: UiSearchInputProps): GhostText {
     if (value !== undefined) setText(value);
   }, [value]);
 
-  const completion: string = firstGhostCompletion(text, options ?? EMPTY);
+  const match: string = firstGhostMatch(text, options ?? EMPTY);
+  const completion: string = match.length > 0 ? match.slice(text.length) : '';
   const active: boolean = (focused || open === true) && completion.length > 0;
 
   const commit = (next: string): void => {
@@ -60,7 +61,8 @@ export function useGhostText(props: UiSearchInputProps): GhostText {
     handleInputChange: (_event: React.SyntheticEvent, next: string): void => commit(next),
     handleFocus: (): void => setFocused(true),
     handleBlur: (): void => setFocused(false),
-    handleKeyDown: (event): void =>
-      acceptCompletion(active, event, () => commit(text + completion)),
+    // Commit the WHOLE matched option (canonical casing), not text+completion, so a
+    // lowercase prefix is corrected on accept (`top` → `Top performers`).
+    handleKeyDown: (event): void => acceptCompletion(active, event, () => commit(match)),
   };
 }
