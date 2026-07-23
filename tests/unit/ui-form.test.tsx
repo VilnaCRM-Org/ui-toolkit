@@ -220,7 +220,7 @@ describe('UiForm (mutation hardening)', () => {
 
     const banner: HTMLElement = screen.getByRole('alert');
     expect(banner).toHaveTextContent('Request failed');
-    expect(banner).toHaveStyle({ color: 'red', marginBottom: '1rem' });
+    expect(banner).toHaveStyle({ color: 'rgb(255, 0, 0)', marginBottom: '1rem' });
   });
 
   it('seeds the registered field from defaultValues', () => {
