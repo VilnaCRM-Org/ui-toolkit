@@ -23,6 +23,7 @@ const expectedPublicExports: string[] = [
   'Layout',
   'UiLink',
   'UiMultiSelect',
+  'UiPagination',
   'UiRadioGroup',
   'UiSearchInput',
   'UiSelectWithSearch',
