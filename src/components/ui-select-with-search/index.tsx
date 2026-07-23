@@ -1,9 +1,8 @@
 import { Autocomplete, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { outlinedFieldTheme } from '../field-controls';
+import { ChevronDownGlyph, outlinedFieldTheme } from '../field-controls';
 
-import { ChevronDownGlyph } from './icons';
 import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
 import { useSelectField } from './use-select-field';
 import { useSelectAccessibilityWarnings } from './use-warnings';
