@@ -125,6 +125,21 @@
     "name": "Link"
   },
   {
+    "id": "uicomponents-uimultiselect--multi-select",
+    "title": "UiComponents/UiMultiSelect",
+    "name": "Multi Select"
+  },
+  {
+    "id": "uicomponents-uisearchinput--search-input",
+    "title": "UiComponents/UiSearchInput",
+    "name": "Search Input"
+  },
+  {
+    "id": "uicomponents-uiselectwithsearch--select-with-search",
+    "title": "UiComponents/UiSelectWithSearch",
+    "name": "Select With Search"
+  },
+  {
     "id": "uicomponents-uiskeletonblock--circle",
     "title": "UiComponents/UiSkeletonBlock",
     "name": "Circle"
