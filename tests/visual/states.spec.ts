@@ -136,7 +136,7 @@ test.describe('Visual states (Figma state grid)', () => {
 
   test('file upload pill hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uifileuploadinput--file-upload-input');
-    await page.getByText('Upload').hover();
+    await page.getByText('Загрузити').hover();
     await shoot(page, 'file-upload-hover.png');
   });
 
