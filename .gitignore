@@ -13,6 +13,9 @@ out/
 # production
 build/
 
+# type-declaration rollup scratch dir (tsc -> API Extractor)
+temp/
+
 # misc
 .DS_Store
 *.pem
