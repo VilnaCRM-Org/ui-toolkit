@@ -78,7 +78,15 @@ export function buildMonthMatrix(anchor: Date): CalendarCell[][] {
 
 /** Accessible name for a day cell, e.g. `15 July 2026` (day-first, localised month). */
 export function formatDayLabel(date: Date, locale: string): string {
-  return `${date.getDate()} ${monthName(date, locale)} ${date.getFullYear()}`;
+  // Day-context month form (genitive in inflected locales, e.g. uk "6 липня"),
+  // built branchlessly so the 100% gate has no unreachable fallback: filter→join
+  // yields the month part's value, or '' in the (never-hit) no-part case.
+  const month: string = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long' })
+    .formatToParts(date)
+    .filter(part => part.type === 'month')
+    .map(part => part.value)
+    .join('');
+  return `${date.getDate()} ${month} ${date.getFullYear()}`;
 }
 
 /** Caption for the month header, e.g. `July 2026`. The month is capitalised —

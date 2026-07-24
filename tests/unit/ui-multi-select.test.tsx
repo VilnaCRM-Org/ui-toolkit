@@ -30,7 +30,13 @@ describe('UiMultiSelect — filled-field stroke merge', () => {
         sx={{ marginTop: '4px' }}
       />
     );
-    expect(screen.getByRole('combobox', { name: 'Cities' })).toBeInTheDocument();
+    const combobox: HTMLElement = screen.getByRole('combobox', { name: 'Cities' });
+    expect(combobox).toBeInTheDocument();
+    // The consumer sx merges onto the Autocomplete root alongside the filled stroke;
+    // assert the merged style actually reaches the DOM (not just that the field renders).
+    // eslint-disable-next-line testing-library/no-node-access -- root wrapper, no semantic query
+    const root: HTMLElement | null = combobox.closest('.MuiAutocomplete-root');
+    expect(root).toHaveStyle({ marginTop: '4px' });
   });
 
   it('merges a consumer sx array while chips fill the field', () => {
@@ -43,7 +49,11 @@ describe('UiMultiSelect — filled-field stroke merge', () => {
         sx={[{ marginTop: '4px' }]}
       />
     );
-    expect(screen.getByRole('combobox', { name: 'Cities' })).toBeInTheDocument();
+    const combobox: HTMLElement = screen.getByRole('combobox', { name: 'Cities' });
+    expect(combobox).toBeInTheDocument();
+    // eslint-disable-next-line testing-library/no-node-access -- root wrapper, no semantic query
+    const root: HTMLElement | null = combobox.closest('.MuiAutocomplete-root');
+    expect(root).toHaveStyle({ marginTop: '4px' });
   });
 });
 
@@ -110,6 +120,11 @@ describe('UiMultiSelect — rendering and accessible name', () => {
       />
     );
     expect(screen.queryByPlaceholderText('Pick some')).not.toBeInTheDocument();
+  });
+
+  it('force-opens the dropdown inline (demo props)', () => {
+    render(<UiMultiSelect aria-label="Roles" options={options} open disablePortal />);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 });
 
@@ -495,10 +510,5 @@ describe('UiMultiSelect — accessibility guidance', () => {
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
     rerender(<UiMultiSelect options={options} onChange={noop} />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
-  });
-
-  it('force-opens the dropdown inline (demo props)', () => {
-    render(<UiMultiSelect aria-label="Roles" options={options} open disablePortal />);
-    expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 });

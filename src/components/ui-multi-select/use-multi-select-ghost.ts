@@ -44,6 +44,9 @@ function findGhostMatch(
 // listbox option (no `aria-activedescendant`): with a highlight present, Enter must
 // stay MUI's own "select the highlighted option", not steal it for the ghost.
 function shouldAccept(event: React.KeyboardEvent<HTMLInputElement>): boolean {
+  // While an IME composition is active, the Enter/Tab that confirms the composed
+  // candidate must reach the input — never commit the ghost chip mid-composition.
+  if (event.nativeEvent.isComposing) return false;
   if (isGhostAcceptKey(event)) return true;
   const active: string | null = event.currentTarget.getAttribute('aria-activedescendant');
   return event.key === 'Enter' && (active === null || active === '');

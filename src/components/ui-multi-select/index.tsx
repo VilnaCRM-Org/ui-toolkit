@@ -3,7 +3,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
-import { ChevronDownGlyph, FieldLabel, hasText } from '../field-controls';
+import { ChevronDownGlyph, FieldLabel, hasText, OPEN_FIELD_POPPER } from '../field-controls';
 import colorTheme from '../ui-color-theme';
 
 import { srOnlySx } from './styles';
@@ -23,15 +23,6 @@ const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
 const FILLED_STROKE_SX: SystemStyleObject<Theme> = {
   '& .MuiOutlinedInput-notchedOutline': { borderColor: colorTheme.palette.grey300.main },
 };
-// When force-opened for a static demo, pin the dropdown below the field (no flip).
-const OPEN_POPPER = {
-  placement: 'bottom-start' as const,
-  modifiers: [
-    { name: 'flip', enabled: false },
-    { name: 'preventOverflow', enabled: false },
-  ],
-};
-
 function isOptionEqualToValue(option: UiMultiSelectOption, value: UiMultiSelectOption): boolean {
   return option.value === value.value;
 }
@@ -83,7 +74,9 @@ function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement 
           renderInput={field.renderInput}
           renderValue={field.renderValue}
           renderOption={field.renderOption}
-          slotProps={props.open ? { ...field.slotProps, popper: OPEN_POPPER } : field.slotProps}
+          slotProps={
+            props.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps
+          }
         />
       </Box>
       <Box role="status" aria-atomic="true" sx={srOnlySx}>

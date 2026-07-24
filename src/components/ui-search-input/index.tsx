@@ -1,7 +1,12 @@
 import { Autocomplete, Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { createFieldOptionRenderer, FieldLabel, hasText } from '../field-controls';
+import {
+  createFieldOptionRenderer,
+  FieldLabel,
+  hasText,
+  OPEN_FIELD_POPPER,
+} from '../field-controls';
 
 import theme from './theme';
 import type { UiSearchInputProps } from './types';
@@ -12,16 +17,6 @@ const EMPTY_OPTIONS: string[] = [];
 // Suggestion rows split into a dark typed prefix + grey completion (Figma 439:19399).
 const renderSearchOption = createFieldOptionRenderer<string>(option => option);
 const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
-// When the dropdown is force-opened for a static demo, keep it pinned below the
-// field (no viewport flip) so it renders predictably in showcase/state tiles.
-const OPEN_POPPER = {
-  placement: 'bottom-start' as const,
-  modifiers: [
-    { name: 'flip', enabled: false },
-    { name: 'preventOverflow', enabled: false },
-  ],
-};
-
 function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement {
   useSearchWarnings(props);
   const field: ReturnType<typeof useSearchField> = useSearchField(props);
@@ -30,7 +25,7 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={FIELD_STACK_SX}>
+      <Box sx={[FIELD_STACK_SX, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}>
         {hasText(props.label) && (
           <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
             {props.label}
@@ -43,7 +38,6 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
           onInputChange={field.handleInputChange}
           disabled={props.disabled}
           size={props.size}
-          sx={props.sx}
           id={fieldId}
           popupIcon={null}
           disableClearable
@@ -52,7 +46,9 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
           noOptionsText={props.noOptionsText}
           renderOption={renderSearchOption}
           renderInput={field.renderInput}
-          slotProps={props.open ? { ...field.slotProps, popper: OPEN_POPPER } : field.slotProps}
+          slotProps={
+            props.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps
+          }
         />
       </Box>
     </ThemeProvider>

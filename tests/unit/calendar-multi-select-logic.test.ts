@@ -132,7 +132,7 @@ describe('calendar view-model — buildCellRows', () => {
   it('localises the day accessible name from the locale', () => {
     const rows: CellDescriptor[][] = buildCellRows({ ...base, locale: 'uk-UA' });
     // Ukrainian (nominative) month name for July via Intl.
-    expect(dayByIso(rows, '2026-07-06').label).toBe('6 липень 2026, in range');
+    expect(dayByIso(rows, '2026-07-06').label).toBe('6 липня 2026, in range');
   });
 
   it('sizes the grid to the weeks the month spans, seven days each', () => {

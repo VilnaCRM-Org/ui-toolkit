@@ -35,9 +35,13 @@ function rangeAnnouncement(next: string[], locale: string): string {
 }
 
 export function selectDay(ctx: ActionContext, iso: string): void {
-  const next: string[] = applyRangeEndpoint(ctx.model.selectedSorted, iso);
-  ctx.props.onChange?.(next);
   ctx.model.setFocusedISO(iso);
+  const { onChange } = ctx.props;
+  if (onChange == null) {
+    return; // read-only calendar: value cannot change, so announce nothing
+  }
+  const next: string[] = applyRangeEndpoint(ctx.model.selectedSorted, iso);
+  onChange(next);
   ctx.model.setAnnouncement(rangeAnnouncement(next, ctx.props.locale ?? DEFAULT_LOCALE));
 }
 
@@ -103,12 +107,13 @@ function tryNavigateKey(ctx: ActionContext, event: React.KeyboardEvent): void {
 // clears the pending start and stays put. With nothing pending it is a no-op that
 // bubbles, so a containing dialog can still close on Escape (no 2.1.2 trap).
 function tryCancelKey(ctx: ActionContext, event: React.KeyboardEvent): boolean {
-  if (event.key !== 'Escape' || ctx.model.selectedSorted.length !== 1) {
+  const { onChange } = ctx.props;
+  if (onChange == null || event.key !== 'Escape' || ctx.model.selectedSorted.length !== 1) {
     return false;
   }
   event.preventDefault();
   event.stopPropagation();
-  ctx.props.onChange?.([]);
+  onChange([]);
   ctx.model.setAnnouncement('Range selection cancelled');
   return true;
 }
