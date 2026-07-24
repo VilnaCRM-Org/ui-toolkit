@@ -7,7 +7,15 @@ services:
     restart: unless-stopped
   storybook:
     build: .
-    command: ['sh', '-lc', 'CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 6006']
+    # Serve a STATIC Storybook build (not `storybook dev`): the dev server's async
+    # HMR lets toHaveScreenshot capture a stale in-transit frame, so baselines silently
+    # drift from the live render. A static build renders deterministically on first paint.
+    command:
+      [
+        'sh',
+        '-lc',
+        'bun x storybook build --output-dir /app/storybook-static --quiet && python3 -m http.server 6006 --bind 0.0.0.0 --directory /app/storybook-static',
+      ]
   playwright:
     build:
       context: .

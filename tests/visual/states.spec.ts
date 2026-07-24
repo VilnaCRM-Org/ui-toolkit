@@ -28,7 +28,7 @@ function root(page: Page): Locator {
 }
 
 async function shoot(page: Page, name: string): Promise<void> {
-  await expect(root(page)).toHaveScreenshot(name, { maxDiffPixelRatio: 0.02 });
+  await expect(root(page)).toHaveScreenshot(name);
 }
 
 test.describe('Visual states (Figma state grid)', () => {

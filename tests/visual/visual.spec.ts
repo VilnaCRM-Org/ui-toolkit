@@ -42,7 +42,6 @@ test.describe('Visual regression (Storybook stories)', () => {
 
       await expect(page).toHaveScreenshot(`${story.id}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
         animations: 'disabled',
       });
     });
