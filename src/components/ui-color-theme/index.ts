@@ -55,6 +55,24 @@ export const sharedPalette: Record<string, { main: string }> = {
   containedButtonHover: {
     main: '#00A3FF',
   },
+  // REST-method hover accents for the item row (border + badge text darken on
+  // hover; the rest accents reuse primary/secondary/success/error).
+  getMethodHover: {
+    main: '#0091E2',
+  },
+  putMethodHover: {
+    main: '#DD9F00',
+  },
+  postMethodHover: {
+    main: '#00AE70',
+  },
+  deleteMethodHover: {
+    main: '#FF2F2F',
+  },
+  // Muted (grey) item row: badge text + path darken to this ink on hover.
+  mutedInkHover: {
+    main: '#1C2022',
+  },
   containedButtonActive: {
     main: '#0399ED',
   },

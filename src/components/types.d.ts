@@ -43,6 +43,11 @@ declare module '@mui/material/styles' {
     backgroundGrey300: Palette['primary'];
     containedButtonHover: Palette['primary'];
     containedButtonActive: Palette['primary'];
+    getMethodHover: Palette['primary'];
+    putMethodHover: Palette['primary'];
+    postMethodHover: Palette['primary'];
+    deleteMethodHover: Palette['primary'];
+    mutedInkHover: Palette['primary'];
     notchDeskBefore: Palette['primary'];
     notchDeskAfter: Palette['primary'];
     notchMobileBefore: Palette['primary'];
@@ -67,6 +72,11 @@ declare module '@mui/material/styles' {
     backgroundGrey300?: PaletteOptions['primary'];
     containedButtonHover?: PaletteOptions['primary'];
     containedButtonActive?: PaletteOptions['primary'];
+    getMethodHover?: PaletteOptions['primary'];
+    putMethodHover?: PaletteOptions['primary'];
+    postMethodHover?: PaletteOptions['primary'];
+    deleteMethodHover?: PaletteOptions['primary'];
+    mutedInkHover?: PaletteOptions['primary'];
     notchDeskBefore?: PaletteOptions['primary'];
     notchDeskAfter?: PaletteOptions['primary'];
     notchMobileBefore?: PaletteOptions['primary'];
