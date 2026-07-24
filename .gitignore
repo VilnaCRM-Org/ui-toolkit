@@ -72,3 +72,6 @@ tests/memory-leak/results
 !.qlty/qlty.toml
 .ralph/logs/
 _bmad-output/
+
+# Claude Code autoharness session/tool artifacts (local only, never committed)
+.claude/autoharness/

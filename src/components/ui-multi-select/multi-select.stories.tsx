@@ -6,20 +6,20 @@ import {
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
 
-import type { UiSelectWithSearchOption } from './types';
+import type { UiMultiSelectOption } from './types';
 
-import UiSelectWithSearch from './index';
+import UiMultiSelect from './index';
 
-const options: UiSelectWithSearchOption[] = [
+const options: UiMultiSelectOption[] = [
   { label: 'Kyiv', value: 'kyiv' },
   { label: 'Lviv', value: 'lviv' },
   { label: 'Odesa', value: 'odesa' },
   { label: 'Kharkiv', value: 'kharkiv' },
 ];
 
-const meta: Meta<typeof UiSelectWithSearch> = {
-  title: 'UiComponents/UiSelectWithSearch',
-  component: UiSelectWithSearch,
+const meta: Meta<typeof UiMultiSelect> = {
+  title: 'UiComponents/UiMultiSelect',
+  component: UiMultiSelect,
   tags: ['autodocs'],
   argTypes: {
     label: textControlArgType('Visible label / accessible name for the combobox'),
@@ -31,13 +31,15 @@ const meta: Meta<typeof UiSelectWithSearch> = {
 
 export default meta;
 
-type Story = StoryObj<typeof UiSelectWithSearch>;
+type Story = StoryObj<typeof UiMultiSelect>;
 
-export const SelectWithSearch: Story = {
+export const MultiSelect: Story = {
   args: {
     options,
-    label: t('City'),
-    placeholder: t('Search city'),
+    // Two preselected chips give the visual baseline something to render.
+    value: [options[0], options[2]],
+    label: t('Cities'),
+    placeholder: t('Select cities'),
     error: false,
   },
 };
