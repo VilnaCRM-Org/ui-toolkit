@@ -1,8 +1,9 @@
 import * as esbuild from 'esbuild';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, rmSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createRequire } from 'module';
+import { execFileSync } from 'child_process';
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDir = path.dirname(currentFile);
@@ -33,6 +34,51 @@ if (!existsSync(entryPoint)) {
     'Skipping build because this bootstrap PR does not include src/components/index.ts yet.\n'
   );
   process.exit(0);
+}
+
+async function generateTypeDeclarations() {
+  // esbuild does not emit type declarations, so the library's published `.d.ts`
+  // is produced in two steps: tsc emits per-file declarations (keeping the `@/*`
+  // path aliases) under temp/dts, then API Extractor rolls them into a single
+  // self-contained build/index.d.ts (resolving the aliases and inlining internals).
+  //
+  // tsc does not prune stale declarations for deleted/renamed sources, so a reused
+  // temp/dts could feed API Extractor leftover files and make the rollup depend on
+  // build history. Start from a clean intermediate directory for a deterministic result.
+  const dtsOutDir = path.resolve(currentDir, 'temp', 'dts');
+  rmSync(dtsOutDir, { recursive: true, force: true });
+
+  const tscBin = require.resolve('typescript/bin/tsc');
+  execFileSync(process.execPath, [tscBin, '-p', path.resolve(currentDir, 'tsconfig.dts.json')], {
+    stdio: 'inherit',
+    cwd: currentDir,
+  });
+
+  const { Extractor, ExtractorConfig } = await import('@microsoft/api-extractor');
+  const extractorConfig = ExtractorConfig.loadFileAndPrepare(
+    path.resolve(currentDir, 'api-extractor.json')
+  );
+  const result = Extractor.invoke(extractorConfig, {
+    localBuild: true,
+    showVerboseMessages: false,
+  });
+  if (!result.succeeded) {
+    throw new Error(
+      `API Extractor failed with ${result.errorCount} error(s) and ${result.warningCount} warning(s).`
+    );
+  }
+
+  // Invariant: the rollup must be self-contained. Fail the build if any internal
+  // `@/*` path-alias reference leaked through instead of being inlined — such a file
+  // would not resolve for consumers of the published package. Covers every alias form
+  // emitted into a `.d.ts`: `from "@/…"`, side-effect `import "@/…"`, and inline
+  // dynamic-import types `import("@/…").Type`.
+  const rollupPath = path.resolve(currentDir, 'build', 'index.d.ts');
+  if (/(?:\bfrom\s+|\bimport\s*\(?\s*)['"]@\//.test(readFileSync(rollupPath, 'utf8'))) {
+    throw new Error(
+      'build/index.d.ts contains unresolved "@/..." path-alias imports; the API Extractor rollup did not inline them.'
+    );
+  }
 }
 
 esbuild
@@ -74,7 +120,8 @@ esbuild
       'process.env.NODE_ENV': '"production"',
     },
   })
+  .then(generateTypeDeclarations)
   .catch(error => {
-    process.stderr.write(`esbuild failed: ${error.message ?? error}\n`);
+    process.stderr.write(`Build failed: ${error.message ?? error}\n`);
     process.exit(1);
   });
