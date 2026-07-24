@@ -132,7 +132,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
             [TABLET_MAX]: { minHeight: '3.875rem', fontSize: '1rem', paddingLeft: '1.375rem' },
             [MOBILE_MAX]: { minHeight: '3.25rem', fontSize: '0.875rem', paddingLeft: '1.1875rem' },
             '&.Mui-focused': {
-              backgroundColor: '#FBFBFB',
+              backgroundColor: colorTheme.palette.backgroundGrey100.main,
             },
           },
         },

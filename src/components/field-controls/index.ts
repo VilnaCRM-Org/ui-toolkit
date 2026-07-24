@@ -15,4 +15,5 @@ export { createFieldOptionRenderer } from './field-option';
 export type { FieldOptionRenderer, OptionProps } from './field-option';
 export { useListboxSlotProps } from './use-listbox-slot-props';
 export type { ListboxSlotProps } from './use-listbox-slot-props';
+export { OPEN_FIELD_POPPER } from './open-field-popper';
 export { useFieldAccessibilityWarnings } from './use-field-warnings';

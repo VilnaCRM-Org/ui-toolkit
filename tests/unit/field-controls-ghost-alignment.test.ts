@@ -82,4 +82,31 @@ describe('useGhostAlignment', () => {
     const ref: React.RefObject<HTMLElement | null> = { current: null };
     expect(() => renderHook(() => useGhostAlignment(ref, 'ost'))).not.toThrow();
   });
+
+  it('pins the overlay and registers a resize listener it tears down on unmount', () => {
+    const wrapper: HTMLDivElement = document.createElement('div');
+    const input: HTMLInputElement = document.createElement('input');
+    input.style.paddingLeft = '17px';
+    wrapper.appendChild(input);
+    const overlay: HTMLDivElement = document.createElement('div');
+    wrapper.appendChild(overlay);
+    document.body.appendChild(wrapper);
+    const ref: React.RefObject<HTMLElement | null> = { current: overlay };
+    const addSpy: jest.SpyInstance = jest.spyOn(window, 'addEventListener');
+    const removeSpy: jest.SpyInstance = jest.spyOn(window, 'removeEventListener');
+
+    const { unmount } = renderHook(() => useGhostAlignment(ref, 'ost'));
+
+    // alignGhostOverlay ran against the element, folding the input's 17px left padding in.
+    expect(overlay).toHaveStyle({ left: '17px' });
+    expect(addSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+
+    unmount();
+    // The resize listener is removed on unmount, so the field leaks nothing.
+    expect(removeSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+
+    addSpy.mockRestore();
+    removeSpy.mockRestore();
+    document.body.removeChild(wrapper);
+  });
 });

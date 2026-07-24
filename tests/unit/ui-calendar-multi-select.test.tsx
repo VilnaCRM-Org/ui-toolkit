@@ -226,8 +226,8 @@ describe('UiCalendarMultiSelect — range selection semantics', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/жовтень 2025/i);
 
     // Selecting a day localises the range announcement too (selectDay).
-    await user.click(screen.getByRole('gridcell', { name: /^5 жовтень 2025/ }));
-    expect(screen.getByRole('status')).toHaveTextContent(/5 жовтень 2025/i);
+    await user.click(screen.getByRole('gridcell', { name: /^5 жовтня 2025/ }));
+    expect(screen.getByRole('status')).toHaveTextContent(/5 жовтня 2025/i);
   });
 });
 

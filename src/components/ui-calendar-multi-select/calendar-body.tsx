@@ -4,7 +4,7 @@ import React from 'react';
 import DayCell from './day-cell';
 import PaddingCell from './padding-cell';
 import rowBandBackground from './range-band';
-import { dayRowSx, rowGroupSx, type CalendarSize } from './styles';
+import { dayRowSx, rowGroupSx } from './styles';
 import type { CalendarController } from './use-calendar';
 import type { CalendarField } from './use-calendar-field';
 import type { CellDescriptor } from './view-model';
@@ -41,7 +41,6 @@ function renderCell(cell: CellDescriptor, ctx: CellContext): React.ReactElement 
 
 // The six week rows of the month grid, each carrying its slice of the range band.
 function CalendarBody({ field, calendar }: Readonly<CalendarBodyProps>): React.ReactElement {
-  const size: CalendarSize = field.size;
   const ctx: CellContext = {
     interactive: !field.disabled,
     rovingRef: calendar.rovingRef,
@@ -50,7 +49,7 @@ function CalendarBody({ field, calendar }: Readonly<CalendarBodyProps>): React.R
   return (
     <Box role="rowgroup" sx={rowGroupSx}>
       {calendar.cellRows.map(row => (
-        <Box role="row" key={cellKey(row[0])} sx={dayRowSx(rowBandBackground(row, size))}>
+        <Box role="row" key={cellKey(row[0])} sx={dayRowSx(rowBandBackground(row))}>
           {row.map(cell => renderCell(cell, ctx))}
         </Box>
       ))}

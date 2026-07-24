@@ -88,6 +88,7 @@ describe('isGhostAcceptKey', () => {
   it('accepts on ArrowRight only when the caret is at the very end', () => {
     expect(isGhostAcceptKey(acceptKeyEvent('ArrowRight', { value: 'Top', caret: 3 }))).toBe(true);
     expect(isGhostAcceptKey(acceptKeyEvent('ArrowRight', { value: 'Top', caret: 1 }))).toBe(false);
+    expect(isGhostAcceptKey(acceptKeyEvent('ArrowRight', { value: '', caret: 0 }))).toBe(true);
   });
 
   it('ignores any other key', () => {

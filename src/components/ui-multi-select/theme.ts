@@ -22,7 +22,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           // for both the empty and the filled field. This overrides the shared field
           // theme's deliberate "pin hover to grey400"; the filled field's darker
           // resting stroke (also grey300) is applied from the component.
-          '&:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline': {
+          '&:hover:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
             borderColor: colorTheme.palette.grey300.main,
           },
         },
@@ -102,7 +102,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
             fontWeight: 500,
             color: colorTheme.palette.darkPrimary.main,
             '&.Mui-focused': {
-              backgroundColor: '#FBFBFB',
+              backgroundColor: colorTheme.palette.backgroundGrey100.main,
             },
             // A chosen row (rendered as a chip) is aria-selected: give it the brand
             // faint-blue wash that matches its chip, so chosen items read as chosen and

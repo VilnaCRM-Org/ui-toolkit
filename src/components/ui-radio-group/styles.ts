@@ -90,6 +90,7 @@ export default {
     },
     '& .MuiFormControlLabel-label.Mui-disabled': {
       color: palette.darkSecondary.main,
+      opacity: 0.6,
     },
   },
 };

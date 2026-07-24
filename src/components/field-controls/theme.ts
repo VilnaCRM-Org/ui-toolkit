@@ -19,7 +19,7 @@ const outlinedFieldTheme: Theme = createTheme({
           // hover stroke to the resting grey400 so search's stroke does not change,
           // select darkens FROM its lighter brand-gray TO this grey400, and
           // multi-select overrides it back to its own grey300 rest.
-          '&:hover:not(.Mui-focused) .MuiOutlinedInput-notchedOutline': {
+          '&:hover:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
             borderColor: colorTheme.palette.grey400.main,
           },
           // Focus keeps a visible 1px grey250 stroke as the keyboard focus indicator

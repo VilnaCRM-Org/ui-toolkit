@@ -38,19 +38,19 @@ function acceptCompletion(
 // visual overlay — so MUI's freeSolo never concatenates it into the value.
 export function useGhostText(props: UiSearchInputProps): GhostText {
   const { value, onChange, options, open } = props;
-  const [text, setText] = React.useState<string>(value ?? '');
+  const [uncontrolledText, setUncontrolledText] = React.useState<string>(value ?? '');
   const [focused, setFocused] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    if (value !== undefined) setText(value);
-  }, [value]);
+  // A supplied `value` is authoritative: derive the displayed text from it and only
+  // mutate local state in the uncontrolled case, so typing or accepting a ghost cannot
+  // diverge from a controlled parent that keeps `value` unchanged.
+  const text: string = value ?? uncontrolledText;
 
   const match: string = firstGhostMatch(text, options ?? EMPTY);
   const completion: string = match.length > 0 ? match.slice(text.length) : '';
   const active: boolean = (focused || open === true) && completion.length > 0;
 
   const commit = (next: string): void => {
-    setText(next);
+    if (value === undefined) setUncontrolledText(next);
     onChange?.(next);
   };
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
@@ -113,6 +113,18 @@ describe('UiMultiSelect — inline ghost completion', () => {
     expect(onChange).toHaveBeenCalledWith([{ label: 'Designer', value: 'design' }]);
   });
 
+  it('does not commit the ghost while an IME composition is active', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(<ControlledMultiSelect onChange={onChange} />);
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    await user.type(combobox, 'Des'); // ghost completion = Designer
+    // Enter dispatched mid-IME-composition must reach the input to confirm the composed
+    // candidate — it must never be stolen to commit the ghosted chip.
+    fireEvent.keyDown(combobox, { key: 'Enter', isComposing: true });
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('lets Enter select the arrow-highlighted option instead of the ghost match', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
@@ -145,6 +157,6 @@ describe('UiMultiSelect — inline ghost completion', () => {
     const combobox: HTMLElement = screen.getByRole('combobox');
     await user.type(combobox, 'Des');
     await user.keyboard('{ArrowRight}');
-    expect(combobox).toBeInTheDocument();
+    expect(combobox).toHaveValue('');
   });
 });

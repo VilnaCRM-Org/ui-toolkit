@@ -1,7 +1,7 @@
 import { Autocomplete, Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { ChevronDownGlyph, FieldLabel, hasText } from '../field-controls';
+import { ChevronDownGlyph, FieldLabel, hasText, OPEN_FIELD_POPPER } from '../field-controls';
 
 import selectTheme from './theme';
 import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
@@ -10,15 +10,6 @@ import { useSelectAccessibilityWarnings } from './use-warnings';
 
 const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
 const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
-// When force-opened for a static demo, pin the dropdown below the field (no flip).
-const OPEN_POPPER = {
-  placement: 'bottom-start' as const,
-  modifiers: [
-    { name: 'flip', enabled: false },
-    { name: 'preventOverflow', enabled: false },
-  ],
-};
-
 function isOptionEqualToValue(
   option: UiSelectWithSearchOption,
   value: UiSelectWithSearchOption
@@ -54,7 +45,9 @@ function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.Rea
           open={props.open}
           disablePortal={props.disablePortal}
           renderInput={field.renderInput}
-          slotProps={props.open ? { ...field.slotProps, popper: OPEN_POPPER } : field.slotProps}
+          slotProps={
+            props.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps
+          }
         />
       </Box>
     </ThemeProvider>

@@ -28,7 +28,7 @@ export type CalendarSize = 'small' | 'medium';
 // is `7×24 + 6×gap`: medium = 260px (card 308px with the 24px padding, matching
 // Figma node 606:42007), small keeps the tighter ~10px gap.
 export const CIRCLE_PX: number = 24;
-export const GRID_PX: Record<CalendarSize, number> = { small: 228, medium: 260 };
+const GRID_PX: Record<CalendarSize, number> = { small: 228, medium: 260 };
 export const BAND: string = 'rgba(30, 174, 255, 0.1)';
 
 // Only merged into the consumer sx by `mergeRootSx`, so kept module-local. Block-
