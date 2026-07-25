@@ -55,6 +55,11 @@
     "name": "Social Button"
   },
   {
+    "id": "uicomponents-uicalendarmultiselect--calendar-multi-select",
+    "title": "UiComponents/UiCalendarMultiSelect",
+    "name": "Calendar Multi Select"
+  },
+  {
     "id": "uicomponents-uicarditem--card-item-large",
     "title": "UiComponents/UiCardItem",
     "name": "Card Item Large"
@@ -128,6 +133,11 @@
     "id": "uicomponents-uimultiselect--multi-select",
     "title": "UiComponents/UiMultiSelect",
     "name": "Multi Select"
+  },
+  {
+    "id": "uicomponents-uiradiogroup--radio-group",
+    "title": "UiComponents/UiRadioGroup",
+    "name": "Radio Group"
   },
   {
     "id": "uicomponents-uisearchinput--search-input",

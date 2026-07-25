@@ -1,0 +1,68 @@
+import type { SxProps, Theme } from '@mui/material';
+
+import colorTheme from '@/components/ui-color-theme';
+
+const palette: Theme['palette'] = colorTheme.palette;
+
+// Figma "radiobutton" (node 151:6441): a 20px circle with a white fill. The
+// unselected state is a 1px #D0D4D8 stroke; the selected state is a 5px #1EAEFF
+// ring — the thick primary border leaves a white centre, the classic filled
+// radio look. Both colours are existing tokens (grey400 / primary). States the
+// Figma frame does not specify (hover / disabled / error) reuse the established
+// UiCheckbox / multi-select treatments — see the Story 2.4 implementation
+// artifact. Contrast hardening of the tokens is deferred to the
+// accessibility-visuals PR (per Story 1.3), consistent with the other controls.
+const dotBase: SxProps<Theme> = {
+  display: 'block',
+  width: '1.25rem',
+  height: '1.25rem',
+  borderRadius: '50%',
+  boxSizing: 'border-box',
+  backgroundColor: palette.white.main,
+} as const;
+
+const checkedDot: SxProps<Theme> = {
+  border: `5px solid ${palette.primary.main}`,
+};
+
+const baseRadio: SxProps<Theme> = {
+  padding: 0,
+  marginRight: '0.5rem',
+  // Compound selector (.ui-radio-dot.ui-radio-dot--checked) so the selected ring
+  // wins over the base `.ui-radio-dot` rule regardless of emitted order.
+  '& .ui-radio-dot.ui-radio-dot--checked': checkedDot,
+  '&:hover:not(.Mui-disabled) .ui-radio-dot': {
+    cursor: 'pointer',
+    borderColor: palette.primary.main,
+  },
+  // Preserve the selection indicator when disabled (unlike a checkbox, a radio
+  // is often pre-selected + disabled) by dimming rather than flattening to grey.
+  '&.Mui-disabled': {
+    opacity: 0.6,
+    '& .ui-radio-dot': { cursor: 'default' },
+  },
+};
+
+export default {
+  radio: {
+    ...baseRadio,
+    '& .ui-radio-dot': {
+      ...dotBase,
+      border: `1px solid ${palette.grey400.main}`,
+    },
+  },
+  radioError: {
+    ...baseRadio,
+    '& .ui-radio-dot': {
+      ...dotBase,
+      border: `1px solid ${palette.error.main}`,
+    },
+  },
+  groupLabel: {
+    marginBottom: '0.5rem',
+    fontFamily: 'Inter',
+    fontWeight: 500,
+    fontSize: '0.875rem',
+    lineHeight: '1.125rem',
+  },
+};
