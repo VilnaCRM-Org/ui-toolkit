@@ -12,10 +12,13 @@ const START_ADORNMENT: React.ReactElement = (
   </InputAdornment>
 );
 
+// UiSearchInput is outlined-only and always leads with the magnifier, so `variant`
+// and `startAdornment` are fixed here; the caller supplies label/state and the inline
+// ghost `overlay` (the shared renderInput wraps the field so the overlay pins over it).
 export type SearchRenderInputConfig = Omit<FieldRenderInputConfig, 'startAdornment' | 'variant'>;
 
 // UiSearchInput's renderInput: the shared field renderInput plus the leading
-// magnifier adornment. Outlined-only, so `variant` is not exposed.
+// magnifier adornment.
 export function createSearchRenderInput(
   config: SearchRenderInputConfig
 ): (params: AutocompleteRenderInputParams) => React.ReactElement {

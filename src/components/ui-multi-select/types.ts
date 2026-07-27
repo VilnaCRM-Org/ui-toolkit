@@ -52,4 +52,8 @@ export interface UiMultiSelectProps {
   helperText?: React.ReactNode;
   /** Associates an external `<label htmlFor>`; also seeds the combobox/listbox ids. */
   id?: string;
+  /** Forces the dropdown open. For demos/visual states only; omit in app use. */
+  open?: boolean;
+  /** Renders the dropdown inline instead of in a portal. Pairs with `open` for demos. */
+  disablePortal?: boolean;
 }

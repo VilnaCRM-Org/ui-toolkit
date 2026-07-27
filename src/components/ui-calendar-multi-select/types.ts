@@ -7,11 +7,14 @@ import type React from 'react';
  * - documented exception: `variant` is N/A — a calendar surface has no
  *   outlined/filled/standard rendering, so the prop is intentionally omitted.
  *
- * A calendar-style control for selecting MANY discrete dates (not a single date
- * and not a range). Dates are exchanged as ISO `YYYY-MM-DD` strings so the value
- * is timezone-safe, serialisable and easy to compare. The displayed month is
- * uncontrolled — seeded from `defaultMonth`, then the first selected date, then
- * today — and the consumer never has to own calendar-navigation state.
+ * A calendar-style control for selecting a DATE RANGE by its two endpoints. The
+ * value is the range's endpoints as ISO `YYYY-MM-DD` strings — `[]` (empty),
+ * `[start]` (a pending range awaiting its end) or `[start, end]` (complete,
+ * sorted); the days strictly between the endpoints are the in-range band and are
+ * derived, never stored. ISO strings keep the value timezone-safe, serialisable
+ * and easy to compare. The displayed month is uncontrolled — seeded from
+ * `defaultMonth`, then the range's start, then today — so the consumer never has
+ * to own calendar-navigation state.
  *
  * Field-level accessibility (accessible name, `aria-invalid` on `error`,
  * `aria-describedby` on `helperText`, native `required`) is owned by this
@@ -19,9 +22,9 @@ import type React from 'react';
  * summaries) belong to the consuming form, not this primitive.
  */
 export interface UiCalendarMultiSelectProps {
-  /** Controlled set of selected days as ISO `YYYY-MM-DD` strings. */
+  /** Controlled range endpoints as ISO `YYYY-MM-DD` strings: `[]`, `[start]` or `[start, end]`. */
   value?: string[];
-  /** Called with the next selected-day set whenever a day is toggled on or off. */
+  /** Called with the next range endpoints whenever a day sets the start or the end. */
   onChange?: (value: string[]) => void;
   /**
    * Month shown when the calendar first renders, as `YYYY-MM-DD` (any day in the
@@ -68,4 +71,9 @@ export interface UiCalendarMultiSelectProps {
    * or `aria-label` for the accessible name.
    */
   id?: string;
+  /**
+   * BCP-47 locale for the month caption, weekday headers and day accessible
+   * names (e.g. `uk-UA`). Defaults to `en-US`. The week always starts on Monday.
+   */
+  locale?: string;
 }

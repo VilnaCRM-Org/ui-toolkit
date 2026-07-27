@@ -1,29 +1,24 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { WEEKDAYS_LONG, WEEKDAYS_SHORT } from './calendar-month';
-import { weekdayHeadingSx, type CalendarSize } from './styles';
+import { weekdaysLong, weekdaysShort } from './calendar-month';
+import { weekRowSx, weekdayHeadingSx } from './styles';
 
 export interface WeekdayHeaderProps {
-  size: CalendarSize;
+  locale: string;
 }
 
 // Monday-first weekday header row: visible abbreviations with full-name
-// `aria-label`s on each `columnheader`.
-function WeekdayHeader({ size }: Readonly<WeekdayHeaderProps>): React.ReactElement {
+// `aria-label`s on each `columnheader`, both localised via `locale`.
+function WeekdayHeader({ locale }: Readonly<WeekdayHeaderProps>): React.ReactElement {
+  const short: string[] = weekdaysShort(locale);
+  const long: string[] = weekdaysLong(locale);
   return (
-    <Box component="thead" role="rowgroup">
-      <Box component="tr" role="row">
-        {WEEKDAYS_SHORT.map((short, index) => (
-          <Box
-            component="th"
-            role="columnheader"
-            scope="col"
-            key={short}
-            aria-label={WEEKDAYS_LONG[index]}
-            sx={weekdayHeadingSx(size)}
-          >
-            {short}
+    <Box role="rowgroup">
+      <Box role="row" sx={weekRowSx}>
+        {short.map((label, index) => (
+          <Box role="columnheader" aria-label={long[index]} key={label} sx={weekdayHeadingSx}>
+            {label}
           </Box>
         ))}
       </Box>

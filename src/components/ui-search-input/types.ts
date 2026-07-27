@@ -46,4 +46,8 @@ export interface UiSearchInputProps {
   id?: string;
   /** Text shown in the suggestions popup when no option matches. */
   noOptionsText?: React.ReactNode;
+  /** Forces the suggestions dropdown open. For demos/visual states; omit in app use. */
+  open?: boolean;
+  /** Renders the dropdown inline instead of in a portal. Pairs with `open` for demos. */
+  disablePortal?: boolean;
 }

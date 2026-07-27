@@ -28,7 +28,7 @@ function root(page: Page): Locator {
 }
 
 async function shoot(page: Page, name: string): Promise<void> {
-  await expect(root(page)).toHaveScreenshot(name, { maxDiffPixelRatio: 0.02 });
+  await expect(root(page)).toHaveScreenshot(name);
 }
 
 test.describe('Visual states (Figma state grid)', () => {
@@ -129,6 +129,17 @@ test.describe('Visual states (Figma state grid)', () => {
     await shoot(page, 'radio-hover.png');
   });
 
+  test('file upload disabled', async ({ page }) => {
+    await openStory(page, 'uicomponents-uifileuploadinput--file-upload-input', 'disabled:!true');
+    await shoot(page, 'file-upload-disabled.png');
+  });
+
+  test('file upload pill hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uifileuploadinput--file-upload-input');
+    await page.getByText('Загрузити').hover();
+    await shoot(page, 'file-upload-hover.png');
+  });
+
   test('link hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link');
     await page.getByRole('link').hover();
@@ -147,5 +158,31 @@ test.describe('Visual states (Figma state grid)', () => {
     await openStory(page, 'uicomponents-uilink--link');
     await page.keyboard.press('Tab');
     await shoot(page, 'link-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — pagination', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  // The composed bar is 685px wide, so the pagination grid gets its own, wider
+  // viewport instead of the 520px shared by the smaller controls above.
+  test.use({ viewport: { width: 800, height: 200 } });
+
+  test('pagination cell hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uipagination--pagination');
+    // Hover a rest cell (page 3; the story starts on page 2) so the Primary@10%
+    // hover fill and Primary ink show against the neighbouring rest/current cells.
+    await page.getByRole('button', { name: 'Сторінка 3' }).hover();
+    await shoot(page, 'pagination-cell-hover.png');
+  });
+
+  test('pagination link hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uipagination--pagination');
+    // Hover the next link: label and chevron tint to the theme hover blue together.
+    await page.getByRole('button', { name: 'Наступна' }).hover();
+    await shoot(page, 'pagination-link-hover.png');
   });
 });

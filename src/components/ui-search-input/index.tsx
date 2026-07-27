@@ -1,34 +1,31 @@
-import { Autocomplete, ThemeProvider } from '@mui/material';
+import { Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
+import { FieldLabel, hasText } from '../field-controls';
+
+import { renderSearchAutocomplete } from './search-autocomplete';
 import theme from './theme';
 import type { UiSearchInputProps } from './types';
 import { useSearchField } from './use-search-field';
 import { useSearchWarnings } from './use-warnings';
 
-const EMPTY_OPTIONS: string[] = [];
-
+const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
 function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement {
   useSearchWarnings(props);
   const field: ReturnType<typeof useSearchField> = useSearchField(props);
+  const generatedId: string = React.useId();
+  const fieldId: string = props.id ?? generatedId;
 
   return (
     <ThemeProvider theme={theme}>
-      <Autocomplete
-        freeSolo
-        options={props.options ?? EMPTY_OPTIONS}
-        inputValue={props.value ?? ''}
-        onInputChange={field.handleInputChange}
-        disabled={props.disabled}
-        size={props.size}
-        sx={props.sx}
-        id={props.id}
-        popupIcon={null}
-        disableClearable
-        noOptionsText={props.noOptionsText}
-        renderInput={field.renderInput}
-        slotProps={field.slotProps}
-      />
+      <Box sx={[FIELD_STACK_SX, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}>
+        {hasText(props.label) && (
+          <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
+            {props.label}
+          </FieldLabel>
+        )}
+        {renderSearchAutocomplete(props, field, fieldId)}
+      </Box>
     </ThemeProvider>
   );
 }

@@ -35,6 +35,7 @@ test-memory-leak	bats	tests/bats/makefile_targets.bats	Validated as the inline M
 test-mutation	ci	.github/workflows/mutation-testing.yml	Executed directly by the mutation testing workflow.
 test-unit	bats	tests/bats/makefile_targets.bats	Validated for both the running-container and fresh-container branches.
 test-visual	bats	tests/bats/makefile_targets.bats	Validated as the Storybook-backed visual flow delegated through the shared helper target.
+test-visual-update	bats	tests/bats/makefile_targets.bats	Validated as the baseline-refresh visual flow that bind-mounts tests/ and passes --update-snapshots.
 up	ci	.github/workflows/static-testing.yml	Exercised transitively by workflows that call `make start`, which depends on `up`.
 update	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency update command.
 test-integration	bats	tests/bats/makefile_targets.bats	Validated for both the running-container and fresh-container branches.

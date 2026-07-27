@@ -1,40 +1,32 @@
-import { Autocomplete, ThemeProvider } from '@mui/material';
+import { Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { ChevronDownGlyph, outlinedFieldTheme } from '../field-controls';
+import { FieldLabel, hasText } from '../field-controls';
 
-import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
+import { SelectAutocomplete } from './select-autocomplete';
+import selectTheme from './theme';
+import type { UiSelectWithSearchProps } from './types';
 import { useSelectField } from './use-select-field';
 import { useSelectAccessibilityWarnings } from './use-warnings';
 
-const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
-
-function isOptionEqualToValue(
-  option: UiSelectWithSearchOption,
-  value: UiSelectWithSearchOption
-): boolean {
-  return option.value === value.value;
-}
+const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
 
 function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.ReactElement {
   useSelectAccessibilityWarnings(props);
   const field: ReturnType<typeof useSelectField> = useSelectField(props);
+  const generatedId: string = React.useId();
+  const fieldId: string = props.id ?? generatedId;
 
   return (
-    <ThemeProvider theme={outlinedFieldTheme}>
-      <Autocomplete
-        options={props.options}
-        value={props.value ?? null}
-        onChange={field.handleChange}
-        disabled={props.disabled}
-        size={props.size}
-        sx={props.sx}
-        id={props.id}
-        isOptionEqualToValue={isOptionEqualToValue}
-        popupIcon={POPUP_ICON}
-        renderInput={field.renderInput}
-        slotProps={field.slotProps}
-      />
+    <ThemeProvider theme={selectTheme}>
+      <Box sx={FIELD_STACK_SX}>
+        {hasText(props.label) && (
+          <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
+            {props.label}
+          </FieldLabel>
+        )}
+        <SelectAutocomplete control={props} fieldId={fieldId} field={field} />
+      </Box>
     </ThemeProvider>
   );
 }

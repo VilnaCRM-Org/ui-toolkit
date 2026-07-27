@@ -49,8 +49,19 @@ EOF
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose build playwright'
   assert_log_contains 'docker compose up -d --build storybook'
-  assert_log_contains 'docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html'
+  assert_log_contains 'docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html'
   assert_log_contains 'docker compose run --rm playwright bun x playwright test ./tests/e2e'
+}
+
+# The storybook service serves a STATIC build, so a container left over from an
+# earlier run would keep serving its stale bundle. The flow therefore removes the
+# service both before starting it and again on exit; assert both ends so the
+# teardown cannot silently regress into stale-snapshot territory.
+@test "run-storybook-playwright removes the storybook service before and after the run" {
+  reset_command_log
+  run_make_target_with_env run-storybook-playwright PLAYWRIGHT_TEST_TARGET=./tests/e2e
+  [ "$status" -eq 0 ]
+  [ "$(grep -c -F -- 'docker compose rm -sf storybook' "$COMMAND_LOG")" -eq 2 ]
 }
 
 @test "storybook-backed and memory targets preserve their current shell flows" {
@@ -65,10 +76,21 @@ EOF
     assert_log_contains "$expected_three"
     [ -z "$expected_four" ] || assert_log_contains "$expected_four"
   done <<'EOF'
-test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
-test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --pass-with-no-tests
+test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
+test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --project=chromium --pass-with-no-tests
 test-memory-leak|if [ ! -f tests/memory-leak/runMemlabTests.js ]; then|Skipping memory leak tests because this bootstrap PR does not include the app test files yet.|bun x storybook dev --ci --host 0.0.0.0 -p 3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js
 EOF
+}
+
+# test-visual-update regenerates the committed baselines, so unlike test-visual it
+# must bind-mount tests/ back onto the host — without the mount the refreshed PNGs
+# would only ever exist inside the discarded container.
+@test "test-visual-update bind-mounts tests/ and runs playwright with --update-snapshots" {
+  reset_command_log
+  run_make_target test-visual-update
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose up -d --build storybook'
+  assert_log_contains "--volume $MAKEFILE_SANDBOX/tests:/app/tests playwright bun x playwright test ./tests/visual --project=chromium --update-snapshots"
 }
 
 @test "storybook-backed playwright targets honor DOCKER_COMPOSE overrides" {

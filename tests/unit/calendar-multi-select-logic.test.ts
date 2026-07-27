@@ -9,8 +9,8 @@ import {
   nextFocusedDate,
 } from '../../src/components/ui-calendar-multi-select/keyboard';
 import {
+  applyRangeEndpoint,
   sanitizeSelection,
-  toggleSelection,
 } from '../../src/components/ui-calendar-multi-select/selection';
 import {
   buildCellRows,
@@ -37,27 +37,34 @@ describe('calendar selection — sanitizeSelection', () => {
     expect(sanitizeSelection(['2026-07-15', 'nope', '2026-02-30'])).toEqual(['2026-07-15']);
   });
 
-  it('de-duplicates and sorts chronologically', () => {
+  it('de-duplicates, sorts, and keeps only the two range endpoints', () => {
     expect(sanitizeSelection(['2026-07-20', '2026-07-05', '2026-07-20', '2026-06-30'])).toEqual([
       '2026-06-30',
-      '2026-07-05',
       '2026-07-20',
     ]);
   });
 });
 
-describe('calendar selection — toggleSelection', () => {
-  it('adds a day that is not selected, keeping the result sorted', () => {
-    expect(toggleSelection(['2026-07-10'], '2026-07-05')).toEqual(['2026-07-05', '2026-07-10']);
+describe('calendar selection — applyRangeEndpoint', () => {
+  it('begins a new range from an empty selection', () => {
+    expect(applyRangeEndpoint([], '2026-07-05')).toEqual(['2026-07-05']);
   });
 
-  it('removes a day that is already selected', () => {
-    expect(toggleSelection(['2026-07-05', '2026-07-10'], '2026-07-05')).toEqual(['2026-07-10']);
+  it('completes the range with a second endpoint, kept sorted even if earlier', () => {
+    expect(applyRangeEndpoint(['2026-07-10'], '2026-07-05')).toEqual(['2026-07-05', '2026-07-10']);
+  });
+
+  it('starts a fresh range once a range is already complete', () => {
+    expect(applyRangeEndpoint(['2026-07-05', '2026-07-10'], '2026-07-20')).toEqual(['2026-07-20']);
+  });
+
+  it('keeps a single endpoint when the pending start is clicked again', () => {
+    expect(applyRangeEndpoint(['2026-07-05'], '2026-07-05')).toEqual(['2026-07-05']);
   });
 
   it('does not mutate the input array', () => {
     const input: string[] = ['2026-07-10'];
-    toggleSelection(input, '2026-07-05');
+    applyRangeEndpoint(input, '2026-07-05');
     expect(input).toEqual(['2026-07-10']);
   });
 });
@@ -115,37 +122,72 @@ describe('calendar keyboard — nextFocusedDate', () => {
 describe('calendar view-model — buildCellRows', () => {
   const base = {
     visibleMonth: new Date(2026, 6, 1), // July 2026
-    selected: new Set(['2026-07-05', '2026-07-20']),
+    rangeStartISO: '2026-07-05',
+    rangeEndISO: '2026-07-20',
     focusedISO: '2026-07-05',
     todayISO: '2026-07-15',
+    locale: 'en-US',
   };
 
-  it('produces a six-week by seven-day grid', () => {
+  it('localises the day accessible name from the locale', () => {
+    const rows: CellDescriptor[][] = buildCellRows({ ...base, locale: 'uk-UA' });
+    // Ukrainian (nominative) month name for July via Intl.
+    expect(dayByIso(rows, '2026-07-06').label).toBe('6 липня 2026, in range');
+  });
+
+  it('sizes the grid to the weeks the month spans, seven days each', () => {
+    // July 2026 starts on a Wednesday and has 31 days → 5 weeks, no empty trailing row.
     const rows: CellDescriptor[][] = buildCellRows(base);
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(5);
     rows.forEach(row => expect(row).toHaveLength(7));
   });
 
-  it('marks adjacent-month slots as padding with stable keys', () => {
+  it('grows to six weeks when the month overflows a five-week grid', () => {
+    // August 2026 starts on a Saturday and has 31 days → 5 + 31 = 36 → 6 weeks.
+    const rows: CellDescriptor[][] = buildCellRows({ ...base, visibleMonth: new Date(2026, 7, 1) });
+    expect(rows).toHaveLength(6);
+  });
+
+  it('shows adjacent-month slots as padding carrying the day number and a stable key', () => {
     const rows: CellDescriptor[][] = buildCellRows(base);
     const first: CellDescriptor = rows[0][0];
     expect(first.kind).toBe('padding');
     expect(first).toHaveProperty('key', '2026-06-29');
+    expect(first).toHaveProperty('dayNumber', 29);
   });
 
-  it('flags selected, today, and roving days', () => {
+  it('flags range endpoints, in-range days, today, and roving days', () => {
     const rows: CellDescriptor[][] = buildCellRows(base);
     expect(dayByIso(rows, '2026-07-05')).toMatchObject({
       selected: true,
+      rangeStart: true,
+      rangeEnd: false,
+      inRange: false,
+      bandSide: 'right',
       today: false,
       roving: true,
       disabled: false,
       dayNumber: 5,
-      label: '5 July 2026',
+      label: '5 July 2026, range start',
     });
-    expect(dayByIso(rows, '2026-07-15')).toMatchObject({ today: true, roving: false });
-    expect(dayByIso(rows, '2026-07-20')).toMatchObject({ selected: true, roving: false });
-    expect(dayByIso(rows, '2026-07-06')).toMatchObject({ selected: false, today: false });
+    expect(dayByIso(rows, '2026-07-15')).toMatchObject({
+      today: true,
+      roving: false,
+      inRange: true,
+    });
+    expect(dayByIso(rows, '2026-07-20')).toMatchObject({
+      selected: true,
+      rangeEnd: true,
+      bandSide: 'left',
+      label: '20 July 2026, range end',
+    });
+    expect(dayByIso(rows, '2026-07-06')).toMatchObject({
+      selected: false,
+      inRange: true,
+      bandSide: 'full',
+      today: false,
+      label: '6 July 2026, in range',
+    });
   });
 
   it('disables days outside the min/max range', () => {

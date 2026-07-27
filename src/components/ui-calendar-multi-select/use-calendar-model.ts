@@ -10,7 +10,6 @@ import type { UiCalendarMultiSelectProps } from './types';
 export interface CalendarModel {
   today: Date;
   selectedSorted: string[];
-  selectedSet: Set<string>;
   minISO?: string;
   maxISO?: string;
   visibleMonth: Date;
@@ -26,10 +25,6 @@ export function useCalendarModel(props: UiCalendarMultiSelectProps): CalendarMod
 
   const today: Date = React.useMemo<Date>(() => new Date(), []);
   const selectedSorted: string[] = React.useMemo<string[]>(() => sanitizeSelection(value), [value]);
-  const selectedSet: Set<string> = React.useMemo<Set<string>>(
-    () => new Set(selectedSorted),
-    [selectedSorted]
-  );
 
   const minISO: string | undefined = toBoundISO(minDate);
   const maxISO: string | undefined = toBoundISO(maxDate);
@@ -46,7 +41,6 @@ export function useCalendarModel(props: UiCalendarMultiSelectProps): CalendarMod
   return {
     today,
     selectedSorted,
-    selectedSet,
     minISO,
     maxISO,
     visibleMonth,
