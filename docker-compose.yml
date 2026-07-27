@@ -4,6 +4,10 @@ services:
       context: .
       args:
         INSTALL_CHROMIUM: ${INSTALL_CHROMIUM:-false}
+    environment:
+      # Jest 30 loads TS configs via ts-node; disable Node 22.18+ native
+      # type-stripping so the config's extensionless import still resolves.
+      NODE_OPTIONS: --no-experimental-strip-types
     restart: unless-stopped
   storybook:
     build: .
