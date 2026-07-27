@@ -48,6 +48,13 @@ describe('New Components board (Figma parity showcase)', () => {
     });
     fireEvent.click(expanded);
     expect(expanded).toHaveAttribute('aria-expanded', 'true');
+
+    // The rest/hover endpoint tiles wire no onToggle, so they render as plain
+    // content — never a disclosure button. The GET tiles share this name, and
+    // none is wired, so no such button exists.
+    expect(
+      screen.queryByRole('button', { name: 'GET /put/{petID}/uploadImage Uploads an image' })
+    ).not.toBeInTheDocument();
   });
 
   it('forces the search field responsive/interaction variants without crashing', () => {

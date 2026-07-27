@@ -30,16 +30,16 @@ Epic 3 is the first epic on `main` after Epic 2; this work is on
 
 ### `UiItemRow`
 
-| Prop          | Type                                   | Notes                                                                       |
-| ------------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| `method`      | `'get' \| 'put' \| 'post' \| 'delete'` | Selects the badge label and the whole colour recipe. The only variant axis. |
-| `path`        | `string`                               | Endpoint path shown after the badge.                                        |
-| `description` | `string?`                              | Optional short description shown after the path.                            |
-| `muted`       | `boolean?`                             | Muted/inactive status — grey recipe + `aria-disabled` boundary pattern.     |
-| `expanded`    | `boolean?`                             | Disclosure state (wired rows only). Always controlled; defaults to `false`. |
-| `onToggle`    | `() => void`                           | Presence makes the row a button; called on activation of a non-muted row.   |
-| `panelId`     | `string?`                              | Surfaced as `aria-controls` **only while expanded**.                        |
-| `sx`          | `SxProps<Theme>?`                      | Applied to the row root.                                                    |
+| Prop          | Type                                   | Notes                                                                                    |
+| ------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `method`      | `'get' \| 'put' \| 'post' \| 'delete'` | Selects the badge label and the whole colour recipe. The only variant axis.              |
+| `path`        | `string`                               | Endpoint path shown after the badge.                                                     |
+| `description` | `string?`                              | Optional short description shown after the path.                                         |
+| `muted`       | `boolean?`                             | Muted/inactive status — grey recipe + `aria-disabled` boundary pattern.                  |
+| `expanded`    | `boolean?`                             | Disclosure state (wired rows only). Always controlled; defaults to `false`.              |
+| `onToggle`    | `(() => void)?`                        | Optional — its presence makes the row a button; called on activation of a non-muted row. |
+| `panelId`     | `string?`                              | Surfaced as `aria-controls` **only while expanded**.                                     |
+| `sx`          | `SxProps<Theme>?`                      | Applied to the row root.                                                                 |
 
 ### `UiItemsList`
 

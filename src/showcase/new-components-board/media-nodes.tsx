@@ -46,7 +46,7 @@ export function uploadNode(opts: {
     <UiFileUploadInput
       files={[]}
       label="Логотип проєкту"
-      buttonLabel="Загрузити"
+      buttonLabel="Завантажити"
       accept={opts.disabled || opts.error ? undefined : '.png,.jpg'}
       disabled={opts.disabled}
       error={opts.error}

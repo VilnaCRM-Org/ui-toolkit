@@ -22,7 +22,11 @@ function flattenRows(children: React.ReactNode, prefix: string, out: FlatRow[]):
   React.Children.toArray(children).forEach((child: React.ReactNode, index: number): void => {
     if (React.isValidElement(child) && child.type === React.Fragment) {
       const inner: React.ReactNode = (child.props as { children?: React.ReactNode }).children;
-      flattenRows(inner, `${prefix}${index}.`, out);
+      // `toArray` always assigns a key here — an explicit fragment key rides
+      // through, an unkeyed fragment gets a positional one — so prefix the
+      // recursion with it: a reordered *keyed* fragment then keeps its
+      // descendants' identity instead of remounting them.
+      flattenRows(inner, `${prefix}${String(child.key)}.`, out);
       return;
     }
     const ownKey: React.Key | null = React.isValidElement(child) ? child.key : null;

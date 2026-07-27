@@ -93,6 +93,15 @@ export const textColumnSx: SxProps<Theme> = {
   },
 };
 
+// A long value must not spill past the fixed-height, overflow-clipped row: it
+// shrinks (min-width:0) and truncates with an ellipsis instead of vanishing.
+// Shared by the path and description spans so the two stay in lockstep.
+const ellipsisOverflow = {
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+} as const;
+
 export const pathSx: SxProps<Theme> = {
   fontFamily: 'Golos Text',
   fontWeight: 600,
@@ -100,11 +109,7 @@ export const pathSx: SxProps<Theme> = {
   lineHeight: 'normal',
   letterSpacing: 0,
   whiteSpace: 'nowrap',
-  // A long path must not spill past the fixed-height, overflow-clipped row: it
-  // shrinks (min-width:0) and truncates with an ellipsis instead of vanishing.
-  minWidth: 0,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
+  ...ellipsisOverflow,
   [MOBILE_MAX]: {
     fontFamily: 'Inter',
     fontWeight: 500,
@@ -120,11 +125,7 @@ export const descriptionSx: SxProps<Theme> = {
   lineHeight: '1.125rem',
   letterSpacing: 0,
   whiteSpace: 'nowrap',
-  // Same overflow guard as the path: shrink + ellipsis rather than clip a long
-  // description behind the row boundary.
-  minWidth: 0,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
+  ...ellipsisOverflow,
   [MOBILE_MAX]: {
     fontFamily: 'Inter',
     fontWeight: 500,
