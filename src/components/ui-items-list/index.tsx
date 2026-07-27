@@ -39,6 +39,15 @@ function mergeListSx(consumer: SxProps<Theme> | undefined): SxProps<Theme> {
   return [listSx, ...(Array.isArray(extra) ? extra : [extra])];
 }
 
+// Wraps one flattened row in its own `<li>` (the row is the item's sole child).
+function toListItem({ node, key }: FlatRow): React.ReactElement {
+  return (
+    <Box component="li" key={key} sx={listItemSx}>
+      {node}
+    </Box>
+  );
+}
+
 // A semantic `<ul role="list">` stacking its `UiItemRow` children, 8px apart. It
 // adds no interactive behaviour (no keydown, no tabindex) and renders NOTHING when
 // there are no children, so an empty collection exposes no `list` role.
@@ -54,13 +63,7 @@ function UiItemsList({
   }
   return (
     <Box component="ul" role="list" aria-label={ariaLabel} sx={mergeListSx(sx)}>
-      {rows.map(
-        ({ node, key }: FlatRow): React.ReactElement => (
-          <Box component="li" key={key} sx={listItemSx}>
-            {node}
-          </Box>
-        )
-      )}
+      {rows.map(toListItem)}
     </Box>
   );
 }
