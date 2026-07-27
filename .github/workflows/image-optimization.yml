@@ -28,3 +28,8 @@ jobs:
         uses: calibreapp/image-actions@9d037c06280028c110ff61c433ad4dc7d33c3c43 # v1.5.0
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Playwright baselines are test fixtures compared at zero pixel tolerance,
+          # not shipped assets. Lossy recompression silently rewrites a handful of
+          # their pixels and the visual suite then fails against its own baseline —
+          # which is exactly what happened to the link and toolbar snapshots.
+          ignorePaths: 'tests/visual/**'
