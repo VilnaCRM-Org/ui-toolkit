@@ -9,9 +9,8 @@ import type { UiItemsListProps } from './types';
 
 import UiItemsList from './index';
 
-// The Figma "Rest api dropdown" sample rows (literal strings, typos included, for
-// parity). Each row is an independently-controlled disclosure; the list itself
-// stays dumb (it only stacks its children).
+// The Figma "Rest api dropdown" sample rows. Each row is an independently-
+// controlled disclosure; the list itself stays dumb (it only stacks its children).
 interface SampleRow {
   method: ItemRowMethod;
   path: string;
@@ -20,9 +19,9 @@ interface SampleRow {
 
 const SAMPLE_ROWS: SampleRow[] = [
   { method: 'get', path: '/put/{petID}/uploadImage', description: 'Uploads an image' },
-  { method: 'put', path: '/pet', description: 'Update exiting pet' },
-  { method: 'post', path: '/put/{petID}', description: 'Update exiting pet' },
-  { method: 'delete', path: '/delete/{petID}', description: 'Deletes exiting pet' },
+  { method: 'put', path: '/pet', description: 'Update existing pet' },
+  { method: 'post', path: '/put/{petID}', description: 'Update existing pet' },
+  { method: 'delete', path: '/delete/{petID}', description: 'Deletes existing pet' },
 ];
 
 function rowKey(row: SampleRow): string {
@@ -35,7 +34,7 @@ function rowKey(row: SampleRow): string {
 function ItemsListStory({ args }: Readonly<{ args: UiItemsListProps }>): React.ReactElement {
   const [openKey, setOpenKey] = React.useState<string | null>(null);
   return (
-    <UiItemsList aria-label={args['aria-label']}>
+    <UiItemsList aria-label={args['aria-label']} sx={args.sx}>
       {SAMPLE_ROWS.map((row): React.ReactElement => {
         const key: string = rowKey(row);
         return (

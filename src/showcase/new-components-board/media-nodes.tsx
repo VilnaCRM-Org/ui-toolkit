@@ -39,6 +39,9 @@ export function uploadNode(opts: {
   disabled?: boolean;
   error?: boolean;
 }): React.ReactElement {
+  // Held in a local so the JSX line stays within the byte-based max-line-length
+  // (each Cyrillic char is ~2 bytes).
+  const errorText = 'Виникла помилка. Перевірте ще раз';
   const field = (
     <UiFileUploadInput
       files={[]}
@@ -47,7 +50,7 @@ export function uploadNode(opts: {
       accept={opts.disabled || opts.error ? undefined : '.png,.jpg'}
       disabled={opts.disabled}
       error={opts.error}
-      helperText={opts.error ? 'Виникла помилка. Перевірте ще раз' : undefined}
+      helperText={opts.error ? errorText : undefined}
     />
   );
   return opts.hover ? <Box sx={UPLOAD_HOVER_SX}>{field}</Box> : field;

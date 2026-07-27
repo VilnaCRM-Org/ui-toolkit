@@ -66,8 +66,11 @@ export const sharedPalette: Record<string, { main: string }> = {
   postMethodHover: {
     main: '#00AE70',
   },
+  // Darker than the DELETE base (`error #DC3939`) so the accent genuinely darkens
+  // on hover like the other methods; matches the DELETE row-hover-shadow tone
+  // (`rgb(199, 44, 44)`) so the hover recipe stays internally consistent.
   deleteMethodHover: {
-    main: '#FF2F2F',
+    main: '#C72C2C',
   },
   // Muted (grey) item row: badge text + path darken to this ink on hover.
   mutedInkHover: {

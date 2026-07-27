@@ -28,7 +28,15 @@ export const CONTACT: Option[] = [
   { label: 'SMS', value: 'sms' },
   { label: 'Сповіщення', value: 'push' },
 ];
-export const SUGGESTIONS = ['Топ продажники', 'Топ продажі за місяць', 'Топ продажі за рік'];
+// Wrapped one item per line: on a single line the Cyrillic literals push the row
+// past the byte-based max-line-length (each Cyrillic char is ~2 bytes), so keep the
+// natural array shape and stop Prettier from recollapsing it.
+// prettier-ignore
+export const SUGGESTIONS = [
+  'Топ продажники',
+  'Топ продажі за місяць',
+  'Топ продажі за рік',
+];
 
 // Calendar showcase states, all on August 2022 — it starts on a Monday and has 31
 // days, so its last row reads 29 30 31 1 2 3 4 (matching the Figma frame). Rest: a

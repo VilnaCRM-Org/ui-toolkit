@@ -18,10 +18,10 @@ function sampleRows(): React.ReactElement[] {
       key="put"
       method="put"
       path="/pet"
-      description="Update exiting pet"
+      description="Update existing pet"
       onToggle={noop}
     />,
-    <UiItemRow key="post" method="post" path="/put/{petID}" description="Update exiting pet" />,
+    <UiItemRow key="post" method="post" path="/put/{petID}" description="Update existing pet" />,
   ];
 }
 
@@ -41,7 +41,7 @@ describe('UiItemsList — semantic list structure', () => {
       within(items[0]).getByRole('button', { name: 'GET /pet/{petID} Reads a pet' })
     ).toBeInTheDocument();
     expect(
-      within(items[1]).getByRole('button', { name: 'PUT /pet Update exiting pet' })
+      within(items[1]).getByRole('button', { name: 'PUT /pet Update existing pet' })
     ).toBeInTheDocument();
     // The unwired third row is static content inside its own list item.
     expect(within(items[2]).getByText('/put/{petID}')).toBeInTheDocument();
@@ -114,6 +114,50 @@ describe('UiItemsList — child key handling', () => {
     const items: HTMLElement[] = screen.getAllByRole('listitem');
     expect(items).toHaveLength(1);
     expect(items[0]).toHaveTextContent('plain text node');
+  });
+});
+
+describe('UiItemsList — fragment flattening', () => {
+  it('wraps each row in its own <li> when rows are grouped in a fragment', () => {
+    render(
+      <UiItemsList>
+        <>
+          <UiItemRow key="get" method="get" path="/a" onToggle={noop} />
+          <UiItemRow key="put" method="put" path="/b" onToggle={noop} />
+        </>
+      </UiItemsList>
+    );
+    // The fragment must not collapse both rows into a single list item.
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: 'GET /a' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'PUT /b' })).toBeInTheDocument();
+  });
+
+  it('flattens a fragment mixed with a direct sibling row into one <li> per row', () => {
+    render(
+      <UiItemsList>
+        <UiItemRow method="get" path="/a" onToggle={noop} />
+        <>
+          <UiItemRow method="put" path="/b" onToggle={noop} />
+          <UiItemRow method="post" path="/c" onToggle={noop} />
+        </>
+      </UiItemsList>
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('flattens nested fragments', () => {
+    render(
+      <UiItemsList>
+        <>
+          <UiItemRow method="get" path="/a" onToggle={noop} />
+          <>
+            <UiItemRow method="put" path="/b" onToggle={noop} />
+          </>
+        </>
+      </UiItemsList>
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 });
 

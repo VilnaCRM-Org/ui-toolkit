@@ -85,9 +85,9 @@ export const ROW_POST_HOVER_SX = {
   '& .ui-item-row__badge': { color: '#00AE70' },
 } as const;
 export const ROW_DELETE_HOVER_SX = {
-  borderColor: '#FF2F2F',
+  borderColor: '#C72C2C',
   boxShadow: '0 4px 9px rgba(199, 44, 44, 0.18)',
-  '& .ui-item-row__badge': { color: '#FF2F2F' },
+  '& .ui-item-row__badge': { color: '#C72C2C' },
 } as const;
 // Grey hover keeps its brand-gray border but darkens the badge ink + path to
 // #1C2022 and gains the grey row shadow (the description stays Font/400).

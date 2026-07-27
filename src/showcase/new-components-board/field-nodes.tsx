@@ -41,7 +41,10 @@ export function multiSelectNode(opts: {
   return opts.hover ? <Box sx={MS_CHIP_HOVER_SX}>{field}</Box> : field;
 }
 
-// The radio group has a single Figma state (one selected option).
+// The radio group has a single Figma state (one selected option). The Cyrillic
+// label is held in a local so the JSX line stays within the byte-based
+// max-line-length (each Cyrillic char is ~2 bytes).
 export function radioNode(): React.ReactElement {
-  return <UiRadioGroup options={CONTACT} value="email" label="Бажаний спосіб зв'язку" />;
+  const contactLabel = "Бажаний спосіб зв'язку";
+  return <UiRadioGroup options={CONTACT} value="email" label={contactLabel} />;
 }

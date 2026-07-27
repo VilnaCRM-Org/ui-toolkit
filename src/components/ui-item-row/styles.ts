@@ -100,6 +100,11 @@ export const pathSx: SxProps<Theme> = {
   lineHeight: 'normal',
   letterSpacing: 0,
   whiteSpace: 'nowrap',
+  // A long path must not spill past the fixed-height, overflow-clipped row: it
+  // shrinks (min-width:0) and truncates with an ellipsis instead of vanishing.
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   [MOBILE_MAX]: {
     fontFamily: 'Inter',
     fontWeight: 500,
@@ -115,6 +120,11 @@ export const descriptionSx: SxProps<Theme> = {
   lineHeight: '1.125rem',
   letterSpacing: 0,
   whiteSpace: 'nowrap',
+  // Same overflow guard as the path: shrink + ellipsis rather than clip a long
+  // description behind the row boundary.
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
   [MOBILE_MAX]: {
     fontFamily: 'Inter',
     fontWeight: 500,
@@ -217,7 +227,11 @@ export function rowContainerSx(config: RowStyleConfig): SxProps<Theme> {
     ...CONTAINER_BASE,
     ...containerColorSx(config.recipe),
     ...(config.interactive ? interactiveContainerSx(config.recipe) : null),
-    ...(config.expanded ? expandedChevronSx(config.recipe) : null),
+    // The expanded chevron flip/tint is a disclosure affordance, so it is gated to
+    // wired rows: a static row (no `onToggle`) exposes no `aria-expanded`, so it
+    // must never show the expanded visual either, matching the "wired rows only"
+    // contract in `types.ts`.
+    ...(config.interactive && config.expanded ? expandedChevronSx(config.recipe) : null),
   };
   const extra: SxProps<Theme> = config.sx ?? {};
   return [base, ...(Array.isArray(extra) ? extra : [extra])];

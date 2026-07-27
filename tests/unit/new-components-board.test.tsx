@@ -44,7 +44,7 @@ describe('New Components board (Figma parity showcase)', () => {
     // Only the expanded tile is wired (its onToggle makes it a disclosure button);
     // toggling it exercises the tile's no-op handler.
     const expanded: HTMLElement = screen.getByRole('button', {
-      name: 'POST /put/{petID} Update exiting pet',
+      name: 'POST /put/{petID} Update existing pet',
     });
     fireEvent.click(expanded);
     expect(expanded).toHaveAttribute('aria-expanded', 'true');

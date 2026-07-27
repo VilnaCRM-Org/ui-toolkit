@@ -76,7 +76,9 @@ recipe all resolve to existing `ui-color-theme` tokens, and the border/badge/row
 tints derive from them via MUI `alpha()`. The one addition is the **hover ink
 set** the Figma hover masters introduce, added to `ui-color-theme`:
 `getMethodHover #0091E2`, `putMethodHover #DD9F00`, `postMethodHover #00AE70`,
-`deleteMethodHover #FF2F2F`, and the muted `mutedInkHover #1C2022`.
+`deleteMethodHover #C72C2C`, and the muted `mutedInkHover #1C2022`. (`deleteMethodHover`
+is a genuine darken of the `#DC3939` DELETE base, matching the DELETE row-hover
+shadow tone `rgb(199, 44, 44)`, so every method's accent darkens on hover.)
 
 ### `UiItemRow` behaviour
 
@@ -87,7 +89,9 @@ set** the Figma hover masters introduce, added to `ui-color-theme`:
   `aria-controls` (`panelId`) is surfaced **only while expanded**, so a
   collapsed/unmounted panel leaves no dangling idref. Without `onToggle` the row
   is static, non-focusable content (no button role, no `aria-expanded`); the
-  chevron still renders, decoratively.
+  chevron still renders, decoratively. The **expanded chevron flip/tint is gated
+  to wired rows** — a static row exposes no `aria-expanded`, so it never shows the
+  expanded affordance even if `expanded` is passed (which also dev-warns).
 - **Muted = the `aria-disabled` boundary pattern.** A muted wired row stays a
   focusable `<button>` with `aria-disabled="true"`, and `onToggle` is a no-op
   (never fired while muted); native `disabled` is never set, so keyboard focus
@@ -117,6 +121,9 @@ set** the Figma hover masters introduce, added to `ui-color-theme`:
 
 - A semantic `<ul role="list">` with one `<li>` per row (the row is the list
   item's sole child), full width, `8px` apart, and **no chrome of its own**.
+  Children are **flattened through React Fragments**, so grouping rows in a
+  `<>…</>` still yields one `<li>` per row rather than a single item holding
+  several rows.
 - The explicit `role="list"` is a **sanctioned redundant-ARIA exception**:
   Safari/VoiceOver strip list semantics from a `list-style: none` list.
 - **Empty collection renders NOTHING** — no `<ul>`, so a `list` role never

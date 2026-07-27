@@ -80,17 +80,17 @@ export const ItemRow: Story = {
 };
 
 export const PutMethod: Story = {
-  args: { method: 'put', path: '/pet', description: 'Update exiting pet' },
+  args: { method: 'put', path: '/pet', description: 'Update existing pet' },
   render: renderInteractive,
 };
 
 export const PostMethod: Story = {
-  args: { method: 'post', path: '/put/{petID}', description: 'Update exiting pet' },
+  args: { method: 'post', path: '/put/{petID}', description: 'Update existing pet' },
   render: renderInteractive,
 };
 
 export const DeleteMethod: Story = {
-  args: { method: 'delete', path: '/delete/{petID}', description: 'Deletes exiting pet' },
+  args: { method: 'delete', path: '/delete/{petID}', description: 'Deletes existing pet' },
   render: renderInteractive,
 };
 
@@ -119,7 +119,7 @@ export const Expanded: Story = {
   args: {
     method: 'post',
     path: '/put/{petID}',
-    description: 'Update exiting pet',
+    description: 'Update existing pet',
     expanded: true,
   },
   render: renderInteractive,

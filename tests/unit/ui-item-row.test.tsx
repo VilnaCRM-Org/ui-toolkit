@@ -97,11 +97,11 @@ describe('UiItemRow — aria-controls lifecycle', () => {
 
 describe('UiItemRow — unwired static row', () => {
   it('is not a button and exposes no disclosure attributes, but keeps its text', () => {
-    render(<UiItemRow method="delete" path="/delete/{petID}" description="Deletes exiting pet" />);
+    render(<UiItemRow method="delete" path="/delete/{petID}" description="Deletes existing pet" />);
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByText('/delete/{petID}')).toBeInTheDocument();
-    expect(screen.getByText('Deletes exiting pet')).toBeInTheDocument();
+    expect(screen.getByText('Deletes existing pet')).toBeInTheDocument();
     expect(screen.getByText('DELETE')).toBeInTheDocument();
   });
 
@@ -363,10 +363,10 @@ describe('resolveRecipe — per-method colour maps (exact, mutation-killing)', (
     const r: RowRecipe = resolveRecipe('delete', false);
     expect(r).toMatchObject({
       accent: '#DC3939',
-      accentHover: '#FF2F2F',
+      accentHover: '#C72C2C',
       tint: 'rgba(220, 57, 57, 0.1)',
       badgeInk: '#DC3939',
-      badgeInkHover: '#FF2F2F',
+      badgeInkHover: '#C72C2C',
       badgeShadow: '0 8px 13.5px #F4B0B0',
       rowHoverShadow: '0 4px 9px rgba(199, 44, 44, 0.18)',
     });
@@ -451,6 +451,13 @@ describe('rowContainerSx — layout / interactive / expanded assembly', () => {
       color: '#1EAEFF',
       transform: 'rotate(180deg)',
     });
+  });
+
+  it('never flips the chevron on a static (unwired) row even when expanded', () => {
+    // The expanded flip is a disclosure affordance; a static row exposes no
+    // `aria-expanded`, so it must not show the expanded visual either.
+    const [base] = layersOf({ recipe, interactive: false, expanded: true, sx: undefined });
+    expect(base['& .ui-item-row__chevron']).toEqual({ color: '#1B2327' });
   });
 
   it('appends an object sx after the base layer', () => {

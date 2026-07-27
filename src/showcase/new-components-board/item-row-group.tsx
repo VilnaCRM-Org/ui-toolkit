@@ -24,14 +24,14 @@ export const ITEM_ROW_GROUPS: GroupSpec[] = [
       },
       {
         label: 'PUT — Rest',
-        node: itemRowNode({ method: 'put', path: '/pet', description: 'Update exiting pet' }),
+        node: itemRowNode({ method: 'put', path: '/pet', description: 'Update existing pet' }),
       },
       {
         label: 'POST — Rest',
         node: itemRowNode({
           method: 'post',
           path: '/put/{petID}',
-          description: 'Update exiting pet',
+          description: 'Update existing pet',
         }),
       },
       {
@@ -39,7 +39,7 @@ export const ITEM_ROW_GROUPS: GroupSpec[] = [
         node: itemRowNode({
           method: 'delete',
           path: '/delete/{petID}',
-          description: 'Deletes exiting pet',
+          description: 'Deletes existing pet',
         }),
       },
       {
@@ -65,7 +65,7 @@ export const ITEM_ROW_GROUPS: GroupSpec[] = [
         node: itemRowNode({
           method: 'put',
           path: '/pet',
-          description: 'Update exiting pet',
+          description: 'Update existing pet',
           sx: ROW_PUT_HOVER_SX,
         }),
       },
@@ -74,7 +74,7 @@ export const ITEM_ROW_GROUPS: GroupSpec[] = [
         node: itemRowNode({
           method: 'post',
           path: '/put/{petID}',
-          description: 'Update exiting pet',
+          description: 'Update existing pet',
           sx: ROW_POST_HOVER_SX,
         }),
       },
@@ -83,7 +83,7 @@ export const ITEM_ROW_GROUPS: GroupSpec[] = [
         node: itemRowNode({
           method: 'delete',
           path: '/delete/{petID}',
-          description: 'Deletes exiting pet',
+          description: 'Deletes existing pet',
           sx: ROW_DELETE_HOVER_SX,
         }),
       },
@@ -102,7 +102,7 @@ export const ITEM_ROW_GROUPS: GroupSpec[] = [
         node: itemRowNode({
           method: 'post',
           path: '/put/{petID}',
-          description: 'Update exiting pet',
+          description: 'Update existing pet',
           expanded: true,
         }),
       },
