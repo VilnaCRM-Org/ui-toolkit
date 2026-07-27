@@ -39,6 +39,12 @@ function findGhostMatch(
   );
 }
 
+// The grey remainder shown after the typed text: everything the matched label has
+// beyond what the user has already typed (empty when nothing matches).
+function completionOf(match: UiMultiSelectOption | undefined, typed: string): string {
+  return match === undefined ? '' : match.label.slice(typed.length);
+}
+
 // Tab / ArrowRight-at-end always commit (the shared inline-completion gesture).
 // Enter also commits, but only when the user has NOT arrow-navigated to a specific
 // listbox option (no `aria-activedescendant`): with a highlight present, Enter must
@@ -66,6 +72,12 @@ function acceptGhost(
   }
 }
 
+// Only user typing feeds the ghost; a reset/clear (blur, pick) empties it so no
+// stale completion lingers over the field once a chip is committed.
+function typedFrom(value: string, reason: AutocompleteInputChangeReason): string {
+  return reason === 'input' ? value : '';
+}
+
 // Inline typeahead for the multi-value combobox — parity with UiSearchInput /
 // UiSelectWithSearch. The overlay is purely visual; this hook OWNS the typed text
 // (the field threads it back as the controlled `inputValue`) and, on the accept
@@ -79,8 +91,7 @@ export function useMultiSelectGhost(
   const [focused, setFocused] = React.useState<boolean>(false);
 
   const match: UiMultiSelectOption | undefined = findGhostMatch(options, selected, typed);
-  const completion: string = match === undefined ? '' : match.label.slice(typed.length);
-  const active: boolean = focused && completion.length > 0;
+  const completion: string = completionOf(match, typed);
 
   const commit = (option: UiMultiSelectOption): void => {
     addOption(option);
@@ -90,10 +101,8 @@ export function useMultiSelectGhost(
   return {
     typed,
     completion,
-    active,
-    // Only user typing feeds the ghost; a reset/clear (blur, pick) empties it so no
-    // stale completion lingers over the field once a chip is committed.
-    handleInputChange: (_event, value, reason): void => setTyped(reason === 'input' ? value : ''),
+    active: focused && completion.length > 0,
+    handleInputChange: (_event, value, reason): void => setTyped(typedFrom(value, reason)),
     handleFocus: (): void => setFocused(true),
     handleBlur: (): void => setFocused(false),
     handleKeyDown: (event): void => acceptGhost(match, commit, event),

@@ -7,6 +7,45 @@ import colorTheme from '../ui-color-theme';
 
 const palette: (typeof colorTheme)['palette'] = colorTheme.palette;
 
+// The longhand CSS declarations written onto the overlay element. Kept as a plain
+// string map so the box geometry and the copied type can be built independently and
+// merged into one `Object.assign` write.
+type GhostOverlayStyle = Record<string, string>;
+
+// Mirrors the input's own type onto the overlay (the runs inherit it) so the ghost
+// matches whatever field hosts it — search uses Inter 14, select Golos Text 15,
+// multi-select Inter 16. Copying the computed font keeps the completion the same
+// family/size/metrics as the typed value (and the transparent mirror the same width,
+// so the completion starts exactly after it — not on top of it, and not vertically
+// offset by a different font's metrics).
+function ghostFontStyle(cs: CSSStyleDeclaration): GhostOverlayStyle {
+  return {
+    fontFamily: cs.fontFamily,
+    fontSize: cs.fontSize,
+    fontWeight: cs.fontWeight,
+    lineHeight: cs.lineHeight,
+    letterSpacing: cs.letterSpacing,
+  };
+}
+
+// Measures the input's box against the positioned wrapper the overlay shares with it.
+// The mirror must begin where the input's TEXT begins, not at its border box: the
+// multi-select gives its input a left padding (chips and typed text need different
+// insets), which would otherwise push the completion left, under the last typed
+// letters. Search/select keep the input padding at 0, so this folds in as a no-op.
+function ghostOverlayStyle(wrapper: HTMLElement, input: HTMLElement): GhostOverlayStyle {
+  const wrapperRect: DOMRect = wrapper.getBoundingClientRect();
+  const inputRect: DOMRect = input.getBoundingClientRect();
+  const cs: CSSStyleDeclaration = getComputedStyle(input);
+  const padLeft: number = parseFloat(cs.paddingLeft) || 0;
+  return {
+    left: `${inputRect.left - wrapperRect.left + padLeft}px`,
+    top: `${inputRect.top - wrapperRect.top}px`,
+    height: `${inputRect.height}px`,
+    ...ghostFontStyle(cs),
+  };
+}
+
 // Pins the ghost overlay over the native input: the transparent typed mirror then
 // sits exactly on top of the real (dark) typed text, so the grey completion begins
 // right where the input's own caret is. The overlay is a sibling of the field inside
@@ -17,30 +56,7 @@ export function alignGhostOverlay(overlay: HTMLElement): void {
   if (wrapper === null) return;
   const input: Element | null = wrapper.querySelector('input');
   if (!(input instanceof HTMLElement)) return;
-  const wrapperRect: DOMRect = wrapper.getBoundingClientRect();
-  const inputRect: DOMRect = input.getBoundingClientRect();
-  // The mirror must begin where the input's TEXT begins, not at its border box: the
-  // multi-select gives its input a left padding (chips and typed text need different
-  // insets), which would otherwise push the completion left, under the last typed
-  // letters. Search/select keep the input padding at 0, so this folds in as a no-op.
-  const cs: CSSStyleDeclaration = getComputedStyle(input);
-  const padLeft: number = parseFloat(cs.paddingLeft) || 0;
-  Object.assign(overlay.style, {
-    left: `${inputRect.left - wrapperRect.left + padLeft}px`,
-    top: `${inputRect.top - wrapperRect.top}px`,
-    height: `${inputRect.height}px`,
-    // Mirror the input's own type onto the overlay (the runs inherit it) so the ghost
-    // matches whatever field hosts it — search uses Inter 14, select Golos Text 15,
-    // multi-select Inter 16. Copying the computed font keeps the completion the same
-    // family/size/metrics as the typed value (and the transparent mirror the same
-    // width, so the completion starts exactly after it — not on top of it, and not
-    // vertically offset by a different font's metrics).
-    fontFamily: cs.fontFamily,
-    fontSize: cs.fontSize,
-    fontWeight: cs.fontWeight,
-    lineHeight: cs.lineHeight,
-    letterSpacing: cs.letterSpacing,
-  });
+  Object.assign(overlay.style, ghostOverlayStyle(wrapper, input));
 }
 
 // Re-syncs on viewport resize (a leading adornment — and thus the input's offset —
