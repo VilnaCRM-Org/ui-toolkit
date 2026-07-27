@@ -29,7 +29,7 @@ describe('UiCheckbox styles checkIconUrl resolution', () => {
 
   it('uses the string asset directly when the SVG import resolves to a string', () => {
     jest.isolateModules(() => {
-      jest.doMock('@/assets/svg/check.svg', () => 'string-check.svg', { virtual: true });
+      jest.doMock('@/assets/svg/check.svg', () => 'string-check.svg');
 
       const checkedBox: CheckedBoxRule = loadCheckedBoxRule();
 
@@ -39,9 +39,7 @@ describe('UiCheckbox styles checkIconUrl resolution', () => {
 
   it('uses the object .src field when the SVG import resolves to an object', () => {
     jest.isolateModules(() => {
-      jest.doMock('@/assets/svg/check.svg', () => ({ src: 'object-check.svg' }), {
-        virtual: true,
-      });
+      jest.doMock('@/assets/svg/check.svg', () => ({ src: 'object-check.svg' }));
 
       const checkedBox: CheckedBoxRule = loadCheckedBoxRule();
 
