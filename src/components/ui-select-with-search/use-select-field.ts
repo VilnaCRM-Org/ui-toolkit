@@ -1,13 +1,9 @@
 import type { AutocompleteInputChangeReason, AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import {
-  createFieldRenderInput,
-  GhostOverlay,
-  useListboxSlotProps,
-  type ListboxSlotProps,
-} from '../field-controls';
+import { useListboxSlotProps, type ListboxSlotProps } from '../field-controls';
 
+import { createSelectRenderInput } from './render-input';
 import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
 import { useSelectGhost } from './use-select-ghost';
 
@@ -26,8 +22,7 @@ export interface SelectField {
 // overlay and its input handlers) and listbox slotProps for UiSelectWithSearch,
 // keeping the component itself small enough for the complexity gate.
 export function useSelectField(props: UiSelectWithSearchProps): SelectField {
-  const { onChange, label, placeholder, required, error, helperText, variant } = props;
-  const ariaLabel: string | undefined = props['aria-label'];
+  const onChange: UiSelectWithSearchProps['onChange'] = props.onChange;
   const ghost: ReturnType<typeof useSelectGhost> = useSelectGhost(props);
 
   const handleChange: SelectField['handleChange'] = React.useCallback(
@@ -37,27 +32,8 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
     [onChange]
   );
 
-  const overlay: React.ReactNode = ghost.active
-    ? React.createElement(GhostOverlay, { typed: ghost.typed, completion: ghost.completion })
-    : null;
-
-  const renderInput: SelectField['renderInput'] = createFieldRenderInput({
-    label,
-    placeholder,
-    required,
-    error,
-    helperText,
-    variant,
-    ariaLabel,
-    overlay,
-    htmlInputProps: {
-      onKeyDown: ghost.handleKeyDown,
-      onFocus: ghost.handleFocus,
-      onBlur: ghost.handleBlur,
-    },
-  });
-
-  const slotProps: ListboxSlotProps = useListboxSlotProps(label, ariaLabel);
+  const renderInput: SelectField['renderInput'] = createSelectRenderInput(props, ghost);
+  const slotProps: ListboxSlotProps = useListboxSlotProps(props.label, props['aria-label']);
 
   return { handleChange, handleInputChange: ghost.handleInputChange, renderInput, slotProps };
 }

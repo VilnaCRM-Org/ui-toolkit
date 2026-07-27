@@ -1,21 +1,15 @@
-import { Autocomplete, Box, ThemeProvider } from '@mui/material';
+import { Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { ChevronDownGlyph, FieldLabel, hasText, OPEN_FIELD_POPPER } from '../field-controls';
+import { FieldLabel, hasText } from '../field-controls';
 
+import { SelectAutocomplete } from './select-autocomplete';
 import selectTheme from './theme';
-import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
+import type { UiSelectWithSearchProps } from './types';
 import { useSelectField } from './use-select-field';
 import { useSelectAccessibilityWarnings } from './use-warnings';
 
-const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
 const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
-function isOptionEqualToValue(
-  option: UiSelectWithSearchOption,
-  value: UiSelectWithSearchOption
-): boolean {
-  return option.value === value.value;
-}
 
 function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.ReactElement {
   useSelectAccessibilityWarnings(props);
@@ -31,24 +25,7 @@ function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.Rea
             {props.label}
           </FieldLabel>
         )}
-        <Autocomplete
-          options={props.options}
-          value={props.value ?? null}
-          onChange={field.handleChange}
-          onInputChange={field.handleInputChange}
-          disabled={props.disabled}
-          size={props.size}
-          sx={props.sx}
-          id={fieldId}
-          isOptionEqualToValue={isOptionEqualToValue}
-          popupIcon={POPUP_ICON}
-          open={props.open}
-          disablePortal={props.disablePortal}
-          renderInput={field.renderInput}
-          slotProps={
-            props.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps
-          }
-        />
+        <SelectAutocomplete control={props} fieldId={fieldId} field={field} />
       </Box>
     </ThemeProvider>
   );

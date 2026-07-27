@@ -1,50 +1,26 @@
-import { Autocomplete, Box, ThemeProvider } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
-import type { SystemStyleObject } from '@mui/system';
+import { Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { ChevronDownGlyph, FieldLabel, hasText, OPEN_FIELD_POPPER } from '../field-controls';
-import colorTheme from '../ui-color-theme';
+import { FieldLabel, hasText } from '../field-controls';
 
+import { MultiSelectCombobox } from './combobox';
 import { srOnlySx } from './styles';
 import multiSelectTheme from './theme';
-import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
-import { useMultiSelectField } from './use-multi-select-field';
+import type { UiMultiSelectProps } from './types';
+import { useMultiSelectField, type MultiSelectField } from './use-multi-select-field';
 import { useMultiSelectWarnings } from './use-warnings';
 
-const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
-const EMPTY: UiMultiSelectOption[] = [];
 const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
-// Figma "Multiselect": the empty field stroke is grey400 #D0D4D8 (set in the theme);
-// once chips fill it the stroke is grey300 #969B9D (the filled/"active" node
-// 535:37491). Hover is grey300 for BOTH the empty and the filled field (node
-// 535:37484) and is handled by the theme, so the filled state only needs its darker
-// resting stroke here.
-const FILLED_STROKE_SX: SystemStyleObject<Theme> = {
-  '& .MuiOutlinedInput-notchedOutline': { borderColor: colorTheme.palette.grey300.main },
-};
-function isOptionEqualToValue(option: UiMultiSelectOption, value: UiMultiSelectOption): boolean {
-  return option.value === value.value;
-}
-
-function getOptionLabel(option: UiMultiSelectOption): string {
-  return option.label;
-}
 
 // Multi-value searchable combobox: options are picked from the listbox and shown
-// as removable chips. Built on MUI `Autocomplete multiple`; `disableCloseOnSelect`
-// keeps the popup open per pick (the accessible multi-select default). A hidden
-// polite `role="status"` region announces chip add/remove (MUI is silent there).
+// as removable chips. Built on MUI `Autocomplete multiple` (see `./combobox`).
+// A hidden polite `role="status"` region announces chip add/remove (MUI is silent
+// there).
 function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement {
   useMultiSelectWarnings(props);
-  const field: ReturnType<typeof useMultiSelectField> = useMultiSelectField(props);
+  const field: MultiSelectField = useMultiSelectField(props);
   const generatedId: string = React.useId();
   const fieldId: string = props.id ?? generatedId;
-  const consumerSx: SxProps<Theme> = props.sx ?? {};
-  const rootSx: SxProps<Theme> =
-    (props.value ?? EMPTY).length > 0
-      ? [FILLED_STROKE_SX, ...(Array.isArray(consumerSx) ? consumerSx : [consumerSx])]
-      : consumerSx;
 
   return (
     <ThemeProvider theme={multiSelectTheme}>
@@ -54,30 +30,7 @@ function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement 
             {props.label}
           </FieldLabel>
         )}
-        <Autocomplete
-          multiple
-          disableCloseOnSelect
-          options={props.options}
-          value={props.value ?? EMPTY}
-          onChange={field.handleChange}
-          inputValue={field.text}
-          onInputChange={field.handleInputChange}
-          disabled={props.disabled}
-          size={props.size}
-          sx={rootSx}
-          id={fieldId}
-          isOptionEqualToValue={isOptionEqualToValue}
-          getOptionLabel={getOptionLabel}
-          popupIcon={POPUP_ICON}
-          open={props.open}
-          disablePortal={props.disablePortal}
-          renderInput={field.renderInput}
-          renderValue={field.renderValue}
-          renderOption={field.renderOption}
-          slotProps={
-            props.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps
-          }
-        />
+        <MultiSelectCombobox config={props} field={field} fieldId={fieldId} />
       </Box>
       <Box role="status" aria-atomic="true" sx={srOnlySx}>
         {field.status}

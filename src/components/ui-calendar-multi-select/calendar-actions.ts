@@ -122,11 +122,9 @@ export function handleGridKey(ctx: ActionContext, event: React.KeyboardEvent): v
   if (ctx.props.disabled) {
     return;
   }
-  if (tryCancelKey(ctx, event)) {
-    return;
+  // Cancel wins over select, select over navigate; each helper reports whether it
+  // consumed the key, so the short-circuit leaves the original precedence intact.
+  if (!tryCancelKey(ctx, event) && !trySelectKey(ctx, event)) {
+    tryNavigateKey(ctx, event);
   }
-  if (trySelectKey(ctx, event)) {
-    return;
-  }
-  tryNavigateKey(ctx, event);
 }

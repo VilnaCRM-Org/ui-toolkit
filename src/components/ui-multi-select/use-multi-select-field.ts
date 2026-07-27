@@ -33,12 +33,26 @@ export interface MultiSelectField {
 
 const EMPTY: UiMultiSelectOption[] = [];
 
+// Every option row renders the same way (typed prefix + grey completion), so the
+// renderer is built once at module scope rather than per render.
+const RENDER_OPTION: FieldOptionRenderer<UiMultiSelectOption> =
+  createFieldOptionRenderer<UiMultiSelectOption>(option => option.label);
+
 // The inline ghost overlay, shown only while a completion is active (kept out of the
 // hook so the hook stays under the metrics budget).
 function ghostOverlay(ghost: MultiSelectGhost): React.ReactNode {
   return ghost.active
     ? React.createElement(GhostOverlay, { typed: ghost.typed, completion: ghost.completion })
     : null;
+}
+
+// Names the popup listbox from the visible label, falling back to `aria-label`
+// (including when `label` is empty/whitespace), and marks it multi-selectable —
+// MUI leaves `aria-multiselectable` off even for `Autocomplete multiple`.
+function listboxSlotProps(props: UiMultiSelectProps): MultiListboxSlotProps {
+  const label: string | undefined = props.label;
+  const named: string | undefined = hasText(label) ? label : props['aria-label'];
+  return { listbox: { 'aria-label': named, 'aria-multiselectable': true } };
 }
 
 // The `renderInput` factory, wired with the ghost overlay + its input key/focus
@@ -72,8 +86,7 @@ function buildRenderInput(
 // complexity gate. These are cheap to build and MUI calls them every render, so
 // they are not memoised (memo dependency lists would otherwise blow the budget).
 export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField {
-  const { value, onChange, label } = props;
-  const ariaLabel: string | undefined = props['aria-label'];
+  const { value, onChange } = props;
   const selected: UiMultiSelectOption[] = value ?? EMPTY;
   const [status, setStatus] = React.useState<string>('');
 
@@ -92,9 +105,7 @@ export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField
     handleInputChange: ghost.handleInputChange,
     renderInput: buildRenderInput(props, ghost),
     renderValue: createChipRenderer(props.disabled === true),
-    renderOption: createFieldOptionRenderer<UiMultiSelectOption>(option => option.label),
-    slotProps: {
-      listbox: { 'aria-label': hasText(label) ? label : ariaLabel, 'aria-multiselectable': true },
-    },
+    renderOption: RENDER_OPTION,
+    slotProps: listboxSlotProps(props),
   };
 }
