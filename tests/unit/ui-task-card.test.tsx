@@ -553,8 +553,10 @@ describe('UiTaskCard — deadline label and chip', () => {
 
 describe('UiTaskCard — title', () => {
   const LONG_TITLE: string =
-    'Подготовить бриф для заказчика @zakazchik-s-ochen-dlinnym-imenem-kotoroe-ne-perenositsya ' +
-    'и ещё несколько слов, чтобы заголовок точно занял три строки в колонке доски';
+    'Подготовить бриф для заказчика ' +
+    '@zakazchik-s-ochen-dlinnym-imenem-kotoroe-ne-perenositsya ' +
+    'и ещё несколько слов, чтобы заголовок ' +
+    'точно занял три строки в колонке доски';
 
   it('keeps a long title whole in the DOM and in the accessible name', () => {
     renderCard({ title: LONG_TITLE, onActivate: noop });

@@ -17,7 +17,10 @@ import {
 
 // The assignee of the Figma task-card master: the design's own sample person and
 // the photo it draws, so the tiles match the master pixel for pixel.
-const TASK_ASSIGNEE: TaskAssignee = { name: 'Евгения Маслова', avatarSrc: TASK_AVATAR_SRC };
+const TASK_ASSIGNEE: TaskAssignee = {
+  name: 'Евгения Маслова',
+  avatarSrc: TASK_AVATAR_SRC,
+};
 
 // Builds a search-field tile for a size/state combination. Responsive sizing is
 // viewport-gated and hover/open visuals are pointer-gated, so each is forced here.

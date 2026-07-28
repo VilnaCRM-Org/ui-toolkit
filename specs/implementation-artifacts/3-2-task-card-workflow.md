@@ -49,14 +49,14 @@ unrepresentable by construction. `forwardRef<HTMLButtonElement>` lands on the
 The repo's `ui-card-item`/`ui-card-list` are the unrelated marketing-site cards,
 so the card is composed 1:1 from the Figma UI-kit Cards masters:
 
-| Element      | Figma node(s)                     | Applied                                                                                                                                                 |
-| ------------ | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Element      | Figma node(s)                     | Applied                                                                                                                                                                                                                 |
+| ------------ | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Card master  | Rest `439:19884` (372×94)         | Full-bleed row, transparent bg, `1px` `brandGray` bottom divider only, no radius; `14px 16px 13px` padding (+1px divider = the master's 14px bottom band); grid `34px` avatar track + `12px` gap; `minHeight: 5.875rem` |
-| Avatar       | (in master)                       | 34×34 circular informative `<img>` (`alt = assignee.name`), real photo from the master's instance override                                              |
-| Title        | (in master)                       | Inter Medium 16/18 `#404142` (`grey200`), natural wrap, `overflowWrap: anywhere`                                                                        |
-| Meta row     | (in master)                       | 8px below title; label Inter Medium 14/18 `#969B9D` (`grey300`) + chip `brandGray` fill, 4px radius, `2px 4px` padding, `darkPrimary` 14/18 ink         |
-| Hover master | `439:20208`                       | Title → `darkPrimary`, label → `grey200`, chip → white fill + `brandGray` border + `0 4px 2px rgba(174, 181, 186, 0.25)` shadow                          |
-| Board usage  | skeleton boards `538:*` / `632:*` | Cards stack flush at a 94px pitch (divider-separated, no gap); width consumer-fluid (372/561/770 across screens)                                        |
+| Avatar       | (in master)                       | 34×34 circular informative `<img>` (`alt = assignee.name`), real photo from the master's instance override                                                                                                              |
+| Title        | (in master)                       | Inter Medium 16/18 `#404142` (`grey200`), natural wrap, `overflowWrap: anywhere`                                                                                                                                        |
+| Meta row     | (in master)                       | 8px below title; label Inter Medium 14/18 `#969B9D` (`grey300`) + chip `brandGray` fill, 4px radius, `2px 4px` padding, `darkPrimary` 14/18 ink                                                                         |
+| Hover master | `439:20208`                       | Title → `darkPrimary`, label → `grey200`, chip → white fill + `brandGray` border + `0 4px 2px rgba(174, 181, 186, 0.25)` shadow                                                                                         |
+| Board usage  | skeleton boards `538:*` / `632:*` | Cards stack flush at a 94px pitch (divider-separated, no gap); width consumer-fluid (372/561/770 across screens)                                                                                                        |
 
 **No new palette tokens** — every ink resolves to an existing `sharedPalette`
 token; the chip hover shadow stays a raw rgba literal per the 3.1 recipe
@@ -112,21 +112,21 @@ geometry (the `UiPagination` no-jitter precedent).
 
 ## Shared-contract coverage
 
-| Field      | UiTaskCard                                                       |
-| ---------- | ---------------------------------------------------------------- |
-| `value`    | ⛔ N/A — fire-and-forget action, no state fed back               |
-| `onChange` | ⛔ N/A — `onActivate` is the analogue                            |
-| `disabled` | ✅ as `disabled` (`aria-disabled` boundary pattern)              |
-| `error`    | ⛔ N/A — presentation, not a form field                          |
-| `size`     | ⛔ N/A — single Figma master, fluid width                        |
-| `variant`  | ⛔ N/A — two states, zero variants                               |
-| `sx`       | ✅ (on the card root, merged last)                               |
+| Field      | UiTaskCard                                          |
+| ---------- | --------------------------------------------------- |
+| `value`    | ⛔ N/A — fire-and-forget action, no state fed back  |
+| `onChange` | ⛔ N/A — `onActivate` is the analogue               |
+| `disabled` | ✅ as `disabled` (`aria-disabled` boundary pattern) |
+| `error`    | ⛔ N/A — presentation, not a form field             |
+| `size`     | ⛔ N/A — single Figma master, fluid width           |
+| `variant`  | ⛔ N/A — two states, zero variants                  |
+| `sx`       | ✅ (on the card root, merged last)                  |
 
 ## Accessibility semantics
 
 - **Native action button (wired).** One `<button type="button">`; accessible
   name is content-derived — `"{assignee.name} {title} {deadlineLabel}
-  {deadline}"` — with no `aria-label` anywhere (WCAG 2.5.3). The `@mention` in a
+{deadline}"` — with no `aria-label` anywhere (WCAG 2.5.3). The `@mention` in a
   title stays plain text (a nested link inside a button is invalid and strips
   name text). The deadline label+chip are adjacent inline spans concatenated
   naturally by the accname algorithm — zero ARIA on the chip.
@@ -193,11 +193,11 @@ surface behind the transparent card.
 
 ## Acceptance-criteria completion
 
-| Source AC (epics.md Story 3.2)                                                                                                  | Status | Evidence                                                                                                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **AC1** — key card content and state behaviour consistent with board expectations; clear rest/active/disabled interaction semantics | ✅     | Rest/hover from the two Figma masters; `:active` is a CSS micro-state; `disabled` via the `aria-disabled` boundary; cards stack flush at the board's 94px divider pitch.                  |
-| **AC2** — API aligns with shared toolkit contract principles; exceptions documented                                              | ✅     | Shared-contract table above; every N/A carries its rationale in `types.ts`; `disabled`/`sx` are real contract hits; deviations (no disclosure, no heading, no self-`<li>`) documented.    |
-| **AC3** — independently usable and testable; no future-story dependency                                                          | ✅     | No dependency on later stories; consumed standalone or under any list/column wrapper; 59-spec unit suite + Storybook stories + showcase board group act as usage examples.               |
+| Source AC (epics.md Story 3.2)                                                                                                      | Status | Evidence                                                                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AC1** — key card content and state behaviour consistent with board expectations; clear rest/active/disabled interaction semantics | ✅     | Rest/hover from the two Figma masters; `:active` is a CSS micro-state; `disabled` via the `aria-disabled` boundary; cards stack flush at the board's 94px divider pitch.               |
+| **AC2** — API aligns with shared toolkit contract principles; exceptions documented                                                 | ✅     | Shared-contract table above; every N/A carries its rationale in `types.ts`; `disabled`/`sx` are real contract hits; deviations (no disclosure, no heading, no self-`<li>`) documented. |
+| **AC3** — independently usable and testable; no future-story dependency                                                             | ✅     | No dependency on later stories; consumed standalone or under any list/column wrapper; 59-spec unit suite + Storybook stories + showcase board group act as usage examples.             |
 
 ## Provenance
 
@@ -240,15 +240,15 @@ conventions. Recorded in `component-provenance.md` under Epic 3.
 
 ## Definition of Done
 
-| DoD item                                                | AC  | Status                                                                     |
-| ------------------------------------------------------- | --- | -------------------------------------------------------------------------- |
-| Card renders key content with clear semantics           | AC1 | ✅ avatar/title/deadline; content-named native button or static content    |
-| Rest/active/disabled interaction semantics clear        | AC1 | ✅ Figma rest+hover; CSS `:active`; `aria-disabled` boundary               |
-| Consistent with board expectations                      | AC1 | ✅ flush 94px divider pitch; fluid width; reserved avatar track            |
-| API aligns with shared contract; exceptions documented  | AC2 | ✅ table above + `types.ts` rationale                                      |
-| Independently usable and testable                       | AC3 | ✅ standalone; 59 specs at 100% coverage; stories + showcase usage         |
-| Export + provenance recorded                            | —   | ✅ `src/components/index.ts`, `component-provenance.md` Epic 3             |
-| Quality gates green (this story's files)                | —   | ✅ coverage/`rca`/`tsc`/ESLint/Prettier/`depcruise`; visual baselines      |
+| DoD item                                               | AC  | Status                                                                  |
+| ------------------------------------------------------ | --- | ----------------------------------------------------------------------- |
+| Card renders key content with clear semantics          | AC1 | ✅ avatar/title/deadline; content-named native button or static content |
+| Rest/active/disabled interaction semantics clear       | AC1 | ✅ Figma rest+hover; CSS `:active`; `aria-disabled` boundary            |
+| Consistent with board expectations                     | AC1 | ✅ flush 94px divider pitch; fluid width; reserved avatar track         |
+| API aligns with shared contract; exceptions documented | AC2 | ✅ table above + `types.ts` rationale                                   |
+| Independently usable and testable                      | AC3 | ✅ standalone; 59 specs at 100% coverage; stories + showcase usage      |
+| Export + provenance recorded                           | —   | ✅ `src/components/index.ts`, `component-provenance.md` Epic 3          |
+| Quality gates green (this story's files)               | —   | ✅ coverage/`rca`/`tsc`/ESLint/Prettier/`depcruise`; visual baselines   |
 
 ## Out of scope / deferred
 
