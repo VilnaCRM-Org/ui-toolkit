@@ -213,3 +213,31 @@ test.describe('Visual states (Figma state grid) — item row', () => {
     await shoot(page, 'item-row-focus.png');
   });
 });
+
+test.describe('Visual states (Figma state grid) — task card', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  // The card is consumer-fluid (the Figma master is 372px), and 94px tall at the
+  // two-line title, so this grid gets a narrow viewport and a short frame.
+  test.use({ viewport: { width: 520, height: 160 } });
+
+  test('task card hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uitaskcard--task-card');
+    // Real `:hover` on the wired card: title and label ink darken and the deadline
+    // chip turns white with its stroke and shadow — the recipe the theme scopes to
+    // `:hover:not([aria-disabled="true"])`, which no static tile can prove fires.
+    await page.getByRole('button').hover();
+    await shoot(page, 'task-card-hover.png');
+  });
+
+  test('task card focus-visible', async ({ page }) => {
+    await openStory(page, 'uicomponents-uitaskcard--task-card');
+    // Keyboard focus draws the two-layer INSET ring (dark over white); it is inset
+    // precisely because a board column would clip an outset one.
+    await page.keyboard.press('Tab');
+    await shoot(page, 'task-card-focus.png');
+  });
+});

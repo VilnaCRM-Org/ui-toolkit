@@ -275,6 +275,31 @@
     "name": "Small"
   },
   {
+    "id": "uicomponents-uitaskcard--disabled",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uitaskcard--long-title",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Long Title"
+  },
+  {
+    "id": "uicomponents-uitaskcard--static",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uitaskcard--task-card",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Task Card"
+  },
+  {
+    "id": "uicomponents-uitaskcard--unassigned",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Unassigned"
+  },
+  {
     "id": "uicomponents-uitextfieldform--text-field-form",
     "title": "UiComponents/UiTextFieldForm",
     "name": "Text Field Form"

@@ -7,8 +7,9 @@ import type { DayDescriptor } from './view-model';
 
 // A two-colour focus ring stays visible on both the white surface and the blue
 // endpoint fill (a single-colour ring vanishes on same-colour fill). Inner white
-// ring vs the fill, outer dark ring vs the page — WCAG 2.4.7 / 2.4.11. It is drawn
-// on the day circle when its cell is keyboard-focused.
+// ring vs the fill, outer dark ring vs the page — WCAG 2.4.7 (Focus Visible, AA)
+// and 2.4.13 (Focus Appearance, AAA). It is drawn on the day circle when its cell
+// is keyboard-focused.
 const FOCUS_RING_INNER: string = `inset 0 0 0 2px ${palette.white.main}`;
 const FOCUS_RING_OUTER: string = `0 0 0 2px ${palette.darkPrimary.main}`;
 const FOCUS_RING: string = `${FOCUS_RING_INNER}, ${FOCUS_RING_OUTER}`;

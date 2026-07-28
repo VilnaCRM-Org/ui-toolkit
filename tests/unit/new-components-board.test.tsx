@@ -22,6 +22,7 @@ const GROUP_HEADINGS: readonly string[] = [
   'Пагінація',
   'Завантаження файлу',
   'Рядок ендпоінта (REST API)',
+  'Картка завдання (Дошка)',
 ];
 
 describe('New Components board (Figma parity showcase)', () => {

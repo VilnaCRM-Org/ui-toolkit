@@ -21,6 +21,8 @@ export { default as UiPagination } from './ui-pagination';
 export { default as UiRadioGroup } from './ui-radio-group';
 export { default as UiSearchInput } from './ui-search-input';
 export { default as UiSelectWithSearch } from './ui-select-with-search';
+export { default as UiTaskCard } from './ui-task-card';
+export type { UiTaskCardProps, TaskAssignee } from './ui-task-card/types';
 export { default as UiTypography } from './ui-typography';
 export { default as UiImage } from './ui-image';
 export { default as UiForm } from './ui-form';
