@@ -140,6 +140,46 @@
     "name": "Input"
   },
   {
+    "id": "uicomponents-uiitemrow--delete-method",
+    "title": "UiComponents/UiItemRow",
+    "name": "Delete Method"
+  },
+  {
+    "id": "uicomponents-uiitemrow--expanded",
+    "title": "UiComponents/UiItemRow",
+    "name": "Expanded"
+  },
+  {
+    "id": "uicomponents-uiitemrow--item-row",
+    "title": "UiComponents/UiItemRow",
+    "name": "Item Row"
+  },
+  {
+    "id": "uicomponents-uiitemrow--muted",
+    "title": "UiComponents/UiItemRow",
+    "name": "Muted"
+  },
+  {
+    "id": "uicomponents-uiitemrow--post-method",
+    "title": "UiComponents/UiItemRow",
+    "name": "Post Method"
+  },
+  {
+    "id": "uicomponents-uiitemrow--put-method",
+    "title": "UiComponents/UiItemRow",
+    "name": "Put Method"
+  },
+  {
+    "id": "uicomponents-uiitemrow--static",
+    "title": "UiComponents/UiItemRow",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uiitemslist--items-list",
+    "title": "UiComponents/UiItemsList",
+    "name": "Items List"
+  },
+  {
     "id": "uicomponents-uilink--link",
     "title": "UiComponents/UiLink",
     "name": "Link"

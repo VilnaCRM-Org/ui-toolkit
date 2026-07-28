@@ -20,6 +20,8 @@ const expectedPublicExports: string[] = [
   'UiForm',
   'UiImage',
   'UiInput',
+  'UiItemRow',
+  'UiItemsList',
   'Layout',
   'UiLink',
   'UiMultiSelect',
