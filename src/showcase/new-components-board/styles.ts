@@ -136,6 +136,20 @@ export const ROW_MOBILE_SX = {
   '& svg': { width: '1.25rem', height: '1.25rem' },
 } as const;
 
+// Forced task-card hover: the card scopes the whole recipe to its own `:hover`
+// (gated on the aria-disabled boundary), so a static tile re-applies the Figma
+// hover values through the class hooks — title and label ink darken one step and
+// the chip turns white with a brand-gray stroke and its drop shadow.
+export const TASK_CARD_HOVER_SX = {
+  '& .ui-task-card__title': { color: '#1A1C1E' },
+  '& .ui-task-card__label': { color: '#404142' },
+  '& .ui-task-card__chip': {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E1E7EA',
+    boxShadow: '0 4px 2px rgba(174, 181, 186, 0.25)',
+  },
+} as const;
+
 // ---- board layout -----------------------------------------------------------
 
 export const pageSx = {

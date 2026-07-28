@@ -33,6 +33,7 @@ const expectedPublicExports: string[] = [
   'UiSkeletonButton',
   'UiSkeletonInput',
   'UiSkeletonText',
+  'UiTaskCard',
   'UiTextFieldForm',
   'UiToolbar',
   'UiTooltip',
@@ -64,5 +65,6 @@ describe('components index', () => {
     expect(publicComponents.UiButton).toBeDefined();
     expect(publicComponents.UiSkeletonBlock).toBeDefined();
     expect(publicComponents.UiTooltip).toBeDefined();
+    expect(publicComponents.UiTaskCard).toBeDefined();
   });
 });
