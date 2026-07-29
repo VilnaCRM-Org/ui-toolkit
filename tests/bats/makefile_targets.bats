@@ -161,7 +161,7 @@ EOF
   reset_command_log
   run_make_target_with_env package FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
-  assert_log_contains 'docker compose exec -T bun sh -lc rm -rf dist && mkdir -p dist'
+  assert_log_contains 'docker compose exec -T bun sh -lc rm -rf dist build && mkdir -p dist'
   assert_log_contains 'docker compose exec -T bun node ./build.config.mjs'
   assert_log_contains 'docker compose exec -T bun npm pack --pack-destination dist'
   assert_log_contains 'docker compose exec -T bun sh scripts/ci/verify-package-tarball.sh dist'
@@ -185,6 +185,8 @@ EOF
     FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id \
     FAKE_DOCKER_FAILING_COMMAND='verify-package-tarball.sh'
   [ "$status" -ne 0 ]
+  assert_log_contains 'docker compose exec -T bun node ./build.config.mjs'
+  assert_log_contains 'docker compose exec -T bun npm pack --pack-destination dist'
   assert_log_not_contains 'docker compose cp bun:/app/dist ./dist'
 }
 

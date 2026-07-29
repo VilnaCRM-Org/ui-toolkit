@@ -36,7 +36,7 @@ for required in \
   package/build/index.mjs \
   package/build/index.d.ts \
   package/build/index.css; do
-  if ! printf '%s\n' "$contents" | grep -qx -- "$required"; then
+  if ! printf '%s\n' "$contents" | grep -qxF -- "$required"; then
     echo "$tarball is missing $required" >&2
     exit 1
   fi

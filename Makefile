@@ -76,7 +76,7 @@ package: ## Build and copy the publishable npm tarball out of the running bun co
 		echo "bun service is not running; run 'make start-bun' first"; \
 		exit 1; \
 	fi; \
-	$(EXEC_BUN) sh -lc 'rm -rf $(PACKAGE_DIR) && mkdir -p $(PACKAGE_DIR)' \
+	$(EXEC_BUN) sh -lc 'rm -rf $(PACKAGE_DIR) build && mkdir -p $(PACKAGE_DIR)' \
 		&& $(EXEC_BUN) node ./build.config.mjs \
 		&& $(EXEC_BUN) npm pack --pack-destination $(PACKAGE_DIR) \
 		&& $(EXEC_BUN) sh $(PACKAGE_VERIFIER) $(PACKAGE_DIR) \
