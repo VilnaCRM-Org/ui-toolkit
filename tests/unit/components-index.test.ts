@@ -26,6 +26,7 @@ const expectedPublicExports: string[] = [
   'UiLink',
   'UiMultiSelect',
   'UiPagination',
+  'UiProfileSelectCard',
   'UiRadioGroup',
   'UiSearchInput',
   'UiSelectWithSearch',
