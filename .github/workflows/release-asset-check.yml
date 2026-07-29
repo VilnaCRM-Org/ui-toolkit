@@ -1,0 +1,94 @@
+name: release asset check
+
+on:
+  # Daily, so a stalled release pipeline is discovered within a day rather than
+  # after months of silent failures on main.
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-asset:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+
+    # No checkout step: every assertion is answered by the GitHub API through the
+    # preinstalled gh CLI, so this job needs no working tree.
+    steps:
+      - name: Assert the newest release tag ships a tarball
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: .github/workflows/autorelease.yml
+        run: |
+          set -euo pipefail
+
+          # The tags API orders by commit date, not by version, hence sort -V.
+          # Only stable vX.Y.Z tags count; autorelease.yml never tags prereleases.
+          gh api --paginate "repos/$REPO/tags" --jq '.[].name' > tags.txt
+          tag="$(grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' tags.txt | sort -V | tail -n 1 || true)"
+
+          if [[ -z "$tag" ]]; then
+            echo "::notice::No v-prefixed release tag exists yet, so there is nothing" \
+              "to verify. This is the expected pre-first-release state."
+            exit 0
+          fi
+
+          if ! gh api "repos/$REPO/releases/tags/$tag" > release.json; then
+            echo "::error::Tag $tag has no GitHub release. The release pipeline is" \
+              "broken: the Create Release step in $WORKFLOW never ran for this tag." \
+              "Check the newest run of that workflow on main."
+            exit 1
+          fi
+
+          assets="$(jq '[.assets[].name | select(endswith(".tgz"))] | length' release.json)"
+          if [[ "$assets" -eq 0 ]]; then
+            echo "::error::Release $tag carries no .tgz asset, so consumers cannot" \
+              "install it. The packaging steps in $WORKFLOW (make package, then the" \
+              "files: dist/*.tgz upload) did not produce or attach a tarball."
+            exit 1
+          fi
+
+          echo "Release $tag ships $assets .tgz asset(s)."
+
+      - name: Assert the release workflow is not failing on main
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          WORKFLOW: .github/workflows/autorelease.yml
+        run: |
+          set -euo pipefail
+
+          runs="repos/$REPO/actions/workflows/autorelease.yml/runs"
+          if ! gh api "$runs?branch=main&status=completed&per_page=1" > runs.json; then
+            echo "::notice::Could not read runs for $WORKFLOW, so its health was not" \
+              "checked. The workflow may never have been registered on main."
+            exit 0
+          fi
+
+          conclusion="$(jq -r '.workflow_runs[0].conclusion // "none"' runs.json)"
+          url="$(jq -r '.workflow_runs[0].html_url // ""' runs.json)"
+
+          if [[ "$conclusion" == "none" ]]; then
+            echo "::notice::$WORKFLOW has no completed run on main yet."
+            exit 0
+          fi
+
+          if [[ "$conclusion" == "failure" ]]; then
+            echo "::error::The newest completed run of $WORKFLOW on main failed, so no" \
+              "release can be cut and no tarball can be published. Open $url for the" \
+              "failing step, then fix $WORKFLOW."
+            exit 1
+          fi
+
+          echo "Newest completed $WORKFLOW run on main concluded '$conclusion'."
