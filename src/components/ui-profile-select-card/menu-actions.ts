@@ -8,9 +8,11 @@ import type { MenuFocusContext, MenuFocusRefs } from './menu-refs';
 // first, so the §4.6 rescue only ever fires for a close that would otherwise
 // leave focus stranded on `<body>`. Tab is NOT one of those paths (Amendment A1):
 // it makes no focus call of its own and deliberately leaves the rescue armed.
+// The flag is interaction-scoped (Amendment A2), so a consumer that declines the
+// close it accompanies cannot suppress a later, unrelated rescue.
 function focusTrigger(ctx: MenuFocusContext): void {
   const refs: MenuFocusRefs = ctx.refs;
-  refs.skipRescue.current = true;
+  refs.skipRescue.set(true);
   refs.trigger.current?.focus();
 }
 
@@ -27,23 +29,33 @@ function closeToTrigger(ctx: MenuFocusContext): void {
 // back to the trigger would fight the user's own move.
 function closeWithoutFocus(ctx: MenuFocusContext): void {
   const refs: MenuFocusRefs = ctx.refs;
-  refs.skipRescue.current = true;
+  refs.skipRescue.set(true);
   ctx.requestOpen(false);
+}
+
+// The two halves of every open path, in order: record which end focus should
+// land on (§4.2), then ask the consumer to open. The intent is
+// interaction-scoped (Amendment A2) — a consumer that declines or defers the
+// open leaves nothing behind, and the eventual open takes §4.2's `first`.
+function openWithIntent(ctx: MenuFocusContext, intent: MenuOpenIntent): void {
+  const refs: MenuFocusRefs = ctx.refs;
+  refs.intent.set(intent);
+  ctx.requestOpen(true);
 }
 
 /**
  * Pointer activation. A click on an OPEN trigger closes it and leaves focus where
  * it is — on the trigger (§4.5). The outside-pointerdown listener excludes the
  * whole widget, so this is the single close, never a close-then-reopen.
+ *
+ * Never reached while disabled — `useTriggerHandlers` owns that boundary (§6.1).
  */
 export function handleTriggerClick(ctx: MenuFocusContext): void {
   if (ctx.open) {
     ctx.requestOpen(false);
     return;
   }
-  const refs: MenuFocusRefs = ctx.refs;
-  refs.intent.current = 'first';
-  ctx.requestOpen(true);
+  openWithIntent(ctx, 'first');
 }
 
 // The two arrow keys a CLOSED trigger handles (§4.1): ArrowDown opens onto the
@@ -54,16 +66,16 @@ function openFromKey(ctx: MenuFocusContext, event: React.KeyboardEvent<HTMLEleme
   if (intent == null) {
     return;
   }
-  const refs: MenuFocusRefs = ctx.refs;
   event.preventDefault();
-  refs.intent.current = intent;
-  ctx.requestOpen(true);
+  openWithIntent(ctx, intent);
 }
 
 /**
  * Trigger keydown. While closed it only ever records an open intent; while open,
  * Escape is the single key it handles (§4.5) — everything else happens inside the
  * menu, which owns focus by then.
+ *
+ * Never reached while disabled — `useTriggerHandlers` owns that boundary (§6.1).
  */
 export function handleTriggerKeyDown(
   ctx: MenuFocusContext,
@@ -114,8 +126,10 @@ export function activateMenuItem(ctx: MenuFocusContext, itemId: string): void {
 
 /**
  * Focus leaving the whole widget closes the menu with no focus call (§4.5). The
- * `open` guard keeps this from re-reporting a close that Tab already requested:
- * by the time the browser moves focus, the component has re-rendered closed.
+ * `open` guard keeps this from re-reporting a close that Tab already requested
+ * when the consumer HONOURS it: by the time the browser moves focus, the
+ * component has re-rendered closed. A consumer that declines it is covered by
+ * the interaction-scoped close gate instead (Amendment A2).
  */
 export function handleWidgetFocusOut(
   ctx: MenuFocusContext,

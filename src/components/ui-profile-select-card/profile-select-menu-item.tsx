@@ -18,6 +18,11 @@ export interface ProfileSelectMenuItemProps {
  * `tabIndex={-1}` keeps the menu at zero tab stops; focus arrives only through
  * the component's own `.focus()` calls (§4.3 forbids roving tabindex and
  * `aria-activedescendant` alike). The visible label IS the accessible name (§5.4).
+ *
+ * The click handler is memoised on the row's own id and on `onActivate`, and
+ * both are genuinely stable now that the action context is memoised upstream
+ * (`useMenuRuntime`, Amendment A2) — before that the dependency changed on every
+ * commit and the memoisation bought nothing.
  */
 export function ProfileSelectMenuItem({
   item,

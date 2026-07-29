@@ -1,7 +1,7 @@
 import type { SxProps, Theme } from '@mui/material';
 import type React from 'react';
 
-import type { MenuFocusContext, MenuFocusRefs } from './menu-refs';
+import type { MenuFocusContext } from './menu-refs';
 import { profileTriggerSx } from './styles';
 import type { ProfileSelectItem, UiProfileSelectCardProps } from './types';
 
@@ -73,16 +73,16 @@ export function resolveProfileState(
 export interface ProfileModelInput {
   props: UiProfileSelectCardProps;
   items: ProfileSelectItem[];
-  refs: MenuFocusRefs;
+  /** The memoised action context (`useMenuContext`), handed through unchanged. */
+  ctx: MenuFocusContext;
   /** The `useId` value; names the menu and backs an omitted consumer `id` (§2.5). */
   reactId: string;
   state: ProfileCardState;
-  requestOpen: (next: boolean) => void;
   setTriggerRef: React.RefCallback<HTMLButtonElement>;
 }
 
 export function buildProfileModel(input: ProfileModelInput): ProfileSelectCardModel {
-  const { props, items, refs, reactId, state, requestOpen, setTriggerRef } = input;
+  const { props, items, ctx, reactId, state, setTriggerRef } = input;
   const menuId: string = `${reactId}-menu`;
   return {
     interactive: state.interactive,
@@ -95,7 +95,7 @@ export function buildProfileModel(input: ProfileModelInput): ProfileSelectCardMo
     avatarSrc: resolveAvatarSrc(props.avatarSrc),
     triggerSx: profileTriggerSx(state),
     items,
-    ctx: { refs, open: state.menuOpen, requestOpen, onSelect: props.onSelect },
+    ctx,
     setTriggerRef,
   };
 }

@@ -12,14 +12,31 @@ export interface TriggerHandlers {
   onWidgetBlur: (event: React.FocusEvent<HTMLDivElement>) => void;
 }
 
-/** Binds the trigger's module-level actions to the current context. */
+/**
+ * Binds the trigger's module-level actions to the current context, whose identity
+ * is memoised upstream (`useMenuRuntime`) so these callbacks are stable across a
+ * re-render that changes nothing they depend on (Amendment A2).
+ *
+ * The §6.1 `aria-disabled` boundary lands here for the two trigger paths, so a
+ * disabled trigger is a no-op end to end: no `preventDefault()` on an arrow key
+ * and — the part `useOpenRequest`'s gate cannot reach — no recorded open intent.
+ * Gating only the request left the intent ref set, and a consumer that re-enabled
+ * the card with `open` already true then opened onto that stale end, although
+ * §4.2 defines an intent-less open as `first` (Amendment A2). The focus-out close
+ * is deliberately NOT gated: it cannot fire on a card whose menu §6.3 keeps shut.
+ */
 export function useTriggerHandlers(ctx: MenuFocusContext): TriggerHandlers {
-  const onClick: TriggerHandlers['onClick'] = React.useCallback(
-    (): void => handleTriggerClick(ctx),
-    [ctx]
-  );
+  const onClick: TriggerHandlers['onClick'] = React.useCallback((): void => {
+    if (!ctx.disabled) {
+      handleTriggerClick(ctx);
+    }
+  }, [ctx]);
   const onKeyDown: TriggerHandlers['onKeyDown'] = React.useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>): void => handleTriggerKeyDown(ctx, event),
+    (event: React.KeyboardEvent<HTMLButtonElement>): void => {
+      if (!ctx.disabled) {
+        handleTriggerKeyDown(ctx, event);
+      }
+    },
     [ctx]
   );
   const onWidgetBlur: TriggerHandlers['onWidgetBlur'] = React.useCallback(

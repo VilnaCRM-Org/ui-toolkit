@@ -133,13 +133,15 @@ state-dependent size:
   content tree. The menu never renders even if `open` is passed (dev-warn).
 - **Empty `items` renders no menu at all** — an empty `role="menu"` is a defect
   (the `UiItemsList` empty-renders-nothing rule).
-- Decomposed into 17 single-purpose modules to stay inside the `rca`
+- Decomposed into 18 single-purpose modules to stay inside the `rca`
   per-function budgets: `types.ts`, `styles.ts`, `profile-select-model.ts` (view
   model), `use-profile-select-card.ts`, `menu-refs.ts` (the shared ref bundle),
-  `menu-focus.ts` / `menu-keyboard.ts` / `menu-actions.ts` (pure focus, key-map
-  and action helpers), `use-menu-focus-effects.ts`, `use-trigger-handlers.ts` /
-  `use-menu-handlers.ts`, `profile-select-warnings.ts`, and the four render
-  modules (`index.tsx`, `profile-select-trigger.tsx`, `profile-select-menu.tsx`,
+  `task-scoped-ref.ts` (the interaction-scoped cell behind three of those refs,
+  Amendment A2), `menu-focus.ts` / `menu-keyboard.ts` / `menu-actions.ts` (pure
+  focus, key-map and action helpers), `use-menu-focus-effects.ts`,
+  `use-trigger-handlers.ts` / `use-menu-handlers.ts`,
+  `profile-select-warnings.ts`, and the five render modules (`index.tsx`,
+  `profile-select-trigger.tsx`, `profile-select-menu.tsx`,
   `profile-select-menu-item.tsx`, `profile-select-card-content.tsx`).
 - Dev-only guidance via the shared `useDevWarning`, silent in production.
 
@@ -229,7 +231,11 @@ Ownership split: the consumer owns `open`, the component owns focus.
 - **§4.2** On the closed→open transition a layout effect moves DOM focus to the
   intent item — `first` by default (including programmatic opens with no
   recorded intent), `last` only for ArrowUp — then clears the intent. Focus
-  **always** enters the menu, pointer and keyboard alike.
+  **always** enters the menu, pointer and keyboard alike. The recorded intent is
+  **interaction-scoped** (**Amendment A2**): it survives the gesture that
+  recorded it, so a consumer that opens synchronously consumes it, and it is
+  gone by the next one, so an open the consumer **declined or deferred** falls
+  back to the `first` default rather than honouring a stale end.
 - **§4.3** Inside the menu: all rows `tabindex="-1"`, focus moved with
   `.focus()`; **`aria-activedescendant` forbidden**, roving `tabindex="0"`
   forbidden — the menu contributes **zero tab stops**. ArrowDown/ArrowUp move
@@ -248,7 +254,13 @@ Ownership split: the consumer owns `open`, the component owns focus.
   click on an open trigger fires close (outside handler) then reopen (click
   handler), a known double-fire bug class. Trigger click while open → one close,
   focus stays put. Escape on the open trigger → close. Focus leaving the widget
-  → close, no focus call.
+  → close, no focus call. **One close request per gesture** (**Amendment A2**):
+  a single gesture reaches two close paths — the `pointerdown`/Tab keydown that
+  closes, then the focus-out close fired by the move that same gesture performs
+  — and an interaction-scoped gate makes the second a no-op, so a consumer that
+  keeps `open` true hears `onOpenChange(false)` once. The gate is scoped, never
+  sticky: a **declined** close must not swallow the next gesture's Escape, and an
+  open request clears it so a close-then-reopen inside one task still works.
 - **§4.6** **Stranded-focus rescue (SC 2.4.3):** if the menu vanishes while
   focus is inside it, no handler already owned the move, **and
   `document.activeElement` is `<body>` (or nothing)**, focus goes to the
@@ -257,6 +269,14 @@ Ownership split: the consumer owns `open`, the component owns focus.
   the active element may already be `<body>` by then; the `<body>` read is
   therefore the _stranded_ test only, never the focus-inside test. If a handler
   or the browser has already put focus on a real element, the rescue no-ops.
+  A **third case** joins the family (**Amendment A2**): the menu can survive
+  while the focused **row** does not, because a controlled `items` change may
+  drop it. Removing a focused node fires no blur, so focus-inside still records
+  where focus was; a commit-time layout effect re-seats it on the **first
+  surviving row** — inside the still-open menu, not on the trigger. Zero
+  surviving rows is not this case: §3.4 unmounts the menu and the rescue above
+  applies. The rescue suppression is itself interaction-scoped, so a **declined**
+  close cannot disarm a later, unrelated rescue.
 - **§4.7** No other key handling; no `keyup` handlers (SC 2.5.2 stays native).
 
 #### Amendment A1 — the Tab path keeps the §4.6 rescue armed (review round)
@@ -286,6 +306,70 @@ the transient trigger focus is invisible, because the default move then advances
 FROM the trigger to the same destination the starting-point fixup would have
 chosen; in an engine without that fixup, focus provably never lands on `<body>`.
 
+#### Amendment A2 — interaction-scoped refs and the items-shrink rescue (review round 2)
+
+**Provenance:** cubic review, PR review round 2 for #21 — six findings, five of
+them behavioural.
+
+**The one root cause behind three of them.** Every mutable handle the card writes
+before asking the consumer for a state change — the open intent, the §4.6 rescue
+suppression, the new close gate — was a plain ref, cleared only by the commit
+that _honoured_ the request. The consumer owns `open` (§3.1) and is free to
+**decline or defer** it, and a declined request commits nothing, so the value
+survived to steer the **next, unrelated** interaction: a declined ArrowUp open
+made a later programmatic open land on the last row (§4.2 says `first`), and a
+declined outside-pointer close suppressed a later close's rescue (§4.6), leaving
+focus on `<body>`. The fix is one shared primitive,
+`task-scoped-ref.ts`: a cell readable for the remainder of the event task that
+set it and empty by the next one.
+
+- **Why a task and not a microtask.** The HTML "clean up after running script"
+  step performs a microtask checkpoint after **every** event listener, so a
+  microtask self-clear would already have run before the same gesture's focus
+  events — and before the microtask in which a concurrent-root React flushes a
+  synchronous consumer's re-render. A clear queued as a task can precede
+  neither, because both happen inside the task that queued it.
+- **Consequence, on record.** A consumer that opens **asynchronously** (a
+  deferred `setState`) gets §4.2's `first` default rather than its recorded
+  ArrowUp `last`. That is the safe direction — the alternative is a stale intent
+  steering an unrelated open — and it is the documented behaviour, not a bug.
+
+**The five behavioural amendments:**
+
+1. **§6.1 covers intent recording** — the trigger's click and keydown paths
+   return before recording anything while disabled (gate relocated to
+   `use-trigger-handlers.ts`, which also keeps `menu-actions.ts` inside its
+   `rca` function-count budget).
+2. **§4.6 gains a third case** — a controlled `items` shrink that removes the
+   focused row is rescued to the first surviving row, inside the still-mounted
+   menu.
+3. **§4.5 dedupes per gesture** — one `onOpenChange(false)` per interaction, on
+   every close path, never across interactions.
+4. **§4.2's intent is interaction-scoped** — see above.
+5. **§4.6's `skipRescue` is interaction-scoped** — the outside-`pointerdown`
+   path still needs same-gesture suppression (its event precedes the browser's
+   focus move); Escape and activation keep it as belt-and-braces, where A1's
+   stranded test already makes it a no-op.
+
+**Sixth finding (P3, non-behavioural): the row memoisation was vacuous.** The
+menu row's `useCallback` depended on an `onActivate` that the action context
+rebuilt on every render, so nothing was memoised. The context is now
+`React.useMemo`d over its real inputs (`refs`, the effective open state,
+`disabled`, `requestOpen`, `onSelect`), which makes the trigger, menu and row
+callbacks genuinely stable whenever the consumer's own callbacks are. Deleting
+the `useCallback` instead was rejected: `react/jsx-no-bind` would fire and the
+repo forbids `eslint-disable`.
+
+**Regressions added (10 specs).** No-intent-while-disabled proved in a single
+task (`fireEvent` + re-render, so scoping cannot mask the boundary); the
+items-shrink rescue, its focus-already-outside no-op and its zero-rows fallback;
+one close per gesture with a kept-open consumer, and a declined close still
+reporting the next Escape; a declined open landing on `first`; a declined
+outside close still rescuing a later programmatic close; and two handler-identity
+specs. The two pre-existing kept-open Tab specs were **strengthened** from
+`calls.every(...)` to exact `[[false]]` — the weak form was passing over the live
+double-fire.
+
 ### §5 — Accessible names and imagery
 
 - **§5.1** Trigger name = the visible person name, content-derived. **No
@@ -309,7 +393,12 @@ chosen; in an engine without that fixup, focus provably never lands on `<body>`.
 - **§6.1** `aria-disabled` boundary: a real, focusable `<button>` with
   `aria-disabled="true"`, native `disabled` **never** set, every open path a
   no-op, hover suppressed via `:not([aria-disabled="true"])`, `cursor: default`.
-  `aria-haspopup` and `aria-expanded="false"` remain.
+  `aria-haspopup` and `aria-expanded="false"` remain. "Every open path a no-op"
+  is **end to end** (**Amendment A2**): the trigger's pointer and key handlers
+  return before recording an open intent and before `preventDefault()`, not just
+  before the request. Gating the request alone still left an intent behind, and a
+  consumer that re-enabled the card with `open` already true then opened onto
+  that stale end although §4.2 makes an intent-less open `first`.
 - **§6.2** A disabled **unwired** card is plain static content with **no**
   `aria-disabled`.
 - **§6.3** `disabled` **dominates** `open`: closed presentation, dev-warning, no
@@ -456,7 +545,7 @@ showcase board's own `#FBFBFB` surface behind the white card.
 | ------------------------------------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AC1** — profile information and selection/menu interaction states supported; consistent with card and control patterns | ✅     | Four Figma state nodes delivered pixel-exact; APG menu button on the toolkit's native-button, wired/static and `aria-disabled` conventions; no new palette tokens.                          |
 | **AC2** — active/disabled/error-relevant behaviour predictable; callback and contract behaviour clearly defined          | ✅     | Open/hover/disabled all measured; `error` documented N/A (not a form field); `onOpenChange(next)` and `onSelect(itemId)` specified in `types.ts`; five dev-warnings cover misconfiguration. |
-| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 86-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
+| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 96-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
 
 ## Provenance
 
@@ -477,15 +566,15 @@ appended for this story.
   guard in `tests/unit/components-index.test.ts` updated.
 - **No palette additions** — the second Epic 3 story with zero new tokens.
 - **100% statements / branches / functions / lines** of the component via
-  `tests/unit/ui-profile-select-card.test.tsx` — **86 specs across 15 describe
+  `tests/unit/ui-profile-select-card.test.tsx` — **96 specs across 17 describe
   blocks**: wired trigger semantics, the static card, empty-items and
   disabled dominance, the `aria-disabled` boundary, open-transition focus, menu
   navigation with wrap/Home/End, item activation ordering, all five close paths,
   accessible names and imagery, the live-region prohibition, the dev-warning
   contract, the focus-return `ref`/`id` API, consumer `sx`/`menuSx`,
-  mutation-killing assertions on the pure style recipes, and the defensive
-  branches of the focus helpers. Full repo suite: **67 suites / 1077 tests
-  green**.
+  mutation-killing assertions on the pure style recipes, the defensive
+  branches of the focus helpers, and the Amendment A2 interaction-scoping and
+  handler-identity blocks. Full repo suite: **67 suites / 1087 tests green**.
 - **Honest-coverage note:** the last uncovered branch was a redundant
   double-guard in `use-profile-select-card.ts` — the static and disabled cases
   were each gated twice, which made one side of the second check unreachable.
@@ -524,7 +613,7 @@ appended for this story.
 | Consistent with established card and control patterns | AC1 | ✅ wired/static split, `aria-disabled` boundary, always-controlled state axis |
 | Active/disabled behaviour predictable                 | AC2 | ✅ open keeps rest chrome; disabled dominates `open`; every open path no-ops  |
 | Callback and contract behaviour clearly defined       | AC2 | ✅ `onOpenChange(next)` / `onSelect(itemId)` + shared-contract table          |
-| Independently usable and testable                     | AC3 | ✅ standalone; 85 specs at 100% coverage; stories + showcase usage            |
+| Independently usable and testable                     | AC3 | ✅ standalone; 96 specs at 100% coverage; stories + showcase usage            |
 | Binding a11y contract honoured §-by-§                 | —   | ✅ reproduced above; §13's ten regressions all asserted                       |
 | Export recorded                                       | —   | ✅ `src/components/index.ts` + drift guard                                    |
 | Quality gates green (this story's files)              | —   | ✅ coverage / `rca` / `jscpd` / `tsc` / ESLint / Prettier / `depcruise`       |

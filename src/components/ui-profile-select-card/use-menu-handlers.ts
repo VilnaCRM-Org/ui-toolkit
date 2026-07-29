@@ -13,9 +13,11 @@ export interface MenuHandlers {
 }
 
 /**
- * Binds the menu's module-level actions to the current context. Memoised only so
- * the JSX attributes stay plain identifiers; the context itself is rebuilt every
- * render, because the open axis lives in the consumer.
+ * Binds the menu's module-level actions to the current context. The context
+ * identity is memoised upstream (`useMenuRuntime`), so these callbacks really do
+ * survive a re-render whenever the consumer's own callbacks and the open state
+ * do — which is what makes the row's `onActivate` a stable dependency rather
+ * than a fresh function on every commit (Amendment A2).
  */
 export function useMenuHandlers(ctx: MenuFocusContext): MenuHandlers {
   const refs: MenuFocusRefs = ctx.refs;

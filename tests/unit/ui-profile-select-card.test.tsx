@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
@@ -8,6 +8,7 @@ import {
   focusMenuEnd,
   isInsideWidget,
   moveMenuFocus,
+  type MenuOpenIntent,
 } from '../../src/components/ui-profile-select-card/menu-focus';
 import type {
   MenuFocusContext,
@@ -19,10 +20,23 @@ import {
   profileTriggerSx,
   profileWrapperSx,
 } from '../../src/components/ui-profile-select-card/styles';
+import { createTaskScopedRef } from '../../src/components/ui-profile-select-card/task-scoped-ref';
 import type {
   ProfileSelectItem,
   UiProfileSelectCardProps,
 } from '../../src/components/ui-profile-select-card/types';
+import {
+  useMenuHandlers,
+  type MenuHandlers,
+} from '../../src/components/ui-profile-select-card/use-menu-handlers';
+import {
+  useProfileSelectCard,
+  type ProfileSelectCardModel,
+} from '../../src/components/ui-profile-select-card/use-profile-select-card';
+import {
+  useTriggerHandlers,
+  type TriggerHandlers,
+} from '../../src/components/ui-profile-select-card/use-trigger-handlers';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 
@@ -45,6 +59,9 @@ const ITEMS: ProfileSelectItem[] = [
   { id: 'settings', label: SETTINGS },
   { id: 'logout', label: LOGOUT },
 ];
+// The same menu with the middle command taken away — the controlled `items`
+// shrink that can strand focus on a row that no longer exists (§4.6, A2).
+const WITHOUT_SETTINGS: ProfileSelectItem[] = [ITEMS[0], ITEMS[2]];
 const OUTSIDE: string = 'outside';
 
 interface CardOverrides {
@@ -190,10 +207,45 @@ function bareRefs(): MenuFocusRefs {
     wrapper: { current: null },
     trigger: { current: null },
     menu: { current: null },
-    intent: { current: null },
+    intent: createTaskScopedRef<MenuOpenIntent>(),
     focusInside: { current: false },
-    skipRescue: { current: false },
+    skipRescue: createTaskScopedRef<boolean>(),
+    closeRequested: createTaskScopedRef<boolean>(),
   };
+}
+
+// The interaction-scoped refs (Amendment A2) clear themselves at the end of the
+// task that set them, so a test that must observe the EXPIRY has to cross a task
+// boundary of its own rather than rely on `user-event`'s internal scheduling.
+function afterInteraction(): Promise<void> {
+  return new Promise((resolve: () => void): void => {
+    setTimeout(resolve, 0);
+  });
+}
+
+interface HandlerProbeProps {
+  open: boolean;
+}
+
+// The three identities a stable consumer must keep across a re-render: the
+// action context and both handler chains keyed on it (Amendment A2). The card's
+// own DOM cannot expose them — and the repo forbids `data-testid` — so they are
+// read straight off the hook.
+interface HandlerIdentities {
+  ctx: MenuFocusContext;
+  onClick: () => void;
+  onActivate: (itemId: string) => void;
+}
+
+function useHandlerIdentities(open: boolean): HandlerIdentities {
+  const model: ProfileSelectCardModel = useProfileSelectCard(
+    { name: NAME, avatarSrc: AVATAR, items: ITEMS, open, onOpenChange: noop, onSelect: noop },
+    null
+  );
+  const { ctx } = model;
+  const triggerHandlers: TriggerHandlers = useTriggerHandlers(ctx);
+  const menuHandlers: MenuHandlers = useMenuHandlers(ctx);
+  return { ctx, onClick: triggerHandlers.onClick, onActivate: menuHandlers.onActivate };
 }
 
 function trigger(): HTMLElement {
@@ -794,10 +846,11 @@ describe('UiProfileSelectCard — close paths (§4.3/§4.5/§13.3/§13.4)', () =
     await user.tab();
 
     // No `preventDefault()` and no focus call, so focus proceeds out of the
-    // widget on its own.
+    // widget on its own. Exactly ONE request, even though the gesture reaches
+    // two close paths — the Tab keydown and the §4.5 focus-out fired by the move
+    // it performs (Amendment A2).
     expect(neighbour()).toHaveFocus();
-    expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(onOpenChange.mock.calls.every((call: boolean[]) => call[0] === false)).toBe(true);
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
   });
 
   it('Shift+Tab closes the menu the same way and leaves the rows', async () => {
@@ -812,8 +865,9 @@ describe('UiProfileSelectCard — close paths (§4.3/§4.5/§13.3/§13.4)', () =
 
     await user.tab({ shift: true });
 
-    expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(onOpenChange.mock.calls.every((call: boolean[]) => call[0] === false)).toBe(true);
+    // One request for the gesture: Shift+Tab's natural stop is the trigger,
+    // which is INSIDE the wrapper, so §4.5's focus-out close never joins in.
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
     // Focus left the rows on its own: the menu holds no tab stops, so the
     // previous stop is the trigger — reached by the browser, not by a component
     // focus call (which Tab-close is forbidden to make).
@@ -842,8 +896,7 @@ describe('UiProfileSelectCard — close paths (§4.3/§4.5/§13.3/§13.4)', () =
 
     await user.click(neighbour());
 
-    expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(onOpenChange.mock.calls.every((call: boolean[]) => call[0] === false)).toBe(true);
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(neighbour()).toHaveFocus();
     expect(trigger()).not.toHaveFocus();
@@ -910,6 +963,197 @@ describe('UiProfileSelectCard — close paths (§4.3/§4.5/§13.3/§13.4)', () =
 
     expect(() => unmount()).not.toThrow();
     expect(document.body).toHaveFocus();
+  });
+});
+
+describe('UiProfileSelectCard — interaction-scoped refs (Amendment A2)', () => {
+  it('records no open intent while disabled, so re-enabling still opens first', () => {
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(cardWith({ disabled: true, onOpenChange }));
+
+    trigger().focus();
+    // Fired and re-rendered inside ONE task, so a recorded intent could not have
+    // expired yet: §6.1's boundary — not the scoping — is what has to stop it.
+    fireEvent.keyDown(trigger(), { key: 'ArrowUp' });
+    expect(onOpenChange).not.toHaveBeenCalled();
+
+    rerender(cardWith({ open: true, onOpenChange }));
+
+    // A leaked 'last' intent would have opened onto LOGOUT (§4.2 says an
+    // intent-less open is `first`).
+    expect(itemNamed(PROFILE)).toHaveFocus();
+  });
+
+  it('re-seats focus on the first surviving row when items lose the focused one', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(cardWith({ open: true, onOpenChange }));
+
+    await user.keyboard('{ArrowDown}');
+    expect(itemNamed(SETTINGS)).toHaveFocus();
+
+    rerender(cardWith({ open: true, items: WITHOUT_SETTINGS, onOpenChange }));
+
+    // The menu survives, so the rescue stays INSIDE it rather than returning to
+    // the trigger; removing a focused node fires no blur, so nothing else knows.
+    expect(menu()).toBeInTheDocument();
+    expect(itemNamed(PROFILE)).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+    expect(onOpenChange).not.toHaveBeenCalled();
+  });
+
+  it('leaves an items change alone when focus had already left the menu', () => {
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(
+      <>
+        {cardWith({ open: true, onOpenChange })}
+        {neighbourButton()}
+      </>
+    );
+
+    neighbour().focus();
+    rerender(
+      <>
+        {cardWith({ open: true, items: WITHOUT_SETTINGS, onOpenChange })}
+        {neighbourButton()}
+      </>
+    );
+
+    expect(neighbour()).toHaveFocus();
+    expect(menu()).toBeInTheDocument();
+  });
+
+  it('falls back to the trigger rescue when the last row is removed', () => {
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(cardWith({ open: true, onOpenChange }));
+    expect(itemNamed(PROFILE)).toHaveFocus();
+
+    rerender(cardWith({ open: true, items: [], onOpenChange }));
+
+    // Zero rows is the §3.4 case: the menu itself unmounts, so the A1 rescue
+    // owns it and the trigger — not a row — is the destination.
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(trigger()).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+  });
+
+  it('requests one close per gesture when the consumer keeps the menu open', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onOpenChange: jest.Mock = jest.fn();
+    render(
+      <>
+        {cardWith({ open: true, onOpenChange })}
+        {neighbourButton()}
+      </>
+    );
+
+    await user.click(neighbour());
+
+    // The outside `pointerdown` closes, and the focus move the SAME click
+    // performs then reaches §4.5's focus-out close on a menu the consumer kept
+    // open — the consumer hears the gesture once all the same.
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+    expect(neighbour()).toHaveFocus();
+  });
+
+  it('still reports the next gesture after the consumer declines a close', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onOpenChange: jest.Mock = jest.fn();
+    render(
+      <>
+        {cardWith({ open: true, onOpenChange })}
+        {neighbourButton()}
+      </>
+    );
+
+    await user.click(neighbour());
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+
+    itemNamed(PROFILE).focus();
+    await user.keyboard('{Escape}');
+
+    // The gate is scoped to one gesture, never sticky: a declined close must
+    // not swallow a later Escape.
+    expect(onOpenChange.mock.calls).toEqual([[false], [false]]);
+  });
+
+  it('drops a declined open intent, so a later open starts at the first row', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(cardWith({ onOpenChange }));
+
+    trigger().focus();
+    await user.keyboard('{ArrowUp}');
+    expect(onOpenChange.mock.calls).toEqual([[true]]);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+    await afterInteraction();
+    rerender(cardWith({ open: true, onOpenChange }));
+
+    // The consumer declined the ArrowUp open, so the 'last' intent expired with
+    // its task and this unrelated open takes §4.2's `first` default.
+    expect(itemNamed(PROFILE)).toHaveFocus();
+  });
+
+  it('re-arms the stranded-focus rescue after a declined outside close', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(
+      <>
+        {cardWith({ open: true, onOpenChange })}
+        {neighbourButton()}
+      </>
+    );
+
+    await user.click(neighbour());
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+    expect(menu()).toBeInTheDocument();
+
+    itemNamed(LOGOUT).focus();
+    await afterInteraction();
+    rerender(
+      <>
+        {cardWith({ onOpenChange })}
+        {neighbourButton()}
+      </>
+    );
+
+    // The pointer path's rescue suppression expired with its own gesture, so
+    // this unrelated programmatic close is rescued (§4.6), not stranded.
+    expect(trigger()).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+  });
+});
+
+describe('UiProfileSelectCard — handler identity (Amendment A2)', () => {
+  it('keeps the action context and its handlers stable across a re-render', () => {
+    const { result, rerender } = renderHook(
+      (props: Readonly<HandlerProbeProps>): HandlerIdentities => useHandlerIdentities(props.open),
+      { initialProps: { open: false } }
+    );
+    const first: HandlerIdentities = result.current;
+
+    rerender({ open: false });
+
+    // With stable consumer callbacks the whole chain is stable, which is what
+    // makes the menu row's own `useCallback` dependency real.
+    expect(result.current.ctx).toBe(first.ctx);
+    expect(result.current.onClick).toBe(first.onClick);
+    expect(result.current.onActivate).toBe(first.onActivate);
+  });
+
+  it('rebuilds them when the open state really changes', () => {
+    const { result, rerender } = renderHook(
+      (props: Readonly<HandlerProbeProps>): HandlerIdentities => useHandlerIdentities(props.open),
+      { initialProps: { open: false } }
+    );
+    const closed: HandlerIdentities = result.current;
+
+    rerender({ open: true });
+
+    expect(result.current.ctx).not.toBe(closed.ctx);
+    expect(result.current.ctx.open).toBe(true);
+    expect(result.current.onActivate).not.toBe(closed.onActivate);
   });
 });
 
@@ -1268,7 +1512,7 @@ describe('menu helpers — defensive branches', () => {
     const refs: MenuFocusRefs = bareRefs();
     const requestOpen: jest.Mock = jest.fn();
     const onSelect: jest.Mock = jest.fn();
-    const ctx: MenuFocusContext = { refs, open: true, requestOpen, onSelect };
+    const ctx: MenuFocusContext = { refs, open: true, disabled: false, requestOpen, onSelect };
 
     expect(() => activateMenuItem(ctx, 'logout')).not.toThrow();
 
