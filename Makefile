@@ -28,10 +28,16 @@ MUTATION_SHARD_TOTAL ?= 1
 MUTATION_SHARD_INDEX ?= 0
 MUTATION_REPORTS_DIR = reports/mutation
 
+# Release packaging. The tarball is written outside build/ on purpose: `files`
+# publishes build/, so packing into it would fold the previous release's archive
+# into the next one.
+PACKAGE_DIR = dist
+PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
+
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
-.PHONY: help build lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
+.PHONY: help build package lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
@@ -60,6 +66,22 @@ help:
 
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
+
+# Uses the long-running bun service rather than `run --rm`: the service has no
+# volume mount, so a throwaway container would take the tarball down with it.
+# Everything is produced inside the container, then copied back to the host.
+package: ## Build and copy the publishable npm tarball out of the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first"; \
+		exit 1; \
+	fi; \
+	$(EXEC_BUN) sh -lc 'rm -rf $(PACKAGE_DIR) build && mkdir -p $(PACKAGE_DIR)' \
+		&& $(EXEC_BUN) node ./build.config.mjs \
+		&& $(EXEC_BUN) npm pack --pack-destination $(PACKAGE_DIR) \
+		&& $(EXEC_BUN) sh $(PACKAGE_VERIFIER) $(PACKAGE_DIR) \
+		&& rm -rf ./$(PACKAGE_DIR) \
+		&& $(DOCKER_COMPOSE) cp bun:/app/$(PACKAGE_DIR) ./$(PACKAGE_DIR)
 
 lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps lint-metrics ## Run all linters inside the docker container.
 

@@ -130,12 +130,15 @@ module.exports = {
         '(e.g. jest, storybook, webpack, eslint). Runtime libraries this ' +
         'library mirrors into both devDependencies and peerDependencies are ' +
         'spared via dependencyTypesNot: [npm-peer] (combinedDependencies tags ' +
-        'them as both npm-dev and npm-peer), so only true dev-only modules fail.',
+        'them as both npm-dev and npm-peer), so only true dev-only modules ' +
+        'fail. swiper is spared via pathNot: build.config.mjs deliberately ' +
+        'bundles it (and its carousel CSS) into the published artifact, so it ' +
+        'sits in devDependencies without being a dev tool.',
       from: { path: '^src', pathNot: '[.](?:spec|test|stories)[.](?:tsx?|jsx?)$' },
       to: {
         dependencyTypes: ['npm-dev'],
         dependencyTypesNot: ['npm-peer', 'type-only'],
-        pathNot: ['node_modules/@types/'],
+        pathNot: ['node_modules/@types/', 'node_modules/swiper/'],
       },
     },
     // ---- Components-centric boundaries (replace CRM bulletproof-react layering) ----
