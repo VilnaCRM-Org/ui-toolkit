@@ -370,6 +370,31 @@ specs. The two pre-existing kept-open Tab specs were **strengthened** from
 `calls.every(...)` to exact `[[false]]` — the weak form was passing over the live
 double-fire.
 
+#### Amendment A3 — the interaction boundary (review round 3)
+
+**Provenance:** cubic review, PR review round 3 for #21 — two findings on the A2
+machinery itself, both accepted.
+
+1. **The zero-timeout self-clear is only a backstop.** Browsers may service a
+   new input task before a pending zero timeout, so a declined close's gate
+   could still be set when the user's next gesture arrived — and swallow that
+   Escape. The deterministic expiry is now `beginInteraction` (`menu-refs.ts`):
+   every genuine new-intent entry point — trigger click and keydown, menu
+   keydown, item activation, outside pointerdown — expires ALL task-scoped
+   values before recording its own. The §4.5 focus-out close is deliberately
+   NOT an entry point: it is the derived second half of the gesture that set
+   the flags, and expiring there would undo the same-gesture dedupe.
+2. **The items-shrink rescue honours `skipRescue`.** A declined outside close
+   whose own callback also removes the focused row must stay focus-neutral
+   (§4.5): without the guard, the row-level rescue pulled focus back INTO the
+   menu the user had just pointed away from. The flag expires with the gesture,
+   so a later, unrelated shrink still rescues.
+
+**Regressions added (2 specs).** The next-gesture Escape admitted with both
+gestures inside ONE task (so only the entry-point expiry — not the timer — can
+clear the gate), and the same-gesture decline-and-shrink staying focus-neutral.
+Both proven red with their fix reverted.
+
 ### §5 — Accessible names and imagery
 
 - **§5.1** Trigger name = the visible person name, content-derived. **No
@@ -545,7 +570,7 @@ showcase board's own `#FBFBFB` surface behind the white card.
 | ------------------------------------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AC1** — profile information and selection/menu interaction states supported; consistent with card and control patterns | ✅     | Four Figma state nodes delivered pixel-exact; APG menu button on the toolkit's native-button, wired/static and `aria-disabled` conventions; no new palette tokens.                          |
 | **AC2** — active/disabled/error-relevant behaviour predictable; callback and contract behaviour clearly defined          | ✅     | Open/hover/disabled all measured; `error` documented N/A (not a form field); `onOpenChange(next)` and `onSelect(itemId)` specified in `types.ts`; five dev-warnings cover misconfiguration. |
-| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 96-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
+| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 98-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
 
 ## Provenance
 
@@ -566,7 +591,7 @@ appended for this story.
   guard in `tests/unit/components-index.test.ts` updated.
 - **No palette additions** — the second Epic 3 story with zero new tokens.
 - **100% statements / branches / functions / lines** of the component via
-  `tests/unit/ui-profile-select-card.test.tsx` — **96 specs across 17 describe
+  `tests/unit/ui-profile-select-card.test.tsx` — **98 specs across 18 describe
   blocks**: wired trigger semantics, the static card, empty-items and
   disabled dominance, the `aria-disabled` boundary, open-transition focus, menu
   navigation with wrap/Home/End, item activation ordering, all five close paths,
@@ -574,7 +599,7 @@ appended for this story.
   contract, the focus-return `ref`/`id` API, consumer `sx`/`menuSx`,
   mutation-killing assertions on the pure style recipes, the defensive
   branches of the focus helpers, and the Amendment A2 interaction-scoping and
-  handler-identity blocks. Full repo suite: **67 suites / 1087 tests green**.
+  handler-identity blocks. Full repo suite: **67 suites / 1089 tests green**.
 - **Honest-coverage note:** the last uncovered branch was a redundant
   double-guard in `use-profile-select-card.ts` — the static and disabled cases
   were each gated twice, which made one side of the second check unreachable.
@@ -613,7 +638,7 @@ appended for this story.
 | Consistent with established card and control patterns | AC1 | ✅ wired/static split, `aria-disabled` boundary, always-controlled state axis |
 | Active/disabled behaviour predictable                 | AC2 | ✅ open keeps rest chrome; disabled dominates `open`; every open path no-ops  |
 | Callback and contract behaviour clearly defined       | AC2 | ✅ `onOpenChange(next)` / `onSelect(itemId)` + shared-contract table          |
-| Independently usable and testable                     | AC3 | ✅ standalone; 96 specs at 100% coverage; stories + showcase usage            |
+| Independently usable and testable                     | AC3 | ✅ standalone; 98 specs at 100% coverage; stories + showcase usage            |
 | Binding a11y contract honoured §-by-§                 | —   | ✅ reproduced above; §13's ten regressions all asserted                       |
 | Export recorded                                       | —   | ✅ `src/components/index.ts` + drift guard                                    |
 | Quality gates green (this story's files)              | —   | ✅ coverage / `rca` / `jscpd` / `tsc` / ESLint / Prettier / `depcruise`       |

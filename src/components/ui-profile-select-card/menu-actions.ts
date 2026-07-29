@@ -2,25 +2,21 @@ import type React from 'react';
 
 import { isInsideWidget, type MenuOpenIntent } from './menu-focus';
 import { applyMenuNavigation, openIntentForKey } from './menu-keyboard';
-import type { MenuFocusContext, MenuFocusRefs } from './menu-refs';
+import { beginInteraction, type MenuFocusContext, type MenuFocusRefs } from './menu-refs';
 
-// Every close path that already put focus somewhere real flags the rescue off
-// first, so the §4.6 rescue only ever fires for a close that would otherwise
-// leave focus stranded on `<body>`. Tab is NOT one of those paths (Amendment A1):
-// it makes no focus call of its own and deliberately leaves the rescue armed.
-// The flag is interaction-scoped (Amendment A2), so a consumer that declines the
-// close it accompanies cannot suppress a later, unrelated rescue.
-function focusTrigger(ctx: MenuFocusContext): void {
+// Escape: flag the rescue off, focus the trigger SYNCHRONOUSLY, then request
+// the close (a11y contract §4.3) — the order matters, because the menu unmounts
+// on the consumer's next render and focus must already be somewhere real by
+// then. Every close path that already put focus somewhere real sets the flag
+// the same way, so the §4.6 rescue only ever fires for a close that would
+// otherwise leave focus stranded on `<body>`; Tab is NOT one of those paths
+// (Amendment A1) — it makes no focus call and deliberately leaves the rescue
+// armed. The flag is interaction-scoped (Amendment A2), so a consumer that
+// declines the close it accompanies cannot suppress a later, unrelated rescue.
+function closeToTrigger(ctx: MenuFocusContext): void {
   const refs: MenuFocusRefs = ctx.refs;
   refs.skipRescue.set(true);
   refs.trigger.current?.focus();
-}
-
-// Escape: focus the trigger SYNCHRONOUSLY, then request the close (a11y contract
-// §4.3) — the order matters, because the menu unmounts on the consumer's next
-// render and focus must already be somewhere real by then.
-function closeToTrigger(ctx: MenuFocusContext): void {
-  focusTrigger(ctx);
   ctx.requestOpen(false);
 }
 
@@ -51,6 +47,7 @@ function openWithIntent(ctx: MenuFocusContext, intent: MenuOpenIntent): void {
  * Never reached while disabled — `useTriggerHandlers` owns that boundary (§6.1).
  */
 export function handleTriggerClick(ctx: MenuFocusContext): void {
+  beginInteraction(ctx.refs);
   if (ctx.open) {
     ctx.requestOpen(false);
     return;
@@ -81,6 +78,7 @@ export function handleTriggerKeyDown(
   ctx: MenuFocusContext,
   event: React.KeyboardEvent<HTMLElement>
 ): void {
+  beginInteraction(ctx.refs);
   if (!ctx.open) {
     openFromKey(ctx, event);
     return;
@@ -95,20 +93,28 @@ export function handleTriggerKeyDown(
  * focus call, so focus proceeds naturally out of the widget; Escape returns focus
  * to the trigger first; the rest is navigation.
  */
+// The two closing keys. Tab is a PLAIN close request with the §4.6 rescue left
+// ARMED (Amendment A1): a consumer that lowers `open` synchronously unmounts
+// the focused row before the browser performs the move, and the rescue is what
+// keeps sequential navigation a live starting point instead of `<body>`.
+function closeFromMenuKey(ctx: MenuFocusContext, key: string): boolean {
+  if (key === 'Tab') {
+    ctx.requestOpen(false);
+    return true;
+  }
+  if (key === 'Escape') {
+    closeToTrigger(ctx);
+    return true;
+  }
+  return false;
+}
+
 export function handleMenuKeyDown(
   ctx: MenuFocusContext,
   event: React.KeyboardEvent<HTMLElement>
 ): void {
-  if (event.key === 'Tab') {
-    // A plain close request, with the §4.6 rescue left ARMED (Amendment A1): a
-    // consumer that lowers `open` synchronously unmounts the focused row before
-    // the browser performs the move, and the rescue is what keeps sequential
-    // navigation a live starting point instead of `<body>`.
-    ctx.requestOpen(false);
-    return;
-  }
-  if (event.key === 'Escape') {
-    closeToTrigger(ctx);
+  beginInteraction(ctx.refs);
+  if (closeFromMenuKey(ctx, event.key)) {
     return;
   }
   applyMenuNavigation(event, ctx.refs.menu.current);
@@ -119,7 +125,10 @@ export function handleMenuKeyDown(
  * synchronously, then report the action, then request the close.
  */
 export function activateMenuItem(ctx: MenuFocusContext, itemId: string): void {
-  focusTrigger(ctx);
+  const refs: MenuFocusRefs = ctx.refs;
+  beginInteraction(refs);
+  refs.skipRescue.set(true);
+  refs.trigger.current?.focus();
   ctx.onSelect?.(itemId);
   ctx.requestOpen(false);
 }

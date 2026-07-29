@@ -19,6 +19,13 @@
  * microtask in which a concurrent-root React flushes the consumer's re-render.
  * A task-queued clear can run before neither, because both happen inside the
  * task that queued it.
+ *
+ * The timer is only the BACKSTOP, though (Amendment A3): browsers may service a
+ * new input task before a pending zero timeout, so the deterministic expiry is
+ * `beginInteraction` in `menu-refs.ts` — every genuine new-intent entry point
+ * expires the previous gesture's values before recording its own, and a request
+ * the consumer declined can never gate the next gesture no matter how the two
+ * tasks are scheduled.
  */
 export interface TaskScopedRef<T> {
   /** The recorded value, or null once the task that recorded it has ended. */

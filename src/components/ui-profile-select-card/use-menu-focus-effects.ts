@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { focusMenuEnd, isInsideWidget } from './menu-focus';
-import type { MenuFocusRefs } from './menu-refs';
+import { beginInteraction, type MenuFocusRefs } from './menu-refs';
 import type { ProfileSelectItem } from './types';
 
 // Focus counts as STRANDED only when nothing real holds it: removing the focused
@@ -43,9 +43,13 @@ function rescueFocus(bundle: MenuFocusRefs): void {
 // commit-time check covers the row-level case, and it rescues INSIDE the menu:
 // the menu is still open, so the trigger would be the wrong destination. Zero
 // surviving rows is NOT this case — §3.4 unmounts the menu, and A1 applies.
+// It honours `skipRescue` (Amendment A3): a declined outside close whose own
+// callback drops the focused row must stay focus-neutral (§4.5) — pulling focus
+// back INTO the menu would fight the element the user is pointing at. The flag
+// expires with the gesture, so a later, unrelated shrink still rescues.
 function rescueInsideMenu(bundle: MenuFocusRefs): void {
-  const { focusInside, menu } = bundle;
-  if (!focusInside.current || !isFocusStranded()) {
+  const { focusInside, skipRescue, menu } = bundle;
+  if (!focusInside.current || skipRescue.current === true || !isFocusStranded()) {
     return;
   }
   focusMenuEnd(menu.current, 'first');
@@ -67,6 +71,7 @@ function closeOnOutsidePointer(
   if (isInsideWidget(wrapper.current, event.target)) {
     return;
   }
+  beginInteraction(bundle);
   skipRescue.set(true);
   requestOpen(false);
 }

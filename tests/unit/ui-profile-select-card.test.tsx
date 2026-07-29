@@ -62,6 +62,9 @@ const ITEMS: ProfileSelectItem[] = [
 // The same menu with the middle command taken away — the controlled `items`
 // shrink that can strand focus on a row that no longer exists (§4.6, A2).
 const WITHOUT_SETTINGS: ProfileSelectItem[] = [ITEMS[0], ITEMS[2]];
+// And with the FIRST command taken away — the row the open-focus effect seats
+// focus on, for the same-gesture decline-and-shrink case (§4.5, A3).
+const WITHOUT_PROFILE: ProfileSelectItem[] = [ITEMS[1], ITEMS[2]];
 const OUTSIDE: string = 'outside';
 
 interface CardOverrides {
@@ -1122,6 +1125,45 @@ describe('UiProfileSelectCard — interaction-scoped refs (Amendment A2)', () =>
     // this unrelated programmatic close is rescued (§4.6), not stranded.
     expect(trigger()).toHaveFocus();
     expect(document.body).not.toHaveFocus();
+  });
+});
+
+describe('UiProfileSelectCard — interaction boundary (Amendment A3)', () => {
+  it('admits the next gesture even before the timer backstop has run', () => {
+    const onOpenChange: jest.Mock = jest.fn();
+    render(cardWith({ open: true, onOpenChange }));
+    expect(itemNamed(PROFILE)).toHaveFocus();
+
+    // Both gestures inside ONE task, so the zero-timeout backstop cannot have
+    // cleared the declined close's gate — only the entry-point expiry can. A
+    // browser may service a new input task before a pending timer, and the
+    // next Escape must never be the request that gets swallowed.
+    fireEvent.pointerDown(document.body);
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+
+    fireEvent.keyDown(itemNamed(PROFILE), { key: 'Escape' });
+
+    expect(onOpenChange.mock.calls).toEqual([[false], [false]]);
+    expect(trigger()).toHaveFocus();
+  });
+
+  it('keeps a declined outside close focus-neutral when it also drops the row', () => {
+    const onOpenChange: jest.Mock = jest.fn();
+    const { rerender } = render(cardWith({ open: true, onOpenChange }));
+    expect(itemNamed(PROFILE)).toHaveFocus();
+
+    // The decline and the shrink land in the SAME gesture (the consumer's
+    // close callback removed the focused row): the row-level rescue must
+    // honour the pointer path's suppression (§4.5) instead of pulling focus
+    // back into a menu the user just pointed away from.
+    fireEvent.pointerDown(document.body);
+    rerender(cardWith({ open: true, items: WITHOUT_PROFILE, onOpenChange }));
+
+    expect(menu()).toBeInTheDocument();
+    menuItems().forEach((row: HTMLElement): void => {
+      expect(row).not.toHaveFocus();
+    });
+    expect(trigger()).not.toHaveFocus();
   });
 });
 

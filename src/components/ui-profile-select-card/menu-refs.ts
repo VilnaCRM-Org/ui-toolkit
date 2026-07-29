@@ -90,6 +90,22 @@ export function markMenuFocusInside(bundle: MenuFocusRefs, inside: boolean): voi
 }
 
 /**
+ * The deterministic end of the previous interaction (Amendment A3). Every
+ * genuine new-intent entry point — trigger click and keydown, menu keydown,
+ * item activation, outside pointerdown — expires the previous gesture's
+ * task-scoped values BEFORE recording its own, so a declined request can never
+ * gate the gesture that follows it, however the browser schedules the zero
+ * timeout backstop against the next input task. The §4.5 focus-out close is
+ * deliberately NOT one of these: it is the derived second half of the gesture
+ * that set the flags, and expiring there would undo the same-gesture dedupe.
+ */
+export function beginInteraction(bundle: MenuFocusRefs): void {
+  bundle.intent.clear();
+  bundle.skipRescue.clear();
+  bundle.closeRequested.clear();
+}
+
+/**
  * Everything the trigger, the menu rows and the effects need to act on. `open` is
  * the EFFECTIVE open state (the menu that is actually mounted), and `requestOpen`
  * is already gated for the static and disabled branches, so the action helpers
