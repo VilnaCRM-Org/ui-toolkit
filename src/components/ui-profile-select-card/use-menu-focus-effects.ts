@@ -3,13 +3,30 @@ import React from 'react';
 import { focusMenuEnd, isInsideWidget } from './menu-focus';
 import type { MenuFocusRefs } from './menu-refs';
 
-// a11y contract §4.6 — the programmatic-close rescue. It fires only when focus
-// was still inside the vanishing menu AND no close path already took ownership of
-// it (Escape, item activation, Tab and outside interactions all set the flag), so
-// focus is never silently dropped to `<body>` and never yanked back on Tab.
+// Focus counts as STRANDED only when nothing real holds it: removing the focused
+// node parks the document on `<body>` (or on nothing at all). If a handler or the
+// browser has already put focus on a live element, there is nothing to rescue and
+// the rescue must not fight that move.
+function isFocusStranded(): boolean {
+  const active: Element | null = document.activeElement;
+  return active == null || active === document.body;
+}
+
+// a11y contract §4.6 — the stranded-focus rescue. It fires only when focus was
+// still inside the vanishing menu, no close path already took ownership of it
+// (Escape, item activation and outside interactions all set the flag), and focus
+// really was left on `<body>`.
+//
+// Tab relies on it (Amendment A1): a consumer that lowers `open` synchronously
+// unmounts the focused row BEFORE the browser performs the move. In a browser
+// that implements the sequential-focus-navigation starting point the transient
+// trigger focus is invisible — the default Tab action then advances FROM the
+// trigger to the same destination the starting-point fixup would have picked —
+// and in a browser without that fixup focus provably never lands on `<body>`
+// (WCAG SC 2.4.3).
 function rescueFocus(bundle: MenuFocusRefs): void {
   const { focusInside, skipRescue, trigger } = bundle;
-  const rescue: boolean = focusInside.current && !skipRescue.current;
+  const rescue: boolean = focusInside.current && !skipRescue.current && isFocusStranded();
   focusInside.current = false;
   skipRescue.current = false;
   if (rescue) {
@@ -19,7 +36,10 @@ function rescueFocus(bundle: MenuFocusRefs): void {
 
 // a11y contract §4.5 — outside interactions close the menu with no focus stealing.
 // The exclusion covers the whole wrapper (trigger AND menu), which is what stops
-// a click on an open trigger from firing close-then-reopen.
+// a click on an open trigger from firing close-then-reopen. `skipRescue` is
+// mandatory here and stays: `pointerdown` runs BEFORE the browser moves focus off
+// the menu row, so an armed rescue would grab the trigger out from under the
+// element the user is pointing at.
 function closeOnOutsidePointer(
   bundle: MenuFocusRefs,
   requestOpen: (next: boolean) => void,
@@ -75,7 +95,8 @@ function useOutsideClose(config: Readonly<MenuFocusEffectsConfig>): void {
  * The component's half of the ownership split (a11y contract §4): the consumer
  * owns `open`, and these two effects own focus around it. Focus enters the menu
  * when it mounts and is rescued back to the trigger when the menu vanishes
- * underneath it, so focus is never dropped to `<body>`.
+ * underneath it and nothing else has claimed focus, so focus is never dropped to
+ * `<body>`.
  */
 export function useMenuFocusEffects(config: Readonly<MenuFocusEffectsConfig>): void {
   useMenuOpenFocus(config.refs, config.open);

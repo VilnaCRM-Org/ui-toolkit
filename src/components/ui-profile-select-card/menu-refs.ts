@@ -25,9 +25,11 @@ export interface MenuFocusRefs {
   focusInside: React.RefObject<boolean>;
   /**
    * Set by every close path that already owns focus — Escape and item activation
-   * (which move focus to the trigger themselves), Tab (which must let focus
-   * proceed naturally) and outside interactions (no focus stealing). It suppresses
-   * the §4.6 rescue, so only a programmatic close ever pulls focus back.
+   * (which move focus to the trigger themselves) and outside interactions (whose
+   * `pointerdown` fires before the browser moves focus, so no focus stealing). It
+   * suppresses the §4.6 rescue. Tab is deliberately NOT one of them (Amendment
+   * A1): it makes no focus call, so the rescue must stay armed to keep a
+   * synchronous close from stranding focus on `<body>`.
    */
   skipRescue: React.RefObject<boolean>;
 }

@@ -236,8 +236,11 @@ Ownership split: the consumer owns `open`, the component owns focus.
   and **wrap at both ends**; Home/End jump to the ends (all `preventDefault()`);
   Enter/Space activate natively; Escape focuses the trigger **synchronously**
   then requests close; Tab/Shift+Tab request close with **no**
-  `preventDefault()` and **no** focus call, so focus proceeds naturally and is
-  never yanked back. Typeahead is out of scope for 3.3, on record.
+  `preventDefault()` and **no direct focus call**, so focus proceeds naturally
+  and is never yanked back — the §4.6 stranded-focus rescue still applies when a
+  synchronous close would otherwise leave focus on `<body>` before the browser
+  completes the move (**Amendment A1** below). Typeahead is out of scope for
+  3.3, on record.
 - **§4.4** Item activation, binding order: (1) focus the trigger synchronously,
   (2) `onSelect(itemId)`, (3) `onOpenChange(false)`.
 - **§4.5** Outside `pointerdown` closes with no focus stealing; the listener
@@ -246,12 +249,42 @@ Ownership split: the consumer owns `open`, the component owns focus.
   handler), a known double-fire bug class. Trigger click while open → one close,
   focus stays put. Escape on the open trigger → close. Focus leaving the widget
   → close, no focus call.
-- **§4.6** **Programmatic-close rescue (SC 2.4.3):** if the menu vanishes while
-  focus is inside it and no handler already owned the move, focus goes to the
+- **§4.6** **Stranded-focus rescue (SC 2.4.3):** if the menu vanishes while
+  focus is inside it, no handler already owned the move, **and
+  `document.activeElement` is `<body>` (or nothing)**, focus goes to the
   trigger. Focus-inside is tracked from the menu's own focus/blur events, never
   read from `document.activeElement` in cleanup — effect-cleanup ordering means
-  the active element may already be `<body>` by then.
+  the active element may already be `<body>` by then; the `<body>` read is
+  therefore the _stranded_ test only, never the focus-inside test. If a handler
+  or the browser has already put focus on a real element, the rescue no-ops.
 - **§4.7** No other key handling; no `keyup` handlers (SC 2.5.2 stays native).
+
+#### Amendment A1 — the Tab path keeps the §4.6 rescue armed (review round)
+
+**Provenance:** CodeRabbit MAJOR on `menu-actions.ts`, PR review round for #21.
+
+As authored, Tab suppressed the rescue outright (`skipRescue`). A consumer that
+lowers `open` synchronously in `onOpenChange` unmounts the focused row **before**
+the browser performs Tab's default move, so the suppression could leave focus on
+`<body>` in any engine without the sequential-focus-navigation starting-point
+fixup — an SC 2.4.3 failure. Amended:
+
+- Tab requests a plain close and sets **no** `skipRescue`.
+- §4.6 gains the `document.activeElement` stranded test, so the rescue fires
+  only when focus really was dropped.
+- `skipRescue` is retained on the paths that own focus themselves: Escape and
+  item activation (both focus the trigger), and the outside-`pointerdown`
+  listener, whose event fires **before** the browser moves focus off the row —
+  an armed rescue there would steal focus from the element being pointed at.
+
+Rejected alternative (the reviewer's own patch: keep `skipRescue` and let
+`focusout` do the closing): the natural Shift+Tab stop from a `tabindex="-1"`
+row is the trigger, which is **inside** the wrapper, so `focusout` never fires
+and the menu stays open — a Shift+Tab regression — and the Tab close becomes
+unobservable in jsdom. Net effect of the amendment: in a spec-compliant browser
+the transient trigger focus is invisible, because the default move then advances
+FROM the trigger to the same destination the starting-point fixup would have
+chosen; in an engine without that fixup, focus provably never lands on `<body>`.
 
 ### §5 — Accessible names and imagery
 
@@ -336,9 +369,12 @@ Ownership split: the consumer owns `open`, the component owns focus.
 - **§13** — ten mandatory regression assertions **beyond** the 100%-coverage
   gate, all delivered: exactly-once activation on Enter/Space/click; the full
   open-intent and wrap/Home/End matrix; Escape refocuses the trigger while Tab
-  does not; **one** close on a trigger click while open (the §4.5 double-fire
-  class); `aria-controls`/`role="menu"` present only while open; focus retained
-  on a disabled flip and rescued on a programmatic close, never to `<body>`;
+  makes no direct focus call — its close leaves the §4.6 rescue armed, so the
+  starting point stays live and the destination stays the natural next stop
+  (Amendment A1); **one** close on a trigger click while open (the §4.5
+  double-fire class); `aria-controls`/`role="menu"` present only while open;
+  focus retained on a disabled flip and rescued on a programmatic close, never
+  to `<body>`;
   zero buttons and zero ARIA on the static card; the `expectNoLiveRegion` sweep;
   accessible-name assertions including "no `aria-label` anywhere"; and visual
   state snapshots in the pinned Playwright image.
@@ -420,7 +456,7 @@ showcase board's own `#FBFBFB` surface behind the white card.
 | ------------------------------------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AC1** — profile information and selection/menu interaction states supported; consistent with card and control patterns | ✅     | Four Figma state nodes delivered pixel-exact; APG menu button on the toolkit's native-button, wired/static and `aria-disabled` conventions; no new palette tokens.                          |
 | **AC2** — active/disabled/error-relevant behaviour predictable; callback and contract behaviour clearly defined          | ✅     | Open/hover/disabled all measured; `error` documented N/A (not a form field); `onOpenChange(next)` and `onSelect(itemId)` specified in `types.ts`; five dev-warnings cover misconfiguration. |
-| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 85-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
+| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 86-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
 
 ## Provenance
 
@@ -441,14 +477,14 @@ appended for this story.
   guard in `tests/unit/components-index.test.ts` updated.
 - **No palette additions** — the second Epic 3 story with zero new tokens.
 - **100% statements / branches / functions / lines** of the component via
-  `tests/unit/ui-profile-select-card.test.tsx` — **85 specs across 15 describe
+  `tests/unit/ui-profile-select-card.test.tsx` — **86 specs across 15 describe
   blocks**: wired trigger semantics, the static card, empty-items and
   disabled dominance, the `aria-disabled` boundary, open-transition focus, menu
   navigation with wrap/Home/End, item activation ordering, all five close paths,
   accessible names and imagery, the live-region prohibition, the dev-warning
   contract, the focus-return `ref`/`id` API, consumer `sx`/`menuSx`,
   mutation-killing assertions on the pure style recipes, and the defensive
-  branches of the focus helpers. Full repo suite: **67 suites / 1076 tests
+  branches of the focus helpers. Full repo suite: **67 suites / 1077 tests
   green**.
 - **Honest-coverage note:** the last uncovered branch was a redundant
   double-guard in `use-profile-select-card.ts` — the static and disabled cases

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
@@ -730,20 +730,54 @@ describe('UiProfileSelectCard — close paths (§4.3/§4.5/§13.3/§13.4)', () =
     expect(trigger()).toHaveFocus();
   });
 
-  it('Tab closes the menu and never yanks focus back to the trigger', async () => {
+  it('Tab closes the menu, keeps a live starting point and hands focus onward', async () => {
     const user: UserEvent = userEvent.setup();
     const onOpenChange: jest.Mock = jest.fn();
     renderControlled({ initialOpen: true, onOpenChange });
+
+    // Phase 1 — the keydown, i.e. everything the component owns, replayed before
+    // the browser performs Tab's default move. The binding assertion (§13.3): the
+    // component makes NO direct focus call on this path. The consumer closes
+    // synchronously, so the focused row is already gone when the move would run,
+    // and the §4.6 stranded-focus rescue is what keeps sequential navigation a
+    // live starting point instead of <body> (Amendment A1).
+    fireEvent.keyDown(itemNamed(PROFILE), { key: 'Tab' });
+
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(document.body).not.toHaveFocus();
+    expect(trigger()).toHaveFocus();
+
+    // Phase 2 — the browser's move, from that starting point. The trigger focus
+    // is transient: the destination is the natural next stop after the widget,
+    // exactly what the sequential-focus starting-point fixup would have chosen.
+    await user.tab();
+
+    expect(neighbour()).toHaveFocus();
+    expect(trigger()).not.toHaveFocus();
+    expect(onOpenChange.mock.calls).toEqual([[false]]);
+  });
+
+  it('requests exactly one close when user-event drives the whole Tab', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onOpenChange: jest.Mock = jest.fn();
+    renderControlled({ initialOpen: true, onOpenChange });
+    const rescued: string[] = [];
+    trigger().addEventListener('focus', (): void => {
+      rescued.push('trigger');
+    });
 
     await user.tab();
 
     expect(onOpenChange.mock.calls).toEqual([[false]]);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    // The binding assertion (§13.3): no focus call happens on the Tab path. Where
-    // focus lands afterwards is the browser's business — jsdom resolves the Tab
-    // destination after React has already unmounted the row, so it drops to
-    // <body> here instead of stepping to the neighbour; the natural-step
-    // behaviour is asserted below against a menu the consumer keeps mounted.
+    // The rescue ran once, while the row was vanishing — focus was never left on
+    // <body> for the default action to start from.
+    expect(rescued).toEqual(['trigger']);
+    // It is not where focus RESTS, though: user-event resolves the Tab
+    // destination from the row it captured as the event target, which React has
+    // since unmounted, so it parks focus itself. The component never yanks focus
+    // back to the trigger.
     expect(trigger()).not.toHaveFocus();
   });
 

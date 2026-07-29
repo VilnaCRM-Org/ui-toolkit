@@ -4,9 +4,10 @@ import { isInsideWidget, type MenuOpenIntent } from './menu-focus';
 import { applyMenuNavigation, openIntentForKey } from './menu-keyboard';
 import type { MenuFocusContext, MenuFocusRefs } from './menu-refs';
 
-// Every close path that owns focus itself flags the rescue off first, so the
-// §4.6 programmatic-close rescue only ever fires for a close the component did
-// NOT initiate.
+// Every close path that already put focus somewhere real flags the rescue off
+// first, so the §4.6 rescue only ever fires for a close that would otherwise
+// leave focus stranded on `<body>`. Tab is NOT one of those paths (Amendment A1):
+// it makes no focus call of its own and deliberately leaves the rescue armed.
 function focusTrigger(ctx: MenuFocusContext): void {
   const refs: MenuFocusRefs = ctx.refs;
   refs.skipRescue.current = true;
@@ -21,9 +22,9 @@ function closeToTrigger(ctx: MenuFocusContext): void {
   ctx.requestOpen(false);
 }
 
-// The close paths that must NOT touch focus: Tab (focus proceeds naturally out of
-// the widget) and focus already leaving the widget. Both still suppress the §4.6
-// rescue, or the vanishing menu would yank focus back to the trigger.
+// Focus already leaving the widget: close with no focus call, and suppress the
+// §4.6 rescue — focus has a real destination of its own by then, so pulling it
+// back to the trigger would fight the user's own move.
 function closeWithoutFocus(ctx: MenuFocusContext): void {
   const refs: MenuFocusRefs = ctx.refs;
   refs.skipRescue.current = true;
@@ -78,16 +79,20 @@ export function handleTriggerKeyDown(
 }
 
 /**
- * Menu keydown. Tab closes WITHOUT `preventDefault()` and without any focus call,
- * so focus proceeds naturally out of the widget and is never yanked back to the
- * trigger; Escape returns focus to the trigger first; the rest is navigation.
+ * Menu keydown. Tab closes WITHOUT `preventDefault()` and without any DIRECT
+ * focus call, so focus proceeds naturally out of the widget; Escape returns focus
+ * to the trigger first; the rest is navigation.
  */
 export function handleMenuKeyDown(
   ctx: MenuFocusContext,
   event: React.KeyboardEvent<HTMLElement>
 ): void {
   if (event.key === 'Tab') {
-    closeWithoutFocus(ctx);
+    // A plain close request, with the §4.6 rescue left ARMED (Amendment A1): a
+    // consumer that lowers `open` synchronously unmounts the focused row before
+    // the browser performs the move, and the rescue is what keeps sequential
+    // navigation a live starting point instead of `<body>`.
+    ctx.requestOpen(false);
     return;
   }
   if (event.key === 'Escape') {
