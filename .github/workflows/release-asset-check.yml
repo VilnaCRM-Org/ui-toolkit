@@ -43,22 +43,34 @@ jobs:
             exit 0
           fi
 
-          if ! gh api "repos/$REPO/releases/tags/$tag" > release.json; then
-            echo "::error::Tag $tag has no GitHub release. The release pipeline is" \
-              "broken: the Create Release step in $WORKFLOW never ran for this tag." \
-              "Check the newest run of that workflow on main."
+          status=0
+          gh api "repos/$REPO/releases/tags/$tag" > release.json 2> api-error.txt \
+            || status=$?
+          if [[ "$status" -ne 0 ]]; then
+            if grep -q 'HTTP 404' api-error.txt; then
+              echo "::error::Tag $tag has no GitHub release. The release pipeline is" \
+                "broken: the Create Release step in $WORKFLOW never ran for this tag." \
+                "Check the newest run of that workflow on main."
+            else
+              cat api-error.txt
+              echo "::error::Could not read the release for tag $tag, so release" \
+                "health is unverified. Re-run this workflow once the API call works."
+            fi
             exit 1
           fi
 
-          assets="$(jq '[.assets[].name | select(endswith(".tgz"))] | length' release.json)"
-          if [[ "$assets" -eq 0 ]]; then
-            echo "::error::Release $tag carries no .tgz asset, so consumers cannot" \
-              "install it. The packaging steps in $WORKFLOW (make package, then the" \
-              "files: dist/*.tgz upload) did not produce or attach a tarball."
+          # Consumers install the one documented asset name, so any other .tgz
+          # (stale, misnamed, or manually attached) must not satisfy this check.
+          expected="vilnacrm-ui-toolkit-${tag#v}.tgz"
+          if ! jq -e --arg name "$expected" \
+            '.assets[] | select(.name == $name)' release.json > /dev/null; then
+            echo "::error::Release $tag does not carry $expected, so consumers" \
+              "cannot install it. The packaging steps in $WORKFLOW (make package," \
+              "then the files: dist/*.tgz upload) did not attach that tarball."
             exit 1
           fi
 
-          echo "Release $tag ships $assets .tgz asset(s)."
+          echo "Release $tag ships $expected."
 
       - name: Assert the release workflow is not failing on main
         if: always()
@@ -70,10 +82,21 @@ jobs:
           set -euo pipefail
 
           runs="repos/$REPO/actions/workflows/autorelease.yml/runs"
-          if ! gh api "$runs?branch=main&status=completed&per_page=1" > runs.json; then
-            echo "::notice::Could not read runs for $WORKFLOW, so its health was not" \
-              "checked. The workflow may never have been registered on main."
-            exit 0
+          status=0
+          gh api "$runs?branch=main&status=completed&per_page=1" > runs.json \
+            2> api-error.txt || status=$?
+          if [[ "$status" -ne 0 ]]; then
+            # Only the expected pre-registration state may pass silently; any
+            # other API failure would otherwise mask a broken release pipeline.
+            if grep -q 'HTTP 404' api-error.txt; then
+              echo "::notice::$WORKFLOW is not registered on main yet, so its" \
+                "health was not checked. This is the expected bootstrap state."
+              exit 0
+            fi
+            cat api-error.txt
+            echo "::error::Could not read runs for $WORKFLOW, so release-pipeline" \
+              "health is unverified. Re-run this workflow once the API call works."
+            exit 1
           fi
 
           conclusion="$(jq -r '.workflow_runs[0].conclusion // "none"' runs.json)"
@@ -84,11 +107,13 @@ jobs:
             exit 0
           fi
 
-          if [[ "$conclusion" == "failure" ]]; then
-            echo "::error::The newest completed run of $WORKFLOW on main failed, so no" \
-              "release can be cut and no tarball can be published. Open $url for the" \
-              "failing step, then fix $WORKFLOW."
+          # Cancelled, timed-out, and action-required runs leave the release
+          # unpublished just as surely as a failure, so only success is healthy.
+          if [[ "$conclusion" != "success" ]]; then
+            echo "::error::The newest completed run of $WORKFLOW on main concluded" \
+              "'$conclusion' rather than 'success', so the newest release may never" \
+              "have been cut. Open $url for the failing step, then fix $WORKFLOW."
             exit 1
           fi
 
-          echo "Newest completed $WORKFLOW run on main concluded '$conclusion'."
+          echo "Newest completed $WORKFLOW run on main concluded 'success'."
