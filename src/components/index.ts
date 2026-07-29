@@ -18,6 +18,8 @@ export { default as Layout } from './layout';
 export { default as UiLink } from './ui-link';
 export { default as UiMultiSelect } from './ui-multi-select';
 export { default as UiPagination } from './ui-pagination';
+export { default as UiProfileSelectCard } from './ui-profile-select-card';
+export type { UiProfileSelectCardProps, ProfileSelectItem } from './ui-profile-select-card/types';
 export { default as UiRadioGroup } from './ui-radio-group';
 export { default as UiSearchInput } from './ui-search-input';
 export { default as UiSelectWithSearch } from './ui-select-with-search';

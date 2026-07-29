@@ -215,6 +215,26 @@
     "name": "Pagination"
   },
   {
+    "id": "uicomponents-uiprofileselectcard--disabled",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uiprofileselectcard--open",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Open"
+  },
+  {
+    "id": "uicomponents-uiprofileselectcard--profile-select-card",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Profile Select Card"
+  },
+  {
+    "id": "uicomponents-uiprofileselectcard--static",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uiradiogroup--radio-group",
     "title": "UiComponents/UiRadioGroup",
     "name": "Radio Group"
