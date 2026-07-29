@@ -93,3 +93,14 @@ retention, the focus-return `ref`/`id` API, the informative-avatar contract and
 its dev warnings, the no-clamp title, the live-region prohibition, and the pure
 `taskCardSx` style assembly (focus ring, gated hover, chip no-jitter border) —
 at 100% coverage.
+
+`UiProfileSelectCard` is locked by `tests/unit/ui-profile-select-card.test.tsx`
+— wired vs static rendering, the APG menu-button ARIA wiring (`aria-haspopup`,
+the permanent `aria-expanded`, `aria-controls` only while the menu is mounted),
+component-owned focus (open → first/last row by intent, wrap/Home/End, Escape
+and activation → trigger, the close-underneath rescue that never drops focus to
+`<body>`), the five close paths with the trigger-click double-fire exclusion,
+the `aria-disabled` boundary and its dominance over `open`, the decorative
+avatar (`alt=""`) and every §12 dev warning, the empty-items no-menu rule, the
+live-region prohibition, and the exactly-once `onSelect` ordering — at 100%
+coverage.
