@@ -20,16 +20,19 @@ The package is ESM-only and exposes two entry points:
 - `@vilnacrm/ui-toolkit/styles.css` — the stylesheet, carrying the Swiper carousel CSS and the
   Inter and Golos Text font faces.
 
+Swiper is bundled into both entry points rather than declared as a peer, so the consumer does not
+install it for the toolkit's sake.
+
 ## Peer dependencies the consumer must already provide
 
-| Peer                                | Range     |
-| ----------------------------------- | --------- |
-| `react`, `react-dom`                | `^19.0.0` |
-| `@mui/material`, `@mui/system`      | `^9.0.0`  |
-| `@emotion/react`, `@emotion/styled` | `^11.0.0` |
-| `react-hook-form`                   | `^7.0.0`  |
-| `i18next`                           | `^23.0.0` |
-| `react-i18next`                     | `^14.0.0` |
+| Peer                                | Range              |
+| ----------------------------------- | ------------------ |
+| `react`, `react-dom`                | `^19.0.0`          |
+| `@mui/material`, `@mui/system`      | `^9.0.0`           |
+| `@emotion/react`, `@emotion/styled` | `^11.0.0`          |
+| `react-hook-form`                   | `^7.0.0`           |
+| `i18next`                           | `>=23.0.0 <27.0.0` |
+| `react-i18next`                     | `>=14.0.0 <18.0.0` |
 
 `website` already satisfies all of these. `crm` is on React 18.3 and MUI 7, so its install will
 report peer mismatches until its React 19 / MUI 9 upgrade lands. If you are working in `crm` and
@@ -45,13 +48,16 @@ gh release view --repo VilnaCRM-Org/ui-toolkit \
   --json tagName,assets --jq '.assets[] | select(.name | endswith(".tgz")) | .url'
 ```
 
-Add it in the consumer repository:
+Add it in the consumer repository, taking the version from that same release:
 
 ```bash
-VERSION=0.1.0
+VERSION=$(gh release view --repo VilnaCRM-Org/ui-toolkit \
+  --json tagName --jq '.tagName | ltrimstr("v")')
 BASE=https://github.com/VilnaCRM-Org/ui-toolkit/releases/download
 bun add "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
 ```
+
+Set `VERSION` by hand instead to pin an older release.
 
 That writes the full URL into `dependencies` and records the tarball's `sha512` integrity hash in
 `bun.lock`. Commit both files together — the hash is what makes the pin tamper-evident.
@@ -85,16 +91,16 @@ differently, use its own type-check and unit-test targets.
 
 ## Moving to a later release
 
-Re-run the two commands under [Wiring the dependency](#wiring-the-dependency) with the new
-version; `bun add` rewrites both `package.json` and `bun.lock`. Because the URL pins an immutable
-release asset there are no semver ranges: every upgrade is an explicit, reviewable diff, and
-nothing moves under the consumer without a commit.
+Re-run the commands under [Wiring the dependency](#wiring-the-dependency); `VERSION` picks up
+whatever release is newest, and `bun add` rewrites both `package.json` and `bun.lock`. Because the
+URL pins an immutable release asset there are no semver ranges: every upgrade is an explicit,
+reviewable diff, and nothing moves under the consumer without a commit.
 
 ## Failure modes worth knowing
 
 - Do not install the git tag (`bun add github:VilnaCRM-Org/ui-toolkit#v0.1.0`). The tag carries
-  source only — `build/` is gitignored and there is no `prepare` script — so the install yields a
-  package whose every entry point resolves to a missing file.
+  source only — `build/` is gitignored and there is no `prepare` script — so the install yields
+  a package whose every entry point resolves to a missing file.
 - Container and CI installs need network access to `objects.githubusercontent.com`, which is where
   release-asset downloads redirect. An allowlisted egress proxy has to permit it.
 - Never re-cut a release with an existing version number. The old `sha512` is pinned in every
