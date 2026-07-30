@@ -10,6 +10,8 @@ export { default as UiContainer } from './ui-container';
 export { default as UiFooter } from './ui-footer';
 export { default as UiFileUploadInput } from './ui-file-upload-input';
 export { default as UiInput } from './ui-input';
+export { default as UiIntegrationCard } from './ui-integration-card';
+export type { UiIntegrationCardProps, IntegrationLogo } from './ui-integration-card/types';
 export { default as UiItemRow } from './ui-item-row';
 export type { UiItemRowProps, ItemRowMethod } from './ui-item-row/types';
 export { default as UiItemsList } from './ui-items-list';

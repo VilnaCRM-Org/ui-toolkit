@@ -1,4 +1,5 @@
 import * as publicComponents from '../../src/components';
+import type { IntegrationLogo, UiIntegrationCardProps } from '../../src/components';
 
 const expectedPublicExports: string[] = [
   'AuthSkeleton',
@@ -20,6 +21,7 @@ const expectedPublicExports: string[] = [
   'UiForm',
   'UiImage',
   'UiInput',
+  'UiIntegrationCard',
   'UiItemRow',
   'UiItemsList',
   'Layout',
@@ -67,5 +69,18 @@ describe('components index', () => {
     expect(publicComponents.UiSkeletonBlock).toBeDefined();
     expect(publicComponents.UiTooltip).toBeDefined();
     expect(publicComponents.UiTaskCard).toBeDefined();
+    expect(publicComponents.UiIntegrationCard).toBeDefined();
+  });
+
+  // `UiIntegrationCardProps` and `IntegrationLogo` are type-only exports, so the
+  // runtime key sweep above cannot see them. Binding them here is what makes the
+  // barrel's type surface part of the drift guard: dropping either from
+  // `src/components/index.ts` fails the type-check rather than passing silently.
+  it('exports the integration-card prop types from the barrel', () => {
+    const logo: IntegrationLogo = { src: '/hubspot.png', width: 139, height: 40 };
+    const props: UiIntegrationCardProps = { name: 'Hubspot', logo };
+
+    expect(props.logo).toBe(logo);
+    expect(props.name).toBe('Hubspot');
   });
 });

@@ -140,6 +140,26 @@
     "name": "Input"
   },
   {
+    "id": "uicomponents-uiintegrationcard--disabled",
+    "title": "UiComponents/UiIntegrationCard",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uiintegrationcard--integration-card",
+    "title": "UiComponents/UiIntegrationCard",
+    "name": "Integration Card"
+  },
+  {
+    "id": "uicomponents-uiintegrationcard--selected",
+    "title": "UiComponents/UiIntegrationCard",
+    "name": "Selected"
+  },
+  {
+    "id": "uicomponents-uiintegrationcard--static",
+    "title": "UiComponents/UiIntegrationCard",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uiitemrow--delete-method",
     "title": "UiComponents/UiItemRow",
     "name": "Delete Method"

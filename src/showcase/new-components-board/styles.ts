@@ -167,6 +167,20 @@ export const PROFILE_MENU_ROW_HOVER_SX = {
   '& [role="menuitem"]:nth-of-type(2)': { backgroundColor: '#F4F5F6' },
 } as const;
 
+// Forced integration-card hover: the card scopes the recipe to its own `:hover`
+// (gated on the aria-disabled boundary AND on the UNSELECTED state), so a static
+// tile re-applies the Figma hover values to the card root — the stroke darkens one
+// step (brandGray -> grey400) and the card gains the "Landing shadow". The forced
+// rule keeps the component's own `:not([aria-checked="true"])` gate on purpose:
+// that is what makes the "Selected + Hover" tile paint the SELECTED chrome instead
+// of the hover chrome, drawing the a11y contract §7.4 precedence rule on the board.
+export const INTEGRATION_CARD_HOVER_SX = {
+  '&:not([aria-checked="true"])': {
+    borderColor: '#D0D4D8',
+    boxShadow: '0 8px 27px rgba(49, 59, 67, 0.14)',
+  },
+} as const;
+
 // ---- board layout -----------------------------------------------------------
 
 export const pageSx = {

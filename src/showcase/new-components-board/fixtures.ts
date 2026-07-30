@@ -1,7 +1,9 @@
 import { crmBreakpointValues } from '@/components/ui-breakpoints';
+import type { IntegrationLogo } from '@/components/ui-integration-card/types';
 import type { ProfileSelectItem } from '@/components/ui-profile-select-card/types';
 
 import boardAvatars from './board-avatars.json';
+import boardLogos from './board-logos.json';
 
 export const MOBILE_MAX = `@media (max-width: ${crmBreakpointValues.sm}px)` as const;
 
@@ -68,4 +70,25 @@ export const PROFILE_ITEMS: ProfileSelectItem[] = [
   { id: 'profile', label: 'Мой профиль' },
   { id: 'settings', label: 'Настройки' },
   { id: 'logout', label: 'Выйти' },
+];
+
+// The two brand marks the integration-card masters draw, as 2x cover-crops of the
+// Figma image fills (278x80 and 362x104, rendered at half size). Both ship as data
+// URIs so the exact design pixels travel with no asset pipeline; the base64
+// payloads live in the sibling JSON asset for the same reason the avatars do.
+export const HUBSPOT_LOGO_SRC: string = `data:image/png;base64,${boardLogos.hubspot}`;
+export const AMOCRM_LOGO_SRC: string = `data:image/png;base64,${boardLogos.amocrm}`;
+
+/** One integration the board and the component story paint. */
+export interface IntegrationSample {
+  name: string;
+  logo: IntegrationLogo;
+}
+
+// Verbatim from the masters, capitalisation included ("Hubspot", not "HubSpot"):
+// the card bakes in no literals of its own (a11y contract §2.2), so the brand name
+// and the mark's intrinsic size are consumer data.
+export const INTEGRATION_CARDS: IntegrationSample[] = [
+  { name: 'Hubspot', logo: { src: HUBSPOT_LOGO_SRC, width: 139, height: 40 } },
+  { name: 'AmoCRM', logo: { src: AMOCRM_LOGO_SRC, width: 181, height: 52 } },
 ];

@@ -1,4 +1,5 @@
 import { FIELD_GROUPS } from './field-groups';
+import { INTEGRATION_CARD_GROUPS } from './integration-card-group';
 import { ITEM_ROW_GROUPS } from './item-row-group';
 import { MEDIA_GROUPS } from './media-groups';
 import { PROFILE_SELECT_CARD_GROUPS } from './profile-select-card-group';
@@ -15,4 +16,5 @@ export const GROUPS: GroupSpec[] = [
   ...ITEM_ROW_GROUPS,
   ...TASK_CARD_GROUPS,
   ...PROFILE_SELECT_CARD_GROUPS,
+  ...INTEGRATION_CARD_GROUPS,
 ];
