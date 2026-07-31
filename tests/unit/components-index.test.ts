@@ -1,5 +1,16 @@
 import * as publicComponents from '../../src/components';
-import type { IntegrationLogo, UiIntegrationCardProps } from '../../src/components';
+import type {
+  ActionIconName,
+  IntegrationLogo,
+  UiActionIconBarAction,
+  UiActionIconBarProps,
+  UiFilterChipProps,
+  UiIntegrationCardProps,
+  UiNotificationBadgeProps,
+  UiPaymentOptionCardProps,
+  UiPinInputProps,
+  UiStatusBadgeProps,
+} from '../../src/components';
 
 const expectedPublicExports: string[] = [
   'AuthSkeleton',
@@ -8,6 +19,7 @@ const expectedPublicExports: string[] = [
   'crmColorTheme',
   'heightBreakpoints',
   'sharedPalette',
+  'UiActionIconBar',
   'UiBackToMain',
   'UiBreakpoints',
   'UiButton',
@@ -17,6 +29,7 @@ const expectedPublicExports: string[] = [
   'UiColorTheme',
   'UiContainer',
   'UiFileUploadInput',
+  'UiFilterChip',
   'UiFooter',
   'UiForm',
   'UiImage',
@@ -27,7 +40,10 @@ const expectedPublicExports: string[] = [
   'Layout',
   'UiLink',
   'UiMultiSelect',
+  'UiNotificationBadge',
   'UiPagination',
+  'UiPaymentOptionCard',
+  'UiPinInput',
   'UiProfileSelectCard',
   'UiRadioGroup',
   'UiSearchInput',
@@ -36,6 +52,7 @@ const expectedPublicExports: string[] = [
   'UiSkeletonButton',
   'UiSkeletonInput',
   'UiSkeletonText',
+  'UiStatusBadge',
   'UiTaskCard',
   'UiTextFieldForm',
   'UiToolbar',
@@ -82,5 +99,35 @@ describe('components index', () => {
 
     expect(props.logo).toBe(logo);
     expect(props.name).toBe('Hubspot');
+  });
+
+  // The same drift guard for the Story 3.5 micro-components: eight type-only
+  // exports the runtime key sweep above cannot see. Binding each one to a real
+  // value is what makes dropping it from `src/components/index.ts` a type error
+  // rather than a silent pass.
+  it('exports the filter-chip, pin-input and payment-card prop types', () => {
+    const chip: UiFilterChipProps = { label: 'Фільтр:', filterValue: 'клієнт' };
+    const pin: UiPinInputProps = { label: 'Код підтвердження', length: 6 };
+    const card: UiPaymentOptionCardProps = {
+      name: 'LiqPay',
+      logo: { src: '/liqpay.png', width: 116, height: 24 },
+    };
+
+    expect(chip.filterValue).toBe('клієнт');
+    expect(pin.length).toBe(6);
+    expect(card.logo.width).toBe(116);
+  });
+
+  it('exports the icon-bar, status-badge and notification-badge prop types', () => {
+    const icon: ActionIconName = 'trash';
+    const action: UiActionIconBarAction = { icon, label: 'Видалити' };
+    const bar: UiActionIconBarProps = { label: 'Дії', actions: [action] };
+    const status: UiStatusBadgeProps = { label: 'Виконано' };
+    const notification: UiNotificationBadgeProps = { count: 3 };
+
+    expect(bar.actions[0]).toBe(action);
+    expect(action.icon).toBe('trash');
+    expect(status.label).toBe('Виконано');
+    expect(notification.count).toBe(3);
   });
 });

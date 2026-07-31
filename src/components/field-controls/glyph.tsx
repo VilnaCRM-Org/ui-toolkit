@@ -1,8 +1,13 @@
 import React from 'react';
 
 export interface GlyphProps {
-  /** The single `d` path the glyph is drawn from. */
-  path: string;
+  /**
+   * The `d` path the glyph is drawn from. Most icons are a single path; the ones
+   * Figma exports as several subpaths (the dots menus, the eye) pass an ordered
+   * array instead and get one `<path>` per entry, all sharing the stroke recipe
+   * below. A plain string behaves exactly as it always has.
+   */
+  path: string | readonly string[];
   /** The icon's native viewBox, so the stroke weight matches the Figma source. */
   viewBox: string;
   strokeWidth: string;
@@ -32,6 +37,7 @@ export function Glyph({
   width = '20',
   height = '20',
 }: GlyphProps): React.ReactElement {
+  const paths: readonly string[] = typeof path === 'string' ? [path] : path;
   return (
     <svg
       aria-hidden="true"
@@ -42,13 +48,16 @@ export function Glyph({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d={path}
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {paths.map(d => (
+        <path
+          key={d}
+          d={d}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ))}
     </svg>
   );
 }

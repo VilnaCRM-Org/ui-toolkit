@@ -1,6 +1,12 @@
 import './fonts.css';
 
 export { default as AuthSkeleton } from './auth-skeleton';
+export { default as UiActionIconBar } from './ui-action-icon-bar';
+export type {
+  UiActionIconBarProps,
+  UiActionIconBarAction,
+  ActionIconName,
+} from './ui-action-icon-bar/types';
 export { default as UiBackToMain } from './ui-back-to-main';
 export { default as UiButton } from './ui-button';
 export { default as UiCalendarMultiSelect } from './ui-calendar-multi-select';
@@ -9,6 +15,8 @@ export { default as UiCheckbox } from './ui-checkbox';
 export { default as UiContainer } from './ui-container';
 export { default as UiFooter } from './ui-footer';
 export { default as UiFileUploadInput } from './ui-file-upload-input';
+export { default as UiFilterChip } from './ui-filter-chip';
+export type { UiFilterChipProps } from './ui-filter-chip/types';
 export { default as UiInput } from './ui-input';
 export { default as UiIntegrationCard } from './ui-integration-card';
 export type { UiIntegrationCardProps, IntegrationLogo } from './ui-integration-card/types';
@@ -19,12 +27,20 @@ export type { UiItemsListProps } from './ui-items-list/types';
 export { default as Layout } from './layout';
 export { default as UiLink } from './ui-link';
 export { default as UiMultiSelect } from './ui-multi-select';
+export { default as UiNotificationBadge } from './ui-notification-badge';
+export type { UiNotificationBadgeProps } from './ui-notification-badge/types';
 export { default as UiPagination } from './ui-pagination';
+export { default as UiPaymentOptionCard } from './ui-payment-option-card';
+export type { UiPaymentOptionCardProps } from './ui-payment-option-card/types';
+export { default as UiPinInput } from './ui-pin-input';
+export type { UiPinInputProps } from './ui-pin-input/types';
 export { default as UiProfileSelectCard } from './ui-profile-select-card';
 export type { UiProfileSelectCardProps, ProfileSelectItem } from './ui-profile-select-card/types';
 export { default as UiRadioGroup } from './ui-radio-group';
 export { default as UiSearchInput } from './ui-search-input';
 export { default as UiSelectWithSearch } from './ui-select-with-search';
+export { default as UiStatusBadge } from './ui-status-badge';
+export type { UiStatusBadgeProps } from './ui-status-badge/types';
 export { default as UiTaskCard } from './ui-task-card';
 export type { UiTaskCardProps, TaskAssignee } from './ui-task-card/types';
 export { default as UiTypography } from './ui-typography';
