@@ -44,9 +44,16 @@ const FOCUS_SELECTORS: string =
 // card boundary survives that mode; the Landing shadow is decoration and may
 // vanish. Checked vs unchecked also survives, because the glyph's distinction is
 // border WIDTH (5px vs 1px) rather than colour alone — do not refactor that away.
+//
+// The fallback MUST repeat FOCUS_SELECTORS rather than a bare `:focus-visible`.
+// A media query adds no specificity, so a single-selector rule loses to the
+// negated copy above that declares `outline: none` — and it loses on exactly the
+// state a keyboard user is normally in (enabled, unchecked), leaving no indicator
+// at all while the disabled card keeps one. Repeating the list ties the
+// specificity, and being declared later this wins.
 const FORCED_COLORS_RING: object = {
   '@media (forced-colors: active)': {
-    '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+    [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
   },
 };
 
