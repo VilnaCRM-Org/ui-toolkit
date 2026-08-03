@@ -1,6 +1,8 @@
 import {
+  pinEventIntent,
   pinKeyIntent,
   resolvePinKey,
+  type PinKeyEvent,
   type PinKeyIntent,
 } from '../../src/components/ui-pin-input/pin-keyboard';
 import type { PinCellContext, PinOutcome } from '../../src/components/ui-pin-input/pin-value';
@@ -38,6 +40,47 @@ describe('pinKeyIntent — which keys a cell intercepts', () => {
   it('is case-sensitive, so a lowercase spelling is not an intent', () => {
     expect(pinKeyIntent('backspace')).toBeNull();
     expect(pinKeyIntent('arrowleft')).toBeNull();
+  });
+
+  it('never resolves an INHERITED Object property as an intent', () => {
+    // `event.key` is an arbitrary string from the UA, and a synthetic event can
+    // carry any of these. A prototype-chain hit would return a Function here and
+    // throw downstream in `resolvePinKey`, inside the keydown handler.
+    expect(pinKeyIntent('toString')).toBeNull();
+    expect(pinKeyIntent('constructor')).toBeNull();
+    expect(pinKeyIntent('valueOf')).toBeNull();
+    expect(pinKeyIntent('hasOwnProperty')).toBeNull();
+  });
+});
+
+describe('pinEventIntent — a modified combination belongs to the browser', () => {
+  function keyEvent(key: string, modifier?: 'altKey' | 'ctrlKey' | 'metaKey'): PinKeyEvent {
+    return {
+      key,
+      altKey: modifier === 'altKey',
+      ctrlKey: modifier === 'ctrlKey',
+      metaKey: modifier === 'metaKey',
+    };
+  }
+
+  it('resolves the table normally when no modifier is held', () => {
+    expect(pinEventIntent(keyEvent('ArrowRight'))).toBe('next');
+    expect(pinEventIntent(keyEvent('Backspace'))).toBe('backspace');
+    expect(pinEventIntent(keyEvent('Enter'))).toBeNull();
+  });
+
+  it('declines Alt/Ctrl/Meta combinations — history, word and line shortcuts', () => {
+    // Alt+Arrow is browser history, Ctrl/Cmd+Arrow is word and line caret
+    // movement. Claiming them (and preventing their default) would break the
+    // pass-through the component's own header promises.
+    expect(pinEventIntent(keyEvent('ArrowLeft', 'altKey'))).toBeNull();
+    expect(pinEventIntent(keyEvent('ArrowRight', 'ctrlKey'))).toBeNull();
+    expect(pinEventIntent(keyEvent('Backspace', 'metaKey'))).toBeNull();
+    expect(pinEventIntent(keyEvent('Delete', 'ctrlKey'))).toBeNull();
+  });
+
+  it('still intercepts a SHIFTED arrow, which only extends a one-character box', () => {
+    expect(pinEventIntent({ ...keyEvent('ArrowLeft'), key: 'ArrowLeft' })).toBe('prev');
   });
 });
 

@@ -1,5 +1,7 @@
 import { useDevWarning } from '@/utils/dev-warn';
 
+import { hasText } from '../field-controls';
+
 import notificationBadgeWarning from './notification-badge-warnings';
 import { resolveCount, type NotificationCount } from './notification-count';
 import { notificationName } from './notification-name';
@@ -48,16 +50,19 @@ function makeActivate(disabled: boolean, onActivate?: () => void): () => void {
 // `hasPopup` is the switch for the whole channel: with it, `aria-expanded` is
 // emitted in both states (coerced from nullish, S3) so the button never looks
 // stateless to assistive tech; without it, none of the three attributes appear.
-// `aria-controls` is additionally gated on the menu actually being open.
+// `aria-controls` is additionally gated on the menu actually being open AND on the
+// id being real: `aria-controls` is an IDREF LIST, so a blank one is a zero-length
+// list — invalid ARIA rather than a dangling reference. Omitting beats emitting.
 function popupAttributes(
   props: Readonly<UiNotificationBadgeProps>,
   interactive: boolean
 ): PopupAttributes {
   const wired: boolean = interactive && props.hasPopup != null;
+  const controls: boolean = wired && props.menuOpen === true && hasText(props.menuId);
   return {
     ariaHasPopup: wired ? props.hasPopup : undefined,
     ariaExpanded: wired ? (props.menuOpen ?? false) : undefined,
-    ariaControls: wired && props.menuOpen === true ? props.menuId : undefined,
+    ariaControls: controls ? props.menuId : undefined,
   };
 }
 

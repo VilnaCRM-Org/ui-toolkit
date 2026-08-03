@@ -32,15 +32,19 @@ export interface IconBarTileOptions {
 
 // The six Figma actions, wired or static. Only the eye is a toggle — it is the one
 // action with a `pressed` axis — and every other action gets the plain activation
-// path, so a `pressed` never lands where it would be ignored and dev-warn.
+// path. A static bar drops the toggle callback, so it drops the eye's `pressed`
+// with it: state the static branch cannot expose is state it must not be handed
+// (S2), and that is what keeps a `pressed` from landing where it would be ignored
+// and dev-warn.
 function barActions(opts: Readonly<IconBarTileOptions>): UiActionIconBarAction[] {
   const wire: (() => void) | undefined = opts.staticBar ? undefined : noop;
+  const eyePressed: boolean | undefined = opts.staticBar ? undefined : opts.pressed;
   return BAR_ACTIONS.map((sample: ActionSample) => ({
     icon: sample.icon,
     label: sample.label,
     onActivate: sample.icon === 'eye' ? undefined : wire,
     onToggle: sample.icon === 'eye' ? wire : undefined,
-    pressed: sample.icon === 'eye' ? opts.pressed : undefined,
+    pressed: sample.icon === 'eye' ? eyePressed : undefined,
   }));
 }
 

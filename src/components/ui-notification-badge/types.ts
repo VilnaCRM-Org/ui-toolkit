@@ -73,9 +73,9 @@ export interface UiNotificationBadgeProps {
   label?: string;
   /**
    * Counter cap, default `9`: above it the chip and the name both read
-   * `` `${max}+` ``. Values below 1 are normalised to 1 and dev-warn. The chip is
-   * a fixed 18px circle in the master, so a cap wider than two glyphs will
-   * overflow it.
+   * `` `${max}+` ``. Fractions are floored and values below 1 (or non-finite)
+   * become 1; either way it dev-warns. The chip is a fixed 18px circle in the
+   * master, so a cap wider than two glyphs will overflow it.
    */
   max?: number;
   /**

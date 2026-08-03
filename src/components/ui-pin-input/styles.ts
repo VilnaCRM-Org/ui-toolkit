@@ -49,9 +49,15 @@ const FOCUS_SELECTORS: string = '&:focus-visible, &:focus-visible:not([aria-disa
 // Forced-colors discards box-shadow, so the ring is re-expressed as an outline
 // pulled inside the border box. The cell border stays a REAL border, so the cell
 // boundary survives that mode; the active shadow is decoration and may vanish.
+//
+// The fallback MUST repeat FOCUS_SELECTORS rather than a bare `:focus-visible`.
+// A media query adds no specificity, so a single-selector rule loses to the
+// negated copy above that declares `outline: none` — and it loses on exactly the
+// states a keyboard user is normally in. Repeating the list ties the specificity,
+// and being declared later this wins.
 const FORCED_COLORS_RING: object = {
   '@media (forced-colors: active)': {
-    '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+    [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
   },
 };
 

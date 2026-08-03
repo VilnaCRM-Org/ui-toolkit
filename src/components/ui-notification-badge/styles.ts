@@ -38,9 +38,15 @@ const FOCUS_SELECTORS: string = '&:focus-visible, &:focus-visible:not([aria-disa
 // pulled inside the border box. The circle keeps a REAL border in that mode, so
 // the badge boundary survives it; the counter chip keeps its own text, so the
 // count survives it too.
+//
+// The fallback MUST repeat FOCUS_SELECTORS rather than a bare `:focus-visible`.
+// A media query adds no specificity, so a single-selector rule loses to the
+// negated copy above that declares `outline: none` — and it loses on exactly the
+// states a keyboard user is normally in. Repeating the list ties the specificity,
+// and being declared later this wins.
 const FORCED_COLORS_RING: object = {
   '@media (forced-colors: active)': {
-    '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+    [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
   },
 };
 

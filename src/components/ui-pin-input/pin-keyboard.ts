@@ -7,16 +7,44 @@ import { charAt, withoutDigitAt, type PinCellContext, type PinOutcome } from './
 // Enter/Space handler exists anywhere in this component (S6).
 export type PinKeyIntent = 'backspace' | 'delete' | 'prev' | 'next';
 
-const KEY_INTENTS: Readonly<Record<string, PinKeyIntent | undefined>> = {
-  Backspace: 'backspace',
-  Delete: 'delete',
-  ArrowLeft: 'prev',
-  ArrowRight: 'next',
-};
+// A `Map`, not an object literal: `event.key` is an arbitrary string from the UA
+// (or from a synthetic event), and an object lookup resolves an INHERITED member
+// — `toString`, `constructor`, `valueOf` — to a Function, handing that non-intent
+// to `resolvePinKey`, which then throws inside the keydown handler.
+const KEY_INTENTS: ReadonlyMap<string, PinKeyIntent> = new Map<string, PinKeyIntent>([
+  ['Backspace', 'backspace'],
+  ['Delete', 'delete'],
+  ['ArrowLeft', 'prev'],
+  ['ArrowRight', 'next'],
+]);
 
 /** The intent a key expresses, or `null` when the cell must not intercept it. */
 export function pinKeyIntent(key: string): PinKeyIntent | null {
-  return KEY_INTENTS[key] ?? null;
+  return KEY_INTENTS.get(key) ?? null;
+}
+
+/** The keyboard facts a cell decides on: the key name plus the modifier state. */
+export interface PinKeyEvent {
+  key: string;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+}
+
+/**
+ * The intent a key EVENT expresses. A combination carrying Alt, Ctrl or Meta
+ * belongs to the browser or the OS — Alt+Arrow is history navigation, Ctrl/Cmd+
+ * Arrow is word and line caret movement — so the cell neither claims it nor
+ * `preventDefault()`s it, which is what the header above already promises. Shift
+ * is deliberately absent from the gate: it only extends the selection inside a
+ * one-character box, where moving a cell is still the useful reading. Ctrl/Cmd+V
+ * is unaffected either way, because its key is `v` and was never in the table.
+ */
+export function pinEventIntent(event: Readonly<PinKeyEvent>): PinKeyIntent | null {
+  if (event.altKey || event.ctrlKey || event.metaKey) {
+    return null;
+  }
+  return pinKeyIntent(event.key);
 }
 
 // Backspace is the only two-branch key: on a FILLED cell it clears in place and

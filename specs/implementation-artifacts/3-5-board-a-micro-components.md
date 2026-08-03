@@ -144,9 +144,17 @@ them.
 
   ```ts
   '@media (forced-colors: active)': {
-    '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+    [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
   }
   ```
+
+  The fallback repeats the **same selector list** as the ring rule, and must. A
+  media query contributes no specificity, so a bare `&:focus-visible` (0,2,0)
+  loses to the ring rule's own negated copy (0,3,0 or 0,4,0) that declares
+  `outline: none` — and it loses on the ENABLED control, leaving forced-colors
+  users no focus indicator at all while the disabled one keeps its ring. (This
+  clause previously printed the bare selector; every component built from it
+  carried the defect, which is why it is spelled out here.)
 
   State chrome and focus chrome are orthogonal channels; neither may substitute
   for the other.

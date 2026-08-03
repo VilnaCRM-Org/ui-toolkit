@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useDevWarning } from '@/utils/dev-warn';
 
+import { hasHelperContent } from './has-helper-content';
 import { hasText } from './has-text';
 
 // Searchable field controls (UiSearchInput, UiSelectWithSearch, UiMultiSelect)
@@ -21,12 +22,6 @@ function hasAccessibleName(props: FieldWarningProps): boolean {
   return hasText(props.label) || hasText(props['aria-label']) || hasText(props.id);
 }
 
-// Blank/whitespace-only helper text is treated as missing so `error` cannot ship
-// with no explanation; non-string nodes (elements, numbers) count as present.
-function hasHelperText(helperText: ReactNode): boolean {
-  return typeof helperText === 'string' ? hasText(helperText) : helperText != null;
-}
-
 export function useFieldAccessibilityWarnings(
   componentName: string,
   props: FieldWarningProps
@@ -37,5 +32,5 @@ export function useFieldAccessibilityWarnings(
     `${componentName} has \`error\` set but no \`helperText\`; ` +
     'assistive tech gets no reason for the error.';
   useDevWarning(hasAccessibleName(props) ? null : missingName);
-  useDevWarning(props.error && !hasHelperText(props.helperText) ? errorWithoutHelper : null);
+  useDevWarning(props.error && !hasHelperContent(props.helperText) ? errorWithoutHelper : null);
 }

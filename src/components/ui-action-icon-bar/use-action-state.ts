@@ -1,3 +1,5 @@
+import { hasText } from '../field-controls';
+
 import type { UiActionIconBarAction } from './types';
 
 /** Popup wiring for a consumer-owned menu; the bar itself owns no menu. */
@@ -33,13 +35,16 @@ export function isWiredAction(action: UiActionIconBarAction): boolean {
 
 // `aria-controls` is rendered ONLY while the menu is open, so a closed action
 // never points at an element that is not in the DOM (the Story 3.3 dangling-idref
-// rule). `aria-expanded` is rendered in BOTH states, because an absent
+// rule), and only when the id is a real one: `aria-controls` is an IDREF LIST, so
+// a blank id is a zero-length list — invalid ARIA rather than a dangling
+// reference. `aria-expanded` is rendered in BOTH states, because an absent
 // `aria-expanded` and a `false` one are different announcements.
 function popupAria(action: UiActionIconBarAction): PopupAria {
+  const controls: boolean = action.menuOpen === true && hasText(action.menuId);
   return {
     ariaHasPopup: action.hasPopup,
     ariaExpanded: action.menuOpen,
-    ariaControls: action.menuOpen === true ? action.menuId : undefined,
+    ariaControls: controls ? action.menuId : undefined,
   };
 }
 

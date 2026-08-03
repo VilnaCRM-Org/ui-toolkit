@@ -5,9 +5,10 @@ const INVALID_COUNT_WARNING: string =
   '(negative and non-finite values become 0, fractions are floored) so the chip and the ' +
   'accessible name can never disagree. Pass a whole, non-negative count.';
 const INVALID_MAX_WARNING: string =
-  'UiNotificationBadge received a `max` that is not a positive integer; it is normalised to 1, ' +
-  'because a cap below 1 would render the meaningless counter "0+". Pass a whole cap of 1 or ' +
-  'more, or omit `max` for the Figma default of 9.';
+  'UiNotificationBadge received a `max` that is not a positive integer; it is normalised ' +
+  '(fractions are floored, and caps below 1 or non-finite become 1, because a cap below 1 ' +
+  'would render the meaningless counter "0+"). Pass a whole cap of 1 or more, or omit `max` ' +
+  'for the Figma default of 9.';
 const BLANK_LABEL_WARNING: string =
   'UiNotificationBadge received a blank `label`; the button would have no accessible name (the ' +
   'bell is decorative and the counter is aria-hidden). Pass the name stem, or omit `label` for ' +

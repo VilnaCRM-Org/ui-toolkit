@@ -1,6 +1,4 @@
-import type React from 'react';
-
-import { hasText } from '../field-controls';
+import { hasHelperContent, hasText } from '../field-controls';
 
 import { normalizeLength, normalizeValue } from './pin-value';
 import type { UiPinInputProps } from './types';
@@ -19,21 +17,13 @@ const SHORT_LENGTH_WARNING: string =
   'UiPinInput received a `length` below 1 (or a non-finite one); it is normalised. A PIN ' +
   'field needs at least one cell.';
 
-// Blank/whitespace-only helper text counts as missing, so `error` can never ship
-// with no explanation; non-string nodes (elements, numbers) count as present.
-// Mirrors `useFieldAccessibilityWarnings` exactly — the same contract, applied to
-// a control that is not built on `UiInput`.
-function hasHelperText(helperText: React.ReactNode): boolean {
-  return typeof helperText === 'string' ? hasText(helperText) : helperText != null;
-}
-
 function nameWarning(props: UiPinInputProps): string | null {
   const named: boolean = hasText(props.label) || hasText(props.labelledBy);
   return named ? null : MISSING_NAME_WARNING;
 }
 
 function helperWarning(props: UiPinInputProps): string | null {
-  const missing: boolean = props.error === true && !hasHelperText(props.helperText);
+  const missing: boolean = props.error === true && !hasHelperContent(props.helperText);
   return missing ? ERROR_WITHOUT_HELPER_WARNING : null;
 }
 

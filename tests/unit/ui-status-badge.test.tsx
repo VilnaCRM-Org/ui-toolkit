@@ -782,7 +782,10 @@ describe('statusBadgeSx — style assembly (pure, mutation-killing)', () => {
     expect(base['&[aria-disabled="true"]']).toEqual({ cursor: 'default' });
     expect(base['&[aria-pressed="true"]']).toEqual(ACTIVE_CHROME);
     expect(base['@media (forced-colors: active)']).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`:
+      // a media query adds no specificity, so the shorter selector would lose to
+      // the ring's own `outline: none` and leave forced-colors users no indicator.
+      [RING_SELECTOR]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
   });
 

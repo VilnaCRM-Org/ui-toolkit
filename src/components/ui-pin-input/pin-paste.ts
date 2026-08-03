@@ -23,6 +23,6 @@ export default function resolvePinEntry(raw: string, ctx: Readonly<PinCellContex
   const digits: string = digitsOnly(raw).slice(0, ctx.length - index);
   return {
     value: withDigitsAt({ value: ctx.value, index, digits }),
-    focusIndex: Math.min(index + digits.length, ctx.length - 1),
+    focusIndex: digits === '' ? ctx.index : Math.min(index + digits.length, ctx.length - 1),
   };
 }

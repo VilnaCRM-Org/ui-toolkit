@@ -849,7 +849,10 @@ describe('filterChipSx — style assembly (pure, mutation-killing)', () => {
 
   it('re-expresses the ring as an outline under forced colors', () => {
     expect(baseOf(true)['@media (forced-colors: active)']).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`:
+      // a media query adds no specificity, so the shorter selector would lose to
+      // the ring's own `outline: none` and leave forced-colors users no indicator.
+      [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
   });
 

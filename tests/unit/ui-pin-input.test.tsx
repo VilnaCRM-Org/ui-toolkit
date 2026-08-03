@@ -691,6 +691,20 @@ describe('UiPinInput — error contract', () => {
     expect(nodesMatching('p')).toHaveLength(0);
   });
 
+  it('mounts no empty helper element for a boolean or blank helperText', () => {
+    // The `hasError && message` idiom hands us `false`. Mounting the element
+    // anyway would point every cell's aria-describedby at an empty description.
+    const { rerender } = render(pinWith({ error: true, helperText: false, onChange: noop }));
+
+    expect(nodesMatching('[aria-describedby]')).toHaveLength(0);
+    expect(nodesMatching('p')).toHaveLength(0);
+
+    rerender(pinWith({ error: true, helperText: '   ', onChange: noop }));
+
+    expect(nodesMatching('[aria-describedby]')).toHaveLength(0);
+    expect(nodesMatching('p')).toHaveLength(0);
+  });
+
   // The helper text is this field's non-colour error signal, so it must render in
   // the shared field-controls treatment rather than MUI's Roboto 12px / #D32F2F.
   // jsdom's `getComputedStyle` resolves the cascade in declaration order and
@@ -1060,6 +1074,15 @@ describe('pinInputWarning — first-applicable selection (pure)', () => {
     expect(pinInputWarning({ ...named, helperText: null })).toContain('no `helperText`');
   });
 
+  it('counts a BOOLEAN helper node as missing — React renders neither one', () => {
+    // `helperText={hasError && message}` collapses to `false` when the condition
+    // is false. Treating that as present is what silently disarmed this warning:
+    // the field kept `error` with no explanation and nothing said so.
+    const named: UiPinInputProps = { label: GROUP_LABEL, error: true };
+    expect(pinInputWarning({ ...named, helperText: false })).toContain('no `helperText`');
+    expect(pinInputWarning({ ...named, helperText: true })).toContain('no `helperText`');
+  });
+
   it('says nothing about a length that was never supplied', () => {
     expect(pinInputWarning({ label: GROUP_LABEL, length: undefined })).toBeNull();
     expect(pinInputWarning({ label: GROUP_LABEL, length: 6 })).toBeNull();
@@ -1255,7 +1278,10 @@ describe('pinCellSx — the 64x86 master (pure, mutation-killing)', () => {
 
   it('re-expresses the ring as an outline under forced colors', () => {
     expect(cellStyle()[FORCED_COLORS_KEY]).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`: a
+      // media query adds no specificity, so the shorter selector would lose to the
+      // ring's own `outline: none` and leave forced-colors users no indicator.
+      [RING_KEY]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
     // `outline: none` lives ONLY inside the ring rule.
     expect(cellStyle().outline).toBeUndefined();
@@ -1276,6 +1302,13 @@ describe('pinCellSx — the 64x86 master (pure, mutation-killing)', () => {
 describe('usePinInput — view model', () => {
   function modelFor(props: UiPinInputProps): PinInputModel {
     return renderHook((): PinInputModel => usePinInput(props)).result.current;
+  }
+
+  // Declared rather than inlined at the call site: `renderHook` needs the same
+  // hook across rerenders, and a function that calls a hook has to be named
+  // `use*` for `react-hooks/rules-of-hooks`.
+  function useStableModel(): PinInputModel {
+    return usePinInput({ label: GROUP_LABEL, onChange: noop });
   }
 
   it('resolves the axes from the coerced props', () => {
@@ -1352,8 +1385,7 @@ describe('usePinInput — view model', () => {
   });
 
   it('keeps the cell setter stable across renders, so cells never re-attach', () => {
-    const renderModel = (): PinInputModel => usePinInput({ label: GROUP_LABEL, onChange: noop });
-    const { result, rerender } = renderHook(renderModel);
+    const { result, rerender } = renderHook(useStableModel);
     const first: React.RefCallback<HTMLInputElement> = result.current.setCell(0);
 
     rerender();
@@ -1439,7 +1471,32 @@ describe('buildPinHandlers — the gate lives in the model, never in the DOM', (
     const handlers: PinCellHandlers = buildPinHandlers({ axes: ENABLED_AXES, focusCell, onChange });
 
     handlers.onChange(0, 'a');
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(focusCell).not.toHaveBeenCalled();
+  });
+
+  it('treats an EMPTY change as the deletion it is, not as a rejected keystroke', () => {
+    const onChange: jest.Mock = jest.fn();
+    const focusCell: jest.Mock = jest.fn();
+    const handlers: PinCellHandlers = buildPinHandlers({ axes: ENABLED_AXES, focusCell, onChange });
+
+    // A cut, a drag-out and any IME or soft-keyboard deletion never raise
+    // `Backspace`; they arrive here as `''`, and discarding one would silently
+    // re-paint the digit the user just removed.
     handlers.onChange(0, '');
+
+    expect(onChange).toHaveBeenCalledWith('821');
+    // Delete never moves the caret — the cell the user emptied keeps it.
+    expect(focusCell).not.toHaveBeenCalled();
+  });
+
+  it('stays silent when an empty change lands on a cell that holds nothing', () => {
+    const onChange: jest.Mock = jest.fn();
+    const focusCell: jest.Mock = jest.fn();
+    const handlers: PinCellHandlers = buildPinHandlers({ axes: ENABLED_AXES, focusCell, onChange });
+
+    handlers.onChange(5, '');
 
     expect(onChange).not.toHaveBeenCalled();
     expect(focusCell).not.toHaveBeenCalled();

@@ -417,6 +417,18 @@ describe('UiNotificationBadge — popup passthrough', () => {
     expect(badge()).not.toHaveAttribute('aria-controls');
   });
 
+  it('omits aria-controls for a blank menuId rather than emitting an empty list', () => {
+    // `aria-controls` is an IDREF LIST, so `aria-controls=""` is a zero-length
+    // list — invalid ARIA. Omitting is the only correct answer for runtime data
+    // the prop type forbids but a CMS payload produces.
+    render(badgeWith({ onActivate: noop, hasPopup: 'menu', menuOpen: true, menuId: '   ' }));
+
+    expect(badge()).not.toHaveAttribute('aria-controls');
+    // The rest of the menu-button channel is unaffected.
+    expect(badge()).toHaveAttribute('aria-haspopup', 'menu');
+    expect(badge()).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('drops the whole channel on a static badge', () => {
     render(badgeWith({ hasPopup: 'menu', menuOpen: true, menuId: MENU_ID }));
 
@@ -917,7 +929,10 @@ describe('notificationBadgeSx — style assembly (pure, mutation-killing)', () =
 
   it('adds the forced-colors fallback, since box-shadow is discarded there', () => {
     expect(baseOf(true)['@media (forced-colors: active)']).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`:
+      // a media query adds no specificity, so the shorter selector would lose to
+      // the ring's own `outline: none` and leave forced-colors users no indicator.
+      [FOCUS_KEY]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
   });
 
@@ -1093,6 +1108,16 @@ describe('notificationBadgeWarning — first-applicable selection (pure)', () =>
   it('reports the count problem ahead of everything else', () => {
     const message: string | null = badgeWarning({ count: -1, max: 0, label: '' });
     expect(message).toContain('non-negative integer');
+  });
+
+  it('describes the flooring a fractional cap really gets, not "normalised to 1"', () => {
+    // 2.9 is FLOORED to 2, so the chip and the name read "2+". A message
+    // promising 1 sends the reader hunting for the wrong value.
+    const message: string | null = badgeWarning({ count: 1, max: 2.9 });
+
+    expect(message).toContain('positive integer');
+    expect(message).toContain('fractions are floored');
+    expect(message).not.toContain('normalised to 1');
   });
 
   it('reports the cap problem when the count is fine', () => {

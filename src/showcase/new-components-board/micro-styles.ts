@@ -81,11 +81,13 @@ export const ICON_BAR_HOVER_SX = {
 
 // Pressed: every lane steps to containedButtonActive except the danger lane, which
 // holds its hover ink and adds Frame 5441 — the 40x40 error@10% plate, the only
-// authored button chrome anywhere on Board A.
+// authored button chrome anywhere on Board A. The plate repeats the same
+// `aria-disabled` negation the component nests it under, so a disabled trash can
+// never wear a danger plate its grey400 glyph does not agree with.
 export const ICON_BAR_ACTIVE_SX = {
   '& > button:not([aria-disabled="true"])': { color: '#0399ED' },
   '& > button:nth-of-type(6):not([aria-disabled="true"])': { color: '#DF7878' },
-  '& > button:nth-of-type(6) .ui-action-icon-bar__backdrop': {
+  '& > button:nth-of-type(6):not([aria-disabled="true"]) .ui-action-icon-bar__backdrop': {
     backgroundColor: 'rgba(220, 57, 57, 0.1)',
   },
 } as const;

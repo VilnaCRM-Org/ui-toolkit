@@ -9,14 +9,19 @@ export interface ResolvedPaymentLogo {
   height: number;
 }
 
-// Accepts a URL string or a static import (`{ src }`). The optional chains absorb
-// a runtime nullish bundle, which the strict prop type forbids but API/CMS data
-// does not.
+// A source the browser can really fetch: a non-blank string once trimmed. The
+// guard is on `typeof` rather than nullishness so a malformed bundle cannot turn
+// this hardening into a throw during render.
+function trimmedSource(value: string | undefined): string | null {
+  return typeof value === 'string' ? value.trim() || null : null;
+}
+
+// Accepts a URL string or a static import (`{ src }`). The guard above absorbs the
+// nullish, non-string and whitespace-only bundles the strict prop type forbids but
+// API/CMS data produces anyway: a blank URL takes the unusable-bundle path — no
+// `<img>`, plus a dev warning — instead of painting a broken image.
 function logoUrl(source: IntegrationLogo['src'] | undefined): string | null {
-  if (typeof source === 'string') {
-    return source || null;
-  }
-  return source?.src || null;
+  return typeof source === 'string' ? trimmedSource(source) : trimmedSource(source?.src);
 }
 
 // Both dimensions must be real, positive numbers: they are what reserve the box

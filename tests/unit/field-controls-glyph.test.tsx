@@ -47,6 +47,34 @@ describe('Glyph — the shared stroked-icon wrapper', () => {
     expect(svg()).toHaveAttribute('height', '24');
   });
 
+  it('renders DUPLICATE subpaths without a React key collision', () => {
+    // Entries are keyed by position, not by `d`. A `d`-derived key would collide
+    // on two identical subpaths and drop one of them with a console error.
+    const error: jest.SpyInstance = jest.spyOn(console, 'error').mockImplementation();
+    try {
+      render(<Glyph path={[FIRST, FIRST]} viewBox="0 0 24 24" strokeWidth="2" />);
+
+      expect(dOf()).toEqual([FIRST, FIRST]);
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it('renders an empty svg for an empty subpath array, without throwing', () => {
+    // A frozen icon definition should never be empty, but an array arriving empty
+    // must degrade to an invisible glyph rather than take the control down.
+    function renderEmpty(): unknown {
+      return render(<Glyph path={[]} viewBox="0 0 24 24" strokeWidth="2" />);
+    }
+
+    expect(renderEmpty).not.toThrow();
+
+    expect(paths()).toHaveLength(0);
+    expect(svgs()).toHaveLength(1);
+    expect(svg()).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('keeps the decorative and stroke recipe identical across both path forms', () => {
     render(<Glyph path={[FIRST, SECOND]} viewBox="0 0 30 30" strokeWidth="2.5" />);
 

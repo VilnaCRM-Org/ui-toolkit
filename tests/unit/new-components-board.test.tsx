@@ -31,7 +31,7 @@ import mockConsoleWarn from './utils/mock-console-warn';
 // contract lives in the visual suite). This unit smoke test renders the whole
 // board so every group, tile and state builder is exercised — locking in that the
 // decomposed modules compose into a single, crash-free React tree.
-mockConsoleWarn();
+const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
 
 // Every section heading Figma draws, in board order.
 const GROUP_HEADINGS: readonly string[] = [
@@ -195,5 +195,15 @@ describe('New Components board (Figma parity showcase)', () => {
     expect(eye).toHaveAttribute('aria-pressed', 'true');
     const staticName = 'Завдання не виконано';
     expect(screen.getByRole('img', { name: staticName })).toBeInTheDocument();
+  });
+
+  it('builds a STATIC icon-bar tile without handing it a pressed it cannot expose', () => {
+    // A static bar drops the toggle callback, so forwarding the eye's `pressed`
+    // would hit UiActionIconBar's ignored-`pressed` dev warning on a tile that is
+    // interaction-free by construction.
+    render(<>{actionIconBarNode({ staticBar: true, pressed: true })}</>);
+
+    expect(warn.spy).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

@@ -54,6 +54,14 @@ describe('resolvePinEntry — degenerate inputs', () => {
     expect(resolvePinEntry('', ctx('48', 1))).toEqual({ value: '48', focusIndex: 1 });
   });
 
+  it('leaves focus on the pasted-into cell when the payload carries no digits', () => {
+    // Densifying the WRITE is right — nothing may open a hole in the code — but
+    // densifying the FOCUS of a paste that changed nothing would relocate the
+    // caret for free, away from the cell the user actually pasted into.
+    expect(resolvePinEntry('abc', ctx('', 3))).toEqual({ value: '', focusIndex: 3 });
+    expect(resolvePinEntry('', ctx('48', 5))).toEqual({ value: '48', focusIndex: 5 });
+  });
+
   it('handles a single-cell field, where focus can never advance', () => {
     expect(resolvePinEntry('12', ctx('', 0, 1))).toEqual({ value: '1', focusIndex: 0 });
     expect(resolvePinEntry('9', ctx('4', 0, 1))).toEqual({ value: '9', focusIndex: 0 });

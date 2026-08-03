@@ -5,7 +5,9 @@ export interface GlyphProps {
    * The `d` path the glyph is drawn from. Most icons are a single path; the ones
    * Figma exports as several subpaths (the dots menus, the eye) pass an ordered
    * array instead and get one `<path>` per entry, all sharing the stroke recipe
-   * below. A plain string behaves exactly as it always has.
+   * below. A plain string behaves exactly as it always has. Entries are keyed by
+   * POSITION: the array is a frozen icon definition, never reordered or filtered,
+   * and two identical subpaths must not collide on a `d`-derived key.
    */
   path: string | readonly string[];
   /** The icon's native viewBox, so the stroke weight matches the Figma source. */
@@ -48,9 +50,9 @@ export function Glyph({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {paths.map(d => (
+      {paths.map((d, index) => (
         <path
-          key={d}
+          key={index}
           d={d}
           stroke="currentColor"
           strokeWidth={strokeWidth}

@@ -601,6 +601,14 @@ describe('UiPaymentOptionCard — accessible name and imagery (Ruling 1)', () =>
     const { rerender } = render(cardWith({ logo: { src: '', width: 116, height: 24 } }));
     expect(cardImages()).toHaveLength(0);
 
+    // A whitespace-only src is just as unfetchable as a blank one, and must take
+    // the same path rather than painting a broken image with no warning.
+    rerender(cardWith({ logo: { src: '   ', width: 116, height: 24 } }));
+    expect(cardImages()).toHaveLength(0);
+
+    rerender(cardWith({ logo: { src: { src: '  ' }, width: 116, height: 24 } }));
+    expect(cardImages()).toHaveLength(0);
+
     rerender(cardWith({ logo: { src: { src: '' }, width: 116, height: 24 } }));
     expect(cardImages()).toHaveLength(0);
 
@@ -859,7 +867,10 @@ describe('paymentOptionCardSx — style assembly (pure, mutation-killing)', () =
     expect(base.cursor).toBe('pointer');
     expect(base.appearance).toBe('none');
     expect(base['@media (forced-colors: active)']).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`:
+      // a media query adds no specificity, so the shorter selector would lose to
+      // the ring's own `outline: none` and leave forced-colors users no indicator.
+      [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
   });
 
@@ -1169,6 +1180,16 @@ describe('usePaymentCard — card view model', () => {
 
   it('resolves an unusable bundle to a null logo rather than a broken img', () => {
     expect(modelFor({ name: LIQPAY, logo: NO_SIZE_LOGO }).logo).toBeNull();
+  });
+
+  it('warns instead of throwing when runtime data hands it a non-string name', () => {
+    // The warning message is built on every render of the production build too —
+    // only the `console.warn` is stripped — so a `.trim()` on a number would take
+    // the whole card down rather than reporting the bad payload.
+    const badName: string = 42 as unknown as string;
+
+    expect(() => modelFor({ name: badName, logo: LIQPAY_LOGO })).not.toThrow();
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `name`'));
   });
 });
 

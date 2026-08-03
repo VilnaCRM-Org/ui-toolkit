@@ -25,10 +25,13 @@ function unwiredSelectedWarning(props: UiPaymentOptionCardProps): string | null 
 }
 
 // Dev-only backstop for runtime data the strict prop types forbid but CMS/API
-// payloads produce anyway. The disabled mark is not checked: it legitimately falls
-// back to the full-colour one.
+// payloads produce anyway. `name` is TYPE-checked as well as blank-checked: this
+// message is computed on every render of the production build too (only the
+// `console.warn` itself is stripped), so a non-string must warn here rather than
+// throw `.trim is not a function` and take the card down. The disabled mark is
+// not checked: it legitimately falls back to the full-colour one.
 function contentWarning(props: UiPaymentOptionCardProps): string | null {
-  if (!props.name?.trim()) {
+  if (typeof props.name !== 'string' || !props.name.trim()) {
     return BLANK_NAME_WARNING;
   }
   return resolvePaymentLogo(props.logo) == null ? UNUSABLE_LOGO_WARNING : null;

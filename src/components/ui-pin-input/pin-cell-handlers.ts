@@ -1,8 +1,8 @@
 import type React from 'react';
 
-import { pinKeyIntent, resolvePinKey, type PinKeyIntent } from './pin-keyboard';
+import { pinEventIntent, resolvePinKey, type PinKeyIntent } from './pin-keyboard';
 import resolvePinEntry from './pin-paste';
-import { digitsOnly, type PinAxes, type PinOutcome } from './pin-value';
+import { digitsOnly, type PinAxes, type PinCellContext, type PinOutcome } from './pin-value';
 
 /** The three DOM handlers every cell wires, each taking its own cell index. */
 export interface PinCellHandlers {
@@ -41,25 +41,37 @@ function applyPinOutcome(ctx: Readonly<PinContext>, outcome: PinOutcome): void {
   }
 }
 
+/** The outcome of an edit that must reach neither channel. */
+const NO_CHANGE: PinOutcome = { value: null, focusIndex: null };
+
+// A change event is not always an insertion. A cut, a drag-out and any deletion
+// an IME or a soft keyboard performs itself never raise `Backspace` — they arrive
+// here as the EMPTY string, and discarding one would re-paint the digit the user
+// just removed. `''` is therefore the Delete outcome (clear this cell, keep
+// focus); every other payload carrying no digit is still rejected outright.
+function resolveCellChange(raw: string, ctx: Readonly<PinCellContext>): PinOutcome {
+  if (raw === '') {
+    return resolvePinKey('delete', ctx);
+  }
+  return digitsOnly(raw) === '' ? NO_CHANGE : resolvePinEntry(raw, ctx);
+}
+
 // Typed entry runs the PASTE resolver: one typed digit is a one-character run,
 // so a keystroke, a clipboard drop and an OS one-time-code autofill are all
-// validated and distributed by the same code (the 2.4A lesson). A keystroke that
-// carries no digit is rejected outright — no value change and no advance.
+// validated and distributed by the same code (the 2.4A lesson).
 function makeCellChange(ctx: Readonly<PinContext>): PinCellHandlers['onChange'] {
   return (index: number, raw: string): void => {
-    if (digitsOnly(raw) === '') {
-      return;
-    }
-    applyPinOutcome(ctx, resolvePinEntry(raw, { value: ctx.value, index, length: ctx.length }));
+    applyPinOutcome(ctx, resolveCellChange(raw, { value: ctx.value, index, length: ctx.length }));
   };
 }
 
 // Only the four editing/navigation keys are intercepted, and each one calls
 // `preventDefault()` so the native caret does not also move under us. Every other
-// key — digits, Tab, Enter, Space — is left entirely to the platform (S6).
+// key — digits, Tab, Enter, Space — is left entirely to the platform (S6), and so
+// is every Alt/Ctrl/Meta combination, which belongs to the browser or the OS.
 function makeCellKeyDown(ctx: Readonly<PinContext>): PinCellHandlers['onKeyDown'] {
   return (index: number, event: React.KeyboardEvent<HTMLInputElement>): void => {
-    const intent: PinKeyIntent | null = pinKeyIntent(event.key);
+    const intent: PinKeyIntent | null = pinEventIntent(event);
     if (intent == null) {
       return;
     }

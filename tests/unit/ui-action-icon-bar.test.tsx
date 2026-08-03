@@ -633,6 +633,17 @@ describe('UiActionIconBar — popup passthrough (the 3.3 dangling-idref rule)', 
     expect(buttons()[0]).not.toHaveAttribute('aria-expanded');
   });
 
+  it('omits aria-controls for a blank menuId rather than emitting an empty list', () => {
+    // `aria-controls` is an IDREF LIST, so `aria-controls=""` is a zero-length
+    // list — invalid ARIA rather than a dangling reference.
+    render(barWith({ actions: [menuAction(true, '   ')] }));
+
+    expect(buttons()[0]).not.toHaveAttribute('aria-controls');
+    // The rest of the menu-button channel is unaffected.
+    expect(buttons()[0]).toHaveAttribute('aria-haspopup', 'menu');
+    expect(buttons()[0]).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('renders aria-controls only while the menu is really open', () => {
     const { rerender } = render(barWith({ actions: [menuAction(true, 'row-menu')] }));
     expect(buttons()[0]).toHaveAttribute('aria-controls', 'row-menu');
@@ -1115,7 +1126,10 @@ describe('actionButtonSx — slot assembly (pure, mutation-killing)', () => {
 
   it('carries the mandatory forced-colors fallback', () => {
     expect(slotOf('x-close', true)['@media (forced-colors: active)']).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`:
+      // a media query adds no specificity, so the shorter selector would lose to
+      // the ring's own `outline: none` and leave forced-colors users no indicator.
+      [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
   });
 

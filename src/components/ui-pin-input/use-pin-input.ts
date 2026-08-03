@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useDevWarning } from '@/utils/dev-warn';
 
-import { hasText } from '../field-controls';
+import { hasHelperContent, hasText } from '../field-controls';
 
 import { buildPinHandlers, type PinCellHandlers } from './pin-cell-handlers';
 import usePinCellRefs, { type PinCellRefs } from './pin-cell-refs';
@@ -65,8 +65,9 @@ function pinCellAria(input: Readonly<PinCellAriaInput>): PinCellAria {
 function buildPinModel(input: Readonly<PinModelInput>): PinInputModel {
   const { props, refs } = input;
   const axes: PinAxes = pinAxes(props);
-  const helperTextId: string | undefined =
-    props.helperText == null ? undefined : `${input.baseId}-helper-text`;
+  const helperTextId: string | undefined = hasHelperContent(props.helperText)
+    ? `${input.baseId}-helper-text`
+    : undefined;
   const labelledBy: string | undefined = hasText(props.labelledBy) ? props.labelledBy : undefined;
   return {
     axes,

@@ -73,7 +73,7 @@ function useChipPresence(args: Readonly<UiFilterChipProps>): ChipPresence {
   const [present, setPresent] = React.useState<boolean>(true);
   React.useEffect((): void => {
     setPresent(true);
-  }, [args.label, args.filterValue, args.removeLabel, args.disabled]);
+  }, [args.label, args.filterValue, args.removeLabel, args.disabled, args.lang]);
   const handleRemove: () => void = React.useCallback((): void => {
     setPresent(false);
     heading.current?.focus();

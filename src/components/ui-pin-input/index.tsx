@@ -55,7 +55,7 @@ const UiPinInput: React.ForwardRefExoticComponent<
     return (
       <FormControl error={props.error} sx={pinInputSx(props.sx)}>
         <PinGroup field={props} model={model} groupRef={ref} />
-        {props.helperText == null ? null : (
+        {model.helperTextId == null ? null : (
           <FormHelperText id={model.helperTextId}>{props.helperText}</FormHelperText>
         )}
       </FormControl>
