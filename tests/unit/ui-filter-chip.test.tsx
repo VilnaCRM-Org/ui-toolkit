@@ -563,7 +563,11 @@ describe('UiFilterChip — accessible name', () => {
   });
 
   it('keeps a long filter value whole — no clamp, no ellipsis, one line', () => {
-    const LONG: string = 'Коментар - “клієнт із дуже довгою назвою компанії та описом”';
+    // Held in two segments so neither source line passes the 100-BYTE lint
+    // budget; the asserted value is the whole sentence.
+    const HEAD: string = 'Коментар - “клієнт із дуже';
+    const TAIL: string = 'довгою назвою компанії та описом”';
+    const LONG: string = `${HEAD} ${TAIL}`;
     render(chipWith({ filterValue: LONG, onRemove: noop }));
 
     expect(screen.getByText(LONG)).toBeInTheDocument();

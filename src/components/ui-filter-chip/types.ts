@@ -65,7 +65,10 @@ import type { SxProps, Theme } from '@mui/material';
 export interface UiFilterChipProps {
   /** The grey prefix segment, e.g. `'Фільтр:'`. First half of the name. */
   label: string;
-  /** The dark value segment, e.g. `'Коментар - “клієнт”'`. Second half of the name. */
+  /**
+   * The dark value segment, e.g. `'Коментар - “клієнт”'`.
+   * Second half of the name.
+   */
   filterValue: string;
   /**
    * The visually-hidden suffix that gives the name its action semantics.

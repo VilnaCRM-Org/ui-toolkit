@@ -1174,13 +1174,8 @@ action (ignored, warn); (d) `menuId` supplied while `menuOpen` is undefined
 ### Public API sketch
 
 ```ts
-export type ActionIconName =
-  | 'x-close'
-  | 'dots-horizontal'
-  | 'dots-vertical'
-  | 'eye'
-  | 'settings'
-  | 'trash';
+type NeutralActionIconName = 'x-close' | 'dots-horizontal' | 'dots-vertical' | 'settings';
+export type ActionIconName = NeutralActionIconName | 'eye' | 'trash';
 
 export interface UiActionIconBarAction {
   icon: ActionIconName;

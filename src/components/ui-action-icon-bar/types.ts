@@ -7,13 +7,8 @@ import type { SxProps, Theme } from '@mui/material';
  * are the neutral lane, `eye` is the toggle lane, and `trash` is the danger lane
  * — the only one that paints the 40x40 pressed backdrop (Frame 5441).
  */
-export type ActionIconName =
-  | 'x-close'
-  | 'dots-horizontal'
-  | 'dots-vertical'
-  | 'eye'
-  | 'settings'
-  | 'trash';
+type NeutralActionIconName = 'x-close' | 'dots-horizontal' | 'dots-vertical' | 'settings';
+export type ActionIconName = NeutralActionIconName | 'eye' | 'trash';
 
 /**
  * One action in the bar. Interactivity is switched on callback presence alone

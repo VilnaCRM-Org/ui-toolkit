@@ -1352,9 +1352,8 @@ describe('usePinInput — view model', () => {
   });
 
   it('keeps the cell setter stable across renders, so cells never re-attach', () => {
-    const { result, rerender } = renderHook(
-      (): PinInputModel => usePinInput({ label: GROUP_LABEL, onChange: noop })
-    );
+    const renderModel = (): PinInputModel => usePinInput({ label: GROUP_LABEL, onChange: noop });
+    const { result, rerender } = renderHook(renderModel);
     const first: React.RefCallback<HTMLInputElement> = result.current.setCell(0);
 
     rerender();

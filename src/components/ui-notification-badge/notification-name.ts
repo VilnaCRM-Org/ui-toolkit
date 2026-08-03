@@ -22,9 +22,9 @@ function resolveLabel(label: string | undefined): string {
 }
 
 /**
- * `"Сповіщення: 1"` / `"Сповіщення: 9+"` while something is unread, and the bare
- * label once the count is zero — at which point no chip is rendered either, so a
- * count in the name would describe a control that shows none.
+ * `"Сповіщення: 1"` / `"Сповіщення: 9+"` while something is unread, and the
+ * bare label once the count is zero — at which point no chip is rendered
+ * either, so a count in the name would describe a control that shows none.
  */
 export function notificationName(input: Readonly<NotificationNameInput>): string {
   const label: string = resolveLabel(input.label);

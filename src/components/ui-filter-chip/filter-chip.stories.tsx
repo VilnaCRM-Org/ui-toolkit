@@ -20,7 +20,12 @@ import UiFilterChip from './index';
 // the story rather than inside the component.
 const HEADING_ID: string = 'ui-filter-chip-story-heading';
 const HEADING_TEXT: string = 'Активні фільтри';
-const REMOVED_TEXT: string = 'Фільтр видалено. Змініть будь-який контрол, щоб повернути його.';
+// Split across two segments so no source line exceeds the 100-BYTE lint budget
+// (the checker counts UTF-8 bytes, and Cyrillic costs two per character).
+const REMOVED_TEXT: string = [
+  'Фільтр видалено.',
+  'Змініть будь-який контрол, щоб повернути його.',
+].join(' ');
 
 // The Figma sample string is Russian while the toolkit's built-in strings are
 // Ukrainian, which is exactly the case the `lang` passthrough exists for
@@ -117,7 +122,7 @@ const meta: Meta<typeof UiFilterChip> = {
   argTypes: {
     label: textControlArgType('Grey prefix segment — the first half of the accessible name'),
     filterValue: textControlArgType('Dark value segment — the second half of the name'),
-    removeLabel: textControlArgType('Visually-hidden suffix; defaults to ", видалити фільтр"'),
+    removeLabel: textControlArgType('Hidden suffix; defaults to ", видалити фільтр"'),
     disabled: booleanControlArgType('aria-disabled boundary: still focusable, removal no-ops'),
     lang: textControlArgType('Only when the filter text differs from the page language'),
   },
