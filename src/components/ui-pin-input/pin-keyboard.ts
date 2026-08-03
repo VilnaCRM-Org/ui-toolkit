@@ -29,6 +29,8 @@ export interface PinKeyEvent {
   altKey: boolean;
   ctrlKey: boolean;
   metaKey: boolean;
+  /** Carried so the Shift exclusion below is explicit rather than an omission. */
+  shiftKey: boolean;
 }
 
 /**

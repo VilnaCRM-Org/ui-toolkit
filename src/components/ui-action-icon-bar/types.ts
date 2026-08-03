@@ -1,5 +1,10 @@
 import type { SxProps, Theme } from '@mui/material';
 
+// The neutral lane on its own, so the exported union below fits on ONE line: the
+// repo's prettier (3.8.1) and qlty's (3.6.2) format a wrapped union differently,
+// and a single-line one is the only shape both leave alone.
+type NeutralActionIconName = 'x-close' | 'dots-horizontal' | 'dots-vertical' | 'settings';
+
 /**
  * The six Board A action glyphs, in Figma row order (nodes 439:19830,
  * 439:19860, 451:25809, 451:25817, 451:26186, 632:46703). The name selects the
@@ -7,7 +12,6 @@ import type { SxProps, Theme } from '@mui/material';
  * are the neutral lane, `eye` is the toggle lane, and `trash` is the danger lane
  * — the only one that paints the 40x40 pressed backdrop (Frame 5441).
  */
-type NeutralActionIconName = 'x-close' | 'dots-horizontal' | 'dots-vertical' | 'settings';
 export type ActionIconName = NeutralActionIconName | 'eye' | 'trash';
 
 /**

@@ -54,12 +54,15 @@ describe('pinKeyIntent — which keys a cell intercepts', () => {
 });
 
 describe('pinEventIntent — a modified combination belongs to the browser', () => {
-  function keyEvent(key: string, modifier?: 'altKey' | 'ctrlKey' | 'metaKey'): PinKeyEvent {
+  type Modifier = 'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey';
+
+  function keyEvent(key: string, modifier?: Modifier): PinKeyEvent {
     return {
       key,
       altKey: modifier === 'altKey',
       ctrlKey: modifier === 'ctrlKey',
       metaKey: modifier === 'metaKey',
+      shiftKey: modifier === 'shiftKey',
     };
   }
 
@@ -80,7 +83,11 @@ describe('pinEventIntent — a modified combination belongs to the browser', () 
   });
 
   it('still intercepts a SHIFTED arrow, which only extends a one-character box', () => {
-    expect(pinEventIntent({ ...keyEvent('ArrowLeft'), key: 'ArrowLeft' })).toBe('prev');
+    // Shift is deliberately OUT of the gate: inside a one-character cell it can
+    // only extend a selection over that one character, so stepping a cell is
+    // still the useful reading.
+    expect(pinEventIntent(keyEvent('ArrowLeft', 'shiftKey'))).toBe('prev');
+    expect(pinEventIntent(keyEvent('Backspace', 'shiftKey'))).toBe('backspace');
   });
 });
 
