@@ -46,6 +46,10 @@ const NO_SIZE_LOGO: IntegrationLogo = { src: '/hubspot.png' } as unknown as Inte
 
 const LANDING_SHADOW: string = '0 8px 27px rgba(49, 59, 67, 0.14)';
 const FOCUS_RING: string = 'inset 0 0 0 2px #1A1C1E';
+// The Amendment-A1 two-selector ring list, shared by the ring rule and by the
+// forced-colors fallback that has to tie its specificity.
+const RING_SELECTORS: string =
+  '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-checked="true"])';
 
 interface CardOverrides {
   name?: string;
@@ -799,7 +803,10 @@ describe('integrationCardSx — style assembly (pure, mutation-killing)', () => 
     expect(base.appearance).toBe('none');
     expect(base['&[aria-disabled="true"]']).toEqual({ cursor: 'default' });
     expect(base['@media (forced-colors: active)']).toEqual({
-      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+      // The SAME selector list as the ring rule, not a bare `:focus-visible`: a
+      // media query adds no specificity, so the shorter selector would lose to the
+      // ring's own `outline: none` and leave forced-colors users no indicator.
+      [RING_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
     });
   });
 
@@ -843,9 +850,10 @@ describe('integrationCardSx — style assembly (pure, mutation-killing)', () => 
     // would vanish. The second selector repeats hover's negations to tie its
     // specificity; declared later, it wins. The bare one still covers the disabled
     // and selected cards.
-    expect(ringKeys).toEqual([
-      '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-checked="true"])',
-    ]);
+    expect(ringKeys).toEqual([RING_SELECTORS]);
+    expect(RING_SELECTORS).toBe(
+      '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-checked="true"])'
+    );
     expect(base[ringKeys[0]]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
   });
 
