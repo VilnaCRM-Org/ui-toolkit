@@ -242,6 +242,67 @@ test.describe('Visual states (Figma state grid) — task card', () => {
   });
 });
 
+test.describe('Visual states (Figma state grid) — integration card', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  // The card is consumer-fluid, and every story renders the Figma master's
+  // 312x142 inside the consumer's own radiogroup, so this grid gets a narrow
+  // frame — wide enough for the card, short enough to keep the diff tight.
+  test.use({ viewport: { width: 420, height: 200 } });
+
+  const REST_ID: string = 'uicomponents-uiintegrationcard--integration-card';
+  const SELECTED_ID: string = 'uicomponents-uiintegrationcard--selected';
+
+  test('integration card rest', async ({ page }) => {
+    await openStory(page, REST_ID);
+    // The unchecked baseline the three state shots below are read against: brand-gray
+    // border, no shadow, and the 1px grey glyph stroke.
+    await shoot(page, 'integration-card-rest.png');
+  });
+
+  test('integration card hover', async ({ page }) => {
+    await openStory(page, REST_ID);
+    // Real `:hover` on the wired card: the border steps brandGray → grey400 and the
+    // Figma "Landing shadow" appears — the recipe the component scopes to
+    // `:hover:not([aria-disabled="true"]):not([aria-checked="true"])`, which no
+    // static tile can prove actually fires.
+    await page.getByRole('radio').hover();
+    await shoot(page, 'integration-card-hover.png');
+  });
+
+  test('integration card selected', async ({ page }) => {
+    await openStory(page, SELECTED_ID);
+    // The state is programmatic first (a11y contract §1.1): assert `aria-checked`
+    // before locking the chrome it is supposed to be painting.
+    await expect(page.getByRole('radio')).toBeChecked();
+    await shoot(page, 'integration-card-selected.png');
+  });
+
+  test('integration card selected hover', async ({ page }) => {
+    await openStory(page, SELECTED_ID);
+    await expect(page.getByRole('radio')).toBeChecked();
+    // a11y contract §7.4 — selected DOMINATES hover: the hover recipe keeps a
+    // `:not([aria-checked="true"])` gate, so this shot must be pixel-identical to
+    // the selected one above. It exists precisely because §7.4 is the one ruling
+    // with no Figma master behind it, so only a regression can hold it.
+    await page.getByRole('radio').hover();
+    await shoot(page, 'integration-card-selected-hover.png');
+  });
+
+  test('integration card focus-visible', async ({ page }) => {
+    await openStory(page, REST_ID);
+    // Keyboard focus draws the SINGLE-layer inset ring (§7.1): the card paints its
+    // own white fill, so a second white layer buys nothing, and inset keeps the ring
+    // inside the 12px radius when a consumer clips the card. Tab, never a
+    // programmatic `.focus()` — the latter paints no `:focus-visible` ring at all.
+    await page.keyboard.press('Tab');
+    await shoot(page, 'integration-card-focus.png');
+  });
+});
+
 test.describe('Visual states (Figma state grid) — profile select card', () => {
   test.skip(
     ({ browserName }) => browserName !== 'chromium',

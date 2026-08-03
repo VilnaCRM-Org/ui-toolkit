@@ -3,7 +3,10 @@ import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import { UiProfileSelectCard } from '../../src/components';
-import { activateMenuItem } from '../../src/components/ui-profile-select-card/menu-actions';
+import {
+  activateMenuItem,
+  handleMenuKeyDown,
+} from '../../src/components/ui-profile-select-card/menu-actions';
 import {
   focusMenuEnd,
   isInsideWidget,
@@ -1559,6 +1562,32 @@ describe('menu helpers — defensive branches', () => {
     expect(() => activateMenuItem(ctx, 'logout')).not.toThrow();
 
     expect(onSelect).toHaveBeenCalledWith('logout');
+    expect(requestOpen).toHaveBeenCalledWith(false);
+    expect(refs.skipRescue.current).toBe(true);
+    expect(document.body).toHaveFocus();
+  });
+
+  // The §4.3 Escape sequence has the same shape as §4.4's: flag the rescue off,
+  // focus the trigger, then request the close. The trigger ref is null only
+  // between a detach and the next attach, but the order — and the close itself —
+  // must not depend on the focus call having somewhere to land.
+  it('closes on Escape in order even with no trigger node to focus', () => {
+    const refs: MenuFocusRefs = bareRefs();
+    const requestOpen: jest.Mock = jest.fn();
+    const ctx: MenuFocusContext = {
+      refs,
+      open: true,
+      disabled: false,
+      requestOpen,
+      onSelect: noop,
+    };
+    const escape: React.KeyboardEvent<HTMLElement> = {
+      key: 'Escape',
+      preventDefault: noop,
+    } as unknown as React.KeyboardEvent<HTMLElement>;
+
+    expect(() => handleMenuKeyDown(ctx, escape)).not.toThrow();
+
     expect(requestOpen).toHaveBeenCalledWith(false);
     expect(refs.skipRescue.current).toBe(true);
     expect(document.body).toHaveFocus();
