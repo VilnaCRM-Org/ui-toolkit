@@ -409,15 +409,17 @@ describe('UiActionIconBar — action buttons and accessible names (S1/S7)', () =
     expect(buttons()[1]).not.toHaveAttribute('id');
   });
 
-  it('renders each icon at 24px in its own native viewBox and stroke weight', () => {
+  it('renders each icon at its Figma size in its native viewBox and stroke weight', () => {
     render(barWith({}));
 
-    svgs().forEach((mark: Element): void => {
-      expect(mark).toHaveAttribute('width', '24');
-      expect(mark).toHaveAttribute('height', '24');
+    svgs().forEach((mark: Element, index: number): void => {
+      const edge: string = index === 4 ? '30' : '24';
+      expect(mark).toHaveAttribute('width', edge);
+      expect(mark).toHaveAttribute('height', edge);
     });
-    // `settings-04` keeps its native 30-unit space: rendered into the same 24px
-    // box, its 2.5 stroke resolves to exactly 2, matching its siblings.
+    // `settings-04` is the board's one larger glyph: Figma draws it 30x30
+    // (451:26186, siblings 24x24), so it renders unscaled in its native 30-unit
+    // space at its native 2.5 stroke.
     expect(glyphAt(4)).toHaveAttribute('viewBox', '0 0 30 30');
     expect(glyphAt(0)).toHaveAttribute('viewBox', '0 0 24 24');
     expect(pathNodesIn(glyphAt(4))[0]).toHaveAttribute('stroke-width', '2.5');
@@ -1029,6 +1031,12 @@ describe('actionButtonSx — slot assembly (pure, mutation-killing)', () => {
     const wired: StyleObject = slotOf('x-close', true);
     const staticSlot: StyleObject = slotOf('x-close', false);
 
+    // The settings slot is the one exception to the 1.5rem square: its Figma
+    // instance is natively 30x30, so both branches size it 1.875rem.
+    [slotOf('settings', true), slotOf('settings', false)].forEach((slot: StyleObject): void => {
+      expect(slot.width).toBe('1.875rem');
+      expect(slot.height).toBe('1.875rem');
+    });
     [wired, staticSlot].forEach((base: StyleObject): void => {
       expect(base.width).toBe('1.5rem');
       expect(base.height).toBe('1.5rem');
@@ -1078,10 +1086,11 @@ describe('actionButtonSx — slot assembly (pure, mutation-killing)', () => {
       color: BTN_ACTIVE,
       [BACKDROP_SELECTOR]: null,
     });
-    // Figma ships no pointer-press cell for the eye, so it inherits its siblings'
-    // press feedback rather than being the one control in the row with none.
+    // The eye never leaves the grey family: the design ships no blue anywhere on
+    // the visibility toggle, so its press ink stays the rest grey300 instead of
+    // borrowing the siblings' containedButtonActive feedback.
     expect(ruleAt(slotOf('eye', true), ACTIVE_SELECTOR)).toEqual({
-      color: BTN_ACTIVE,
+      color: GREY_300,
       [BACKDROP_SELECTOR]: null,
     });
     expect(ruleAt(danger, ACTIVE_SELECTOR)).toEqual({

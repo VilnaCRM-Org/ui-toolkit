@@ -1013,10 +1013,11 @@ shadows anywhere except the active-trash backdrop; **no transition declared**.
 not `primary` — a visibility toggle is a neutral affordance, not a primary
 action; keep `#404142`. (2) `eye` active is `grey300` (= rest) with the
 `eye-off` glyph, i.e. a **pressed/checked toggle** rendering, not a pointer
-`:active`. The eye therefore gets `aria-pressed` semantics and, **by extension
-(no Figma cell exists)**, the same `containedButtonActive` pointer-`:active`
-treatment as its siblings so it is not the one control with no press feedback
-(open question Q5). The disabled column also shows `eye-off` — a board
+`:active`. The eye therefore gets `aria-pressed` semantics. **Amended after
+review (2026-08-04):** Q5's inferred `containedButtonActive` pointer-press was
+overruled — the design ships no blue anywhere on the visibility toggle, so the
+eye's press ink stays the rest `grey300` (the toggle row never leaves the grey
+family). The disabled column also shows `eye-off` — a board
 copy-paste artefact; disabled must render whichever glyph the toggle is
 currently in.
 
@@ -1086,8 +1087,10 @@ M10.74294 5.09232C11.14936 5.03223 11.56865 5 12 5C17.10545 5 20.45525 9.50484 2
   12C9.00042 13.6569 10.34356 15 12 15C12.82885 15 13.57885 14.6642 14.12175 14.1213
 ```
 
-`settings-04` (1 path, **native 30-unit viewBox**, stroke 2.5 — render this
-viewBox in a 24px box and the stroke resolves to exactly 2):
+`settings-04` (1 path, **native 30-unit viewBox**, stroke 2.5. **Amended after
+review, 2026-08-04:** rendered at its native **30px** in a 1.875rem slot — the
+Figma instance `451:26186` is 30×30 while every sibling is 24×24, so the earlier
+scale-into-24px normalisation made it visibly smaller than the board):
 
 ```
 M3.75 10L18.75 10M18.75 10C18.75 12.07107 20.4289 13.75 22.5 13.75C24.5711 13.75 26.25 12.07107

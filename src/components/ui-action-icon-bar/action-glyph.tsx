@@ -17,25 +17,42 @@ interface GlyphSpec {
   path: string | readonly string[];
   viewBox: string;
   strokeWidth: string;
+  size: string;
 }
 
 const UNIT_24: string = '0 0 24 24';
 const STROKE_2: string = '2';
+const SIZE_24: string = '24';
 
-// Five of the six icons are authored in the shared 24-unit space at stroke 2.
-// `settings-04` keeps its native 30-unit viewBox and 2.5 stroke: rendered into
-// the same 24px box that scales to exactly 2, so it matches its siblings without
-// a single coordinate being rewritten.
+// Five of the six icons are authored in the shared 24-unit space at stroke 2 and
+// render at 24px. `settings-04` is the board's one larger glyph: Figma draws it
+// 30x30 (node 451:26186, siblings 24x24), so it renders at its native 30px with
+// its native 30-unit viewBox and 2.5 stroke — no coordinate is rewritten.
 const GLYPH_SPECS: Readonly<Record<ActionIconName, GlyphSpec>> = {
-  'x-close': { path: X_CLOSE_PATH, viewBox: UNIT_24, strokeWidth: STROKE_2 },
-  'dots-horizontal': { path: DOTS_HORIZONTAL_PATHS, viewBox: UNIT_24, strokeWidth: STROKE_2 },
-  'dots-vertical': { path: DOTS_VERTICAL_PATHS, viewBox: UNIT_24, strokeWidth: STROKE_2 },
-  eye: { path: EYE_PATHS, viewBox: UNIT_24, strokeWidth: STROKE_2 },
-  settings: { path: SETTINGS_PATH, viewBox: '0 0 30 30', strokeWidth: '2.5' },
-  trash: { path: TRASH_PATH, viewBox: UNIT_24, strokeWidth: STROKE_2 },
+  'x-close': { path: X_CLOSE_PATH, viewBox: UNIT_24, strokeWidth: STROKE_2, size: SIZE_24 },
+  'dots-horizontal': {
+    path: DOTS_HORIZONTAL_PATHS,
+    viewBox: UNIT_24,
+    strokeWidth: STROKE_2,
+    size: SIZE_24,
+  },
+  'dots-vertical': {
+    path: DOTS_VERTICAL_PATHS,
+    viewBox: UNIT_24,
+    strokeWidth: STROKE_2,
+    size: SIZE_24,
+  },
+  eye: { path: EYE_PATHS, viewBox: UNIT_24, strokeWidth: STROKE_2, size: SIZE_24 },
+  settings: { path: SETTINGS_PATH, viewBox: '0 0 30 30', strokeWidth: '2.5', size: '30' },
+  trash: { path: TRASH_PATH, viewBox: UNIT_24, strokeWidth: STROKE_2, size: SIZE_24 },
 };
 
-const EYE_OFF_SPEC: GlyphSpec = { path: EYE_OFF_PATH, viewBox: UNIT_24, strokeWidth: STROKE_2 };
+const EYE_OFF_SPEC: GlyphSpec = {
+  path: EYE_OFF_PATH,
+  viewBox: UNIT_24,
+  strokeWidth: STROKE_2,
+  size: SIZE_24,
+};
 
 export interface ActionGlyphProps {
   icon: ActionIconName;
@@ -61,8 +78,8 @@ export function ActionGlyph({ icon, pressed }: Readonly<ActionGlyphProps>): Reac
       path={spec.path}
       viewBox={spec.viewBox}
       strokeWidth={spec.strokeWidth}
-      width="24"
-      height="24"
+      width={spec.size}
+      height={spec.size}
     />
   );
 }
