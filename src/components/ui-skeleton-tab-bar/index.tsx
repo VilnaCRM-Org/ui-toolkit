@@ -3,7 +3,7 @@ import React from 'react';
 
 import UiSkeletonBlock from '../ui-skeleton-block';
 import UiSkeletonText from '../ui-skeleton-text';
-import { ComposedSkeleton } from '../ui-skeletons';
+import { ComposedSkeleton, normalizeCount } from '../ui-skeletons';
 
 import {
   DEFAULT_TAB_COUNT,
@@ -67,6 +67,8 @@ export default function UiSkeletonTabBar({
   loadingText,
   sx = [],
 }: UiSkeletonTabBarProps): React.ReactElement {
+  const count: number = normalizeCount(tabs, DEFAULT_TAB_COUNT);
+
   return (
     <ComposedSkeleton
       id={id}
@@ -74,8 +76,8 @@ export default function UiSkeletonTabBar({
       sx={[tabBarRootStyles, ...(Array.isArray(sx) ? sx : [sx])]}
       contentSx={tabBarContentStyles}
     >
-      <TabLabels tabs={tabs} />
-      <TabUnderlines tabs={tabs} />
+      <TabLabels tabs={count} />
+      <TabUnderlines tabs={count} />
     </ComposedSkeleton>
   );
 }

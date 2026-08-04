@@ -180,8 +180,8 @@ alias imports rewritten to relative imports through the `ui-skeletons` barrel (t
 `components-public-api` dependency-cruiser rule); the `UISkeleton*` identifiers
 renamed to the toolkit's `UiSkeleton*` convention with `JSX.Element` returns
 restated as `React.ReactElement`; and an added
-`@media (prefers-reduced-motion: reduce) { animation: none }` guard (WCAG 2.3.3
-accessibility hardening — it only disables motion when the OS asks; the animated
+`@media (prefers-reduced-motion: reduce) { animation: none }` guard (WCAG 2.2.2
+Pause, Stop, Hide accessibility hardening, technique C39 — it only disables motion when the OS asks; the animated
 path is byte-identical to CRM). **No animation behavior is changed and no visual
 redesign is introduced.**
 

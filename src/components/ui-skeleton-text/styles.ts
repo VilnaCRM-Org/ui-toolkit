@@ -1,7 +1,12 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import { SKELETON_BORDER_RADIUS, baseSkeletonStyle } from '../ui-skeletons';
+import {
+  SKELETON_BORDER_RADIUS,
+  baseSkeletonStyle,
+  getSkeletonKeys,
+  normalizeCount,
+} from '../ui-skeletons';
 
 import type { SkeletonTextLine, SkeletonTextSize } from './types';
 
@@ -52,10 +57,13 @@ function getLineWidth(index: number, lines: number): string {
   return index === 0 ? FIRST_LINE_WIDTH : MIDDLE_LINE_WIDTH;
 }
 
+/** The taper needs a whole line count, so the public value is normalized here too. */
 export function getTextLines(lines: number): SkeletonTextLine[] {
-  return Array.from({ length: lines }, (_unused, index) => ({
-    key: `line-${index + 1}`,
-    width: getLineWidth(index, lines),
+  const count: number = normalizeCount(lines, 1);
+
+  return getSkeletonKeys('line', count).map((key, index) => ({
+    key,
+    width: getLineWidth(index, count),
   }));
 }
 

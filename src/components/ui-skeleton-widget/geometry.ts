@@ -1,3 +1,5 @@
+import { getSkeletonKeys } from '../ui-skeletons';
+
 import type {
   SkeletonTaskColumn,
   SkeletonTaskRow,
@@ -26,6 +28,8 @@ export const DEFAULT_TASK_ROWS: number = 4;
 /**
  * Two columns are a medium task-list-only layout: the block and chart bodies
  * have no repeated row, and the small card is too narrow for a second column.
+ * Only the literal `2` opens the wide board, so an untyped caller passing
+ * anything else still resolves to the single-column card.
  */
 export function resolveColumnCount(
   size: SkeletonWidgetSize,
@@ -33,7 +37,7 @@ export function resolveColumnCount(
   columns: SkeletonWidgetColumns
 ): SkeletonWidgetColumns {
   if (size === 'medium' && variant === 'task-list') {
-    return columns;
+    return columns === 2 ? 2 : 1;
   }
 
   return 1;
@@ -52,15 +56,13 @@ export function getCardSize(
 }
 
 function getTaskRowKeys(column: number, rows: number): SkeletonTaskRow[] {
-  return Array.from({ length: rows }, (_unused, index) => ({
-    key: `column-${column}-row-${index + 1}`,
-  }));
+  return getSkeletonKeys(`column-${column}-row`, rows).map(key => ({ key }));
 }
 
 /** `columns` identical task columns, each carrying `rows` row placeholders. */
 export function getTaskColumns(columns: SkeletonWidgetColumns, rows: number): SkeletonTaskColumn[] {
-  return Array.from({ length: columns }, (_unused, index) => ({
-    key: `column-${index + 1}`,
+  return getSkeletonKeys('column', columns).map((key, index) => ({
+    key,
     rows: getTaskRowKeys(index + 1, rows),
   }));
 }

@@ -166,6 +166,28 @@ describe('getTabs', () => {
     expect(getTabs(1)).toEqual([{ key: 'tab-1', active: true }]);
     expect(getTabs(0)).toEqual([]);
   });
+
+  it('never hands a bad length to the underlying array builder', () => {
+    expect(getTabs(2.6)).toHaveLength(2);
+    expect(getTabs(Number.POSITIVE_INFINITY)).toEqual([]);
+  });
+});
+
+describe('UiSkeletonTabBar invalid tab counts', () => {
+  it('falls back to the six design tabs for a non-finite request', () => {
+    render(<UiSkeletonTabBar tabs={Number.POSITIVE_INFINITY} />);
+    expect(getLabelBars()).toHaveLength(DEFAULT_TAB_COUNT);
+  });
+
+  it('floors a fractional tab count', () => {
+    render(<UiSkeletonTabBar tabs={3.9} />);
+    expect(getLabelBars()).toHaveLength(3);
+  });
+
+  it('renders no tab column for a negative count', () => {
+    render(<UiSkeletonTabBar tabs={-2} />);
+    expect(getLabelBars()).toHaveLength(0);
+  });
 });
 
 describe('UiSkeletonTabBar', () => {

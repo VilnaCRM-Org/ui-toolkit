@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import React from 'react';
 
 import UiSkeletonBlock from '../ui-skeleton-block';
+import { getSkeletonKeys } from '../ui-skeletons';
 
 import {
   BAR_HEIGHT,
@@ -16,7 +17,6 @@ import {
   STACKED_LINES,
   chipDotStyles,
   getChipStyles,
-  getKeys,
   stackedStyles,
 } from './styles';
 import type { SkeletonTableColumn } from './types';
@@ -52,7 +52,7 @@ function ChipShape({ width }: ShapeProps): React.ReactElement {
 function StackedShape({ width }: ShapeProps): React.ReactElement {
   return (
     <Box sx={stackedStyles}>
-      {getKeys('stacked-line', STACKED_LINES).map(key => (
+      {getSkeletonKeys('stacked-line', STACKED_LINES).map(key => (
         <UiSkeletonBlock
           key={key}
           width={width}

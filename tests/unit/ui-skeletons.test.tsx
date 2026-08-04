@@ -643,3 +643,44 @@ describe('UiSkeletonText many-lines rendering', () => {
     );
   });
 });
+
+describe('UiSkeletonText invalid line counts', () => {
+  it('floors a fractional count so the taper still reaches the last width', () => {
+    expect(getTextLines(2.5)).toEqual([
+      { key: 'line-1', width: FIRST_LINE_WIDTH },
+      { key: 'line-2', width: LAST_LINE_WIDTH },
+    ]);
+  });
+
+  it('falls back to the single bar rather than an invalid array length', () => {
+    expect(getTextLines(Number.POSITIVE_INFINITY)).toEqual([
+      { key: 'line-1', width: LAST_LINE_WIDTH },
+    ]);
+    expect(getTextLines(Number.NaN)).toEqual([{ key: 'line-1', width: LAST_LINE_WIDTH }]);
+    expect(getTextLines(-3)).toEqual([]);
+  });
+
+  it('renders the stack a fractional count asks for', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonText id="text-fractional" lines={2.5} />
+      </ThemeProvider>
+    );
+
+    expect(countBars(getById(container, 'text-fractional'))).toBe(2);
+  });
+
+  it.each([
+    ['infinite', Number.POSITIVE_INFINITY],
+    ['not a number', Number.NaN],
+    ['zero', 0],
+    ['negative', -3],
+  ])('keeps the single-bar markup when lines is %s', (_label, lines) => {
+    const expected: string = render(<UiSkeletonText id="text-lines-invalid" />).container.innerHTML;
+    const actual: string = render(<UiSkeletonText id="text-lines-invalid" lines={lines} />)
+      .container.innerHTML;
+
+    expect(actual).toBe(expected);
+    expect(actual).not.toContain('flex-direction');
+  });
+});

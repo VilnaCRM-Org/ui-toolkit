@@ -2,6 +2,7 @@ import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
 import colorTheme from '../ui-color-theme';
+import { getSkeletonKeys } from '../ui-skeletons';
 
 // Board D tab bar, measured live from Figma file `xZ7ccrH6d4QyqLQsayFSEX` node
 // `538:39646`: a 1132x39 bar holding six 147x18 label bars at y 1 (x 21, 209,
@@ -32,8 +33,8 @@ export interface SkeletonTab {
 
 /** One entry per tab; Board D paints only the first underline in the brand blue. */
 export function getTabs(tabs: number): SkeletonTab[] {
-  return Array.from({ length: tabs }, (_unused, index) => ({
-    key: `tab-${index + 1}`,
+  return getSkeletonKeys('tab', tabs).map((key, index) => ({
+    key,
     active: index === ACTIVE_TAB_INDEX,
   }));
 }

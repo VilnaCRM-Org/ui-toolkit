@@ -91,11 +91,17 @@ The one-line sizes map 1:1 onto the existing `UiSkeletonText` `s/m/l` heights
 
 ## Definition of Done (instantiated from `story-dod-template.md`)
 
-- [ ] Changed files listed in the PR diff and summarized here on completion.
-- [ ] Provenance: `component-provenance.md` rows for `ui-skeleton-image` (source:
+- [x] Changed files listed in the PR diff (`ui-skeleton-image/` module,
+      `ui-skeleton-text` extension incl. `text-lines.tsx`, export/registry
+      wiring, `tests/unit/ui-skeletons.test.tsx`).
+- [x] Provenance: `component-provenance.md` rows for `ui-skeleton-image` (source:
       `new`, visuals from Board D nodes, animation from `crm` baseline) and the
       `ui-skeleton-text` extension.
-- [ ] Tests run: unit suite green with new coverage; visual baselines pass.
-- [ ] Stories added and registered.
-- [ ] Export changes recorded (`UiSkeletonImage`).
-- [ ] Parity evidence: measured geometry vs node map recorded in the PR.
+- [x] Tests run: unit suite green with 100% coverage on both touched dirs;
+      visual baselines generated and passing.
+- [x] Stories added and registered (image Round/Block/CustomSize, text
+      ManyLines).
+- [x] Export changes recorded (`UiSkeletonImage`).
+- [x] Parity evidence: measured geometry (48×48 round, 260×195×8px block,
+      197/157/96×8 lines at 14px pitch) recorded above and in the provenance
+      registry.

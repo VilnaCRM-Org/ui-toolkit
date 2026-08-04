@@ -27,14 +27,17 @@ import {
   TITLE_INSET,
   TITLE_WIDTH,
   dividerStyles,
-  getMenuRowKeys,
   menuContentStyles,
   menuRootStyles,
   navRowStyles,
   sectionStyles,
   subListStyles,
 } from '../../src/components/ui-skeleton-menu/styles';
-import { DEFAULT_LOADING_TEXT, SKELETON_BORDER_COLOR } from '../../src/components/ui-skeletons';
+import {
+  DEFAULT_LOADING_TEXT,
+  SKELETON_BORDER_COLOR,
+  getSkeletonKeys,
+} from '../../src/components/ui-skeletons';
 
 // Board D absolute positions the composition has to reproduce (node `538:39489`).
 const SECTION_TOP: number = 291;
@@ -181,24 +184,20 @@ describe('UiSkeletonMenu geometry constants', () => {
   });
 });
 
-describe('getMenuRowKeys', () => {
+describe('menu row keys', () => {
   it('builds one unique, 1-based key per requested shape', () => {
-    expect(getMenuRowKeys('nav', NAV_ROW_COUNT)).toEqual([
-      { key: 'nav-1' },
-      { key: 'nav-2' },
-      { key: 'nav-3' },
-      { key: 'nav-4' },
-      { key: 'nav-5' },
+    expect(getSkeletonKeys('nav', NAV_ROW_COUNT)).toEqual([
+      'nav-1',
+      'nav-2',
+      'nav-3',
+      'nav-4',
+      'nav-5',
     ]);
   });
 
   it('honours the prefix and collapses to nothing at zero', () => {
-    expect(getMenuRowKeys('sub', SUB_ROW_COUNT)).toEqual([
-      { key: 'sub-1' },
-      { key: 'sub-2' },
-      { key: 'sub-3' },
-    ]);
-    expect(getMenuRowKeys('nav', 0)).toEqual([]);
+    expect(getSkeletonKeys('sub', SUB_ROW_COUNT)).toEqual(['sub-1', 'sub-2', 'sub-3']);
+    expect(getSkeletonKeys('nav', 0)).toEqual([]);
   });
 });
 

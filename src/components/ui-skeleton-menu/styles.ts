@@ -51,15 +51,6 @@ function insideStroke(inset: number): string {
   return `${inset - MENU_BORDER_WIDTH}px`;
 }
 
-export interface SkeletonMenuRow {
-  key: string;
-}
-
-/** Stable keys for a repeated menu shape (`prefix-1`, `prefix-2`, ...). */
-export function getMenuRowKeys(prefix: string, count: number): SkeletonMenuRow[] {
-  return Array.from({ length: count }, (_unused, index) => ({ key: `${prefix}-${index + 1}` }));
-}
-
 export const menuRootStyles: SystemStyleObject<Theme> = {
   boxSizing: 'border-box',
   width: `${MENU_WIDTH}px`,

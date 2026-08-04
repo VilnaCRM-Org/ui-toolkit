@@ -5,10 +5,11 @@ export type SkeletonTableColumnKind = 'bar' | 'chip' | 'stacked';
 
 export interface SkeletonTableColumn {
   /**
-   * Column track width: the measured distance from this column's left edge to
-   * the next column's left edge (the last track runs up to the row glyph).
+   * Column track width in px: the measured distance from this column's left
+   * edge to the next column's left edge (the last track runs up to the row
+   * glyph). Numeric so the component footprint can be summed from the tracks.
    */
-  track: string;
+  track: number;
   /** Width of the visible placeholder sitting inside the track. */
   width: string;
   kind: SkeletonTableColumnKind;
@@ -25,7 +26,8 @@ export interface UiSkeletonTableProps {
   rows?: number;
   /**
    * Column count. Defaults to the five measured columns; the measured width
-   * pattern cycles when a larger count is requested.
+   * pattern cycles and the component's max width grows with the added tracks
+   * when a larger count is requested.
    */
   columns?: number;
   /** Screen-reader-only status text, forwarded to the shared composed shell. */

@@ -22,6 +22,8 @@ import {
   HEADER_DOT_KEYS,
   HEADER_DOT_SIZE,
   getCardStyles,
+  headerDotStyles,
+  titleBarStyles,
   widgetContentStyles,
 } from '../../src/components/ui-skeleton-widget/styles';
 import {
@@ -34,6 +36,7 @@ import {
   getTaskGridStyles,
   getTaskRowStyles,
 } from '../../src/components/ui-skeleton-widget/task-styles';
+import type { SkeletonWidgetColumns } from '../../src/components/ui-skeleton-widget/types';
 import { DEFAULT_LOADING_TEXT, baseSkeletonStyle } from '../../src/components/ui-skeletons';
 
 const WIDGET_ROLES: string[] = [
@@ -51,6 +54,10 @@ const WIDGET_ROLES: string[] = [
   'region',
   'status',
 ];
+
+// The column prop is a 1 | 2 union, so an untyped consumer is the only way a
+// value outside it reaches the builder; the cast reproduces exactly that.
+const asColumns = (columns: number): SkeletonWidgetColumns => columns as SkeletonWidgetColumns;
 
 const getRoot = (): HTMLElement => screen.getByRole('generic', { busy: true });
 
@@ -117,6 +124,12 @@ describe('resolveColumnCount', () => {
     expect(resolveColumnCount('small', 'task-list', 2)).toBe(1);
     expect(resolveColumnCount('medium', 'block', 2)).toBe(1);
     expect(resolveColumnCount('medium', 'chart', 2)).toBe(1);
+  });
+
+  it('collapses a count outside the union to the single column board', () => {
+    expect(resolveColumnCount('medium', 'task-list', asColumns(Number.NaN))).toBe(1);
+    expect(resolveColumnCount('medium', 'task-list', asColumns(Number.POSITIVE_INFINITY))).toBe(1);
+    expect(resolveColumnCount('medium', 'task-list', asColumns(2.5))).toBe(1);
   });
 });
 
@@ -249,6 +262,20 @@ describe('UiSkeletonWidget style builders', () => {
     });
   });
 
+  it('repaints the header dots in Contrast Themes, where the fill is dropped', () => {
+    expect(headerDotStyles).toEqual({
+      width: HEADER_DOT_SIZE,
+      height: HEADER_DOT_SIZE,
+      borderRadius: '50%',
+      backgroundColor: '#969B9D',
+      '@media (forced-colors: active)': { backgroundColor: 'GrayText' },
+    });
+  });
+
+  it('lets the title bar shrink so a narrow host never clips the dots', () => {
+    expect(titleBarStyles).toEqual({ flexShrink: 1, minWidth: 0 });
+  });
+
   it('stacks the header above the body inside the hidden shape tree', () => {
     expect(widgetContentStyles).toEqual({
       display: 'flex',
@@ -326,6 +353,34 @@ describe('UiSkeletonWidget rendering', () => {
     expect(shapesWithHeight('18px')).toHaveLength(1);
     expect(shapesWithHeight(HEADER_DOT_SIZE)).toHaveLength(HEADER_DOT_KEYS.length);
     expect(shapesWithHeight('48px')).toHaveLength(1);
+  });
+
+  it('keeps the title bar at its measured width while allowing it to shrink', () => {
+    render(<UiSkeletonWidget />);
+    const title: HTMLElement[] = shapesWithHeight('18px');
+    expect(title).toHaveLength(1);
+    expect(title[0]).toHaveStyle({ width: '147px', flexShrink: 1, minWidth: '0' });
+  });
+
+  it('falls back to the four design rows for a non-finite row count', () => {
+    render(<UiSkeletonWidget rows={Number.POSITIVE_INFINITY} />);
+    expect(shapesWithHeight(TASK_ROW_HEIGHT)).toHaveLength(DEFAULT_TASK_ROWS);
+  });
+
+  it('floors a fractional row count and clamps a negative one to none', () => {
+    render(<UiSkeletonWidget rows={3.6} />);
+    expect(shapesWithHeight(TASK_ROW_HEIGHT)).toHaveLength(3);
+  });
+
+  it('renders no task row for a negative row count', () => {
+    render(<UiSkeletonWidget rows={-5} />);
+    expect(shapesWithHeight(TASK_ROW_HEIGHT)).toHaveLength(0);
+  });
+
+  it('keeps the single column card when the column count is outside the union', () => {
+    render(<UiSkeletonWidget size="medium" columns={asColumns(Number.NaN)} rows={1} />);
+    expect(getRoot()).toHaveStyle({ maxWidth: '774px' });
+    expect(shapesWithHeight(TASK_ROW_HEIGHT)).toHaveLength(1);
   });
 
   it('exposes a busy, role-less, unnamed container with hidden status text', () => {

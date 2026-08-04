@@ -14,10 +14,10 @@ import {
   getChipStyles,
   getColumnSlots,
   getHeaderSlots,
-  getKeys,
+  getRootStyles,
+  getTableWidth,
   glyphStyles,
   headerRowStyles,
-  rootStyles,
   stackedStyles,
 } from '../../src/components/ui-skeleton-table/styles';
 import { DEFAULT_LOADING_TEXT } from '../../src/components/ui-skeletons';
@@ -144,6 +144,60 @@ describe('UiSkeletonTable — row and column overrides', () => {
   });
 });
 
+describe('UiSkeletonTable — width derived from the requested columns', () => {
+  // The tracks the count cycles through, plus the 42/16 row padding and the
+  // 24px glyph lane: the five design columns land on the measured 1166px.
+  const CHROME: number = 42 + 16 + 24;
+
+  it('derives the measured 1166px board width from the five design columns', () => {
+    expect(getTableWidth(DEFAULT_COLUMNS)).toBe(1166);
+    expect(TABLE_COLUMNS.reduce((total, column) => total + column.track, CHROME)).toBe(1166);
+    expect(getRootStyles(DEFAULT_COLUMNS)).toEqual({ width: '100%', maxWidth: '1166px' });
+  });
+
+  it('extends the width by the extra cycled tracks past the design set', () => {
+    // 1084 design tracks + the cycled 228 and 196 = 1508, plus the 82px chrome.
+    expect(getTableWidth(7)).toBe(1590);
+    expect(getTableWidth(7) - getTableWidth(DEFAULT_COLUMNS)).toBe(228 + 196);
+    expect(getRootStyles(7)).toEqual({ width: '100%', maxWidth: '1590px' });
+  });
+
+  it('shrinks the width with the tracks a narrower table drops', () => {
+    expect(getTableWidth(1)).toBe(228 + CHROME);
+    expect(getTableWidth(0)).toBe(CHROME);
+  });
+
+  it('caps the rendered root at the derived width so no column is clipped', () => {
+    render(<UiSkeletonTable rows={1} columns={7} />);
+
+    expect(getRoot()).toHaveStyle({ width: '100%', maxWidth: '1590px' });
+  });
+
+  it('keeps the design default at the measured width when columns is omitted', () => {
+    render(<UiSkeletonTable rows={1} />);
+
+    expect(getRoot()).toHaveStyle({ width: '100%', maxWidth: '1166px' });
+  });
+});
+
+describe('UiSkeletonTable — invalid row and column counts', () => {
+  it('falls back to the design counts for a non-finite request', () => {
+    render(<UiSkeletonTable rows={Number.POSITIVE_INFINITY} columns={Number.NaN} />);
+
+    expect(getShapes()).toHaveLength(DEFAULT_COLUMNS + DEFAULT_ROWS * SHAPES_PER_ROW);
+    expect(getRoot()).toHaveStyle({ maxWidth: '1166px' });
+  });
+
+  it('floors a fractional count and clamps a negative one to nothing', () => {
+    render(<UiSkeletonTable rows={2.7} columns={-3} />);
+
+    // No column tracks survive, so every shape comes from the two body rows'
+    // glyph dots and the width collapses to the padding plus the glyph lane.
+    expect(getShapes()).toHaveLength(6);
+    expect(getRoot()).toHaveStyle({ maxWidth: '82px' });
+  });
+});
+
 describe('UiSkeletonTable — accessibility contract', () => {
   it('exposes a single busy, unnamed container with the default status text', () => {
     render(<UiSkeletonTable />);
@@ -221,43 +275,38 @@ describe('UiSkeletonTable — pass-through props', () => {
 describe('ui-skeleton-table geometry builders', () => {
   it('pins the measured column tracks, widths and shapes', () => {
     expect(TABLE_COLUMNS).toEqual([
-      { track: '228px', width: '190px', kind: 'bar' },
-      { track: '196px', width: '136px', kind: 'bar' },
-      { track: '117px', width: '63px', kind: 'bar' },
-      { track: '219px', width: '104px', kind: 'chip' },
-      { track: '324px', width: '280px', kind: 'stacked' },
+      { track: 228, width: '190px', kind: 'bar' },
+      { track: 196, width: '136px', kind: 'bar' },
+      { track: 117, width: '63px', kind: 'bar' },
+      { track: 219, width: '104px', kind: 'chip' },
+      { track: 324, width: '280px', kind: 'stacked' },
     ]);
-  });
-
-  it('builds prefixed keys and returns none for a non-positive count', () => {
-    expect(getKeys('row', 3)).toEqual(['row-1', 'row-2', 'row-3']);
-    expect(getKeys('glyph-dot', 0)).toEqual([]);
   });
 
   it('cycles column slots and keys past the design set', () => {
     expect(getColumnSlots(7)).toEqual([
-      { track: '228px', width: '190px', kind: 'bar', key: 'column-1' },
-      { track: '196px', width: '136px', kind: 'bar', key: 'column-2' },
-      { track: '117px', width: '63px', kind: 'bar', key: 'column-3' },
-      { track: '219px', width: '104px', kind: 'chip', key: 'column-4' },
-      { track: '324px', width: '280px', kind: 'stacked', key: 'column-5' },
-      { track: '228px', width: '190px', kind: 'bar', key: 'column-6' },
-      { track: '196px', width: '136px', kind: 'bar', key: 'column-7' },
+      { track: 228, width: '190px', kind: 'bar', key: 'column-1' },
+      { track: 196, width: '136px', kind: 'bar', key: 'column-2' },
+      { track: 117, width: '63px', kind: 'bar', key: 'column-3' },
+      { track: 219, width: '104px', kind: 'chip', key: 'column-4' },
+      { track: 324, width: '280px', kind: 'stacked', key: 'column-5' },
+      { track: 228, width: '190px', kind: 'bar', key: 'column-6' },
+      { track: 196, width: '136px', kind: 'bar', key: 'column-7' },
     ]);
   });
 
   it('keeps header slots on the body tracks with one uniform bar width', () => {
     expect(getHeaderSlots(5)).toEqual([
-      { track: '228px', width: '63px', kind: 'bar', key: 'column-1' },
-      { track: '196px', width: '63px', kind: 'bar', key: 'column-2' },
-      { track: '117px', width: '63px', kind: 'bar', key: 'column-3' },
-      { track: '219px', width: '63px', kind: 'bar', key: 'column-4' },
-      { track: '324px', width: '63px', kind: 'bar', key: 'column-5' },
+      { track: 228, width: '63px', kind: 'bar', key: 'column-1' },
+      { track: 196, width: '63px', kind: 'bar', key: 'column-2' },
+      { track: 117, width: '63px', kind: 'bar', key: 'column-3' },
+      { track: 219, width: '63px', kind: 'bar', key: 'column-4' },
+      { track: 324, width: '63px', kind: 'bar', key: 'column-5' },
     ]);
   });
 
   it('pins the cell and chip box models', () => {
-    expect(getCellStyles('228px')).toEqual({ width: '228px', flexShrink: 0 });
+    expect(getCellStyles(228)).toEqual({ width: '228px', flexShrink: 0 });
     expect(getChipStyles('104px')).toEqual({
       display: 'flex',
       alignItems: 'flex-start',
@@ -270,7 +319,7 @@ describe('ui-skeleton-table geometry builders', () => {
   });
 
   it('pins the row, body and container layout geometry', () => {
-    expect(rootStyles).toEqual({ width: '100%', maxWidth: '1166px' });
+    expect(getRootStyles(DEFAULT_COLUMNS)).toEqual({ width: '100%', maxWidth: '1166px' });
     expect(contentStyles).toEqual({
       display: 'flex',
       flexDirection: 'column',

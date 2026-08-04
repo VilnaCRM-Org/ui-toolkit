@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import React from 'react';
 
-import { ComposedSkeleton } from '../ui-skeletons';
+import { ComposedSkeleton, getSkeletonKeys, normalizeCount } from '../ui-skeletons';
 
 import {
   DEFAULT_COLUMNS,
@@ -11,9 +11,8 @@ import {
   contentStyles,
   getColumnSlots,
   getHeaderSlots,
-  getKeys,
+  getRootStyles,
   headerRowStyles,
-  rootStyles,
 } from './styles';
 import SkeletonTableRow from './table-row';
 import type { SkeletonTableColumnSlot, UiSkeletonTableProps } from './types';
@@ -36,18 +35,19 @@ export default function UiSkeletonTable({
   loadingText,
   sx = [],
 }: UiSkeletonTableProps): React.ReactElement {
-  const slots: SkeletonTableColumnSlot[] = getColumnSlots(columns);
+  const columnCount: number = normalizeCount(columns, DEFAULT_COLUMNS);
+  const slots: SkeletonTableColumnSlot[] = getColumnSlots(columnCount);
 
   return (
     <ComposedSkeleton
       id={id}
       loadingText={loadingText}
-      sx={[rootStyles, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[getRootStyles(columnCount), ...(Array.isArray(sx) ? sx : [sx])]}
       contentSx={contentStyles}
     >
-      <SkeletonTableRow slots={getHeaderSlots(columns)} sx={headerRowStyles} />
+      <SkeletonTableRow slots={getHeaderSlots(columnCount)} sx={headerRowStyles} />
       <Box sx={bodyStyles}>
-        {getKeys('row', rows).map(key => (
+        {getSkeletonKeys('row', normalizeCount(rows, DEFAULT_ROWS)).map(key => (
           <SkeletonTableRow key={key} slots={slots} sx={bodyRowStyles} glyph />
         ))}
       </Box>

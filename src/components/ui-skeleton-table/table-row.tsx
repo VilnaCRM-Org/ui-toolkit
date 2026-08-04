@@ -4,15 +4,9 @@ import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
 import UiSkeletonBlock from '../ui-skeleton-block';
+import { getSkeletonKeys } from '../ui-skeletons';
 
-import {
-  DOT_RADIUS,
-  GLYPH_DOTS,
-  GLYPH_DOT_SIZE,
-  getCellStyles,
-  getKeys,
-  glyphStyles,
-} from './styles';
+import { DOT_RADIUS, GLYPH_DOTS, GLYPH_DOT_SIZE, getCellStyles, glyphStyles } from './styles';
 import SkeletonTableCell from './table-cell';
 import type { SkeletonTableColumnSlot } from './types';
 
@@ -26,7 +20,7 @@ interface SkeletonTableRowProps {
 function RowGlyph(): React.ReactElement {
   return (
     <Box sx={glyphStyles}>
-      {getKeys('glyph-dot', GLYPH_DOTS).map(key => (
+      {getSkeletonKeys('glyph-dot', GLYPH_DOTS).map(key => (
         <UiSkeletonBlock
           key={key}
           width={GLYPH_DOT_SIZE}

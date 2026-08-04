@@ -70,7 +70,12 @@ export const headerStyles: SystemStyleObject<Theme> = {
   borderBottom: `1px solid ${SKELETON_BORDER_COLOR}`,
 };
 
-export const titleBarStyles: SystemStyleObject<Theme> = { flexShrink: 0 };
+// The 147px title bar is the only header item that may give ground: it shrinks
+// (and `minWidth: 0` lets it shrink past its own box) so a host narrower than
+// the designed 375px card degrades to a shorter bar instead of pushing the dots
+// past the clipped card edge. At every designed width there is slack, so the
+// bar still renders at its measured 147px.
+export const titleBarStyles: SystemStyleObject<Theme> = { flexShrink: 1, minWidth: 0 };
 
 export const headerDotsStyles: SystemStyleObject<Theme> = {
   display: 'flex',
@@ -79,9 +84,14 @@ export const headerDotsStyles: SystemStyleObject<Theme> = {
   gap: HEADER_DOT_GAP,
 };
 
+// The dots are painted boxes rather than skeleton primitives, so they miss the
+// shared `baseSkeletonStyle` forced-colours fallback. Contrast Themes drop the
+// author background and the discs would vanish; `GrayText` repaints them as the
+// same non-interactive mark the primitives outline themselves with.
 export const headerDotStyles: SystemStyleObject<Theme> = {
   width: HEADER_DOT_SIZE,
   height: HEADER_DOT_SIZE,
   borderRadius: '50%',
   backgroundColor: HEADER_DOT_COLOR,
+  '@media (forced-colors: active)': { backgroundColor: 'GrayText' },
 };

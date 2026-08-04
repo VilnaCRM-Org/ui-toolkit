@@ -4,7 +4,7 @@ import React from 'react';
 import UiSkeletonBlock from '../ui-skeleton-block';
 import UiSkeletonImage from '../ui-skeleton-image';
 import UiSkeletonText from '../ui-skeleton-text';
-import { ComposedSkeleton, SKELETON_BORDER_RADIUS } from '../ui-skeletons';
+import { ComposedSkeleton, SKELETON_BORDER_RADIUS, getSkeletonKeys } from '../ui-skeletons';
 
 import {
   ICON_SIZE,
@@ -14,7 +14,6 @@ import {
   SUB_ROW_WIDTH,
   TITLE_WIDTH,
   dividerStyles,
-  getMenuRowKeys,
   menuContentStyles,
   menuRootStyles,
   navRowStyles,
@@ -37,9 +36,9 @@ function MenuNavRow(): React.ReactElement {
 function MenuSubRows(): React.ReactElement {
   return (
     <Box sx={subListStyles}>
-      {getMenuRowKeys('sub', SUB_ROW_COUNT).map(row => (
+      {getSkeletonKeys('sub', SUB_ROW_COUNT).map(key => (
         <UiSkeletonBlock
-          key={row.key}
+          key={key}
           width={SUB_ROW_WIDTH}
           height={SUB_ROW_HEIGHT}
           borderRadius={SKELETON_BORDER_RADIUS}
@@ -77,8 +76,8 @@ export default function UiSkeletonMenu({
       sx={[menuRootStyles, ...(Array.isArray(sx) ? sx : [sx])]}
       contentSx={menuContentStyles}
     >
-      {getMenuRowKeys('nav', NAV_ROW_COUNT).map(row => (
-        <MenuNavRow key={row.key} />
+      {getSkeletonKeys('nav', NAV_ROW_COUNT).map(key => (
+        <MenuNavRow key={key} />
       ))}
       <MenuSection />
       <Box sx={dividerStyles} />

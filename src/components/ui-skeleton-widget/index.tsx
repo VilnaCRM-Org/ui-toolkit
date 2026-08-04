@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ComposedSkeleton } from '../ui-skeletons';
+import { ComposedSkeleton, normalizeCount } from '../ui-skeletons';
 
 import { DEFAULT_TASK_ROWS, getCardSize, resolveColumnCount } from './geometry';
 import PanelBody from './panel-body';
@@ -35,7 +35,7 @@ export default function UiSkeletonWidget({
     >
       <WidgetHeader />
       {variant === 'task-list' ? (
-        <TaskListBody rows={rows} columns={resolved} />
+        <TaskListBody rows={normalizeCount(rows, DEFAULT_TASK_ROWS)} columns={resolved} />
       ) : (
         <PanelBody chart={variant === 'chart'} />
       )}

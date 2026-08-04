@@ -14,15 +14,6 @@ export const LIST_ROW_GAP: string = '6px';
 export const LIST_ROW_PITCH: number = 70;
 export const DEFAULT_LIST_ROWS: number = 3;
 
-export interface SkeletonListRow {
-  key: string;
-}
-
-/** Stable keys for `rows` identical row placeholders (no design cycling). */
-export function getListRowKeys(rows: number): SkeletonListRow[] {
-  return Array.from({ length: rows }, (_unused, index) => ({ key: `row-${index + 1}` }));
-}
-
 // The rows fill their container and cap at the 590px board width, so the
 // composition keeps the designed proportion yet still shrinks on narrow
 // viewports. Consumers override both through `sx`.

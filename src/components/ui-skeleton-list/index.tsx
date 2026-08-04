@@ -1,13 +1,12 @@
 import React from 'react';
 
 import UiSkeletonBlock from '../ui-skeleton-block';
-import { ComposedSkeleton } from '../ui-skeletons';
+import { ComposedSkeleton, getSkeletonKeys, normalizeCount } from '../ui-skeletons';
 
 import {
   DEFAULT_LIST_ROWS,
   LIST_ROW_HEIGHT,
   LIST_ROW_RADIUS,
-  getListRowKeys,
   listContentStyles,
   listRootStyles,
 } from './styles';
@@ -31,8 +30,8 @@ export default function UiSkeletonList({
       sx={[listRootStyles, ...(Array.isArray(sx) ? sx : [sx])]}
       contentSx={listContentStyles}
     >
-      {getListRowKeys(rows).map(row => (
-        <UiSkeletonBlock key={row.key} height={LIST_ROW_HEIGHT} borderRadius={LIST_ROW_RADIUS} />
+      {getSkeletonKeys('row', normalizeCount(rows, DEFAULT_LIST_ROWS)).map(key => (
+        <UiSkeletonBlock key={key} height={LIST_ROW_HEIGHT} borderRadius={LIST_ROW_RADIUS} />
       ))}
     </ComposedSkeleton>
   );

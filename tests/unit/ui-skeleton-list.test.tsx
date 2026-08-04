@@ -9,11 +9,10 @@ import {
   LIST_ROW_PITCH,
   LIST_ROW_RADIUS,
   LIST_ROW_WIDTH,
-  getListRowKeys,
   listContentStyles,
   listRootStyles,
 } from '../../src/components/ui-skeleton-list/styles';
-import { DEFAULT_LOADING_TEXT } from '../../src/components/ui-skeletons';
+import { DEFAULT_LOADING_TEXT, getSkeletonKeys } from '../../src/components/ui-skeletons';
 
 const WIDGET_ROLES: string[] = ['list', 'listitem', 'button', 'link', 'checkbox', 'radio'];
 
@@ -56,19 +55,15 @@ describe('UiSkeletonList geometry constants', () => {
   });
 });
 
-describe('getListRowKeys', () => {
+describe('list row keys', () => {
   it('builds one unique, 1-based key per requested row', () => {
-    expect(getListRowKeys(DEFAULT_LIST_ROWS)).toEqual([
-      { key: 'row-1' },
-      { key: 'row-2' },
-      { key: 'row-3' },
-    ]);
+    expect(getSkeletonKeys('row', DEFAULT_LIST_ROWS)).toEqual(['row-1', 'row-2', 'row-3']);
   });
 
   it('scales with the requested count and collapses to nothing at zero', () => {
-    expect(getListRowKeys(5)).toHaveLength(5);
-    expect(getListRowKeys(5)[4]).toEqual({ key: 'row-5' });
-    expect(getListRowKeys(0)).toEqual([]);
+    expect(getSkeletonKeys('row', 5)).toHaveLength(5);
+    expect(getSkeletonKeys('row', 5)[4]).toBe('row-5');
+    expect(getSkeletonKeys('row', 0)).toEqual([]);
   });
 });
 
@@ -94,6 +89,21 @@ describe('UiSkeletonList', () => {
   it('renders no rows when asked for none', () => {
     render(<UiSkeletonList rows={0} />);
     expect(screen.queryAllByRole('generic', { hidden: true }).length).toBeGreaterThan(0);
+    expect(getRowShapes()).toHaveLength(0);
+  });
+
+  it('falls back to the design row count for a non-finite request', () => {
+    render(<UiSkeletonList rows={Number.POSITIVE_INFINITY} />);
+    expect(getRowShapes()).toHaveLength(DEFAULT_LIST_ROWS);
+  });
+
+  it('floors a fractional row count and clamps a negative one', () => {
+    render(<UiSkeletonList rows={4.8} />);
+    expect(getRowShapes()).toHaveLength(4);
+  });
+
+  it('renders no rows for a negative request', () => {
+    render(<UiSkeletonList rows={-2} />);
     expect(getRowShapes()).toHaveLength(0);
   });
 
