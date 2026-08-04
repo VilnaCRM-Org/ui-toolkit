@@ -410,6 +410,21 @@
     "name": "Default"
   },
   {
+    "id": "uicomponents-uiskeletonimage--block",
+    "title": "UiComponents/UiSkeletonImage",
+    "name": "Block"
+  },
+  {
+    "id": "uicomponents-uiskeletonimage--custom-size",
+    "title": "UiComponents/UiSkeletonImage",
+    "name": "Custom Size"
+  },
+  {
+    "id": "uicomponents-uiskeletonimage--round",
+    "title": "UiComponents/UiSkeletonImage",
+    "name": "Round"
+  },
+  {
     "id": "uicomponents-uiskeletoninput--animated",
     "title": "UiComponents/UiSkeletonInput",
     "name": "Animated"
@@ -423,6 +438,11 @@
     "id": "uicomponents-uiskeletontext--large",
     "title": "UiComponents/UiSkeletonText",
     "name": "Large"
+  },
+  {
+    "id": "uicomponents-uiskeletontext--many-lines",
+    "title": "UiComponents/UiSkeletonText",
+    "name": "Many Lines"
   },
   {
     "id": "uicomponents-uiskeletontext--medium",

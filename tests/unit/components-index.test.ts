@@ -50,6 +50,7 @@ const expectedPublicExports: string[] = [
   'UiSelectWithSearch',
   'UiSkeletonBlock',
   'UiSkeletonButton',
+  'UiSkeletonImage',
   'UiSkeletonInput',
   'UiSkeletonText',
   'UiStatusBadge',

@@ -36,19 +36,40 @@ The one-line sizes map 1:1 onto the existing `UiSkeletonText` `s/m/l` heights
 ### `UiSkeletonImage` (new, `src/components/ui-skeleton-image/`)
 
 - `variant: 'round' | 'block'` (default `'round'`) per PRD §4.4 "Round image" /
-  "Block image"; round renders a circle (design default 48×48), block a rounded
-  rectangle (design default 260×195, radius measured from Figma).
-- Shared toolkit props: `id?`, `width?`, `height?`, `sx?` (dimension overrides
-  follow the `UiSkeletonBlock` prop shape).
-- Styling reuses `baseSkeletonStyle` (shimmer + reduced-motion guard) verbatim.
+  "Block image"; round renders a circle (design default 48×48, radius `50%`),
+  block a rounded rectangle (design default 260×195, radius `8px` as measured
+  on `538:39440`).
+- Shared toolkit props: `id?`, `width?`, `height?`, `sx?`. Unlike
+  `UiSkeletonBlock`, `width`/`height` have no literal default: when omitted they
+  fall back to the per-variant design geometry, so switching `variant` switches
+  both dimensions. Corner radius is variant-owned and not overridable via a
+  prop (pass `sx` to change it), because it is what distinguishes the two
+  patterns.
+- Styling reuses `baseSkeletonStyle` (shimmer + reduced-motion guard) verbatim;
+  the solid `#E5E9ED` fill on the static Figma frame `538:38680` is the rest
+  frame of that same shimmer (`538:38681` carries the D3D8E0 0/0.6/0 gradient),
+  so no fill colour is introduced.
 
 ### `UiSkeletonText` many-lines support (extend, no breaking change)
 
-- New `lines?: number` (default `1`) — `1` keeps today's markup byte-identical.
+- New `lines?: number` (default `1`) — `1` keeps today's markup byte-identical
+  (a single `Box`, same styles, no wrapper element).
 - `lines > 1` stacks bars at the Board D pitch (8px bar height per line as
   designed for the many-lines pattern, 6px gap) with the design's tapering
-  widths (full → ~4/5 → ~1/2, from 197/157/96), last line always tapered.
-- Existing `size`/`width`/`id`/`sx` contract unchanged.
+  widths (full → ~4/5 → ~1/2, from 197/157/96), last line always tapered. The
+  exported taper constants are `FIRST_LINE_WIDTH` `'100%'`, `MIDDLE_LINE_WIDTH`
+  `'80%'` (157/197 ≈ 0.797) and `LAST_LINE_WIDTH` `'50%'` (96/197 ≈ 0.487);
+  every line between the first and the last uses the middle width.
+- `lines > 1` renders a flex-column wrapper `Box` that carries `id`, the
+  component `width` and the merged `sx`; the bars themselves are unaddressable
+  children, matching the "decorative, id-only" selector convention.
+- **Deviation from the drafted contract:** the 8px many-lines row height is a
+  _default_, not a fixed value. `size` becomes optional with no destructuring
+  default and resolves as `size ?? (lines > 1 ? 's' : 'm')`, so the single-line
+  default (`'m'`, 12px) is preserved bit-for-bit while the many-lines pattern
+  defaults to the design's `'s'` (8px) row and an explicit `size` still wins for
+  both. This keeps one size→height map instead of a second hard-coded height.
+- Existing `size`/`width`/`id`/`sx` behaviour is otherwise unchanged.
 
 ### `UiSkeletonBlock`
 

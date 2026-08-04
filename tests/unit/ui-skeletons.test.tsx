@@ -5,18 +5,36 @@ import React from 'react';
 import {
   UiSkeletonBlock,
   UiSkeletonButton,
+  UiSkeletonImage,
   UiSkeletonInput,
   UiSkeletonText,
 } from '../../src/components';
 import websiteColorTheme from '../../src/components/ui-color-theme';
 import getBlockSkeletonStyles from '../../src/components/ui-skeleton-block/styles';
 import skeletonButtonStyles from '../../src/components/ui-skeleton-button/styles';
+import getImageSkeletonStyles, {
+  BLOCK_IMAGE_HEIGHT,
+  BLOCK_IMAGE_RADIUS,
+  BLOCK_IMAGE_WIDTH,
+  ROUND_IMAGE_RADIUS,
+  ROUND_IMAGE_SIZE,
+} from '../../src/components/ui-skeleton-image/styles';
 import skeletonInputStyles, {
   BASE_INPUT_HEIGHT,
   MD_INPUT_HEIGHT,
   XL_INPUT_HEIGHT,
 } from '../../src/components/ui-skeleton-input/styles';
-import getTextSkeletonStyles from '../../src/components/ui-skeleton-text/styles';
+import getTextSkeletonStyles, {
+  FIRST_LINE_WIDTH,
+  getTextLines,
+  getTextLinesContainerStyles,
+  LAST_LINE_WIDTH,
+  MANY_LINES_GAP,
+  MANY_LINES_SIZE,
+  MIDDLE_LINE_WIDTH,
+  resolveTextSize,
+  SINGLE_LINE_SIZE,
+} from '../../src/components/ui-skeleton-text/styles';
 import {
   baseSkeletonStyle,
   shadowPulseAnimation,
@@ -27,6 +45,12 @@ import {
   SMALL_MOBILE_BREAKPOINT,
   SMALL_MOBILE_BREAKPOINT_UPPER,
 } from '../../src/components/ui-skeletons/base';
+
+// Stacked skeleton bars carry no role or label, and Testing Library forbids
+// walking the DOM tree, so the bar count is read off the rendered markup.
+function countBars(stack: HTMLElement): number {
+  return stack.innerHTML.split('<div').length - 1;
+}
 
 function getById(container: HTMLElement, id: string): HTMLElement {
   // Skeleton primitives are decorative (no role/label); they expose a stable id only.
@@ -341,5 +365,222 @@ describe('UiSkeletons reduced-motion', () => {
     expect(baseSkeletonStyle['@media (prefers-reduced-motion: reduce)']).toEqual({
       animation: 'none',
     });
+  });
+});
+
+describe('UiSkeletonImage rendering', () => {
+  it('renders the Board D round geometry when no variant is given', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonImage id="image-round-default" />
+      </ThemeProvider>
+    );
+
+    const image: HTMLElement = getById(container, 'image-round-default');
+    expect(image).toHaveAttribute('id', 'image-round-default');
+    expect(image).toHaveStyle({ width: '48px' });
+    expect(image).toHaveStyle({ height: '48px' });
+    expect(image).toHaveStyle({ borderRadius: '50%' });
+  });
+
+  it('renders the Board D block geometry for the block variant', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonImage id="image-block" variant="block" />
+      </ThemeProvider>
+    );
+
+    const image: HTMLElement = getById(container, 'image-block');
+    expect(image).toHaveStyle({ width: '260px' });
+    expect(image).toHaveStyle({ height: '195px' });
+    expect(image).toHaveStyle({ borderRadius: '8px' });
+  });
+
+  it('lets width and height overrides win over the variant defaults', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonImage id="image-sized" variant="block" width="160px" height="120px" />
+      </ThemeProvider>
+    );
+
+    const image: HTMLElement = getById(container, 'image-sized');
+    expect(image).toHaveStyle({ width: '160px' });
+    expect(image).toHaveStyle({ height: '120px' });
+    expect(image).toHaveStyle({ borderRadius: '8px' });
+  });
+
+  it('renders with an object (non-array) sx prop merged onto the base style', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonImage id="image-obj-sx" sx={{ marginTop: '4px' }} />
+      </ThemeProvider>
+    );
+
+    expect(getById(container, 'image-obj-sx')).toHaveStyle({ marginTop: '4px' });
+  });
+
+  it('renders with an array sx prop merged after the base style', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonImage id="image-arr-sx" sx={[{ marginBottom: '8px' }]} />
+      </ThemeProvider>
+    );
+
+    expect(getById(container, 'image-arr-sx')).toHaveStyle({ marginBottom: '8px' });
+  });
+});
+
+describe('UiSkeletonImage styles helper', () => {
+  it('exposes the measured Board D geometry constants', () => {
+    expect(ROUND_IMAGE_SIZE).toBe(48);
+    expect(ROUND_IMAGE_RADIUS).toBe('50%');
+    expect(BLOCK_IMAGE_WIDTH).toBe(260);
+    expect(BLOCK_IMAGE_HEIGHT).toBe(195);
+    expect(BLOCK_IMAGE_RADIUS).toBe('8px');
+  });
+
+  it('builds the round variant on the shared base skeleton style', () => {
+    expect(getImageSkeletonStyles('round')).toEqual({
+      ...baseSkeletonStyle,
+      width: 48,
+      height: 48,
+      borderRadius: '50%',
+    });
+  });
+
+  it('builds the block variant on the shared base skeleton style', () => {
+    expect(getImageSkeletonStyles('block')).toEqual({
+      ...baseSkeletonStyle,
+      width: 260,
+      height: 195,
+      borderRadius: '8px',
+    });
+  });
+
+  it('keeps the variant radius while overriding only the supplied dimension', () => {
+    expect(getImageSkeletonStyles('round', 72)).toMatchObject({
+      width: 72,
+      height: 48,
+      borderRadius: '50%',
+    });
+    expect(getImageSkeletonStyles('block', undefined, 90)).toMatchObject({
+      width: 260,
+      height: 90,
+      borderRadius: '8px',
+    });
+  });
+});
+
+describe('UiSkeletonText many-lines taper', () => {
+  it('exposes the taper fractions measured from the 197/157/96 design rows', () => {
+    expect(FIRST_LINE_WIDTH).toBe('100%');
+    expect(MIDDLE_LINE_WIDTH).toBe('80%');
+    expect(LAST_LINE_WIDTH).toBe('50%');
+    expect(MANY_LINES_GAP).toBe('6px');
+    expect(MANY_LINES_SIZE).toBe('s');
+    expect(SINGLE_LINE_SIZE).toBe('m');
+  });
+
+  it('tapers a three-line stack full, four-fifths, half', () => {
+    expect(getTextLines(3)).toEqual([
+      { key: 'line-1', width: '100%' },
+      { key: 'line-2', width: '80%' },
+      { key: 'line-3', width: '50%' },
+    ]);
+  });
+
+  it('keeps every line between the first and the last at the middle width', () => {
+    expect(getTextLines(5).map(line => line.width)).toEqual(['100%', '80%', '80%', '80%', '50%']);
+  });
+
+  it('drops a two-line stack straight from the first width to the last', () => {
+    expect(getTextLines(2).map(line => line.width)).toEqual(['100%', '50%']);
+  });
+
+  it('builds the stacked column container at the design gap', () => {
+    expect(getTextLinesContainerStyles('197px')).toEqual({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '6px',
+      width: '197px',
+    });
+  });
+
+  it('resolves the bar height preset from the line count unless size is explicit', () => {
+    expect(resolveTextSize(undefined, 1)).toBe('m');
+    expect(resolveTextSize(undefined, 3)).toBe('s');
+    expect(resolveTextSize('l', 3)).toBe('l');
+    expect(resolveTextSize('s', 1)).toBe('s');
+  });
+
+  it('renders the many-lines bars at the 8px Board D row height', () => {
+    expect(getTextSkeletonStyles(resolveTextSize(undefined, 3), LAST_LINE_WIDTH).height).toBe(
+      '8px'
+    );
+  });
+});
+
+describe('UiSkeletonText many-lines rendering', () => {
+  it('stacks one bar per line inside a 6px-gapped column', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonText id="text-many" lines={3} width="197px" />
+      </ThemeProvider>
+    );
+
+    const stack: HTMLElement = getById(container, 'text-many');
+    expect(stack).toHaveStyle({ display: 'flex' });
+    expect(stack).toHaveStyle({ flexDirection: 'column' });
+    expect(stack).toHaveStyle({ gap: '6px' });
+    expect(stack).toHaveStyle({ width: '197px' });
+    expect(countBars(stack)).toBe(3);
+  });
+
+  it('defaults the stacked column to full width', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonText id="text-many-default-width" lines={2} />
+      </ThemeProvider>
+    );
+
+    const stack: HTMLElement = getById(container, 'text-many-default-width');
+    expect(stack).toHaveStyle({ width: '100%' });
+    expect(countBars(stack)).toBe(2);
+  });
+
+  it('merges an object (non-array) sx prop onto the stacked column', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonText id="text-many-obj-sx" lines={3} sx={{ marginTop: '10px' }} />
+      </ThemeProvider>
+    );
+
+    expect(getById(container, 'text-many-obj-sx')).toHaveStyle({ marginTop: '10px' });
+  });
+
+  it('merges an array sx prop onto the stacked column', () => {
+    const { container } = render(
+      <ThemeProvider theme={websiteColorTheme}>
+        <UiSkeletonText id="text-many-arr-sx" lines={3} sx={[{ marginBottom: '10px' }]} />
+      </ThemeProvider>
+    );
+
+    expect(getById(container, 'text-many-arr-sx')).toHaveStyle({ marginBottom: '10px' });
+  });
+
+  it('keeps the single-bar markup byte-identical when lines is 1', () => {
+    const implicit: string = render(<UiSkeletonText id="text-lines-regression" />).container
+      .innerHTML;
+    const explicit: string = render(<UiSkeletonText id="text-lines-regression" lines={1} />)
+      .container.innerHTML;
+
+    expect(explicit).toBe(implicit);
+    expect(explicit).not.toContain('flex-direction');
+  });
+
+  it('inherits the shared reduced-motion guard on every stacked bar', () => {
+    expect(getTextSkeletonStyles(MANY_LINES_SIZE, MIDDLE_LINE_WIDTH)).toMatchObject(
+      baseSkeletonStyle
+    );
   });
 });

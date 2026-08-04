@@ -48,6 +48,7 @@ export { default as UiImage } from './ui-image';
 export { default as UiForm } from './ui-form';
 export { default as UiSkeletonBlock } from './ui-skeleton-block';
 export { default as UiSkeletonButton } from './ui-skeleton-button';
+export { default as UiSkeletonImage } from './ui-skeleton-image';
 export { default as UiSkeletonInput } from './ui-skeleton-input';
 export { default as UiSkeletonText } from './ui-skeleton-text';
 export { default as UiToolbar } from './ui-toolbar';
