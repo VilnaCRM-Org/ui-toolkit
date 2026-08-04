@@ -652,12 +652,16 @@ describe('UiSkeletonText invalid line counts', () => {
     ]);
   });
 
-  it('falls back to the single bar rather than an invalid array length', () => {
-    expect(getTextLines(Number.POSITIVE_INFINITY)).toEqual([
-      { key: 'line-1', width: LAST_LINE_WIDTH },
-    ]);
-    expect(getTextLines(Number.NaN)).toEqual([{ key: 'line-1', width: LAST_LINE_WIDTH }]);
-    expect(getTextLines(-3)).toEqual([]);
+  it('resolves every single-bar input to one full-width line, like the component', () => {
+    const singleFullLine: { key: string; width: string }[] = [
+      { key: 'line-1', width: FIRST_LINE_WIDTH },
+    ];
+
+    expect(getTextLines(Number.POSITIVE_INFINITY)).toEqual(singleFullLine);
+    expect(getTextLines(Number.NaN)).toEqual(singleFullLine);
+    expect(getTextLines(0)).toEqual(singleFullLine);
+    expect(getTextLines(-3)).toEqual(singleFullLine);
+    expect(getTextLines(1)).toEqual(singleFullLine);
   });
 
   it('renders the stack a fractional count asks for', () => {

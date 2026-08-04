@@ -49,17 +49,25 @@ export function resolveTextSize(
   return size ?? (lines > 1 ? MANY_LINES_SIZE : SINGLE_LINE_SIZE);
 }
 
+// First-line precedence: a sole line is full width, mirroring the component's
+// single-bar path, so the pure builder and the rendered contract agree on every
+// input.
 function getLineWidth(index: number, lines: number): string {
-  if (index === lines - 1) {
-    return LAST_LINE_WIDTH;
+  if (index === 0) {
+    return FIRST_LINE_WIDTH;
   }
 
-  return index === 0 ? FIRST_LINE_WIDTH : MIDDLE_LINE_WIDTH;
+  return index === lines - 1 ? LAST_LINE_WIDTH : MIDDLE_LINE_WIDTH;
 }
 
-/** The taper needs a whole line count, so the public value is normalized here too. */
+/**
+ * The taper needs a whole line count, so the public value is normalized here
+ * too — to the SAME outcome as `UiSkeletonText`: anything the component would
+ * render as its single bar (a normalized count of 0 or 1) is one full-width
+ * line.
+ */
 export function getTextLines(lines: number): SkeletonTextLine[] {
-  const count: number = normalizeCount(lines, 1);
+  const count: number = Math.max(1, normalizeCount(lines, 1));
 
   return getSkeletonKeys('line', count).map((key, index) => ({
     key,
