@@ -30,6 +30,31 @@
     "name": "Without Metadata"
   },
   {
+    "id": "uicomponents-uiactioniconbar--action-icon-bar",
+    "title": "UiComponents/UiActionIconBar",
+    "name": "Action Icon Bar"
+  },
+  {
+    "id": "uicomponents-uiactioniconbar--disabled",
+    "title": "UiComponents/UiActionIconBar",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uiactioniconbar--eye-pressed",
+    "title": "UiComponents/UiActionIconBar",
+    "name": "Eye Pressed"
+  },
+  {
+    "id": "uicomponents-uiactioniconbar--menu-actions",
+    "title": "UiComponents/UiActionIconBar",
+    "name": "Menu Actions"
+  },
+  {
+    "id": "uicomponents-uiactioniconbar--static",
+    "title": "UiComponents/UiActionIconBar",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uibacktomain--custom-destination",
     "title": "UiComponents/UiBackToMain",
     "name": "Custom Destination"
@@ -103,6 +128,21 @@
     "id": "uicomponents-uifileuploadinput--upload-error",
     "title": "UiComponents/UiFileUploadInput",
     "name": "Upload Error"
+  },
+  {
+    "id": "uicomponents-uifilterchip--disabled",
+    "title": "UiComponents/UiFilterChip",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uifilterchip--filter-chip",
+    "title": "UiComponents/UiFilterChip",
+    "name": "Filter Chip"
+  },
+  {
+    "id": "uicomponents-uifilterchip--static",
+    "title": "UiComponents/UiFilterChip",
+    "name": "Static"
   },
   {
     "id": "uicomponents-uifooter--footer",
@@ -210,6 +250,36 @@
     "name": "Multi Select"
   },
   {
+    "id": "uicomponents-uinotificationbadge--disabled",
+    "title": "UiComponents/UiNotificationBadge",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uinotificationbadge--empty",
+    "title": "UiComponents/UiNotificationBadge",
+    "name": "Empty"
+  },
+  {
+    "id": "uicomponents-uinotificationbadge--menu-open",
+    "title": "UiComponents/UiNotificationBadge",
+    "name": "Menu Open"
+  },
+  {
+    "id": "uicomponents-uinotificationbadge--notification-badge",
+    "title": "UiComponents/UiNotificationBadge",
+    "name": "Notification Badge"
+  },
+  {
+    "id": "uicomponents-uinotificationbadge--overflow",
+    "title": "UiComponents/UiNotificationBadge",
+    "name": "Overflow"
+  },
+  {
+    "id": "uicomponents-uinotificationbadge--static",
+    "title": "UiComponents/UiNotificationBadge",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uipagination--disabled",
     "title": "UiComponents/UiPagination",
     "name": "Disabled"
@@ -233,6 +303,56 @@
     "id": "uicomponents-uipagination--pagination",
     "title": "UiComponents/UiPagination",
     "name": "Pagination"
+  },
+  {
+    "id": "uicomponents-uipaymentoptioncard--disabled",
+    "title": "UiComponents/UiPaymentOptionCard",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uipaymentoptioncard--payment-option-card",
+    "title": "UiComponents/UiPaymentOptionCard",
+    "name": "Payment Option Card"
+  },
+  {
+    "id": "uicomponents-uipaymentoptioncard--selected",
+    "title": "UiComponents/UiPaymentOptionCard",
+    "name": "Selected"
+  },
+  {
+    "id": "uicomponents-uipaymentoptioncard--static",
+    "title": "UiComponents/UiPaymentOptionCard",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uipininput--disabled",
+    "title": "UiComponents/UiPinInput",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uipininput--filled",
+    "title": "UiComponents/UiPinInput",
+    "name": "Filled"
+  },
+  {
+    "id": "uicomponents-uipininput--pin-input",
+    "title": "UiComponents/UiPinInput",
+    "name": "Pin Input"
+  },
+  {
+    "id": "uicomponents-uipininput--static",
+    "title": "UiComponents/UiPinInput",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uipininput--with-error",
+    "title": "UiComponents/UiPinInput",
+    "name": "With Error"
+  },
+  {
+    "id": "uicomponents-uipininput--with-helper-text",
+    "title": "UiComponents/UiPinInput",
+    "name": "With Helper Text"
   },
   {
     "id": "uicomponents-uiprofileselectcard--disabled",
@@ -313,6 +433,31 @@
     "id": "uicomponents-uiskeletontext--small",
     "title": "UiComponents/UiSkeletonText",
     "name": "Small"
+  },
+  {
+    "id": "uicomponents-uistatusbadge--active",
+    "title": "UiComponents/UiStatusBadge",
+    "name": "Active"
+  },
+  {
+    "id": "uicomponents-uistatusbadge--disabled",
+    "title": "UiComponents/UiStatusBadge",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uistatusbadge--static",
+    "title": "UiComponents/UiStatusBadge",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uistatusbadge--static-done",
+    "title": "UiComponents/UiStatusBadge",
+    "name": "Static Done"
+  },
+  {
+    "id": "uicomponents-uistatusbadge--status-badge",
+    "title": "UiComponents/UiStatusBadge",
+    "name": "Status Badge"
   },
   {
     "id": "uicomponents-uitaskcard--disabled",
