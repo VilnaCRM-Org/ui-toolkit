@@ -5,10 +5,12 @@
 // stay static and the STATIC branch — which carries no ARIA at all (a11y
 // contract S2) — automatically paints the rest presentation.
 //
-// Geometry is frozen across all four columns: the slot is always 1.5rem square,
-// the glyph bbox and stroke weight never move, opacity is always 1, and nothing
-// but the stroke colour changes — plus the one authored piece of button chrome
-// on the whole board, the danger lane's pressed backdrop.
+// Geometry is frozen across all four columns: each slot keeps one square size
+// (1.5rem, except the settings lane's native 1.875rem — Figma draws settings-04
+// at 30x30 while its siblings are 24x24), the glyph bbox and stroke weight never
+// move, opacity is always 1, and nothing but the stroke colour changes — plus
+// the one authored piece of button chrome on the whole board, the danger lane's
+// pressed backdrop.
 import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
@@ -40,14 +42,13 @@ interface InkRamp {
   active: string;
 }
 
-// The per-lane stroke ramps, read straight off the four Figma columns. Two
-// deliberate anomalies live in the `toggle` row: the eye hovers to grey200 and
-// not primary (a visibility toggle is a neutral affordance, not a primary
-// action), and its Figma "active" cell is the PRESSED rendering — grey300, i.e.
-// identical to rest, with the eye-off glyph — not a pointer `:active`. Figma
-// therefore ships no pointer-press cell for the eye, so it inherits its
-// siblings' `containedButtonActive` press feedback rather than being the one
-// control in the row with none.
+// The per-lane stroke ramps, read straight off the four Figma columns. The
+// `toggle` row never leaves the grey family: the eye hovers to grey200 and not
+// primary (a visibility toggle is a neutral affordance, not a primary action),
+// and its Figma "active" cell is the PRESSED rendering — grey300, identical to
+// rest, with the eye-off glyph. The design ships no blue anywhere on the eye, so
+// its press ink stays the rest grey rather than borrowing the siblings'
+// `containedButtonActive` feedback.
 const INK: Readonly<Record<ActionLane, InkRamp>> = {
   neutral: {
     rest: palette.grey300.main,
@@ -57,7 +58,7 @@ const INK: Readonly<Record<ActionLane, InkRamp>> = {
   toggle: {
     rest: palette.grey300.main,
     hover: palette.grey200.main,
-    active: palette.containedButtonActive.main,
+    active: palette.grey300.main,
   },
   danger: {
     rest: palette.error.main,
@@ -114,9 +115,9 @@ const BAR_BASE: object = {
   padding: 0,
 };
 
-// The 24px slot. `settings-04` is normalised into it by rendering its native
-// 30-unit viewBox at 24px, which resolves its 2.5 stroke to exactly 2. No
-// border, background or radius at rest — and none in any other state either,
+// The slot box. Sized per lane below — 24px everywhere except settings, whose
+// Figma instance is natively 30x30, so its glyph renders unscaled at 2.5 stroke.
+// No border, background or radius at rest — and none in any other state either,
 // except the danger backdrop, which is a separate layer rather than a change to
 // this box, so the slot rhythm never reflows.
 const SLOT_BASE: object = {
@@ -126,8 +127,6 @@ const SLOT_BASE: object = {
   flexShrink: 0,
   alignItems: 'center',
   justifyContent: 'center',
-  width: '1.5rem',
-  height: '1.5rem',
   margin: 0,
   padding: 0,
   border: 'none',
@@ -136,6 +135,11 @@ const SLOT_BASE: object = {
   font: 'inherit',
   lineHeight: 0,
 };
+
+/** Slot edge per icon: settings keeps its native 30px square, the rest 24px. */
+function slotSize(icon: ActionIconName): string {
+  return icon === 'settings' ? '1.875rem' : '1.5rem';
+}
 
 /**
  * Frame 5441 (632:46709), the only authored button chrome anywhere on Board A:
@@ -198,11 +202,14 @@ export interface ActionButtonStyleConfig {
   interactive: boolean;
 }
 
-/** One action slot: the frozen 24px box, its lane's rest ink, plus button chrome. */
+/** One action slot: its frozen square box, its lane's rest ink, plus button chrome. */
 export function actionButtonSx(config: Readonly<ActionButtonStyleConfig>): SxProps<Theme> {
   const lane: ActionLane = LANE_BY_ICON[config.icon];
+  const edge: string = slotSize(config.icon);
   return {
     ...SLOT_BASE,
+    width: edge,
+    height: edge,
     color: INK[lane].rest,
     ...(config.interactive ? interactiveSlotSx(lane) : null),
   };
