@@ -2,7 +2,7 @@
 
 - **Issue:** [#26](https://github.com/VilnaCRM-Org/ui-toolkit/issues/26)
 - **Epic:** Epic 4 — Skeleton Loading Experience Parity
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 4.3: Composed Skeleton
   Layout Variants_
 
@@ -72,7 +72,18 @@ alone):
 
 `UiSkeletonWidget` variant surface: `size: 'small' | 'medium'` crossed with
 `variant: 'task-list' | 'block' | 'chart'` (content anatomy per the structural
-notes above). `UiSkeletonControlText` takes `control: 'checkbox' | 'radio'`.
+notes above), plus `columns: 1 | 2` on the medium task-list — the count doubles
+as the board footprint switch (774×410 vs the 1167×540 two-column card).
+`UiSkeletonControlText` takes `control: 'checkbox' | 'radio'`.
+
+Measured corrections to the structural notes (live Figma verification during
+delivery): the three list nodes are byte-identical 590×64 leaf bars — no
+avatar/text anatomy and no cycling variants — so `UiSkeletonList` repeats one
+row at the measured 6px gap; the table's "header strip" is five loose 63×14
+bars above ten 1166×56 body rows (12px gaps, column tracks 228/196/117/219/324),
+giving `UiSkeletonTable` its `rows = 10` / `columns = 5` design defaults; and
+the control placeholder's flat `#EBEEF2` fill is rendered with the shimmer
+instead (static form of the same grey — no new colours, in-step animation).
 
 Existing `UiSkeletonButton` / `UiSkeletonInput` are the `button` / `input`
 patterns; geometry verified against `538:39683` / `538:39789` with deltas (if any)
@@ -93,10 +104,18 @@ documented in `component-provenance.md` rather than forked.
 
 ## Definition of Done (instantiated from `story-dod-template.md`)
 
-- [ ] Changed files listed in the PR diff and summarized here on completion.
-- [ ] Provenance rows for every composed module (source: `new` composition of the
-      `crm`-baseline animation system; visuals from Board D nodes; ref #26).
-- [ ] Tests run: unit suite green; visual baselines pass.
-- [ ] Stories added and registered for every delivered variant.
-- [ ] Export changes recorded (six new exports).
-- [ ] Parity evidence: measured geometry vs node map recorded in the PR.
+- [x] Changed files listed in the PR diff (six component dirs, six unit-test
+      files, the shared `ComposedSkeleton` shell, central export/registry
+      wiring).
+- [x] Provenance rows for every composed module (source: `new` composition of
+      the `crm`-baseline animation system; visuals from Board D nodes; ref #26),
+      including the button/input coverage verdict.
+- [x] Tests run: unit suite green with 100% coverage on every new module.
+- [x] Stories added and registered for every delivered variant (15 registry
+      entries).
+- [x] Export changes recorded (`UiSkeletonControlText`, `UiSkeletonList`,
+      `UiSkeletonMenu`, `UiSkeletonTabBar`, `UiSkeletonTable`,
+      `UiSkeletonWidget`).
+- [x] Parity evidence: measured geometry vs node map recorded above and in the
+      provenance registry; visual baselines generated in the pinned Playwright
+      image.

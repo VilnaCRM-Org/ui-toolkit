@@ -2,7 +2,7 @@
 
 - **Issue:** [#24](https://github.com/VilnaCRM-Org/ui-toolkit/issues/24)
 - **Epic:** Epic 4 — Skeleton Loading Experience Parity
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 4.1: CRM Skeleton Baseline
   and Provenance Lock_
 

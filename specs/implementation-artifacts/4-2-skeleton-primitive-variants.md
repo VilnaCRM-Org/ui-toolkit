@@ -2,7 +2,7 @@
 
 - **Issue:** [#25](https://github.com/VilnaCRM-Org/ui-toolkit/issues/25)
 - **Epic:** Epic 4 — Skeleton Loading Experience Parity
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 4.2: Skeleton Primitive
   Variants_
 

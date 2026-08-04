@@ -410,6 +410,16 @@
     "name": "Default"
   },
   {
+    "id": "uicomponents-uiskeletoncontroltext--checkbox",
+    "title": "UiComponents/UiSkeletonControlText",
+    "name": "Checkbox"
+  },
+  {
+    "id": "uicomponents-uiskeletoncontroltext--radio",
+    "title": "UiComponents/UiSkeletonControlText",
+    "name": "Radio"
+  },
+  {
     "id": "uicomponents-uiskeletonimage--block",
     "title": "UiComponents/UiSkeletonImage",
     "name": "Block"
@@ -435,6 +445,46 @@
     "name": "Static"
   },
   {
+    "id": "uicomponents-uiskeletonlist--default",
+    "title": "UiComponents/UiSkeletonList",
+    "name": "Default"
+  },
+  {
+    "id": "uicomponents-uiskeletonlist--five-rows",
+    "title": "UiComponents/UiSkeletonList",
+    "name": "Five Rows"
+  },
+  {
+    "id": "uicomponents-uiskeletonmenu--default",
+    "title": "UiComponents/UiSkeletonMenu",
+    "name": "Default"
+  },
+  {
+    "id": "uicomponents-uiskeletontabbar--default",
+    "title": "UiComponents/UiSkeletonTabBar",
+    "name": "Default"
+  },
+  {
+    "id": "uicomponents-uiskeletontabbar--four-tabs",
+    "title": "UiComponents/UiSkeletonTabBar",
+    "name": "Four Tabs"
+  },
+  {
+    "id": "uicomponents-uiskeletontable--compact-rows",
+    "title": "UiComponents/UiSkeletonTable",
+    "name": "Compact Rows"
+  },
+  {
+    "id": "uicomponents-uiskeletontable--default",
+    "title": "UiComponents/UiSkeletonTable",
+    "name": "Default"
+  },
+  {
+    "id": "uicomponents-uiskeletontable--extra-columns",
+    "title": "UiComponents/UiSkeletonTable",
+    "name": "Extra Columns"
+  },
+  {
     "id": "uicomponents-uiskeletontext--large",
     "title": "UiComponents/UiSkeletonText",
     "name": "Large"
@@ -453,6 +503,31 @@
     "id": "uicomponents-uiskeletontext--small",
     "title": "UiComponents/UiSkeletonText",
     "name": "Small"
+  },
+  {
+    "id": "uicomponents-uiskeletonwidget--medium-task-list",
+    "title": "UiComponents/UiSkeletonWidget",
+    "name": "Medium Task List"
+  },
+  {
+    "id": "uicomponents-uiskeletonwidget--medium-two-column",
+    "title": "UiComponents/UiSkeletonWidget",
+    "name": "Medium Two Column"
+  },
+  {
+    "id": "uicomponents-uiskeletonwidget--small-block",
+    "title": "UiComponents/UiSkeletonWidget",
+    "name": "Small Block"
+  },
+  {
+    "id": "uicomponents-uiskeletonwidget--small-chart",
+    "title": "UiComponents/UiSkeletonWidget",
+    "name": "Small Chart"
+  },
+  {
+    "id": "uicomponents-uiskeletonwidget--small-task-list",
+    "title": "UiComponents/UiSkeletonWidget",
+    "name": "Small Task List"
   },
   {
     "id": "uicomponents-uistatusbadge--active",
