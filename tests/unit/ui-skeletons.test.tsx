@@ -84,6 +84,56 @@ describe('UiSkeleton primitives', () => {
   });
 });
 
+describe('UiSkeleton primitives are decorative', () => {
+  // Skeleton shapes carry no information: they are hidden from assistive
+  // technology so a screen reader never walks a wall of empty boxes. The
+  // surrounding composed layout owns the aria-busy state and the status text.
+  function expectDecorative(container: HTMLElement, id: string): HTMLElement {
+    const root: HTMLElement = getById(container, id);
+    expect(root).toHaveAttribute('aria-hidden', 'true');
+    expect(root).not.toHaveAttribute('role');
+    expect(root).not.toHaveAttribute('aria-label');
+    expect(root).not.toHaveAttribute('tabindex');
+    return root;
+  }
+
+  it('hides the UiSkeletonText single-line root', () => {
+    const { container } = render(<UiSkeletonText id="hidden-text" />);
+    expectDecorative(container, 'hidden-text');
+  });
+
+  it('hides the UiSkeletonText stack wrapper only, never the individual bars', () => {
+    const { container } = render(<UiSkeletonText id="hidden-text-many" lines={3} />);
+    const stack: HTMLElement = expectDecorative(container, 'hidden-text-many');
+    // One aria-hidden on the wrapper already hides the whole subtree; repeating
+    // it per bar would be redundant markup.
+    expect(stack.innerHTML).not.toContain('aria-hidden');
+    expect(countBars(stack)).toBe(3);
+  });
+
+  it('hides the UiSkeletonBlock root', () => {
+    const { container } = render(<UiSkeletonBlock id="hidden-block" />);
+    expectDecorative(container, 'hidden-block');
+  });
+
+  it('hides the UiSkeletonButton root', () => {
+    const { container } = render(<UiSkeletonButton id="hidden-button" />);
+    expectDecorative(container, 'hidden-button');
+  });
+
+  it('hides the UiSkeletonInput outer container only, never the placeholder', () => {
+    const { container } = render(<UiSkeletonInput id="hidden-input" />);
+    const outer: HTMLElement = expectDecorative(container, 'hidden-input');
+    expect(outer.innerHTML).toContain('ui-skeleton-input__placeholder');
+    expect(outer.innerHTML).not.toContain('aria-hidden');
+  });
+
+  it('hides the UiSkeletonImage root', () => {
+    const { container } = render(<UiSkeletonImage id="hidden-image" />);
+    expectDecorative(container, 'hidden-image');
+  });
+});
+
 describe('UiSkeletonBlock sx merging', () => {
   it('renders within a ThemeProvider when given an object (non-array) sx prop', () => {
     const { container } = render(
@@ -364,6 +414,15 @@ describe('UiSkeletons reduced-motion', () => {
   it('suppresses the shimmer animation under prefers-reduced-motion', () => {
     expect(baseSkeletonStyle['@media (prefers-reduced-motion: reduce)']).toEqual({
       animation: 'none',
+    });
+  });
+});
+
+describe('UiSkeletons forced colors', () => {
+  it('outlines every shape in Contrast Themes, where the gradient is stripped', () => {
+    expect(baseSkeletonStyle['@media (forced-colors: active)']).toEqual({
+      outline: '1px solid GrayText',
+      outlineOffset: '-1px',
     });
   });
 });

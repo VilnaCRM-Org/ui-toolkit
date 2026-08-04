@@ -14,6 +14,7 @@ export default function UiSkeletonImage({
   return (
     <Box
       id={id}
+      aria-hidden="true"
       sx={[getImageSkeletonStyles(variant, width, height), ...(Array.isArray(sx) ? sx : [sx])]}
     />
   );

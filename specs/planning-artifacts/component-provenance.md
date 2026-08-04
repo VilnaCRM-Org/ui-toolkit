@@ -202,3 +202,16 @@ the CRM contract fails CI rather than shipping. Render and responsive behavior f
 the primitives and the composed auth layout stay locked by
 `tests/unit/ui-skeletons.test.tsx` and `tests/unit/auth-skeleton.test.tsx`. Story
 4.1 changes no runtime code: it identifies the baseline, verifies it, and locks it.
+
+**Accessibility hardening (2026-08-04, per accessibility-lead review).** The
+skeleton suite was retrofitted to the canonical conventions: primitive roots
+(`UiSkeletonText`/`Block`/`Button`/`Input`/`Image`) carry `aria-hidden="true"`
+and nothing else; composed layouts (`AuthSkeleton`) render the `ComposedSkeleton`
+shape — a plain `aria-busy` container, visually-hidden status text, and an
+`aria-hidden` shape tree — instead of a named `<section>` landmark, with
+`React.useId()`-scoped ids; and forced-colors fallbacks were added
+(`outline: 1px solid GrayText` on `baseSkeletonStyle`, `border: 1px solid
+CanvasText` on `formWrapperPulse`) because Contrast Themes strip the gradient and
+shadows. The reduced-motion citation is corrected to WCAG 2.2.2 Pause, Stop, Hide
+(pre-load/essential exception) with technique C39. The animation contract is
+unchanged and `tests/unit/skeleton-crm-parity.test.ts` still passes untouched.

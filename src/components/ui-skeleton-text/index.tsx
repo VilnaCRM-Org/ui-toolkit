@@ -16,13 +16,21 @@ export default function UiSkeletonText({
 
   if (lines > 1) {
     return (
-      <Box id={id} sx={[getTextLinesContainerStyles(width), ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box
+        id={id}
+        aria-hidden="true"
+        sx={[getTextLinesContainerStyles(width), ...(Array.isArray(sx) ? sx : [sx])]}
+      >
         <SkeletonTextLines size={barSize} lines={lines} />
       </Box>
     );
   }
 
   return (
-    <Box id={id} sx={[getTextSkeletonStyles(barSize, width), ...(Array.isArray(sx) ? sx : [sx])]} />
+    <Box
+      id={id}
+      aria-hidden="true"
+      sx={[getTextSkeletonStyles(barSize, width), ...(Array.isArray(sx) ? sx : [sx])]}
+    />
   );
 }

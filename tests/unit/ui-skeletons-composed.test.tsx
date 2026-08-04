@@ -32,7 +32,9 @@ describe('ComposedSkeleton', () => {
   });
 
   it('hides the shape tree from assistive technology, not the status text', () => {
-    render(<ComposedSkeleton>{<span>shape</span>}</ComposedSkeleton>);
+    render(
+      <ComposedSkeleton contentSx={{ columnGap: '2px' }}>{<span>shape</span>}</ComposedSkeleton>
+    );
     expect(screen.getByText(DEFAULT_LOADING_TEXT)).not.toHaveAttribute('aria-hidden');
     const shapes = getShapeTree();
     expect(shapes).toHaveAttribute('aria-hidden', 'true');

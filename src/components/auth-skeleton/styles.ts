@@ -13,9 +13,15 @@ const AUTH_SKELETON_TINY_BREAKPOINT: string = '336px';
 export default {
   formWrapperPulse: {
     animation: `${shadowPulseAnimation} 1.5s ease-in-out infinite alternate`,
-    // Suppress the pulse when the user has requested reduced motion (WCAG 2.3.3).
+    // Suppress the pulse when the user has requested reduced motion
+    // (WCAG 2.2.2 Pause, Stop, Hide — pre-load/essential exception, C39).
     '@media (prefers-reduced-motion: reduce)': {
       animation: 'none',
+    },
+    // Contrast Themes drop the pulsing shadow that draws the card edge; a
+    // system-colour border keeps the form wrapper outlined.
+    '@media (forced-colors: active)': {
+      border: '1px solid CanvasText',
     },
   },
   titleSkeleton: {

@@ -14,7 +14,7 @@ const meta: Meta<typeof AuthSkeleton> = {
     },
     ariaLabel: {
       type: 'string',
-      description: 'Accessible name for the loading <section> landmark',
+      description: 'Visually-hidden loading text inside the aria-busy container',
     },
   },
 };
