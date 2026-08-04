@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { radioControlArgType, textControlArgType } from '../../../.storybook/field-story-arg-types';
+
 import UiSkeletonImage from './index';
 
 const meta: Meta<typeof UiSkeletonImage> = {
@@ -7,13 +9,9 @@ const meta: Meta<typeof UiSkeletonImage> = {
   component: UiSkeletonImage,
   tags: ['autodocs'],
   argTypes: {
-    variant: {
-      description: 'Image placeholder shape',
-      options: ['round', 'block'],
-      control: { type: 'radio' },
-    },
-    width: { description: 'Width of the placeholder', control: { type: 'text' } },
-    height: { description: 'Height of the placeholder', control: { type: 'text' } },
+    variant: radioControlArgType('Image placeholder shape', ['round', 'block']),
+    width: textControlArgType('Width of the placeholder'),
+    height: textControlArgType('Height of the placeholder'),
   },
 };
 

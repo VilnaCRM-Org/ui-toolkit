@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { radioControlArgType, textControlArgType } from '../../../.storybook/field-story-arg-types';
+
 import UiSkeletonControlText from './index';
 
 const meta: Meta<typeof UiSkeletonControlText> = {
@@ -7,15 +9,8 @@ const meta: Meta<typeof UiSkeletonControlText> = {
   component: UiSkeletonControlText,
   tags: ['autodocs'],
   argTypes: {
-    control: {
-      description: 'Control placeholder shape',
-      options: ['checkbox', 'radio'],
-      control: { type: 'radio' },
-    },
-    loadingText: {
-      description: 'Visually hidden status text inside the aria-busy container',
-      control: { type: 'text' },
-    },
+    control: radioControlArgType('Control placeholder shape', ['checkbox', 'radio']),
+    loadingText: textControlArgType('Visually hidden status text inside the aria-busy container'),
   },
 };
 

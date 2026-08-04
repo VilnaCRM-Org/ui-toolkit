@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import {
+  numberControlArgType,
+  textControlArgType,
+} from '../../../.storybook/field-story-arg-types';
+
 import UiSkeletonList from './index';
 
 const meta: Meta<typeof UiSkeletonList> = {
@@ -7,11 +12,8 @@ const meta: Meta<typeof UiSkeletonList> = {
   component: UiSkeletonList,
   tags: ['autodocs'],
   argTypes: {
-    rows: { description: 'Number of stacked row placeholders', control: { type: 'number' } },
-    loadingText: {
-      description: 'Visually hidden status text inside the aria-busy container',
-      control: { type: 'text' },
-    },
+    rows: numberControlArgType('Number of stacked row placeholders'),
+    loadingText: textControlArgType('Visually hidden status text inside the aria-busy container'),
   },
 };
 

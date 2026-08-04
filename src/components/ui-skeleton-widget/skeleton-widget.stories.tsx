@@ -1,5 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import {
+  numberControlArgType,
+  radioControlArgType,
+  textControlArgType,
+} from '../../../.storybook/field-story-arg-types';
+
 import UiSkeletonWidget from './index';
 
 const meta: Meta<typeof UiSkeletonWidget> = {
@@ -7,26 +13,22 @@ const meta: Meta<typeof UiSkeletonWidget> = {
   component: UiSkeletonWidget,
   tags: ['autodocs'],
   argTypes: {
-    size: {
-      description: 'Card footprint: 375x410 (small) or 774x410 / 1167x540 (medium)',
-      options: ['small', 'medium'],
-      control: { type: 'radio' },
-    },
-    variant: {
-      description: 'Content anatomy under the shared 48px header',
-      options: ['task-list', 'block', 'chart'],
-      control: { type: 'radio' },
-    },
-    rows: { description: 'Task rows per column', control: { type: 'number' } },
+    size: radioControlArgType('Card footprint: 375x410 (small) or 774x410 / 1167x540 (medium)', [
+      'small',
+      'medium',
+    ]),
+    variant: radioControlArgType('Content anatomy under the shared 48px header', [
+      'task-list',
+      'block',
+      'chart',
+    ]),
+    rows: numberControlArgType('Task rows per column'),
     columns: {
       description: 'Task-list columns; 2 selects the wide medium board',
       options: [1, 2],
       control: { type: 'inline-radio' },
     },
-    loadingText: {
-      description: 'Visually hidden status text inside the aria-busy container',
-      control: { type: 'text' },
-    },
+    loadingText: textControlArgType('Visually hidden status text inside the aria-busy container'),
   },
 };
 

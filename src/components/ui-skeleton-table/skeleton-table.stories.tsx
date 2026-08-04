@@ -1,5 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import {
+  numberControlArgType,
+  textControlArgType,
+} from '../../../.storybook/field-story-arg-types';
+
 import UiSkeletonTable from './index';
 
 const meta: Meta<typeof UiSkeletonTable> = {
@@ -7,15 +12,9 @@ const meta: Meta<typeof UiSkeletonTable> = {
   component: UiSkeletonTable,
   tags: ['autodocs'],
   argTypes: {
-    rows: { description: 'Number of body rows', control: { type: 'number' } },
-    columns: {
-      description: 'Number of columns; measured widths cycle past the design set',
-      control: { type: 'number' },
-    },
-    loadingText: {
-      description: 'Screen-reader-only status text',
-      control: { type: 'text' },
-    },
+    rows: numberControlArgType('Number of body rows'),
+    columns: numberControlArgType('Number of columns; measured widths cycle past the design set'),
+    loadingText: textControlArgType('Screen-reader-only status text'),
   },
 };
 
