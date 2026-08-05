@@ -140,6 +140,11 @@ test.describe('Visual states (Figma state grid)', () => {
     await shoot(page, 'file-upload-hover.png');
   });
 
+  test('link disabled', async ({ page }) => {
+    await openStory(page, 'uicomponents-uilink--link', 'disabled:!true');
+    await shoot(page, 'link-disabled.png');
+  });
+
   test('link hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link');
     await page.getByRole('link').hover();

@@ -16,6 +16,11 @@ const meta: Meta<typeof UiLink> = {
       type: 'string',
       description: 'Link URL',
     },
+    disabled: {
+      control: 'boolean',
+      description:
+        'Board A disabled state: brand-gray ink, `aria-disabled="true"`, out of the tab order',
+    },
   },
 };
 

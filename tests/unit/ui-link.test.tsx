@@ -1,5 +1,5 @@
 import { ThemeProvider, createTheme } from '@mui/material';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiLink } from '../../src/components';
@@ -238,5 +238,97 @@ describe('UiLink visually-hidden notice styles', () => {
     expect(span).not.toBeNull();
     const css: string = getElementCss(span as HTMLElement);
     expect(css).toMatch(/clip:\s*rect\(0 0 0 0\)/);
+  });
+});
+
+// Renders the link with `disabled` omitted (undefined) or explicitly set, and
+// returns the anchor. The anchor keeps its `link` role in every case, because
+// UiLink never drops `href`.
+const getLink = (disabled?: boolean): HTMLElement => {
+  if (disabled === undefined) {
+    render(<UiLink href={testUrl}>{testText}</UiLink>);
+  } else {
+    render(
+      <UiLink href={testUrl} disabled={disabled}>
+        {testText}
+      </UiLink>
+    );
+  }
+  return screen.getByRole('link', { name: testText });
+};
+
+describe('UiLink disabled state', () => {
+  it('keeps the link role, href and accessible name while disabled', () => {
+    // Dropping href would strip the `link` role and the accessible name, so the
+    // disabled treatment is layered on top of a still-complete anchor.
+    expect(getLink(true)).toHaveAttribute('href', testUrl);
+  });
+
+  it('flags a disabled link with aria-disabled', () => {
+    // Kills ConditionalExpression {disabled ? true : undefined} -> {false ? ...}.
+    expect(getLink(true)).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('leaves a link without aria-disabled when disabled is omitted', () => {
+    // Kills ConditionalExpression {disabled ? true : undefined} -> {true ? ...}.
+    expect(getLink()).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('leaves a link without aria-disabled when disabled is explicitly false', () => {
+    expect(getLink(false)).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('removes a disabled link from the tab order with tabIndex -1', () => {
+    // Kills ConditionalExpression {disabled ? -1 : undefined} -> {false ? ...}
+    // and the UnaryOperator mutation of -1.
+    expect(getLink(true)).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('leaves an enabled link at its natural tab position', () => {
+    // Kills ConditionalExpression {disabled ? -1 : undefined} -> {true ? ...}.
+    expect(getLink()).not.toHaveAttribute('tabindex');
+  });
+
+  it('suppresses navigation when a disabled link is clicked', () => {
+    // fireEvent returns false when a listener called preventDefault on the
+    // cancelable click, i.e. the browser would not follow the href.
+    // Kills ConditionalExpression {disabled ? suppressNavigation : undefined}
+    // -> {false ? ...} and the MethodExpression removal of preventDefault().
+    expect(fireEvent.click(getLink(true))).toBe(false);
+  });
+
+  it('lets an enabled link navigate on click', () => {
+    // Kills ConditionalExpression {disabled ? suppressNavigation : undefined}
+    // -> {true ? ...}: an enabled link must not cancel its own activation.
+    expect(fireEvent.click(getLink())).toBe(true);
+  });
+
+  it('paints the disabled link with the brand-gray token from Board A', () => {
+    // Board A's Disabled column (`439:19364`, `439:19614`) measures #E1E7EA
+    // (brandGray) against the rest column's #969B9D. jsdom serialises colours
+    // inconsistently, so both notations are accepted.
+    const css: string = getElementCss(getLink(true));
+    expect(css).toMatch(
+      /\[aria-disabled="true"\][^{]*\{[^}]*color:\s*(#e1e7ea|rgb\(225,\s*231,\s*234\))/i
+    );
+  });
+
+  it('keeps the underline treatment while disabled', () => {
+    // The measured disabled and rest glyphs share their typography: the board
+    // changes the ink only, so no decoration override is emitted.
+    expect(getLink(true)).toHaveStyle({ textDecoration: 'underline' });
+  });
+
+  it('still enforces the new-tab rel and notice when disabled', () => {
+    render(
+      <UiLink href={testUrl} target="_blank" disabled>
+        {testText}
+      </UiLink>
+    );
+
+    const link: HTMLElement = screen.getByRole('link', { name: new RegExp(testText) });
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+    expect(link).toHaveAccessibleName(`${testText} (opens in new tab)`);
   });
 });
