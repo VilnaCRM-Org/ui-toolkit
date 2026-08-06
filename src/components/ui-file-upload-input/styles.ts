@@ -4,9 +4,10 @@ import type { SystemStyleObject } from '@mui/system';
 import colorTheme from '@/components/ui-color-theme';
 
 // Figma source: the file-upload control, nodes 449:25710 (rest), 449:25717
-// (hover), 449:25703 (active), 449:25724 (disabled) and 449:25676 (error). The
-// cluster is detached from every page in the file, so it is reachable only by
-// direct node id — which is why a page-tree search reports "no upload component".
+// (hover), 449:25703 (active), 449:25724 (disabled) and 449:25676 (error) — the
+// titled five-state cluster (heading 449:25635) painted on Board A (frame
+// 439:19252) of the "Ui kit" page. Figma ships no reusable upload component
+// master, so these state frames are the styling contract (DEV-12).
 //
 // This module carries the parts that do not change with interaction state; the
 // field surface, the file name and the status tint live in ./state-styles and

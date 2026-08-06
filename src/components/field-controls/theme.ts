@@ -24,8 +24,8 @@ const outlinedFieldTheme: Theme = createTheme({
           },
           // Focus keeps a visible 1px grey250 stroke as the keyboard focus indicator
           // (WCAG 2.4.7). Figma leaves the stroke light and accents the caret/icon in
-          // brand-blue instead; that alone is not a sufficient focus cue, so the
-          // slightly darker focus stroke is a deliberate, documented a11y deviation.
+          // brand-blue instead; that alone is not a sufficient focus cue, so the slightly
+          // darker focus stroke is a deliberate, documented a11y deviation (DEV-25).
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             border: `1px solid ${colorTheme.palette.grey250.main}`,
           },

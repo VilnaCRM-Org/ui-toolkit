@@ -49,8 +49,9 @@ export const chipSx: SxProps<Theme> = {
 
 // The delete affordance is the Figma 20px × (node 535:37540) so the badge is the
 // exact design width; removal also has a keyboard path (Backspace / arrow-then-
-// Delete), the WCAG 2.5.8 equivalent-control exception. A plain brand-blue glyph at
-// rest, a filled brand-blue circle with a white glyph on chip hover (from `chipSx`).
+// Delete), the WCAG 2.5.8 equivalent-control exception (DEV-24). A plain brand-blue
+// glyph at rest, a filled brand-blue circle with a white glyph on chip hover (from
+// `chipSx`).
 export const deleteButtonSx: SxProps<Theme> = {
   display: 'inline-flex',
   alignItems: 'center',
