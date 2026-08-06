@@ -130,8 +130,9 @@ export const countChipSx: SxProps<Theme> = {
   width: '1.125rem',
   height: '1.125rem',
   borderRadius: '50%',
-  // 1.4.11 decoration-exempt: the fill sits behind real text and the count is also
-  // carried by the button's accessible name, so nothing depends on the tint alone.
+  // 1.4.11 decoration-exempt (DEV-31): the fill sits behind real text and the count
+  // is also carried by the button's accessible name, so nothing depends on the tint
+  // alone.
   backgroundColor: palette.primary.main,
   fontFamily: 'Inter',
   fontWeight: 500,

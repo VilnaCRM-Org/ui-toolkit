@@ -48,8 +48,8 @@ const CARD_BASE: object = {
   padding: '0.875rem 1rem 0.8125rem',
   backgroundColor: 'transparent',
   border: 0,
-  // 1.4.11 decoration-exempt: the divider carries no information (it separates
-  // flush-stacked cards); revisit if it ever becomes a state indicator.
+  // 1.4.11 decoration-exempt (DEV-28): the divider carries no information (it
+  // separates flush-stacked cards); revisit if it ever becomes a state indicator.
   borderBottom: `1px solid ${palette.brandGray.main}`,
   textAlign: 'left',
   font: 'inherit',
@@ -124,8 +124,8 @@ export const chipSx: SxProps<Theme> = {
   padding: '0.0625rem 0.1875rem',
   borderRadius: '0.25rem',
   border: '1px solid transparent',
-  // 1.4.11 decoration-exempt: the fill and its hover border are decoration behind
-  // real text; revisit if the chip ever becomes interactive or state-bearing.
+  // 1.4.11 decoration-exempt (DEV-29): the fill and its hover border are decoration
+  // behind real text; revisit if the chip ever becomes interactive or state-bearing.
   backgroundColor: palette.brandGray.main,
   color: palette.darkPrimary.main,
   fontFamily: 'Inter',

@@ -70,8 +70,8 @@ const CHIP_BASE: object = {
   margin: 0,
   padding: '4px 7px',
   backgroundColor: palette.grey500.main,
-  // 1.4.11 decoration-exempt: the boundary carries no information of its own at
-  // rest, and it is present in every state so only its colour ever changes.
+  // 1.4.11 decoration-exempt (DEV-32): the boundary carries no information of its
+  // own at rest, and it is present in every state so only its colour ever changes.
   border: '1px solid transparent',
   borderRadius: '0.25rem',
   textAlign: 'left',
