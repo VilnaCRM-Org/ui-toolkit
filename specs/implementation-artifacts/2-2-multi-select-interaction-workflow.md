@@ -1,8 +1,12 @@
 # Story 2.2 — Multi-Select Interaction Workflow
 
 - **Issue:** [#14](https://github.com/VilnaCRM-Org/ui-toolkit/issues/14)
+- **PR:** [#109](https://github.com/VilnaCRM-Org/ui-toolkit/pull/109) — canonical
+  (supersedes [#108](https://github.com/VilnaCRM-Org/ui-toolkit/pull/108), which the
+  Epic 2 stack reorder auto-merged into its pre-reorder base
+  `feat/issue-15-calendar-multi-select`)
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.2: Multi-Select Interaction Workflow_
 
 ## Scope
@@ -45,6 +49,10 @@ so the chips follow MUI + toolkit tokens.
   no-prop-spreading rule), so no lint exception is needed. Each chip's delete control
   is a named affordance ("Remove Kyiv"), 24×24 (WCAG 2.5.8), and out of the tab order
   (removal is via click, Backspace, or arrow-to-chip + Delete — all MUI-native).
+  **Correction (2026-08-06, Story 5.2):** the control shipped at 20×20, not 24×24
+  (`deleteButtonSx`, `src/components/ui-multi-select/styles.ts`); SC 2.5.8 is met through
+  the equivalent keyboard path above — the SC's equivalent-control exception, recorded as
+  `DEV-24` in `specs/planning-artifacts/deviation-ledger.md`.
 - Accessibility (specced up-front and reviewed by the accessibility team): listbox
   `aria-multiselectable` + `aria-selected` toggles (selected options stay in the list
   to allow deselect); field-level `error`→`aria-invalid`, `helperText`→

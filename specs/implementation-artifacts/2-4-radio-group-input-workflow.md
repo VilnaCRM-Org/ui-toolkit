@@ -1,8 +1,9 @@
 # Story 2.4 — Radio Group Input Workflow
 
 - **Issue:** [#16](https://github.com/VilnaCRM-Org/ui-toolkit/issues/16)
+- **PR:** [#112](https://github.com/VilnaCRM-Org/ui-toolkit/pull/112)
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.4: Radio Group Input Workflow_
 
 ## Scope

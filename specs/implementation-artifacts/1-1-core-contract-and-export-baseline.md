@@ -4,6 +4,13 @@
 
 review
 
+- **PR:** n/a — landed via the stack PRs
+  [#37](https://github.com/VilnaCRM-Org/ui-toolkit/pull/37),
+  [#38](https://github.com/VilnaCRM-Org/ui-toolkit/pull/38) and
+  [#39](https://github.com/VilnaCRM-Org/ui-toolkit/pull/39);
+  [#8](https://github.com/VilnaCRM-Org/ui-toolkit/pull/8) and
+  [#9](https://github.com/VilnaCRM-Org/ui-toolkit/pull/9) were closed unmerged.
+
 ## Story
 
 As a consumer-team developer,
