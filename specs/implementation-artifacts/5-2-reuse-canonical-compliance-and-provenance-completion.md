@@ -1,8 +1,7 @@
 # Story 5.2 — Reuse/Canonical Compliance and Provenance Completion
 
 - **Issue:** [#32](https://github.com/VilnaCRM-Org/ui-toolkit/issues/32)
-- **PR:** none at authoring time — no pull request exists for
-  `feat/issue-32-provenance-compliance` (verified 2026-08-06); fill this line when the PR opens.
+- **PR:** [#126](https://github.com/VilnaCRM-Org/ui-toolkit/pull/126) (draft)
 - **Branch:** `feat/issue-32-provenance-compliance`
 - **Epic:** Epic 5 — Production Adoption Readiness
 - **Status:** review
@@ -58,9 +57,8 @@ Boundaries held deliberately:
 3. This artifact — the DoD compliance matrix (AC-2) and the release-review action list (AC-3).
 4. `tests/unit/component-provenance-traceability.test.ts` — the registry drift guard, so
    registry-wide DoD compliance is machine-enforced instead of review-dependent (the Story 5.1
-   precedent, `tests/unit/board-coverage-traceability.test.ts`). This is the one path cited in this
-   artifact that does not yet exist on disk; like Story 5.1's guard, it is delivered by the story
-   that cites it.
+   precedent, `tests/unit/board-coverage-traceability.test.ts`). Like Story 5.1's guard, it is
+   delivered by the story that cites it — installed in this branch's diff, 990 assertions green.
 5. Header/metadata repair across the 18 existing story artifacts (`PR` lines, stale `Status` lines,
    the wrong-organisation issue URL in `3-5-board-a-micro-components.md`), plus the
    `sprint-status.yaml` reconciliation described under
