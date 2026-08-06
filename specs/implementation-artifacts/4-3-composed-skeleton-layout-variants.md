@@ -1,6 +1,7 @@
 # Story 4.3 — Composed Skeleton Layout Variants
 
 - **Issue:** [#26](https://github.com/VilnaCRM-Org/ui-toolkit/issues/26)
+- **PR:** [#124](https://github.com/VilnaCRM-Org/ui-toolkit/pull/124)
 - **Epic:** Epic 4 — Skeleton Loading Experience Parity
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 4.3: Composed Skeleton

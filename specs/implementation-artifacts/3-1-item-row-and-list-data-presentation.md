@@ -1,6 +1,7 @@
 # Story 3.1 — Item Row and List Data Presentation
 
 - **Issue:** [#19](https://github.com/VilnaCRM-Org/ui-toolkit/issues/19)
+- **PR:** [#117](https://github.com/VilnaCRM-Org/ui-toolkit/pull/117)
 - **Epic:** Epic 3 — Data Presentation and Cards
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 3.1: Item Row and List Data Presentation_

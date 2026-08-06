@@ -32,6 +32,8 @@
 # - Stories can be worked in parallel if team capacity allows
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Story key <-> artifact filename is 1:1: every non-backlog story key has a matching
+#   ./specs/implementation-artifacts/<key>.md on disk (Story 5.2, DOD-11)
 
 generated: 2026-03-09T18:52:20+02:00
 project: ui-toolkit
@@ -48,9 +50,9 @@ development_status:
   epic-1-retrospective: optional
   epic-2: in-progress
   2-1-search-and-select-foundation: review
-  2-2-multi-select-interaction-workflow: in-progress
-  2-3-calendar-multi-select-variant: in-progress
-  2-4-radio-group-input-workflow: in-progress
+  2-2-multi-select-interaction-workflow: review
+  2-3-calendar-multi-select-variant: review
+  2-4-radio-group-input-workflow: review
   2-4a-file-upload-input-workflows: review
   2-5-pagination-workflow-component-delivery: review
   2-6-epic-2-quality-gate-closure: backlog
@@ -60,7 +62,7 @@ development_status:
   3-2-task-card-workflow: review
   3-3-profile-select-card-workflow: review
   3-4-integration-card-workflow: review
-  3-5-board-a-micro-components-delivery: review
+  3-5-board-a-micro-components: review
   3-6-epic-3-quality-gate-closure: backlog
   epic-3-retrospective: optional
   epic-4: in-progress
@@ -71,7 +73,7 @@ development_status:
   epic-4-retrospective: optional
   epic-5: in-progress
   5-1-board-coverage-closure-and-traceability: review
-  5-2-reuse-canonical-compliance-and-provenance-completion: backlog
+  5-2-reuse-canonical-compliance-and-provenance-completion: review
   5-3-export-contract-and-entry-point-integrity: backlog
   5-4-internal-release-readiness-governance-report: backlog
   epic-5-retrospective: optional

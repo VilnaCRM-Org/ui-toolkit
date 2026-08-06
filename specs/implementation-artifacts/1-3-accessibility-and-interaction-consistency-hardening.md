@@ -4,6 +4,8 @@
 
 review
 
+- **PR:** [#69](https://github.com/VilnaCRM-Org/ui-toolkit/pull/69)
+
 ## Story
 
 As an end user,

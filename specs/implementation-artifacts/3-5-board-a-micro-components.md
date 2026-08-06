@@ -1,6 +1,7 @@
 # Story 3.5 — Board A Micro-Components Delivery
 
 - **Issue:** [#23](https://github.com/VilnaCRM-Org/ui-toolkit/issues/23)
+- **PR:** [#123](https://github.com/VilnaCRM-Org/ui-toolkit/pull/123)
 - **Branch:** `feat/issue-23-board-a-micro-components`
 - **Epic:** Epic 3 — Data Presentation and Cards
 - **Status:** review — delivered on `feat/issue-22-integration-card` (PR #122)
@@ -1829,6 +1830,17 @@ component's `types.ts` (the 3.1–3.4 precedent).
 | `variant`  | N/A — the trash backdrop is a state, not a variant   |
 | `sx`       | supported — root, merged last                        |
 | `lang`     | N/A — icon-only; action labels are consumer-owned    |
+
+**Amended after review (2026-08-06):** the `size` row above is stale and is kept
+verbatim as the historical record. The bar does not ship a single normalised 24px
+master — `settings-04` renders at its native 30px:
+`src/components/ui-action-icon-bar/styles.ts:139-141` sizes the settings slot at
+`1.875rem` (30px) while every other action stays at `1.5rem`, and
+`src/components/ui-action-icon-bar/action-glyph.tsx:46` renders that glyph with
+`viewBox: '0 0 30 30'` at `size: '30'`. The normalisation the row describes was
+reversed by commit `e248c4b` ("render settings-04 at its native 30px and keep the
+eye toggle grey under press"). The shipped ruling is enumerated as **DEV-35** in
+`specs/planning-artifacts/deviation-ledger.md`.
 
 #### `ui-status-badge`
 
