@@ -152,10 +152,14 @@ animation parity is preserved exactly.
 | D         | 15                | 15     | 0          | 0         | CLOSED  |
 | **Total** | **38**            | **37** | **1**      | **0**     | CLOSED  |
 
-`prd.md` §9.1 ("the canonical coverage checklist is fully closed and current") is **satisfied**: no
-board element remains unresolved. Every element is either `Done` or carries an explicit `Non-goal`
-ruling — Board B's period segmented switcher (D-15) is the single `Non-goal`, and the last open
-blocker, BLOCK-01, was closed by delivering the `UiLink` disabled state in Story 5.1.
+`prd.md` §9.1 ("the canonical coverage checklist is fully closed and current") is **satisfied as
+recorded**: no board element remains unresolved. Every element is either `Done` or carries an
+explicit `Non-goal` ruling — Board B's period segmented switcher (D-15) is the single `Non-goal`,
+and the last open blocker, BLOCK-01, was closed by delivering the `UiLink` disabled state in
+Story 5.1. The rulings this verdict rests on — D-15 and the two out-of-scope appendix rulings
+(social-icon row, option group) — are release-owner decisions surfaced for ratification in the
+Story 5.1 PR review; if any is overturned there, the affected element reverts to `Blocked`, the
+roll-up reopens, and the drift guard fails until the element is delivered or explicitly re-ruled.
 
 ## Documented non-goals and deferrals
 
