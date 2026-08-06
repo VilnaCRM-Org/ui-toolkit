@@ -1,6 +1,7 @@
 # Story 2.5 — Pagination Workflow Component Delivery
 
 - **Issue:** [#18](https://github.com/VilnaCRM-Org/ui-toolkit/issues/18)
+- **PR:** [#116](https://github.com/VilnaCRM-Org/ui-toolkit/pull/116)
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.5: Pagination Workflow Component Delivery_

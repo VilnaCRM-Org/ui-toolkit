@@ -1,6 +1,7 @@
 # Story 5.1 — Board Coverage Closure and Traceability
 
 - **Issue:** [#31](https://github.com/VilnaCRM-Org/ui-toolkit/issues/31)
+- **PR:** [#125](https://github.com/VilnaCRM-Org/ui-toolkit/pull/125)
 - **Epic:** Epic 5 — Production Adoption Readiness
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 5.1: Board Coverage

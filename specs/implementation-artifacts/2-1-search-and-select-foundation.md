@@ -1,8 +1,9 @@
 # Story 2.1 — Search and Select Foundation
 
 - **Issue:** [#13](https://github.com/VilnaCRM-Org/ui-toolkit/issues/13)
+- **PR:** [#106](https://github.com/VilnaCRM-Org/ui-toolkit/pull/106)
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.1: Search and Select Foundation_
 
 ## Scope

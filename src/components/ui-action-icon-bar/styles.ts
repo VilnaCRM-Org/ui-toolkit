@@ -136,7 +136,7 @@ const SLOT_BASE: object = {
   lineHeight: 0,
 };
 
-/** Slot edge per icon: settings keeps its native 30px square, the rest 24px. */
+/** Slot edge per icon: settings keeps its native 30px square, the rest 24px (DEV-35). */
 function slotSize(icon: ActionIconName): string {
   return icon === 'settings' ? '1.875rem' : '1.5rem';
 }

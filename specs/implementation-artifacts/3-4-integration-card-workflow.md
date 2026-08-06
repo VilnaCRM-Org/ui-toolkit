@@ -1,6 +1,7 @@
 # Story 3.4 — Integration Card Workflow
 
 - **Issue:** [#22](https://github.com/VilnaCRM-Org/ui-toolkit/issues/22)
+- **PR:** [#122](https://github.com/VilnaCRM-Org/ui-toolkit/pull/122)
 - **Epic:** Epic 3 — Data Presentation and Cards
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 3.4: Integration Card Workflow_

@@ -4,6 +4,8 @@
 
 review
 
+- **PR:** [#68](https://github.com/VilnaCRM-Org/ui-toolkit/pull/68)
+
 ## Story
 
 As a product-team developer,
