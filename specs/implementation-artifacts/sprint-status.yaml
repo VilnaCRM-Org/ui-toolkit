@@ -69,8 +69,8 @@ development_status:
   4-3-composed-skeleton-layout-variants: review
   4-4-skeleton-parity-and-quality-gate-closure: backlog
   epic-4-retrospective: optional
-  epic-5: backlog
-  5-1-board-coverage-closure-and-traceability: backlog
+  epic-5: in-progress
+  5-1-board-coverage-closure-and-traceability: review
   5-2-reuse-canonical-compliance-and-provenance-completion: backlog
   5-3-export-contract-and-entry-point-integrity: backlog
   5-4-internal-release-readiness-governance-report: backlog
