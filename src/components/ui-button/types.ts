@@ -1,6 +1,6 @@
 import type { ButtonProps } from '@mui/material/Button';
 
-type ButtonLinkTarget =
+export type ButtonLinkTarget =
   | string
   | {
       pathname?: string;

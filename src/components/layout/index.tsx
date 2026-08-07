@@ -1,6 +1,6 @@
 import React from 'react';
 
-type LayoutProps = {
+export type LayoutProps = {
   children?: React.ReactNode;
   header?: React.ReactNode;
   footer?: React.ReactNode;
