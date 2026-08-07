@@ -1,7 +1,7 @@
 # Story 5.3 — Export Contract and Entry Point Integrity
 
 - **Issue:** [#33](https://github.com/VilnaCRM-Org/ui-toolkit/issues/33)
-- **PR:** _(draft, opened at hand-off)_
+- **PR:** [#127](https://github.com/VilnaCRM-Org/ui-toolkit/pull/127) (draft)
 - **Branch:** `feat/issue-33-export-contract`
 - **Epic:** Epic 5 — Production Adoption Readiness
 - **Status:** review
