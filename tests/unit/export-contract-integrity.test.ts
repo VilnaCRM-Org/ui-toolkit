@@ -100,9 +100,10 @@ const STATUS_TOKENS: string[] = ['`exported`', '`internal`'];
 const COMPONENT_ENTRY: string = 'index.tsx';
 const MODULE_ENTRIES: string[] = [COMPONENT_ENTRY, 'index.ts'];
 
-// R2 asks every exported component for a `*Props` type. These three exported
-// modules publish no such name, each for a stated reason, so the register rather
-// than the naming convention carries their contract.
+// R2 asks every exported component for the props type its directory name
+// implies (`ui-card-list` → `UiCardListProps`). These three exported modules
+// publish no such name, each for a stated reason, so the register rather than
+// the naming convention carries their contract.
 const PROPS_EXEMPT: Record<string, string> = {
   'ui-breakpoints': 'breakpoint token module — exports theme values, takes no props',
   'ui-color-theme': 'colour token module — exports theme values, takes no props',
@@ -195,21 +196,64 @@ function moduleDirectories(): string[] {
     .sort();
 }
 
+// The type sweep below is a regex over the barrel text, and `Object.keys` cannot
+// see type-only exports at runtime, so an unrecognised re-export form would be
+// invisible to both. `barrelStatements` therefore captures only the two forms
+// the parser understands, and the residue is asserted empty (test D, "uses only
+// the two re-export forms the guard parses") — a leaked type cannot slip through
+// by being written as `export type * from` or as an inline `export { type Foo }`.
+const BARREL_REEXPORT: RegExp = /export\s+(?:type\s+)?\{[^}]*\}\s*from\s*'[^']+';/g;
+const TYPE_REEXPORT: RegExp = /^export type \{([^}]*)\} from '\.\/([^']+)';$/;
+const VALUE_REEXPORT: RegExp = /^export \{([^}]*)\} from '\.\/([^']+)';$/;
+
+/** Every `export … from '…';` re-export, collapsed onto one line. */
+function barrelStatements(): string[] {
+  return [...barrel.matchAll(BARREL_REEXPORT)].map(match => match[0].replace(/\s+/g, ' '));
+}
+
+function splitNames(names: string): string[] {
+  return names
+    .split(',')
+    .map(name => name.trim())
+    .filter(Boolean);
+}
+
 /** `export type { A, B } from './mod/types';` → `{ mod: ['A', 'B'] }`. */
 function barrelTypeExports(): Map<string, string[]> {
   const found: Map<string, string[]> = new Map();
-  const statements: RegExpMatchArray[] = [
-    ...barrel.matchAll(/export\s+type\s*\{([^}]*)\}\s*from\s*'\.\/([^']+)'/g),
-  ];
-  statements.forEach(([, names, path]) => {
-    const module: string = path.split('/')[0];
-    const parsed: string[] = names
-      .split(',')
-      .map(name => name.trim())
-      .filter(Boolean);
-    found.set(module, [...(found.get(module) ?? []), ...parsed]);
+  barrelStatements().forEach(statement => {
+    const match: RegExpMatchArray | null = statement.match(TYPE_REEXPORT);
+    if (match === null) return;
+    const module: string = match[2].split('/')[0];
+    found.set(module, [...(found.get(module) ?? []), ...splitNames(match[1])]);
   });
   return found;
+}
+
+/** Barrel `export` lines the two recognised forms do not account for. */
+function unparsedBarrelExports(): string[] {
+  return barrel
+    .replace(BARREL_REEXPORT, '')
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('export'));
+}
+
+/** A value re-export that smuggles types through an inline `type` specifier. */
+function inlineTypeSpecifiers(): string[] {
+  return barrelStatements()
+    .map(statement => statement.match(VALUE_REEXPORT))
+    .filter((match): match is RegExpMatchArray => match !== null)
+    .flatMap(match => splitNames(match[1]))
+    .filter(name => /^type\s/.test(name));
+}
+
+/** `ui-card-list` → `UiCardListProps`. */
+function expectedPropsType(module: string): string {
+  return `${module
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('')}Props`;
 }
 
 const rows: RegisterRow[] = registerRows();
@@ -375,11 +419,21 @@ describe('export contract integrity (Story 5.3, #33)', () => {
       expect(unrecorded).toEqual([]);
     });
 
-    it('publishes a props type for every exported component', () => {
+    it('uses only the two re-export forms the guard parses', () => {
+      expect(unparsedBarrelExports()).toEqual([]);
+      expect(inlineTypeSpecifiers()).toEqual([]);
+    });
+
+    it('publishes the conventional props type for every exported component', () => {
       const bare: string[] = exportedRows
         .filter(row => existsSync(join(COMPONENTS_DIR, row.module, COMPONENT_ENTRY)))
         .filter(row => !(row.module in PROPS_EXEMPT))
-        .filter(row => !row.types.some(name => name.endsWith('Props')))
+        .filter(row => {
+          const expected: string = expectedPropsType(row.module);
+          return (
+            !row.types.includes(expected) || !(typeExports.get(row.module) ?? []).includes(expected)
+          );
+        })
         .map(row => row.module);
       expect(bare).toEqual([]);
     });
