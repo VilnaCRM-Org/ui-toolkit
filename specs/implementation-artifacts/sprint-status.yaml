@@ -74,6 +74,6 @@ development_status:
   epic-5: in-progress
   5-1-board-coverage-closure-and-traceability: review
   5-2-reuse-canonical-compliance-and-provenance-completion: review
-  5-3-export-contract-and-entry-point-integrity: backlog
+  5-3-export-contract-and-entry-point-integrity: review
   5-4-internal-release-readiness-governance-report: backlog
   epic-5-retrospective: optional
