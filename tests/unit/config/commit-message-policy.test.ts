@@ -12,6 +12,22 @@ const explain = (header: string): string => String(taskNumberRule({ header })[1]
 const ignoresMessage = (message: string): boolean =>
   commitlintConfig.ignores.some(predicate => predicate(message));
 
+// The single source of truth for the tests below: every type here must be accepted by the rule
+// AND named in the failure hint, so the two can never drift apart or silently drop an entry.
+const ACCEPTED_TYPES = [
+  'build',
+  'chore',
+  'ci',
+  'docs',
+  'feat',
+  'fix',
+  'perf',
+  'refactor',
+  'revert',
+  'style',
+  'test',
+];
+
 describe('commit header policy', () => {
   describe('accepted headers', () => {
     it.each([
@@ -28,12 +44,9 @@ describe('commit header policy', () => {
       expect(accepts(header)).toBe(true);
     });
 
-    it.each(['build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'style', 'test'])(
-      'accepts the %s type',
-      type => {
-        expect(accepts(`${type}(#87): a subject`)).toBe(true);
-      }
-    );
+    it.each(ACCEPTED_TYPES)('accepts the %s type', type => {
+      expect(accepts(`${type}(#87): a subject`)).toBe(true);
+    });
   });
 
   describe('rejected headers', () => {
@@ -67,19 +80,7 @@ describe('commit header policy', () => {
     it('names every accepted type so the message never drifts from the rule', () => {
       const hint = explain('Fix button');
 
-      [
-        'build',
-        'chore',
-        'ci',
-        'docs',
-        'feat',
-        'fix',
-        'perf',
-        'refactor',
-        'revert',
-        'style',
-        'test',
-      ].forEach(type => {
+      ACCEPTED_TYPES.forEach(type => {
         expect(hint).toContain(type);
       });
     });
