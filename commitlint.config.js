@@ -41,9 +41,13 @@ const HEADER_HINT = [
 // force-push that re-triggers the action, so the gate has to let it through.
 const IMAGE_ACTIONS_HEADER = 'Optimised images with calibre/image-actions';
 
+// Matched on the whole first line, not as a prefix, so the exemption cannot be borrowed by a
+// header that merely starts with it.
+const isImageActionsCommit = message => message.split('\n')[0].trimEnd() === IMAGE_ACTIONS_HEADER;
+
 module.exports = {
   extends: ['@commitlint/config-conventional'],
-  ignores: [message => message.startsWith(IMAGE_ACTIONS_HEADER)],
+  ignores: [isImageActionsCommit],
   rules: {
     'check-task-number-rule': [2, 'always'],
   },

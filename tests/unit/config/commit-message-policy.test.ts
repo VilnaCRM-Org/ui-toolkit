@@ -103,6 +103,9 @@ describe('ignored messages', () => {
     'Fix button',
     'Optimised images by hand',
     'chore: optimise images with calibre/image-actions',
+    // The exemption is matched on the whole first line, so it cannot be borrowed as a prefix.
+    'Optimised images with calibre/image-actions and quietly drop the tests',
+    ' Optimised images with calibre/image-actions',
   ])('does not ignore %p', message => {
     expect(ignoresMessage(message)).toBe(false);
   });

@@ -58,6 +58,45 @@ CONFIG="$PROJECT_ROOT/commitlint.config.js"
   [ "$status" -eq 0 ]
 }
 
+@test "the pull request title is linted with the suffix squash-merge appends" {
+  # GitHub lands `<title> (#<number>)`, so linting the bare title would measure
+  # header-max-length seven characters short of the header that actually reaches main.
+  run grep -F 'PR_NUMBER' "$WORKFLOW"
+  [ "$status" -eq 0 ]
+
+  run grep -F '(#%s)' "$WORKFLOW"
+  [ "$status" -eq 0 ]
+}
+
+@test "the commitlint workflow checks out the pull request head commit" {
+  # Not the merge ref: a conflicted pull request has none, and the gate must not go red for
+  # an unrelated reason.
+  run grep -F 'ref: ${{ github.event.pull_request.head.sha }}' "$WORKFLOW"
+  [ "$status" -eq 0 ]
+}
+
+@test "the commitlint workflow fails closed instead of skipping itself" {
+  # Every other workflow here carries a bootstrap-skip guard that turns a missing package.json
+  # into a green run. This gate must not: a pull request deleting the policy inputs has to
+  # turn the check red rather than pass its own commits through unlinted.
+  run grep -F 'outputs.present' "$WORKFLOW"
+  [ "$status" -ne 0 ]
+}
+
+@test "the commitlint workflow installs without running lifecycle scripts" {
+  run grep -F 'bun install --frozen-lockfile --ignore-scripts' "$WORKFLOW"
+  [ "$status" -eq 0 ]
+}
+
+@test "the commitlint workflow runs the lockfile-resolved commitlint binary" {
+  # `bun x commitlint` would fetch an unpinned release when the package is absent.
+  run grep -F './node_modules/.bin/commitlint' "$WORKFLOW"
+  [ "$status" -eq 0 ]
+
+  run grep -E '(bun|np)x commitlint' "$WORKFLOW"
+  [ "$status" -ne 0 ]
+}
+
 @test "the commitlint workflow re-runs when a pull request is retitled" {
   run grep -E '^\s+- edited$' "$WORKFLOW"
   [ "$status" -eq 0 ]

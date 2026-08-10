@@ -354,9 +354,11 @@ Two layers run the same `commitlint.config.js`:
   in Docker, because git hooks live in your clone and the `bun` image is built without `.git`.
 - **In CI.** The `commit convention` workflow lints every commit the pull request adds, and the
   pull request **title**. Merges here are squash-only, so the title becomes the commit header on
-  `main` whenever a branch carries more than one commit — it is release-driving input, and the job
-  re-runs whenever the title is edited. The workflow deliberately has no `branches:` filter, so it
-  also covers pull requests stacked onto other feature branches.
+  `main` — it is release-driving input, and the job re-runs whenever the title is edited. The
+  title is linted with the `(#<number>)` suffix GitHub appends at merge, so the 100-character
+  limit applies to the header that actually lands. The workflow deliberately has no `branches:`
+  filter, so it also covers pull requests stacked onto other feature branches, and it has no
+  bootstrap-skip guard: deleting `package.json` turns it red rather than green.
 
 Check your work before pushing:
 
