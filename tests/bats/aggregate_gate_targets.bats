@@ -162,11 +162,14 @@ pull_request_workflow_targets() {
       }
 
       function emit_invocations(command,   count, i, segments, segment, target) {
-        sub(/(^|[ \t])#.*/, "", command)
         count = split(command, segments, separators)
 
         for (i = 1; i <= count; i++) {
           segment = segments[i]
+          # Per segment, not per line: splitting on quotes first means a `#` inside a
+          # quoted string can only truncate its own segment, never hide a later
+          # invocation such as `echo "color #ff0000"; make x`.
+          sub(/(^|[ \t])#.*/, "", segment)
           while (match(segment, command_prefixes)) {
             segment = substr(segment, RSTART + RLENGTH)
           }
@@ -346,8 +349,16 @@ jobs:
           sudo make gate-sudo
           env FOO=bar make gate-env
           FOO=bar make gate-assign
+          FIRST=1 SECOND=2 make gate-multi-assign
           sh -c 'make gate-sh-c'
-          if [ -f Makefile ]; then make gate-after-keyword; fi
+          time make gate-time
+          nice make gate-nice
+          command make gate-command
+          exec make gate-exec
+          echo x | xargs make gate-xargs
+          if [ -f Makefile ]; then make gate-after-then; else make gate-after-else; fi
+          for target in one; do make gate-after-do; done
+          echo "a hex colour #ff0000 inside quotes"; make gate-after-quoted-hash
       - name: matrix
         run: make gate-fanned-${{ matrix.formFactor }}
       - name: after the block
@@ -355,9 +366,10 @@ jobs:
 YAML
 
   run diff -u \
-    <(printf '%s\n' gate-after-block gate-after-keyword gate-assign gate-block-scalar \
-      gate-chained gate-env 'gate-fanned-*' gate-from-yaml gate-list-item gate-plain-key \
-      gate-sh-c gate-sudo | sort) \
+    <(printf '%s\n' gate-after-block gate-after-do gate-after-else gate-after-quoted-hash \
+      gate-after-then gate-assign gate-block-scalar gate-chained gate-command gate-env \
+      gate-exec 'gate-fanned-*' gate-from-yaml gate-list-item gate-multi-assign gate-nice \
+      gate-plain-key gate-sh-c gate-sudo gate-time gate-xargs | sort) \
     <(pull_request_workflow_targets "$fixtures")
   [ "$status" -eq 0 ]
 }
