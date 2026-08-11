@@ -68,8 +68,7 @@ When you add or change a public Make target:
 
 ### Prove it green before you push: `make ci` and `make verify`
 
-The merge bar is defined once, in the `Makefile`, and the pull-request workflows are thin
-wrappers around those same targets. Two aggregate targets replay it locally:
+The merge bar is defined once, in the `Makefile`. Two aggregate targets replay it locally:
 
 ```bash
 make ci       # fast pre-push set: lint, build, test-unit, test-integration, test-bats
@@ -93,7 +92,10 @@ be mistaken for a green one:
 | `test-integration` | `skipped` |
 
 The gate sets live in the `CI_GATES` and `VERIFY_GATES` variables at the top of the `Makefile`.
-When you add a gate to a pull-request workflow, add it to `VERIFY_GATES` in the same change:
+The workflows do not call `make ci` or `make verify`; each job invokes the same underlying gate
+targets directly, alongside its own setup and teardown steps. Editing a gate set therefore does
+not reconfigure CI — the two definitions are held together by a test instead. When you add a
+gate to a pull-request workflow, add it to `VERIFY_GATES` in the same change:
 `tests/bats/aggregate_gate_targets.bats` compares every `run: make …` line in
 `.github/workflows/` against the transitive dependency graph of `verify` and fails when a
 workflow runs a gate `make verify` cannot reach. Environment plumbing (`make start-bun`,

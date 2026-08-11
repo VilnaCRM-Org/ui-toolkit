@@ -122,17 +122,22 @@ verify_closure() {
   printf '%s\n' $seen | sort -u
 }
 
-# Every `run: make <target>` a pull-request workflow executes. GitHub expressions such as
-# `${{ matrix.formFactor }}` are collapsed to `*` so a matrix-fanned target is matched as
-# the family it stands for instead of being silently dropped.
+# Every `run: make <target>` a pull-request workflow executes. Both GitHub workflow
+# extensions are scanned, so a future `.yaml` file cannot drop out of the reachability
+# guarantee unnoticed. GitHub expressions such as `${{ matrix.formFactor }}` are collapsed
+# to `*` so a matrix-fanned target is matched as the family it stands for instead of being
+# silently dropped, and `run:` is recognised both on its own line and as the `- run:` list
+# item form.
 pull_request_workflow_targets() {
+  local workflows_dir="${1:-$PROJECT_ROOT/.github/workflows}"
   local workflow
 
-  for workflow in "$PROJECT_ROOT"/.github/workflows/*.yml; do
+  for workflow in "$workflows_dir"/*.yml "$workflows_dir"/*.yaml; do
+    [ -f "$workflow" ] || continue
     grep -qF 'pull_request:' "$workflow" || continue
 
     sed -E 's/\$\{\{[^}]*\}\}/*/g' "$workflow" \
-      | sed -n -E 's/^[[:space:]]*run:[[:space:]]*make[[:space:]]+([A-Za-z0-9_.*-]+).*/\1/p'
+      | sed -n -E 's/^[[:space:]]*(-[[:space:]]+)?run:[[:space:]]*make[[:space:]]+([A-Za-z0-9_.*-]+).*/\2/p'
   done | sort -u
 }
 
@@ -246,6 +251,23 @@ gate_equivalent() {
   printf '%s\n' "$targets" | grep -qxF -- 'test-unit'
   printf '%s\n' "$targets" | grep -qxF -- 'test-mutation-shard'
   printf '%s\n' "$targets" | grep -qxF -- 'lighthouse-*'
+}
+
+@test "the workflow scanner reads both .yml and .yaml workflows and ignores non-PR ones" {
+  local fixtures="$BATS_TEST_TMPDIR/workflows"
+  mkdir -p "$fixtures"
+
+  printf 'on:\n  pull_request:\njobs:\n  a:\n    steps:\n      - run: make gate-from-yml\n' \
+    > "$fixtures/short.yml"
+  printf 'on:\n  pull_request:\njobs:\n  a:\n    steps:\n      - run: make gate-from-yaml\n' \
+    > "$fixtures/long.yaml"
+  printf 'on:\n  push:\njobs:\n  a:\n    steps:\n      - run: make gate-from-push\n' \
+    > "$fixtures/push-only.yml"
+
+  run diff -u \
+    <(printf '%s\n' gate-from-yaml gate-from-yml) \
+    <(pull_request_workflow_targets "$fixtures")
+  [ "$status" -eq 0 ]
 }
 
 @test "every gate a pull request workflow runs is reachable from make verify" {

@@ -39,9 +39,11 @@ Both run their gates in order, stop at the first failure, exit non-zero, and pri
 `gate → pass/FAIL/skipped` summary. A clean checkout with Docker goes from clone to
 fully-proven green with `make install && make verify`. `make verify` is the slow, complete
 proof (mutation, browser, and Lighthouse suites included); `make ci` is the one to run before
-every push. The Makefile is the single source of truth for the gate set — each pull-request
-workflow is a thin wrapper around the same targets, and `tests/bats/aggregate_gate_targets.bats`
-fails if a workflow ever runs a gate `make verify` cannot reach.
+every push. The pull-request workflows do not call `make ci` or `make verify` — they invoke the
+same underlying gate targets directly, alongside their own setup and teardown steps. What keeps
+the two definitions from drifting is `tests/bats/aggregate_gate_targets.bats`, which fails if a
+workflow ever runs a gate `make verify` cannot reach. Adding a gate to a workflow therefore also
+means adding it to `VERIFY_GATES`; editing the gate set alone does not reconfigure CI.
 
 Every pull request must pass the gating targets below; run the ones your change touches
 locally before pushing. See [agents.md](agents.md) for which test layer a given change needs.

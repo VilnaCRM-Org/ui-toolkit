@@ -28,11 +28,11 @@ MUTATION_SHARD_TOTAL ?= 1
 MUTATION_SHARD_INDEX ?= 0
 MUTATION_REPORTS_DIR = reports/mutation
 
-# Aggregate gate sets: the single source of truth for the merge bar. `ci` is the
-# fast pre-push set, `verify` is everything a merge requires. The pull-request
-# workflows stay thin wrappers around these same targets, and
-# tests/bats/aggregate_gate_targets.bats proves every gate a PR workflow runs is
-# reachable from `verify`, so local and CI definitions cannot drift.
+# Aggregate gate sets: the local definition of the merge bar. `ci` is the fast
+# pre-push set, `verify` is everything a merge requires. The pull-request workflows
+# invoke these same gate targets directly rather than calling ci/verify, so
+# tests/bats/aggregate_gate_targets.bats holds the two definitions together: it
+# fails when a workflow runs a gate `verify` cannot reach.
 CI_GATES = lint build test-unit test-integration test-bats
 VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-memory-leak lighthouse-desktop lighthouse-mobile
 VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
