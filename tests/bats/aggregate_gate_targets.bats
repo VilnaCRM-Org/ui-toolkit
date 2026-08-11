@@ -134,9 +134,17 @@ verify_closure() {
 # heavily for multi-line shell. Inside a block, indentation greater than the `run:` key's
 # own indentation marks body lines; the first line at or below it ends the block.
 #
-# Within a command line, only a `make` at a command position — line start, or right after
-# a `;`, `&`, `|`, or `(` — is an invocation, so prose in a `# make sure ...` comment or an
-# `echo "... does not make ..."` message is never mistaken for one.
+# A command line is split on shell command separators (`;`, `&`, `|`, parentheses, and
+# quotes, so `sh -c 'make x'` puts the quoted body in its own segment). A segment counts as
+# an invocation when `make` is its first word, after any leading env assignments and command
+# wrappers (`sudo`, `env`, `time`, ...) and shell keywords are stripped — so `sudo make x`,
+# `FOO=bar make x`, and `cd sub && make x` are all caught.
+#
+# The bias here is deliberate: a missed invocation is silent drift, which is the failure this
+# contract exists to prevent, while a false positive fails loudly and gets fixed. What keeps
+# the widening honest is that prose can still never match — a trailing `# make sure ...`
+# comment is stripped, and in `echo "... does not make the work done"` the quoted segment
+# starts with its own first word, not `make`. Both shapes are pinned in the fixture test.
 pull_request_workflow_targets() {
   local workflows_dir="${1:-$PROJECT_ROOT/.github/workflows}"
   local workflow
@@ -146,13 +154,27 @@ pull_request_workflow_targets() {
     grep -qF 'pull_request:' "$workflow" || continue
 
     awk '
-      function emit_invocations(command,   target) {
-        command = "; " command
-        while (match(command, /[;&|(][ \t]*make[ \t]+[A-Za-z0-9_.*-]+/)) {
-          target = substr(command, RSTART, RLENGTH)
-          sub(/^[;&|(][ \t]*make[ \t]+/, "", target)
-          print target
-          command = substr(command, RSTART + RLENGTH)
+      BEGIN {
+        quote = sprintf("%c", 39)
+        separators = "[;&|()`\"" quote "]+"
+        command_prefixes = "^[ \t]*([A-Za-z_][A-Za-z0-9_]*=[^ \t]*" \
+          "|sudo|env|time|nice|command|exec|xargs|then|do|else)[ \t]+"
+      }
+
+      function emit_invocations(command,   count, i, segments, segment, target) {
+        sub(/(^|[ \t])#.*/, "", command)
+        count = split(command, segments, separators)
+
+        for (i = 1; i <= count; i++) {
+          segment = segments[i]
+          while (match(segment, command_prefixes)) {
+            segment = substr(segment, RSTART + RLENGTH)
+          }
+          if (match(segment, /^[ \t]*make[ \t]+[A-Za-z0-9_.*-]+/)) {
+            target = substr(segment, RSTART, RLENGTH)
+            sub(/^[ \t]*make[ \t]+/, "", target)
+            print target
+          }
         }
       }
 
@@ -321,6 +343,11 @@ jobs:
           make gate-block-scalar
           echo "a skip message does not make the work done"
           cd sub && make gate-chained
+          sudo make gate-sudo
+          env FOO=bar make gate-env
+          FOO=bar make gate-assign
+          sh -c 'make gate-sh-c'
+          if [ -f Makefile ]; then make gate-after-keyword; fi
       - name: matrix
         run: make gate-fanned-${{ matrix.formFactor }}
       - name: after the block
@@ -328,8 +355,9 @@ jobs:
 YAML
 
   run diff -u \
-    <(printf '%s\n' gate-after-block gate-block-scalar gate-chained 'gate-fanned-*' \
-      gate-from-yaml gate-list-item gate-plain-key | sort) \
+    <(printf '%s\n' gate-after-block gate-after-keyword gate-assign gate-block-scalar \
+      gate-chained gate-env 'gate-fanned-*' gate-from-yaml gate-list-item gate-plain-key \
+      gate-sh-c gate-sudo | sort) \
     <(pull_request_workflow_targets "$fixtures")
   [ "$status" -eq 0 ]
 }
