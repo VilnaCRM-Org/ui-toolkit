@@ -66,6 +66,41 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+### Prove it green before you push: `make ci` and `make verify`
+
+The merge bar is defined once, in the `Makefile`, and the pull-request workflows are thin
+wrappers around those same targets. Two aggregate targets replay it locally:
+
+```bash
+make ci       # fast pre-push set: lint, build, test-unit, test-integration, test-bats
+make verify   # the whole merge bar: make ci plus test-mutation, test-e2e, test-visual,
+              # test-memory-leak, lighthouse-desktop, and lighthouse-mobile
+```
+
+Run `make ci` before every push. Run `make verify` when you want the same proof a merge
+requires — a clean checkout with Docker goes from clone to fully-proven green with
+`make install && make verify`.
+
+Both targets run their gates in the listed order, stop at the first failure, exit non-zero,
+and finish with a summary table of `gate → pass / FAIL / skipped`, so a partial run can never
+be mistaken for a green one:
+
+| Gate               | Status    |
+| ------------------ | --------- |
+| `lint`             | `pass`    |
+| `build`            | `pass`    |
+| `test-unit`        | `FAIL`    |
+| `test-integration` | `skipped` |
+
+The gate sets live in the `CI_GATES` and `VERIFY_GATES` variables at the top of the `Makefile`.
+When you add a gate to a pull-request workflow, add it to `VERIFY_GATES` in the same change:
+`tests/bats/aggregate_gate_targets.bats` compares every `run: make …` line in
+`.github/workflows/` against the transitive dependency graph of `verify` and fails when a
+workflow runs a gate `make verify` cannot reach. Environment plumbing (`make start-bun`,
+`make down`, `make copy-coverage`, and the mutation report-shuffling targets) is exempt — those
+prove nothing on their own — and the sharded CI mutation targets map onto the single
+`test-mutation` gate that `make verify` runs.
+
 ### Dependency version ranges
 
 Every entry in `dependencies` and `devDependencies` of the root `package.json`

@@ -25,18 +25,38 @@ bun install
 make help
 ```
 
+### Proving your branch green
+
+Two aggregate targets replay the merge bar locally, so you never have to reassemble it from
+the workflow YAMLs by hand:
+
+```bash
+make ci       # fast pre-push set: lint, build, unit, integration, Bats
+make verify   # everything a merge requires: make ci plus the heavy suites
+```
+
+Both run their gates in order, stop at the first failure, exit non-zero, and print a
+`gate → pass/FAIL/skipped` summary. A clean checkout with Docker goes from clone to
+fully-proven green with `make install && make verify`. `make verify` is the slow, complete
+proof (mutation, browser, and Lighthouse suites included); `make ci` is the one to run before
+every push. The Makefile is the single source of truth for the gate set — each pull-request
+workflow is a thin wrapper around the same targets, and `tests/bats/aggregate_gate_targets.bats`
+fails if a workflow ever runs a gate `make verify` cannot reach.
+
 Every pull request must pass the gating targets below; run the ones your change touches
 locally before pushing. See [agents.md](agents.md) for which test layer a given change needs.
 
-| Target                  | What it gates                                                |
-| ----------------------- | ------------------------------------------------------------ |
-| `make lint`             | ESLint, TypeScript, markdownlint, Prettier, dependency gates |
-| `make test-unit`        | Jest unit suite (components, hooks, pure logic) in jsdom     |
-| `make test-integration` | Jest composition suite: composed components, real children   |
-| `make test-e2e`         | Playwright behavior against a Storybook build                |
-| `make test-visual`      | Playwright visual-regression snapshots                       |
-| `make test-mutation`    | Stryker mutation-strength gate                               |
-| `make test-bats`        | Bats coverage of Makefile shell flows and their contracts    |
+| Target                  | What it gates                                                  |
+| ----------------------- | -------------------------------------------------------------- |
+| `make ci`               | Aggregate fast gate set — lint, build, unit, integration, Bats |
+| `make verify`           | Aggregate full merge bar — `make ci` plus the heavy suites     |
+| `make lint`             | ESLint, TypeScript, markdownlint, Prettier, dependency gates   |
+| `make test-unit`        | Jest unit suite (components, hooks, pure logic) in jsdom       |
+| `make test-integration` | Jest composition suite: composed components, real children     |
+| `make test-e2e`         | Playwright behavior against a Storybook build                  |
+| `make test-visual`      | Playwright visual-regression snapshots                         |
+| `make test-mutation`    | Stryker mutation-strength gate                                 |
+| `make test-bats`        | Bats coverage of Makefile shell flows and their contracts      |
 
 The `lint-metrics` target runs a `rust-code-analysis` complexity gate over `src/`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the policy details and remediation guidance.
