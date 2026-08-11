@@ -126,8 +126,17 @@ verify_closure() {
 # extensions are scanned, so a future `.yaml` file cannot drop out of the reachability
 # guarantee unnoticed. GitHub expressions such as `${{ matrix.formFactor }}` are collapsed
 # to `*` so a matrix-fanned target is matched as the family it stands for instead of being
-# silently dropped, and `run:` is recognised both on its own line and as the `- run:` list
-# item form.
+# silently dropped.
+#
+# All three step forms count, because a gate that moves between them must not fall out of
+# the contract: `run: make x`, the `- run: make x` list-item form, and the block-scalar
+# form (`run: |` followed by indented command lines), which the workflows already use
+# heavily for multi-line shell. Inside a block, indentation greater than the `run:` key's
+# own indentation marks body lines; the first line at or below it ends the block.
+#
+# Within a command line, only a `make` at a command position — line start, or right after
+# a `;`, `&`, `|`, or `(` — is an invocation, so prose in a `# make sure ...` comment or an
+# `echo "... does not make ..."` message is never mistaken for one.
 pull_request_workflow_targets() {
   local workflows_dir="${1:-$PROJECT_ROOT/.github/workflows}"
   local workflow
@@ -136,8 +145,38 @@ pull_request_workflow_targets() {
     [ -f "$workflow" ] || continue
     grep -qF 'pull_request:' "$workflow" || continue
 
-    sed -E 's/\$\{\{[^}]*\}\}/*/g' "$workflow" \
-      | sed -n -E 's/^[[:space:]]*(-[[:space:]]+)?run:[[:space:]]*make[[:space:]]+([A-Za-z0-9_.*-]+).*/\2/p'
+    awk '
+      function emit_invocations(command,   target) {
+        command = "; " command
+        while (match(command, /[;&|(][ \t]*make[ \t]+[A-Za-z0-9_.*-]+/)) {
+          target = substr(command, RSTART, RLENGTH)
+          sub(/^[;&|(][ \t]*make[ \t]+/, "", target)
+          print target
+          command = substr(command, RSTART + RLENGTH)
+        }
+      }
+
+      { gsub(/\$\{\{[^}]*\}\}/, "*"); line = $0 }
+
+      in_block {
+        if (line ~ /^[ \t]*$/) { next }
+        match(line, /^[ \t]*/)
+        if (RLENGTH > block_indent) { emit_invocations(line); next }
+        in_block = 0
+      }
+
+      {
+        if (line ~ /^[ \t]*(-[ \t]+)?run:[ \t]*[|>][-+0-9]*[ \t]*$/) {
+          match(line, /^[ \t]*/)
+          block_indent = RLENGTH
+          in_block = 1
+          next
+        }
+        if (match(line, /^[ \t]*(-[ \t]+)?run:[ \t]*/)) {
+          emit_invocations(substr(line, RSTART + RLENGTH))
+        }
+      }
+    ' "$workflow"
   done | sort -u
 }
 
@@ -253,19 +292,44 @@ gate_equivalent() {
   printf '%s\n' "$targets" | grep -qxF -- 'lighthouse-*'
 }
 
-@test "the workflow scanner reads both .yml and .yaml workflows and ignores non-PR ones" {
+@test "the workflow scanner reads every step form, both file extensions, and only PR workflows" {
   local fixtures="$BATS_TEST_TMPDIR/workflows"
   mkdir -p "$fixtures"
 
-  printf 'on:\n  pull_request:\njobs:\n  a:\n    steps:\n      - run: make gate-from-yml\n' \
-    > "$fixtures/short.yml"
+  # Extensions: a workflow authored as .yaml must count too.
   printf 'on:\n  pull_request:\njobs:\n  a:\n    steps:\n      - run: make gate-from-yaml\n' \
     > "$fixtures/long.yaml"
+
+  # A push-only workflow is not part of the merge bar and must be ignored.
   printf 'on:\n  push:\njobs:\n  a:\n    steps:\n      - run: make gate-from-push\n' \
     > "$fixtures/push-only.yml"
 
+  # Step forms: list-item, plain key, block scalar (including a chained invocation),
+  # and a matrix-fanned target. Plus the two prose shapes that must NOT be picked up.
+  cat > "$fixtures/forms.yml" <<'YAML'
+on:
+  pull_request:
+jobs:
+  a:
+    steps:
+      - run: make gate-list-item
+      - name: plain key
+        run: make gate-plain-key ARG=value
+      - name: block scalar
+        run: |
+          # make sure the service is up before the gate runs
+          make gate-block-scalar
+          echo "a skip message does not make the work done"
+          cd sub && make gate-chained
+      - name: matrix
+        run: make gate-fanned-${{ matrix.formFactor }}
+      - name: after the block
+        run: make gate-after-block
+YAML
+
   run diff -u \
-    <(printf '%s\n' gate-from-yaml gate-from-yml) \
+    <(printf '%s\n' gate-after-block gate-block-scalar gate-chained 'gate-fanned-*' \
+      gate-from-yaml gate-list-item gate-plain-key | sort) \
     <(pull_request_workflow_targets "$fixtures")
   [ "$status" -eq 0 ]
 }
