@@ -37,7 +37,7 @@ jest.mock('../../src/components/ui-card-list/card-grid', () => {
 
 describe('UiCardList component', () => {
   const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
-  const mockedCardSwiper: jest.Mock = CardSwiper as jest.Mock;
+  const mockedCardSwiper: jest.Mock = CardSwiper as unknown as jest.Mock;
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -98,8 +98,8 @@ describe('UiCardList media query argument', () => {
 describe('UiCardList nullish cardList degradation', () => {
   const warn = mockConsoleWarn();
   const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
-  const mockedCardGrid: jest.Mock = CardGrid as jest.Mock;
-  const mockedCardSwiper: jest.Mock = CardSwiper as jest.Mock;
+  const mockedCardGrid: jest.Mock = CardGrid as unknown as jest.Mock;
+  const mockedCardSwiper: jest.Mock = CardSwiper as unknown as jest.Mock;
 
   // The strict `cardList` type forbids nullish values, but runtime data can
   // supply one; the entry must normalize it to [] so neither child crashes.
