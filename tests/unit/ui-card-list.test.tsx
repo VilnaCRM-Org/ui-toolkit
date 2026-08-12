@@ -133,6 +133,21 @@ describe('UiCardList nullish cardList degradation', () => {
     expect(mockedCardGrid.mock.calls[0][0]).toEqual(expect.objectContaining({ cardList }));
   });
 
+  it('reuses one empty-list fallback across re-renders', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    const { rerender } = render(React.createElement(UiCardList, { cardList: nullishCardList }));
+    rerender(React.createElement(UiCardList, { cardList: nullishCardList }));
+
+    // The children are memoized on shallow prop equality, so a fresh `[]` per
+    // render would hand them a new `cardList` every pass and undo it. Identity,
+    // not deep equality, is what the memo compares.
+    const [first, second]: UiCardItemData[][] = mockedCardGrid.mock.calls.map(
+      call => call[0].cardList
+    );
+    expect(second).toBe(first);
+  });
+
   it('warns in development when cardList is nullish', () => {
     mockedUseMediaQuery.mockReturnValue(false);
 

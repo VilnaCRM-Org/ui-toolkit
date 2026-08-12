@@ -90,17 +90,19 @@ function addTooltipNode(): HTMLDivElement {
   return tooltip;
 }
 
-describe('CardSwiper component', () => {
-  afterEach(() => {
-    // Restore unconditionally so a test that throws before its own restore()
-    // cannot leak the patched constructor into later tests.
-    global.MutationObserver = RealMutationObserver;
-    screen
-      .queryAllByRole('tooltip')
-      .filter(node => node.classList.contains('base-Popper-root'))
-      .forEach(node => node.remove());
-  });
+// File scope, not per-describe: every suite below drives tooltip nodes into
+// <body>, and RTL's cleanup only unmounts React roots. Restoring the constructor
+// unconditionally also stops a test that throws before its own restore() from
+// leaking the patched one into later tests.
+afterEach(() => {
+  global.MutationObserver = RealMutationObserver;
+  screen
+    .queryAllByRole('tooltip')
+    .filter(node => node.classList.contains('base-Popper-root'))
+    .forEach(node => node.remove());
+});
 
+describe('CardSwiper component', () => {
   it('renders a swiper slide for every card item', () => {
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 

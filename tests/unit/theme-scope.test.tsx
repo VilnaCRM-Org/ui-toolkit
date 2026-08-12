@@ -17,7 +17,13 @@ const foreignTheme: Theme = createTheme({
 
 function ThemeProbe({ onTheme }: { onTheme: (theme: Theme) => void }): React.ReactElement {
   const theme: Theme = useTheme();
-  onTheme(theme);
+
+  // Recorded from an effect, not from render: React may replay or discard a
+  // render pass, and the assertions below are about the theme that committed.
+  React.useEffect(() => {
+    onTheme(theme);
+  }, [onTheme, theme]);
+
   return <span>probe</span>;
 }
 
@@ -36,6 +42,9 @@ describe('ScopedThemeProvider', () => {
       </ScopedThemeProvider>
     );
 
+    // With no outer provider MUI's default theme is what sits in context, so
+    // this also kills the `if` -> `true` ConditionalExpression collapse:
+    // skipping here would render the subtree against those defaults.
     expect(screen.getByText('probe')).toBeInTheDocument();
     expect(seen[0].components).toBe(scopedTheme.components);
   });
@@ -115,20 +124,5 @@ describe('ScopedThemeProvider', () => {
     expect(outer.seen[0].vars).toEqual({});
     expect(inner.seen[0]).not.toBe(outer.seen[0]);
     expect(inner.seen[0].vars).toBeNull();
-  });
-
-  it('applies the theme when there is no surrounding provider at all', () => {
-    const { record, seen } = collectThemes();
-
-    render(
-      <ScopedThemeProvider theme={scopedTheme}>
-        <ThemeProbe onTheme={record} />
-      </ScopedThemeProvider>
-    );
-
-    // Kills the `if` -> `true` ConditionalExpression collapse: with no outer
-    // provider MUI's default theme is in context, and skipping would render the
-    // subtree against defaults instead of the scoped theme.
-    expect(seen[0].components).toBe(scopedTheme.components);
   });
 });

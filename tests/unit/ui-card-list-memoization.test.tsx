@@ -8,8 +8,6 @@ import UiCardItem from '../../src/components/ui-card-list/ui-card-item';
 import UiImage from '../../src/components/ui-image';
 import UiTypography from '../../src/components/ui-typography';
 
-import mockConsoleWarn from './utils/mock-console-warn';
-
 // UiImage and UiTypography are the leaves of the card subtree, so how often
 // their function bodies run IS the render count of the card and of the card
 // body. Both are stand-ins here; the memoized components under test are real.
@@ -63,16 +61,27 @@ const BUMP_LABEL: string = 'bump';
 
 // A parent whose own state changes on every click while the subtree props stay
 // referentially identical — the exact shape the memoization has to absorb.
-function Harness({ children }: { children: React.ReactNode }): React.ReactElement {
+//
+// The subtree comes in as a render callback, not as `children`. A `children`
+// element would keep the same reference across the parent's re-renders, and
+// React bails out of an identical element before the child ever renders — so
+// the assertions below would hold with or without React.memo, proving nothing.
+// Rebuilding the element every pass forces the memo comparison to be what stops
+// the re-render.
+function Harness({
+  renderChildren,
+}: {
+  renderChildren: () => React.ReactNode;
+}): React.ReactElement {
   const [tick, setTick] = React.useState(0);
 
   return (
     <>
-      <button type="button" onClick={() => setTick(tick + 1)}>
+      <button type="button" onClick={() => setTick(current => current + 1)}>
         {BUMP_LABEL}
       </button>
       <span>{`tick ${tick}`}</span>
-      {children}
+      {renderChildren()}
     </>
   );
 }
@@ -82,15 +91,8 @@ function bumpParent(): void {
 }
 
 describe('UiCardList memoization', () => {
-  // The nullish-fallback case below deliberately trips the dev warning.
-  mockConsoleWarn();
-
   it('does not re-render card children when the parent re-renders the same cardList', () => {
-    render(
-      <Harness>
-        <UiCardList cardList={stableCardList} />
-      </Harness>
-    );
+    render(<Harness renderChildren={() => <UiCardList cardList={stableCardList} />} />);
 
     expect(mockedUiImage).toHaveBeenCalledTimes(stableCardList.length);
 
@@ -98,33 +100,12 @@ describe('UiCardList memoization', () => {
 
     expect(screen.getByText('tick 1')).toBeInTheDocument();
     expect(mockedUiImage).toHaveBeenCalledTimes(stableCardList.length);
-  });
-
-  it('keeps the empty-list fallback stable across parent re-renders', () => {
-    const nullishCardList: UiCardItemData[] = undefined as unknown as UiCardItemData[];
-
-    render(
-      <Harness>
-        <UiCardList cardList={nullishCardList} />
-      </Harness>
-    );
-    bumpParent();
-
-    // A fresh `[]` per render would give the memoized grid a new prop every
-    // time; nothing is rendered either way, so the stable fallback is what
-    // keeps the pass cheap.
-    expect(screen.getByText('tick 1')).toBeInTheDocument();
-    expect(mockedUiImage).not.toHaveBeenCalled();
   });
 });
 
 describe('UiCardItem memoization', () => {
   it('does not re-render when its parent re-renders with the same item', () => {
-    render(
-      <Harness>
-        <UiCardItem item={firstItem} />
-      </Harness>
-    );
+    render(<Harness renderChildren={() => <UiCardItem item={firstItem} />} />);
 
     expect(mockedUiImage).toHaveBeenCalledTimes(1);
 

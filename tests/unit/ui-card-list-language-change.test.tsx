@@ -51,4 +51,35 @@ describe('UiCardItem language changes', () => {
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(TITLE_UK);
     expect(screen.getByRole('img')).toHaveAttribute('alt', i18n.t(ALT_KEY));
   });
+
+  it('falls back to English when the card switches to an unbundled locale', async () => {
+    render(<UiCardItem item={translatedItem} />);
+
+    await switchLanguage('de');
+
+    // Negative path: `de` ships no resources, so i18next's `fallbackLng` takes
+    // over. The card must still re-render and show the fallback copy rather than
+    // freeze on the previous language or leak the raw translation key.
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(TITLE_EN);
+    expect(screen.queryByText(TITLE_KEY)).not.toBeInTheDocument();
+  });
+
+  it('leaves ReactNode title and text untouched across a language change', async () => {
+    const nodeItem: UiCardItemData = {
+      ...translatedItem,
+      title: <span>Literal title</span>,
+      text: <span>Literal text</span>,
+    };
+
+    render(<UiCardItem item={nodeItem} />);
+
+    await switchLanguage('uk');
+
+    // Boundary case: non-string content bypasses `<Trans>` entirely, so a
+    // language change must re-render the card without rewriting what the
+    // consumer passed in.
+    expect(screen.getByText('Literal title')).toBeInTheDocument();
+    expect(screen.getByText('Literal text')).toBeInTheDocument();
+    expect(screen.getByRole('img')).toHaveAttribute('alt', i18n.t(ALT_KEY));
+  });
 });
