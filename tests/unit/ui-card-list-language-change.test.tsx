@@ -11,13 +11,18 @@ import UiCardItem from '../../src/components/ui-card-list/ui-card-item';
 // context), so it re-renders solely because an ancestor does. Memoizing the card
 // body would cut that path and leave a card whose alt text is in the new
 // language while its visible copy is stale.
+const TITLE_KEY: string = 'why_us.headers.header_ready_templates';
+const ALT_KEY: string = 'why_us.alt_image.alt_ready_templates';
+const TITLE_EN: string = 'Ready templates';
+const TITLE_UK: string = 'Готові шаблони';
+
 const translatedItem: UiCardItemData = {
   type: 'smallCard',
   id: 'translated-card',
   imageSrc: 'https://example.com/open-source.png',
-  title: 'why_us.headers.header_ready_templates',
+  title: TITLE_KEY,
   text: 'why_us.texts.text_you_have_store',
-  alt: 'why_us.alt_image.alt_ready_templates',
+  alt: ALT_KEY,
 };
 
 describe('UiCardItem language changes', () => {
@@ -37,16 +42,13 @@ describe('UiCardItem language changes', () => {
   it('re-translates every part of a card when the language changes', async () => {
     render(<UiCardItem item={translatedItem} />);
 
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Ready templates');
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(TITLE_EN);
 
     await switchLanguage('uk');
 
     // The same referentially stable `item` is still in place, so this only
     // passes while the card body re-renders with its ancestor.
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Готові шаблони');
-    expect(screen.getByRole('img')).toHaveAttribute(
-      'alt',
-      i18n.t('why_us.alt_image.alt_ready_templates')
-    );
+    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent(TITLE_UK);
+    expect(screen.getByRole('img')).toHaveAttribute('alt', i18n.t(ALT_KEY));
   });
 });
