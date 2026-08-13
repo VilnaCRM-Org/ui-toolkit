@@ -82,6 +82,145 @@ in `CONTRIBUTING.md` for what it enforces, how it complements ESLint, and how to
 - `tests`: automated test coverage
 - `scripts`: repository helper scripts used by build/test workflows
 
+## Error handling
+
+A React render error is not recoverable in place: React unmounts the tree from the root, so one
+bad prop deep inside a widget blanks the whole page. `UiErrorBoundary` exists to bound that blast
+radius. Wrap the regions that can fail, and a failure costs one region instead of the document.
+
+### Quick start
+
+```tsx
+import { UiErrorBoundary } from '@vilnacrm/ui-toolkit';
+
+export default function Dashboard() {
+  return (
+    <UiErrorBoundary onError={reportToMonitoring}>
+      <RevenueWidget />
+    </UiErrorBoundary>
+  );
+}
+```
+
+The component is exported from the package root. There is no supported deep import path.
+
+### What it catches
+
+Errors thrown below the boundary during render, in lifecycle methods, and in the constructors of
+the components it wraps.
+
+### What it does not catch
+
+The same exclusions React's own boundary contract carries:
+
+- event handlers;
+- asynchronous code (`setTimeout`, promise callbacks, work resumed after an `await`);
+- server-side rendering;
+- errors thrown by the fallback itself.
+
+A rejected form submit is asynchronous, so no boundary above it will ever see it. That is exactly
+why `UiForm` carries its own rejection contract, documented below.
+
+### Fallback modes
+
+`fallback` accepts either a render prop or a `ReactNode`, and resolution runs in this order:
+
+1. a function: it is called as `fallback(error, reset)` and its result is rendered;
+2. any other non-nullish value: that node is rendered as is;
+3. omitted or nullish: the built-in default fallback is rendered.
+
+Resolution is nullish, so `fallback={null}` does **not** suppress the default fallback: the
+never-blank guarantee outranks a consumer's ability to render nothing. To render nothing on
+purpose, pass a render prop that returns an empty fragment.
+
+### Recovery paths
+
+There are two, and both remount the subtree below the boundary:
+
+- `reset` is the second argument handed to a render-prop fallback. Call it from a retry control
+  inside your fallback.
+- `resetKeys` is an array the boundary watches while it is holding an error. When the array
+  changes, the boundary clears itself.
+
+`resetKeys` is compared shallowly and element-wise with `Object.is`, and a length change counts as
+a change on its own. Omitted or empty means no automatic reset. A key change on a healthy boundary
+does nothing, because the comparison only runs while an error is held. Recovery remounts rather
+than re-renders: the subtree is rebuilt from its initial state, so a boundary that recovers into
+the same broken input simply catches again.
+
+### onError
+
+`onError(error, info)` is invoked once per caught error, with the `Error` and React's `ErrorInfo`
+(which carries `componentStack`). The toolkit reports nowhere itself: there is no built-in
+telemetry sink, so wire `onError` to whatever your application already uses. When no `onError` is
+supplied, a development-only warning is emitted in its place, so a caught error is never silent in
+development.
+
+### Accessibility
+
+The default fallback carries `role="alert"` and real text content, never an icon or a colour cue
+alone, and the node is mounted with its text already in place, which is what makes it announce.
+
+A consumer-supplied fallback is the consumer's responsibility and gets no injected roles or
+semantics. The accessibility review requires the following checklist for a custom fallback:
+
+- put `role="alert"` on the message element only, mounting with its text; never on a wrapper
+  containing interactive elements (interactive error UI is the `alertdialog` pattern);
+- a retry control is a native button with an accessible name and a visible focus indicator;
+- if the error was interaction-triggered, focus the fallback's retry control on appearance (the
+  consumer can know this; the toolkit cannot);
+- after calling `reset()`, move focus deliberately: the render-prop reset destroys the focused
+  Try-again button and drops focus to `body` on every recovery (`resetKeys` is focus-safe by
+  construction because the driving control lives outside the boundary);
+- never render `error.message` or stack traces into an assertive atomic region;
+- meet WCAG 1.4.1 and 1.4.3 in custom fallback styling;
+- repeated identical failures overwrite the error without a DOM change, so some screen readers
+  will not re-announce; vary the message if per-attempt announcements matter.
+
+Three further notes. The default fallback text is announced in English on non-English pages unless
+the consumer defines `error_boundary.default_message` in their own i18next resources, which win
+over the built-in `defaultValue`. A rare VoiceOver plus Safari caveat can drop inserted alerts,
+and is accepted for v1. Prefer contextual per-region fallbacks: wrap widgets, not whole-page
+landmarks and not the region holding the page's only `h1`.
+
+### i18n
+
+The default fallback's message resolves through the i18next key `error_boundary.default_message`
+with an explicit `defaultValue` of `Something went wrong.`. The toolkit ships no locale resource
+entry for that key, so an application that does not define it renders the English default,
+including under an i18next instance carrying no resources at all. Define the key in your own
+resources to translate it.
+
+### UiForm and rejected submits
+
+`UiForm` contains a rejected `onSubmit` instead of letting it escape as an unhandled promise
+rejection:
+
+- `onSubmitError(error)` receives whatever value the rejection carried, and is the supported
+  failure signal;
+- with no handler attached the rejection is still contained and a development-only warning is
+  emitted in its place; it is never re-thrown;
+- the `resetOnSuccess` reset is skipped on failure, so a rejected submit never clears the user's
+  input;
+- the existing `error` display prop is unchanged and independent: `onSubmitError` is the callback,
+  `error` is the rendering. The usual wiring stores a message in `onSubmitError` and passes it
+  back through `error`.
+
+**The `formState.isSubmitSuccessful` nuance.** Because a rejection is contained rather than
+re-thrown, `react-hook-form` sees the submit as having completed and leaves
+`formState.isSubmitSuccessful` set to `true` after a rejected submit. Do not read it as a success
+signal; use `onSubmitError` or the `error` prop instead.
+
+**Pick exactly one escalation path per failure.** The `error` banner and a rethrow into a
+surrounding `UiErrorBoundary` are mutually exclusive. Wiring both yields two competing
+`role="alert"` regions, and their announcements are duplicated, interrupted, or dropped.
+
+### No migration required
+
+The change is additive. No existing exported prop, default, or rendered output changed:
+`UiErrorBoundary` is a new export and `onSubmitError` is a new optional prop on `UiForm`. Existing
+call sites compile and render exactly as before.
+
 ## Notes
 
 - This repository is a React UI library, not a Next.js app.
