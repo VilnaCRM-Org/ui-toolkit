@@ -80,54 +80,54 @@ so that a failed submission is a reportable event rather than an unhandled promi
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Edit 1 - the public prop (AC: 3, 11, 19)
-  - [ ] 1.1 Add `onSubmitError?: (error: unknown) => void;` to `UiFormProps<T>` in
+- [x] Task 1: Edit 1 - the public prop (AC: 3, 11, 19)
+  - [x] 1.1 Add `onSubmitError?: (error: unknown) => void;` to `UiFormProps<T>` in
         `src/components/ui-form/index.tsx`, after `resetOnSuccess` / `isSubmitDisabled` so no
         existing prop changes position
-  - [ ] 1.2 Confirm no existing prop's name, type, or default changed
+  - [x] 1.2 Confirm no existing prop's name, type, or default changed
 
-- [ ] Task 2: Edit 2 - keep it out of the view rest (AC: 4)
-  - [ ] 2.1 Add `'onSubmitError'` to the `Omit<UiFormProps<T>, ...>` union that builds
+- [x] Task 2: Edit 2 - keep it out of the view rest (AC: 4)
+  - [x] 2.1 Add `'onSubmitError'` to the `Omit<UiFormProps<T>, ...>` union that builds
         `FormViewProps<T>`
-  - [ ] 2.2 Destructure `onSubmitError` in `UiForm`'s signature (alongside `onSubmit`,
+  - [x] 2.2 Destructure `onSubmitError` in `UiForm`'s signature (alongside `onSubmit`,
         `defaultValues`, `formOptions`, `isSubmitting`, `resetOnSuccess`, `children`) so it is
         removed from `...view`
-  - [ ] 2.3 Confirm `FormBody` receives no new prop and its destructured defaults are untouched
+  - [x] 2.3 Confirm `FormBody` receives no new prop and its destructured defaults are untouched
 
-- [ ] Task 3: Edit 3 - contain the rejection (AC: 5, 6, 7, 8, 9, 10, 11)
-  - [ ] 3.1 Add `onSubmitError?: (error: unknown) => void;` to `SubmitHandlerOptions<T>`
-  - [ ] 3.2 Add the module-scope `UNHANDLED_SUBMIT_REJECTION_WARNING` const with the exact text
-  - [ ] 3.3 Add the module-scope `reportSubmitError` helper above `buildSubmitHandler`
-  - [ ] 3.4 Rewrite the closure returned by `buildSubmitHandler` with `try`/`catch` plus an early
+- [x] Task 3: Edit 3 - contain the rejection (AC: 5, 6, 7, 8, 9, 10, 11)
+  - [x] 3.1 Add `onSubmitError?: (error: unknown) => void;` to `SubmitHandlerOptions<T>`
+  - [x] 3.2 Add the module-scope `UNHANDLED_SUBMIT_REJECTION_WARNING` const with the exact text
+  - [x] 3.3 Add the module-scope `reportSubmitError` helper above `buildSubmitHandler`
+  - [x] 3.4 Rewrite the closure returned by `buildSubmitHandler` with `try`/`catch` plus an early
         `return` from the `catch`
-  - [ ] 3.5 Pass `onSubmitError` through the `buildSubmitHandler({ ... })` call in `UiForm`
-  - [ ] 3.6 Import `devWarn` from `../../utils/dev-warn`; add no `NODE_ENV` check and no
+  - [x] 3.5 Pass `onSubmitError` through the `buildSubmitHandler({ ... })` call in `UiForm`
+  - [x] 3.6 Import `devWarn` from `../../utils/dev-warn`; add no `NODE_ENV` check and no
         `methods.setError('root', ...)` call
 
-- [ ] Task 4: The new unit suite (AC: 12-18, 21, 23)
-  - [ ] 4.1 Create `tests/unit/ui-form-submit-errors.test.tsx`
-  - [ ] 4.2 Register `process.on('unhandledRejection', listener)` in `beforeEach` and
+- [x] Task 4: The new unit suite (AC: 12-18, 21, 23)
+  - [x] 4.1 Create `tests/unit/ui-form-submit-errors.test.tsx`
+  - [x] 4.2 Register `process.on('unhandledRejection', listener)` in `beforeEach` and
         `process.off('unhandledRejection', listener)` in `afterEach`; flush microtasks before
         asserting the listener never fired
-  - [ ] 4.3 Write the seven named cases in Dev Notes, using semantic selectors only
-  - [ ] 4.4 Reuse `tests/unit/utils/mock-console-warn.ts` (delivered/exercised in Story 1.1) for
+  - [x] 4.3 Write the seven named cases in Dev Notes, using semantic selectors only
+  - [x] 4.4 Reuse `tests/unit/utils/mock-console-warn.ts` (delivered/exercised in Story 1.1) for
         the dev-warning assertion in case 5
-  - [ ] 4.5 Run `make test-unit` and confirm 100% coverage, both new branches included
+  - [x] 4.5 Run `make test-unit` and confirm 100% coverage, both new branches included
 
-- [ ] Task 5: Regression and compatibility check (AC: 19, 20)
-  - [ ] 5.1 Run the existing `UiForm` unit and integration suites unmodified and confirm green
-  - [ ] 5.2 Grep the repository for `onSubmit` call sites of `UiForm` and confirm each still
+- [x] Task 5: Regression and compatibility check (AC: 19, 20)
+  - [x] 5.1 Run the existing `UiForm` unit and integration suites unmodified and confirm green
+  - [x] 5.2 Grep the repository for `onSubmit` call sites of `UiForm` and confirm each still
         type-checks with no edit (`make lint-tsc`)
-  - [ ] 5.3 Confirm rendered output is unchanged (no new DOM node, no new attribute)
+  - [x] 5.3 Confirm rendered output is unchanged (no new DOM node, no new attribute)
 
-- [ ] Task 6: Gate sweep and hand-off (AC: 22, 23, 24, 25)
-  - [ ] 6.1 `make lint-next`, `make lint-tsc`, `make format-check`
-  - [ ] 6.2 `make lint-metrics`, `make lint-test-structure`
-  - [ ] 6.3 `make test-unit`, `make test-integration`
-  - [ ] 6.4 `qlty check`
-  - [ ] 6.5 Record the `formState.isSubmitSuccessful` nuance in the Completion Notes as the
+- [x] Task 6: Gate sweep and hand-off (AC: 22, 23, 24, 25)
+  - [x] 6.1 `make lint-next`, `make lint-tsc`, `make format-check`
+  - [x] 6.2 `make lint-metrics`, `make lint-test-structure`
+  - [x] 6.3 `make test-unit`, `make test-integration`
+  - [x] 6.4 `qlty check`
+  - [x] 6.5 Record the `formState.isSubmitSuccessful` nuance in the Completion Notes as the
         Story 1.4 README input
-  - [ ] 6.6 Confirm by diff that no threshold config changed
+  - [x] 6.6 Confirm by diff that no threshold config changed
 
 ## Dev Notes
 
@@ -301,15 +301,15 @@ the warning text, not merely on the call count.
 
 ## Definition of Done
 
-- [ ] `make lint-next`, `make lint-tsc`, `make format-check` pass.
-- [ ] `make lint-metrics` passes: `reportSubmitError` (2 args, 1 exit, LLOC 4) and the submit
+- [x] `make lint-next`, `make lint-tsc`, `make format-check` pass.
+- [x] `make lint-metrics` passes: `reportSubmitError` (2 args, 1 exit, LLOC 4) and the submit
       closure (2 args, 1 exit, LLOC 7) stay inside the per-function budget.
-- [ ] `make lint-test-structure` passes.
-- [ ] `make test-unit` and `make test-integration` pass at 100% coverage.
-- [ ] The `formState.isSubmitSuccessful` nuance is captured in the Completion Notes as input to
+- [x] `make lint-test-structure` passes.
+- [x] `make test-unit` and `make test-integration` pass at 100% coverage.
+- [x] The `formState.isSubmitSuccessful` nuance is captured in the Completion Notes as input to
       the Story 1.4 README section and the release notes.
-- [ ] `qlty check` reports no new findings.
-- [ ] No threshold in `config/metrics-policy.json`, `stryker.config.mjs`, or `jest.config.ts` was
+- [x] `qlty check` reports no new findings.
+- [x] No threshold in `config/metrics-policy.json`, `stryker.config.mjs`, or `jest.config.ts` was
       relaxed.
 
 ## References
@@ -347,3 +347,21 @@ _Pending implementation._
 ### Change Log
 
 _Pending implementation._
+
+## Completion Notes (2026-08-13)
+
+- DEVIATION from AC 2 ("exactly one file is modified"), forced by measurement: with the
+  rejection contract inlined, the submit closure measured `lloc = 12` (ceiling 10) and
+  `ui-form/index.tsx` MI fell to 19.35 (floor 20). The handler moved to a sibling module,
+  restoring both. Review then renamed it `submit-handler.tsx` (not `.ts`) so the contract
+  stays inside Stryker's `src/components/**/*.tsx` mutation scope - the same reasoning
+  Story 1.1 AC 7 applies to the fallback files.
+- `SubmitHandlerOptions` moved with the builder as a type-only export (erased at runtime, so
+  the esbuild-jest un-imported-export coverage rule is not triggered).
+- All seven named unit cases pass; the unhandled-rejection listener stays silent in cases 1
+  and 5; `reset` is skipped on failure and preserved on success; the existing UiForm suites
+  pass unmodified.
+- Gate evidence as recorded in Story 1.1's Completion Notes (shared full-suite runs).
+- `formState.isSubmitSuccessful` nuance (hand-off to Story 1.4): a contained rejection makes
+  react-hook-form treat the submit as successful; `onSubmitError` or the `error` display prop
+  is the supported failure signal, and the README section must say so.
