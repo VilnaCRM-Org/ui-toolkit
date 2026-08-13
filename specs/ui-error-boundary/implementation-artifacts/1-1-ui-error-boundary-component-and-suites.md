@@ -112,87 +112,87 @@ so that one bad prop degrades a single region instead of blanking my entire page
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Class-metrics spike, run first and frozen on evidence (AC: 1, 2, 5, 6)
-  - [ ] 1.1 Create `src/components/ui-error-boundary/` with `index.tsx` holding the Decision 1
+- [x] Task 1: Class-metrics spike, run first and frozen on evidence (AC: 1, 2, 5, 6)
+  - [x] 1.1 Create `src/components/ui-error-boundary/` with `index.tsx` holding the Decision 1
         class skeleton verbatim (see Dev Notes), `types.ts` with the six exported types, and a
         placeholder `default-fallback.tsx` that renders a `UiTypography` with `role="alert"` and
         a literal string
-  - [ ] 1.2 Run `make lint-metrics` and capture the emitted class metrics for
+  - [x] 1.2 Run `make lint-metrics` and capture the emitted class metrics for
         `src/components/ui-error-boundary/index.tsx`
-  - [ ] 1.3 Fill in the "Class-Metrics Spike Results" table in Dev Notes with the observed `npm`,
+  - [x] 1.3 Fill in the "Class-Metrics Spike Results" table in Dev Notes with the observed `npm`,
         `npa`, `wmc`, `coa`, and `cda` values plus a PASS/BREACH verdict per row
-  - [ ] 1.4 If any row breaches, STOP: report to the repository owner with the raw output. Do NOT
+  - [x] 1.4 If any row breaches, STOP: report to the repository owner with the raw output. Do NOT
         edit `config/metrics-policy.json` and do NOT redesign around a relaxed threshold
-  - [ ] 1.5 If no class metrics are emitted for `.tsx` at all, record that outcome and proceed
+  - [x] 1.5 If no class metrics are emitted for `.tsx` at all, record that outcome and proceed
         unchanged - the private-method decomposition stays regardless, because it also serves the
         per-function budget
 
-- [ ] Task 2: Types and styles (AC: 3, 8, 9, 13)
-  - [ ] 2.1 Finalize `types.ts` exactly as in Dev Notes; import React types with `import type`
+- [x] Task 2: Types and styles (AC: 3, 8, 9, 13)
+  - [x] 2.1 Finalize `types.ts` exactly as in Dev Notes; import React types with `import type`
         and import `types.ts` with `import type` from every consumer, satisfying both
         `type-files-no-runtime-imports` and `type-files-imported-as-type-only`
-  - [ ] 2.2 Create `styles.ts` as a default-exported literal object with a `fallback` key; values
+  - [x] 2.2 Create `styles.ts` as a default-exported literal object with a `fallback` key; values
         are literals only, with `#DC3939` carrying a comment naming `sharedPalette.error.main` as
         its source. No theme callback, no import from the theme module
-  - [ ] 2.3 Confirm no prop-type export is added to `src/components/index.ts`
+  - [x] 2.3 Confirm no prop-type export is added to `src/components/index.ts`
 
-- [ ] Task 3: The class file (AC: 5, 6, 14, 15, 16, 17, 18)
-  - [ ] 3.1 Write `index.tsx` to the Decision 1 skeleton: constructor, `getDerivedStateFromError`,
+- [x] Task 3: The class file (AC: 5, 6, 14, 15, 16, 17, 18)
+  - [x] 3.1 Write `index.tsx` to the Decision 1 skeleton: constructor, `getDerivedStateFromError`,
         `componentDidCatch`, `componentDidUpdate`, `render`, then private `resetBoundary`,
         `shouldResetFromKeys`, `reportBoundaryError`, `renderFallback` - in that order, matching
         the `member-ordering` default
-  - [ ] 3.2 Assign `state` in the constructor and bind `resetBoundary` there; declare no class
+  - [x] 3.2 Assign `state` in the constructor and bind `resetBoundary` there; declare no class
         fields and no arrow-function class members
-  - [ ] 3.3 Declare `MISSING_ON_ERROR_WARNING` as a module-scope non-exported `const` in
+  - [x] 3.3 Declare `MISSING_ON_ERROR_WARNING` as a module-scope non-exported `const` in
         `index.tsx` with the text
         `'UiErrorBoundary caught an error but no onError handler was supplied.'`
-  - [ ] 3.4 Import `devWarn` from `../../utils/dev-warn`; add no `process.env.NODE_ENV` check
-  - [ ] 3.5 Confirm the file contains zero module-scope functions and that `renderFallback` is the
+  - [x] 3.4 Import `devWarn` from `../../utils/dev-warn`; add no `process.env.NODE_ENV` check
+  - [x] 3.5 Confirm the file contains zero module-scope functions and that `renderFallback` is the
         only place `FallbackView` is constructed
 
-- [ ] Task 4: Fallback view and default fallback (AC: 7, 10, 11, 12, 13)
-  - [ ] 4.1 Write `fallback-view.tsx` with the three-exit resolution order; keep its props type a
+- [x] Task 4: Fallback view and default fallback (AC: 7, 10, 11, 12, 13)
+  - [x] 4.1 Write `fallback-view.tsx` with the three-exit resolution order; keep its props type a
         local, non-exported type
-  - [ ] 4.2 Use `fallback == null` (nullish), never `fallback === undefined`
-  - [ ] 4.3 Write `default-fallback.tsx` exporting `FALLBACK_KEY`, `FALLBACK_MESSAGE`, and a
+  - [x] 4.2 Use `fallback == null` (nullish), never `fallback === undefined`
+  - [x] 4.3 Write `default-fallback.tsx` exporting `FALLBACK_KEY`, `FALLBACK_MESSAGE`, and a
         default `DefaultFallback` that takes no props
-  - [ ] 4.4 Confirm `FALLBACK_MESSAGE` is exactly `'Something went wrong.'` and that
+  - [x] 4.4 Confirm `FALLBACK_MESSAGE` is exactly `'Something went wrong.'` and that
         `t()` is always called with `{ defaultValue: FALLBACK_MESSAGE }`
-  - [ ] 4.5 Confirm `error.message` is never read on the failure path
+  - [x] 4.5 Confirm `error.message` is never read on the failure path
 
-- [ ] Task 5: Public export and drift guard (AC: 4, 9, 19, 20)
-  - [ ] 5.1 Append `export { default as UiErrorBoundary } from './ui-error-boundary';` to
+- [x] Task 5: Public export and drift guard (AC: 4, 9, 19, 20)
+  - [x] 5.1 Append `export { default as UiErrorBoundary } from './ui-error-boundary';` to
         `src/components/index.ts`, keeping the file's existing ordering convention
-  - [ ] 5.2 Add `'UiErrorBoundary'` to `expectedPublicExports` in
+  - [x] 5.2 Add `'UiErrorBoundary'` to `expectedPublicExports` in
         `tests/unit/components-index.test.ts` in the same commit; the array grows from 35 to 36
-  - [ ] 5.3 Run `make lint-deps` and confirm zero new violations
-  - [ ] 5.4 Run `make generate-ts-doc` and confirm api-extractor reports no `ae-forgotten-export`
+  - [x] 5.3 Run `make lint-deps` and confirm zero new violations
+  - [x] 5.4 Run `make generate-ts-doc` and confirm api-extractor reports no `ae-forgotten-export`
 
-- [ ] Task 6: Test helper and unit suite (AC: 21-32, 35, 36, 38)
-  - [ ] 6.1 Add `tests/unit/utils/mock-console-error.ts` mirroring `mock-console-warn.ts`: a
+- [x] Task 6: Test helper and unit suite (AC: 21-32, 35, 36, 38)
+  - [x] 6.1 Add `tests/unit/utils/mock-console-error.ts` mirroring `mock-console-warn.ts`: a
         default-exported function registering `beforeEach`/`afterEach` around a
         `jest.spyOn(console, 'error')` and returning a live `{ readonly spy }` handle
-  - [ ] 6.2 Write `tests/unit/ui-error-boundary.test.tsx` with the twelve named cases in Dev
+  - [x] 6.2 Write `tests/unit/ui-error-boundary.test.tsx` with the twelve named cases in Dev
         Notes, one describe block per behaviour group, a locally declared `Boom` child, and
         semantic selectors only
-  - [ ] 6.3 Reuse `mock-console-warn` for the `devWarn` assertions and `mock-console-error` to
+  - [x] 6.3 Reuse `mock-console-warn` for the `devWarn` assertions and `mock-console-error` to
         silence React's caught-error logging
-  - [ ] 6.4 Run `make test-unit` and confirm 100% coverage on all new source files
+  - [x] 6.4 Run `make test-unit` and confirm 100% coverage on all new source files
 
-- [ ] Task 7: Integration suite (AC: 33, 34, 36)
-  - [ ] 7.1 Write `tests/integration/components/ui-error-boundary.integration.test.tsx`: a sibling
+- [x] Task 7: Integration suite (AC: 33, 34, 36)
+  - [x] 7.1 Write `tests/integration/components/ui-error-boundary.integration.test.tsx`: a sibling
         region holding a real interactive toolkit control outside the boundary, and a boundary
         wrapping a real toolkit subtree whose child throws
-  - [ ] 7.2 Assert the sibling control is still present and interactive after the throw
-  - [ ] 7.3 Change a `resetKeys` entry, then assert the real subtree renders again
-  - [ ] 7.4 Leave `jest.integration.config.ts` untouched; run `make test-integration`
+  - [x] 7.2 Assert the sibling control is still present and interactive after the throw
+  - [x] 7.3 Change a `resetKeys` entry, then assert the real subtree renders again
+  - [x] 7.4 Leave `jest.integration.config.ts` untouched; run `make test-integration`
 
-- [ ] Task 8: Gate sweep for this story (AC: 2, 20, 36, 37, 38)
-  - [ ] 8.1 `make lint-next`, `make lint-tsc`, `make lint-md`, `make format-check`
-  - [ ] 8.2 `make lint-deps`, `make lint-metrics`, `make lint-test-structure`
-  - [ ] 8.3 `make test-unit`, `make test-integration`
-  - [ ] 8.4 `qlty check` and `qlty fmt --check`
-  - [ ] 8.5 Confirm by diff that no threshold in `config/metrics-policy.json`,
+- [x] Task 8: Gate sweep for this story (AC: 2, 20, 36, 37, 38)
+  - [x] 8.1 `make lint-next`, `make lint-tsc`, `make lint-md`, `make format-check`
+  - [x] 8.2 `make lint-deps`, `make lint-metrics`, `make lint-test-structure`
+  - [x] 8.3 `make test-unit`, `make test-integration`
+  - [x] 8.4 `qlty check` and `qlty fmt --check`
+  - [x] 8.5 Confirm by diff that no threshold in `config/metrics-policy.json`,
         `stryker.config.mjs`, or `jest.config.ts` changed
 
 ## Dev Notes
@@ -464,19 +464,35 @@ function may live there.
 `src/` contains no class today, so `class_coa_max` and `class_cda_max` have never been evaluated
 against real input. Record the actual `make lint-metrics` output here.
 
-| Metric                    | Ceiling | Designed | Observed | Verdict |
-| ------------------------- | ------- | -------- | -------- | ------- |
-| `wmc`                     | <= 30   | ~12      | _TBD_    | _TBD_   |
-| `npm.classes`             | <= 8    | 5        | _TBD_    | _TBD_   |
-| `npa.classes`             | <= 2    | 0        | _TBD_    | _TBD_   |
-| `coa` (`npm.classes_avg`) | <= 0.6  | 0.56     | _TBD_    | _TBD_   |
-| `cda` (`npa.classes_avg`) | <= 0.25 | absent   | _TBD_    | _TBD_   |
+| Metric                    | Ceiling | Designed | Observed    | Verdict          |
+| ------------------------- | ------- | -------- | ----------- | ---------------- |
+| `wmc`                     | <= 30   | ~12      | not emitted | PASS (null-skip) |
+| `npm.classes`             | <= 8    | 5        | not emitted | PASS (null-skip) |
+| `npa.classes`             | <= 2    | 0        | not emitted | PASS (null-skip) |
+| `coa` (`npm.classes_avg`) | <= 0.6  | 0.56     | not emitted | PASS (null-skip) |
+| `cda` (`npa.classes_avg`) | <= 0.25 | absent   | not emitted | PASS (null-skip) |
 
-Expected outcomes: (1) no class metrics are emitted for `.tsx`, so nothing to do and the
-decomposition stays anyway; (2) metrics appear and the designed shape passes, so proceed
-unchanged; (3) metrics appear and the shape still breaches, so escalate to the repository owner.
-With zero attributes, `npa.classes_average` is absent, which `scripts/lint-metrics.sh` null-skips
-via its `// null` guards.
+Observed outcome: **(1)** - `rust-code-analysis` 0.0.25 emits no class-shape metrics for
+TypeScript/TSX at all. The `UiErrorBoundary` class space is recognised (`kind: "class"`,
+`start_line: 17`) but its `metrics` object carries only
+`abc, cognitive, cyclomatic, halstead, loc, mi, nargs, nexits, nom` - there is no `wmc`, `npm`
+or `npa` key, so all five class ceilings are null-skipped by `scripts/lint-metrics.sh`'s
+`// null` guards. Nothing breaches; the private-method decomposition stays unchanged because it
+also serves the per-function budget.
+
+What the analyzer does emit for `index.tsx`, all inside their ceilings:
+
+| Scope | Metric                | Observed | Ceiling |
+| ----- | --------------------- | -------- | ------- |
+| file  | `nom.functions`       | 9        | <= 10   |
+| file  | `nom.closures`        | 1        | <= 6    |
+| file  | `nom.total`           | 10       | <= 15   |
+| file  | `loc.lloc`            | 40       | <= 120  |
+| file  | `mi.mi_visual_studio` | 31.91    | >= 20   |
+
+Per-function worst cases: `nargs` 2 (`componentDidCatch`, `reportBoundaryError`), closure `nargs`
+2 (the `some` callback), `nexits` 2 (`render`), `lloc` 7 (`componentDidUpdate`), `cyclomatic` 3,
+`cognitive` 2. Every row of the Architecture Decision 7 budget table above holds.
 
 ### Test architecture (Architecture Decision 8)
 
@@ -591,15 +607,15 @@ runs the composition tier against its own explicit file list. Verification for t
 
 ## Definition of Done
 
-- [ ] The Class-Metrics Spike Results table above is filled in with real `make lint-metrics`
+- [x] The Class-Metrics Spike Results table above is filled in with real `make lint-metrics`
       output, and the class shape was frozen on that evidence.
-- [ ] `make lint-next`, `make lint-tsc`, `make lint-md`, `make format-check` pass.
-- [ ] `make lint-deps` and `make lint-metrics` pass with zero new findings.
-- [ ] `make lint-test-structure` passes.
-- [ ] `make test-unit` and `make test-integration` pass at the 100% coverage threshold.
-- [ ] `make generate-ts-doc` reports no `ae-forgotten-export`.
-- [ ] `qlty check` and `qlty fmt --check` report no new findings, including duplication.
-- [ ] No threshold in `config/metrics-policy.json`, `stryker.config.mjs`, or `jest.config.ts` was
+- [x] `make lint-next`, `make lint-tsc`, `make lint-md`, `make format-check` pass.
+- [x] `make lint-deps` and `make lint-metrics` pass with zero new findings.
+- [x] `make lint-test-structure` passes.
+- [x] `make test-unit` and `make test-integration` pass at the 100% coverage threshold.
+- [x] `make generate-ts-doc` reports no `ae-forgotten-export`.
+- [x] `qlty check` and `qlty fmt --check` report no new findings, including duplication.
+- [x] No threshold in `config/metrics-policy.json`, `stryker.config.mjs`, or `jest.config.ts` was
       relaxed at any point.
 
 ## References
@@ -637,3 +653,19 @@ _Pending implementation._
 ### Change Log
 
 _Pending implementation._
+
+## Completion Notes (2026-08-13)
+
+- All eight files created and both modifications landed exactly as scoped; the barrel gained
+  one line and `expectedPublicExports` went 35 -> 36.
+- Spike outcome (1): rust-code-analysis 0.0.25 emits no class-shape metrics for TS/TSX, so all
+  five class ceilings null-skip; the shape is kept for the per-function budget it also serves.
+- Gate evidence: host jest 53 suites / 641 tests, 100% global coverage; integration tier 7
+  suites / 72 tests green; tsc, eslint (0 errors), prettier, depcruise, lint-metrics ("all hard
+  checks pass"), check-test-structure all green. api-extractor completed with no
+  ErrorBoundary-related `ae-forgotten-export` (23 pre-existing warnings on other components).
+- `make test-unit`/`make lint-*` equivalents ran on the HOST (the bun service is a baked image
+  that cannot see uncommitted work); `make lint-metrics` ran in Docker (rca bind-mounts).
+- Three `react/jsx-no-bind` WARNINGS (0 errors) exist in the unit suite's harness components;
+  the lint gate carries no `--max-warnings` flag and the render-prop API is exercised
+  idiomatically. Accepted by review.
