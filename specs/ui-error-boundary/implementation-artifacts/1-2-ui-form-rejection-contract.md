@@ -39,38 +39,43 @@ so that a failed submission is a reportable event rather than an unhandled promi
 11. The prop's type is written inline as `(error: unknown) => void` in `UiFormProps<T>`, in
     `SubmitHandlerOptions<T>`, and in `reportSubmitError`'s signature. No named alias is
     introduced (see the Dev Notes ruling on the `SubmitErrorHandler` name collision).
-12. Unit case 1: with `process.on('unhandledRejection')` registered in `beforeEach` and removed in
+12. Accessibility-lead ruling (2026-08-13): the `onSubmitError` prop declaration in
+    `UiFormProps<T>` carries a JSDoc comment stating that the `error` display prop's banner and
+    an escalation into an error boundary are mutually exclusive paths for one failure; wiring
+    both produces two competing `role="alert"` regions with duplicated, interrupted, or dropped
+    announcements. The README section (Story 1.4) repeats the same rule in prose.
+13. Unit case 1: with `process.on('unhandledRejection')` registered in `beforeEach` and removed in
     `afterEach`, submitting a form whose `onSubmit` rejects never fires the listener after
     microtasks flush.
-13. Unit case 2: `onSubmitError` receives the exact rejection value, exactly once.
-14. Unit case 3: with `resetOnSuccess` set, the typed value is still in the field after a failed
+14. Unit case 2: `onSubmitError` receives the exact rejection value, exactly once.
+15. Unit case 3: with `resetOnSuccess` set, the typed value is still in the field after a failed
     submit, proving `methods.reset` was not called.
-15. Unit case 4: the happy path still resets, proving the branch was not inverted.
-16. Unit case 5: with no `onSubmitError`, the dev warning fires and there is still no unhandled
+16. Unit case 4: the happy path still resets, proving the branch was not inverted.
+17. Unit case 5: with no `onSubmitError`, the dev warning fires and there is still no unhandled
     rejection.
-17. Unit case 6: a non-`Error` rejection value (a string) is forwarded unchanged, pinning the
+18. Unit case 6: a non-`Error` rejection value (a string) is forwarded unchanged, pinning the
     `unknown` type.
-18. Unit case 7: the submit control is re-enabled afterwards, proving `submitting` semantics are
+19. Unit case 7: the submit control is re-enabled afterwards, proving `submitting` semantics are
     unchanged (`isSubmitting ?? methods.formState.isSubmitting`).
-19. Every existing `UiForm` prop keeps its name, type, default, and position; every current call
+20. Every existing `UiForm` prop keeps its name, type, default, and position; every current call
     site type-checks with no edit; rendered output is identical.
-20. The existing `UiForm` suites (`tests/unit/ui-form.test.tsx`,
+21. The existing `UiForm` suites (`tests/unit/ui-form.test.tsx`,
     `tests/unit/ui-text-field-form.test.tsx`,
     `tests/integration/components/ui-form.integration.test.tsx`,
     `tests/integration/components/ui-text-field-form.integration.test.tsx`) pass **unmodified**.
     Neither currently asserts the removed re-throw behaviour; if one turns out to, only that
     assertion may change, and the change must be recorded in the Completion Notes.
-21. Semantic selectors only (`getByRole`, `getByLabelText`, `getByText`); **no `data-testid`** in
+22. Semantic selectors only (`getByRole`, `getByLabelText`, `getByText`); **no `data-testid`** in
     the new suite, and the filename carries no issue number.
-22. `make lint-metrics` passes: `reportSubmitError` (2 args, 1 exit, LLOC 4), `buildSubmitHandler`
+23. `make lint-metrics` passes: `reportSubmitError` (2 args, 1 exit, LLOC 4), `buildSubmitHandler`
     (1 arg, 1 exit, LLOC 2), and the submit closure (2 args, 1 exit, LLOC 7) all stay inside the
     per-function budget, and `ui-form/index.tsx` stays inside `nom_functions<=10`,
     `nom_closures<=6`, `nom_total<=15`.
-23. `make test-unit` and `make test-integration` pass at the 100% coverage threshold; both new
+24. `make test-unit` and `make test-integration` pass at the 100% coverage threshold; both new
     branches (`onSubmitError` supplied / absent) and both submit outcomes are covered.
-24. The `formState.isSubmitSuccessful` nuance is written into the Completion Notes as an explicit
+25. The `formState.isSubmitSuccessful` nuance is written into the Completion Notes as an explicit
     hand-off to Story 1.4's README section and to the release notes.
-25. No threshold in `config/metrics-policy.json`, `stryker.config.mjs`, or `jest.config.ts` is
+26. No threshold in `config/metrics-policy.json`, `stryker.config.mjs`, or `jest.config.ts` is
     relaxed.
 
 ## Tasks / Subtasks

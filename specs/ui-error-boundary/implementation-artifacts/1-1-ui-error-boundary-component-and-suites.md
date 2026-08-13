@@ -362,7 +362,7 @@ export const FALLBACK_MESSAGE: string = 'Something went wrong.';
 export default function DefaultFallback(): React.ReactElement {
   const { t } = useTranslation();
   return (
-    <UiTypography role="alert" sx={styles.fallback}>
+    <UiTypography variant="bold22" role="alert" sx={styles.fallback}>
       {t(FALLBACK_KEY, { defaultValue: FALLBACK_MESSAGE })}
     </UiTypography>
   );
@@ -375,6 +375,33 @@ string, which is what makes unit case 11 achievable. `UiTypography` already forw
 No-throw rules for the failure path, enforced by review and asserted by tests: no theme callback
 in `sx`; no property access on `error`; no `JSON.stringify`; no date or number formatting; only
 `UiTypography` and plain text render.
+
+### Accessibility rulings (pre-implementation review, 2026-08-13)
+
+Binding results of the accessibility-lead review; do not re-litigate during implementation.
+
+- Contrast: `#DC3939` on white is 4.480:1 and FAILS WCAG AA for normal text (4.5:1). The Figma
+  error token stays untouched; the fallback instead renders as LARGE text via the existing
+  `bold22` variant (22px / weight 700, above the 18.66px-bold large-text threshold, 3:1 bar).
+  `variant="bold22"` in the snippet above is therefore load-bearing: removing it or swapping to
+  a body variant reintroduces a measured AA failure. Unit case 13 is the size guard.
+- Live region: bare `role="alert"` ONLY. Do not add `aria-live`, `aria-atomic`, or `aria-label`.
+  Explicitly do NOT copy `ui-form`'s `ErrorBanner` shape (`role="alert" aria-live="polite"`):
+  the explicit polite value overrides the role's implicit assertive one inconsistently across AT.
+- Mount semantics: inserting a node that already carries `role="alert"` plus its text content IS
+  announced by AT. The prior-art comment in
+  `src/components/ui-calendar-multi-select/calendar-messages.tsx:12-15` ("role toggled onto a
+  static node does not announce") describes attribute mutation on a mounted node and does not
+  apply here. `default-fallback.tsx` must carry a short comment stating this distinction so a
+  future maintainer does not "fix" the fallback into a pre-existing-container shape.
+- Focus: when the destroyed subtree held focus, focus falls to `body`. Ruling: leave it. No
+  `tabIndex` anywhere in the fallback, no programmatic `.focus()`; announce-without-focus is the
+  APG alert pattern. Conditional focus recovery was evaluated and rejected (the only available
+  guard misfires on errors thrown during initial mount). A built-in recovery would be a future
+  opt-in prop in its own story.
+- Lifecycle: the message resolution stays synchronous (`t(...)` with `defaultValue` at render);
+  never mount the alert empty and inject text later (two-phase injection is rejected for v1);
+  the mounted alert is never emptied, hidden, or auto-dismissed.
 
 ### `resetKeys` semantics and recovery (Architecture Decision 4)
 
@@ -458,7 +485,7 @@ Tests live only under the root `tests/` tree; `scripts/check-test-structure.sh` 
 
 | Path                                                                  | Owns         |
 | --------------------------------------------------------------------- | ------------ |
-| `tests/unit/ui-error-boundary.test.tsx`                               | cases 1-12   |
+| `tests/unit/ui-error-boundary.test.tsx`                               | cases 1-13   |
 | `tests/unit/utils/mock-console-error.ts`                              | helper only  |
 | `tests/integration/components/ui-error-boundary.integration.test.tsx` | containment  |
 | `tests/unit/components-index.test.ts` (modified)                      | export drift |
@@ -502,7 +529,11 @@ same `beforeEach`/`afterEach` spy plus live-handle shape, default-exported, retu
 11. render inside `<I18nextProvider i18n={bareInstance}>`, where `bareInstance` is initialized
     with empty resources, and assert `FALLBACK_MESSAGE`. This fails if the implementation drops
     `defaultValue`, because the raw key would render instead;
-12. an `Error` built with no message still renders the fallback text.
+12. an `Error` built with no message still renders the fallback text;
+13. contrast size guard: the element returned by `getByRole('alert')` carries the `bold22`
+    variant (assert `MuiTypography-bold22` in `className`; the selector stays semantic, the
+    class is only the assertion target). Kills any mutant that drops or swaps the variant that
+    keeps `#DC3939` on the WCAG large-text 3:1 bar.
 
 Integration suite: render a real composed subtree - a sibling region holding a real interactive
 toolkit control outside the boundary, and a boundary wrapping a real toolkit subtree (for example

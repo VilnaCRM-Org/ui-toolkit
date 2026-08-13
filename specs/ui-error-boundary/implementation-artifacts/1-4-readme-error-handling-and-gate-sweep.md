@@ -165,11 +165,32 @@ New top-level section after `## Project Layout`:
 5. The three fallback modes, including that `null` does not suppress the default.
 6. The two recovery paths: `reset` from a render-prop fallback, and `resetKeys`.
 7. `onError`: once per error, with React's `ErrorInfo`; the toolkit reports nowhere.
-8. Accessibility: the default fallback is `role="alert"`; a consumer fallback is the consumer's
-   responsibility and gets no injected semantics.
+8. Accessibility: the default fallback is `role="alert"` rendered as large text (`bold22`), and
+   a consumer fallback is the consumer's responsibility and gets no injected semantics. The
+   accessibility-lead review (2026-08-13) requires this subsection to state the concrete
+   consumer-fallback checklist verbatim rather than a bare "consumer owns a11y":
+   - put `role="alert"` on the message element only, mounting with its text; never on a wrapper
+     containing interactive elements (interactive error UI is the `alertdialog` pattern);
+   - a retry control is a native button with an accessible name and a visible focus indicator;
+   - if the error was interaction-triggered, focus the fallback's retry control on appearance
+     (the consumer can know this; the toolkit cannot);
+   - after calling `reset()`, move focus deliberately: the render-prop reset destroys the
+     focused Try-again button and drops focus to `body` on every recovery (`resetKeys` is
+     focus-safe by construction because the driving control lives outside the boundary);
+   - never render `error.message` or stack traces into an assertive atomic region;
+   - meet WCAG 1.4.1 and 1.4.3 in custom fallback styling;
+   - repeated identical failures overwrite the error without a DOM change, so some screen
+     readers will not re-announce; vary the message if per-attempt announcements matter.
+     Also record: the default fallback text is announced in English on non-English pages unless
+     the consumer defines `error_boundary.default_message` in their own i18next resources (which
+     win over the built-in `defaultValue`); a rare VoiceOver+Safari caveat can drop inserted
+     alerts (accepted for v1); prefer contextual per-region fallbacks (wrap widgets, not
+     whole-page landmarks or the region holding the page's only `h1`).
 9. The `UiForm` rejection contract: `onSubmitError`, no reset on failure, the dev warning when no
    handler is attached, how it relates to the existing `error` display prop, and the
-   `formState.isSubmitSuccessful` nuance.
+   `formState.isSubmitSuccessful` nuance. State explicitly that the `error` banner and a
+   rethrow-into-boundary are mutually exclusive escalation paths for one failure: wiring both
+   yields two competing `role="alert"` regions and duplicated or dropped announcements.
 10. "No migration required": the change is additive.
 
 `README.md` currently has the top-level sections `## Stack`, `## Getting Started`,
