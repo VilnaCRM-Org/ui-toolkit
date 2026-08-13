@@ -24,7 +24,11 @@ export const FALLBACK_MESSAGE: string = 'Something went wrong.';
 // resolves through `defaultValue` - including inside an i18next instance that
 // carries no resources at all.
 export default function DefaultFallback(): React.ReactElement {
-  const { t } = useTranslation();
+  // `useSuspense: false` is load-bearing: with the default (true), a host app
+  // still loading its i18next backend makes this hook THROW a suspense promise
+  // while the fallback renders, and a throwing fallback escalates past the
+  // boundary into the blank page this component exists to prevent.
+  const { t } = useTranslation(undefined, { useSuspense: false });
 
   return (
     <UiTypography variant="bold22" role="alert" sx={styles.fallback}>

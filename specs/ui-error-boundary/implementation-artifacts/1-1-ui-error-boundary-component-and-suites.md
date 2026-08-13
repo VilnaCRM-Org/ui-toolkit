@@ -682,3 +682,25 @@ Consolidated in "Completion Notes (2026-08-13)" below.
 - Three `react/jsx-no-bind` WARNINGS (0 errors) exist in the unit suite's harness components;
   the lint gate carries no `--max-warnings` flag and the render-prop API is exercised
   idiomatically. Accepted by review.
+
+### Review round 2 (Fable adversarial review, 2026-08-13)
+
+Fifteen findings adjudicated; four changed this component or its suites:
+
+- `componentDidUpdate` gained the `prevState.error` half of its guard: a `resetKeys` change
+  landing in the same commit as the throw itself no longer resets straight back into the
+  still-throwing child (which doubled `onError`). Pinned by the "ignores a keys change that
+  arrives together with the throw" unit case.
+- `FallbackView` now nullish-checks a render-prop's RETURN value too, so a render prop that
+  returns `null` yields the default fallback instead of a blank region. Pinned by unit case.
+- `DefaultFallback` calls `useTranslation(undefined, { useSuspense: false })`: with the default,
+  an app still loading its i18next backend makes the hook throw a suspense promise while the
+  fallback renders, escalating past the boundary. Pinned by the never-ready-backend unit case.
+- A drift guard pins `styles.fallback.color` to `sharedPalette.error.main`.
+- Post-fix targeted Stryker: 98.31 overall (boundary files); `index.tsx` 97.62 with a single
+  surviving guard mutant from the documented equivalent pair; break threshold 80.
+
+Adjudicated no-change: sparse-array `resetKeys` holes (out of contract, idiomatic `.some`),
+worker-global unhandledRejection listener (accepted, sequential-per-worker), throwing
+`onSubmitError`/`reset` escaping (consumer bugs should surface loudly, per browser-listener
+semantics). Console-mock duplication resolved via a shared `mock-console-method.ts` factory.

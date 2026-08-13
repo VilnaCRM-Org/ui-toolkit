@@ -1,14 +1,15 @@
 import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
-import { createInstance, type i18n as I18nInstance } from 'i18next';
+import { createInstance, type BackendModule, type i18n as I18nInstance } from 'i18next';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 
-import { UiErrorBoundary } from '../../src/components';
+import { UiErrorBoundary, sharedPalette } from '../../src/components';
 import {
   FALLBACK_KEY,
   FALLBACK_MESSAGE,
 } from '../../src/components/ui-error-boundary/default-fallback';
+import styles from '../../src/components/ui-error-boundary/styles';
 
 import mockConsoleError from './utils/mock-console-error';
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -162,6 +163,13 @@ describe('UiErrorBoundary default fallback', () => {
 
     expect(screen.getByRole('alert')).toHaveClass('MuiTypography-bold22');
   });
+
+  // Drift guard: styles.ts deliberately hardcodes the hex (the failure path
+  // imports no theme module), so this assertion is what fails if the design
+  // token moves and the literal copy silently goes stale.
+  it('keeps the literal fallback colour equal to sharedPalette.error.main', () => {
+    expect(styles.fallback.color).toBe(sharedPalette.error.main);
+  });
 });
 
 describe('UiErrorBoundary error reporting', () => {
@@ -207,6 +215,16 @@ describe('UiErrorBoundary custom fallbacks', () => {
     expect(screen.getByText(CUSTOM_FALLBACK_TEXT)).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.queryByText(FALLBACK_TEXT)).not.toBeInTheDocument();
+  });
+
+  it('falls back to the default when a render-prop fallback returns null', () => {
+    render(
+      <UiErrorBoundary fallback={(): React.ReactElement | null => null}>
+        <Boom shouldThrow />
+      </UiErrorBoundary>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent(FALLBACK_TEXT);
   });
 
   it('hands the render-prop fallback the error and a working reset', async () => {
@@ -273,6 +291,36 @@ describe('UiErrorBoundary resetKeys', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  // A keys change that lands in the same commit as the throw itself must NOT
+  // reset straight back into the still-throwing child: that would catch the
+  // same failure twice and double every onError report. Only a change observed
+  // while the fallback was already committed may reset.
+  it('ignores a keys change that arrives together with the throw', () => {
+    const onError = jest.fn();
+    const { rerender } = render(
+      <UiErrorBoundary onError={onError} resetKeys={[1]}>
+        <Boom shouldThrow={false} />
+      </UiErrorBoundary>
+    );
+
+    rerender(
+      <UiErrorBoundary onError={onError} resetKeys={[2]}>
+        <Boom shouldThrow />
+      </UiErrorBoundary>
+    );
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(onError).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <UiErrorBoundary onError={onError} resetKeys={[3]}>
+        <Boom shouldThrow={false} />
+      </UiErrorBoundary>
+    );
+
+    expect(screen.getByText(HEALTHY_TEXT)).toBeInTheDocument();
+  });
+
   it('keeps the fallback while the keys stay identical', () => {
     const { rerender } = render(boomTree(true, [1]));
 
@@ -331,5 +379,29 @@ describe('UiErrorBoundary fallback message resolution', () => {
   it('pins the translation key and the English default value', () => {
     expect(FALLBACK_KEY).toBe(FALLBACK_KEY_TEXT);
     expect(FALLBACK_MESSAGE).toBe(FALLBACK_TEXT);
+  });
+
+  // A host app still loading its i18next backend must not make the fallback
+  // suspend: with react-i18next's default useSuspense, an un-ready instance
+  // THROWS from useTranslation, and a throwing fallback escalates past the
+  // boundary. Pins the explicit `useSuspense: false`.
+  it('renders without suspending while an i18next backend never becomes ready', () => {
+    const pendingBackend: BackendModule = {
+      type: 'backend',
+      init: (): void => undefined,
+      read: (): void => undefined,
+    };
+    const pendingInstance: I18nInstance = createInstance();
+    pendingInstance.use(pendingBackend).init({ lng: 'en' });
+
+    render(
+      <I18nextProvider i18n={pendingInstance}>
+        <UiErrorBoundary>
+          <Boom shouldThrow />
+        </UiErrorBoundary>
+      </I18nextProvider>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent(FALLBACK_TEXT);
   });
 });

@@ -199,7 +199,9 @@ rejection:
 - `onSubmitError(error)` receives whatever value the rejection carried, and is the supported
   failure signal;
 - with no handler attached the rejection is still contained and a development-only warning is
-  emitted in its place; it is never re-thrown;
+  emitted in its place; it is never re-thrown. The production bundle strips that warning, so a
+  production app that wants failed submits visible anywhere (a toast, a monitoring SDK, a log)
+  must attach `onSubmitError` — without it, a failed submit produces no signal at all;
 - the `resetOnSuccess` reset is skipped on failure, so a rejected submit never clears the user's
   input;
 - the existing `error` display prop is unchanged and independent: `onSubmitError` is the callback,
@@ -220,6 +222,11 @@ surrounding `UiErrorBoundary` are mutually exclusive. Wiring both yields two com
 The change is additive. No existing exported prop, default, or rendered output changed:
 `UiErrorBoundary` is a new export and `onSubmitError` is a new optional prop on `UiForm`. Existing
 call sites compile and render exactly as before.
+
+One behavioural exception, both halves documented above: a rejected `onSubmit` no longer escapes.
+An app that observed failed submits through a global `unhandledrejection` listener, or that reads
+`formState.isSubmitSuccessful` as a failure signal, must switch those call sites to
+`onSubmitError`.
 
 ## Notes
 

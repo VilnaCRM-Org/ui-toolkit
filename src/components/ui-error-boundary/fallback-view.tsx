@@ -13,15 +13,16 @@ type FallbackViewProps = {
 
 // The single place fallback resolution is decided: render prop, then node, then
 // the built-in default. Resolution is nullish on purpose — an explicit `null`
-// still yields the default, because the never-blank guarantee outranks a
-// consumer's ability to render nothing.
+// (as the prop or as a render-prop's return value) still yields the default,
+// because the never-blank guarantee outranks a consumer's ability to render
+// nothing.
 export default function FallbackView({
   fallback,
   error,
   reset,
 }: FallbackViewProps): React.ReactElement {
   if (typeof fallback === 'function') {
-    return <>{fallback(error, reset)}</>;
+    return <>{fallback(error, reset) ?? <DefaultFallback />}</>;
   }
 
   if (fallback == null) {
