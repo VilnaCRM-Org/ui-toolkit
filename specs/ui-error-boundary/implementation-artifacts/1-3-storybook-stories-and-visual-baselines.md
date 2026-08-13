@@ -59,56 +59,56 @@ so that the fallback rendering is reviewable in Storybook and protected from sil
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Author the story file (AC: 1, 3, 4, 5, 6, 7, 8, 9, 18)
-  - [ ] 1.1 Create `src/components/ui-error-boundary/error-boundary.stories.tsx` with
+- [x] Task 1: Author the story file (AC: 1, 3, 4, 5, 6, 7, 8, 9, 18)
+  - [x] 1.1 Create `src/components/ui-error-boundary/error-boundary.stories.tsx` with
         `title: 'UiComponents/UiErrorBoundary'`, `component: UiErrorBoundary`, and
         `tags: ['autodocs']`, matching the other component stories in this repository
-  - [ ] 1.2 Declare a module-scope `Boom` component that throws unconditionally during render and
+  - [x] 1.2 Declare a module-scope `Boom` component that throws unconditionally during render and
         reuse the same instance across all three stories
-  - [ ] 1.3 Export `DefaultFallback` (no `fallback` prop), `CustomNodeFallback` (a static
+  - [x] 1.3 Export `DefaultFallback` (no `fallback` prop), `CustomNodeFallback` (a static
         `ReactNode` fallback), and `RenderPropFallback` (an `(error, reset)` function returning a
         static "Try again" `UiButton` wired to `reset`)
-  - [ ] 1.4 Add `argTypes: { fallback: { control: false }, children: { control: false } }`
-  - [ ] 1.5 Confirm no timers, no `Math.random`, no `Date`, and no `error.message` render anywhere
+  - [x] 1.4 Add `argTypes: { fallback: { control: false }, children: { control: false } }`
+  - [x] 1.5 Confirm no timers, no `Math.random`, no `Date`, and no `error.message` render anywhere
         in the file
-  - [ ] 1.6 Import `UiButton` from `../ui-button` and `UiErrorBoundary` from `./index`
+  - [x] 1.6 Import `UiButton` from `../ui-button` and `UiErrorBoundary` from `./index`
 
-- [ ] Task 2: Register the stories in the manifest (AC: 2, 10)
-  - [ ] 2.1 Run `make storybook-build` so `storybook-static/index.json` is current
-  - [ ] 2.2 Regenerate `tests/visual/stories.json` from that index using the snippet in
+- [x] Task 2: Register the stories in the manifest (AC: 2, 10)
+  - [x] 2.1 Run `make storybook-build` so `storybook-static/index.json` is current
+  - [x] 2.2 Regenerate `tests/visual/stories.json` from that index using the snippet in
         `tests/visual/README.md` (map every `type === 'story'` entry to `{ id, title, name }` and
         sort by `id`), or insert the three entries by hand in the same sorted position
-  - [ ] 2.3 Confirm the resulting ids match AC5 exactly and that no unrelated entry changed
+  - [x] 2.3 Confirm the resulting ids match AC5 exactly and that no unrelated entry changed
 
-- [ ] Task 3: Generate the baselines in the pinned Playwright image (AC: 1, 11, 12)
-  - [ ] 3.1 `docker compose up -d --build storybook` so the served Storybook renders current `src`
-  - [ ] 3.2 Wait for the served iframe with the `wait-on` command in the "Baseline generation"
+- [x] Task 3: Generate the baselines in the pinned Playwright image (AC: 1, 11, 12)
+  - [x] 3.1 `docker compose up -d --build storybook` so the served Storybook renders current `src`
+  - [x] 3.2 Wait for the served iframe with the `wait-on` command in the "Baseline generation"
         block below
-  - [ ] 3.3 The `playwright` service has **no volume mount**, so bind-mount `tests/` to persist
+  - [x] 3.3 The `playwright` service has **no volume mount**, so bind-mount `tests/` to persist
         the writes, using the third command in that block (add `--grep` to target only the new
         stories)
-  - [ ] 3.4 A missing snapshot auto-writes the baseline AND fails that run - that failure is the
+  - [x] 3.4 A missing snapshot auto-writes the baseline AND fails that run - that failure is the
         expected RED signal; re-run to confirm green
-  - [ ] 3.5 Confirm the three new files landed under
+  - [x] 3.5 Confirm the three new files landed under
         `tests/visual/visual.spec.ts-snapshots/` with the `-chromium-linux.png` suffix and are
         owned by the host user
-  - [ ] 3.6 Review the three PNGs visually before committing them
+  - [x] 3.6 Review the three PNGs visually before committing them
 
-- [ ] Task 4: Confirm the e2e smoke contract (AC: 13, 14, 15)
-  - [ ] 4.1 Run `make test-e2e` and confirm zero `pageerror` for the three new story ids
-  - [ ] 4.2 If a `pageerror` registers, rework the story so the fallback is reached without an
+- [x] Task 4: Confirm the e2e smoke contract (AC: 13, 14, 15)
+  - [x] 4.1 Run `make test-e2e` and confirm zero `pageerror` for the three new story ids
+  - [x] 4.2 If a `pageerror` registers, rework the story so the fallback is reached without an
         uncaught throw, regenerate the affected baseline, and re-run. Do not edit
         `tests/e2e/stories.smoke.spec.ts`
-  - [ ] 4.3 Record the observed outcome in the Completion Notes either way, since the architecture
+  - [x] 4.3 Record the observed outcome in the Completion Notes either way, since the architecture
         flagged this as unconfirmed
 
-- [ ] Task 5: Gate sweep (AC: 12, 16, 19)
-  - [ ] 5.1 `make lint-next`, `make lint-tsc`, `make format-check`
-  - [ ] 5.2 `make lint-deps` - zero new violations from the story file's imports
-  - [ ] 5.3 `make storybook-build`
-  - [ ] 5.4 `make test-visual` - green against the committed baselines, drift guard included
-  - [ ] 5.5 `qlty check`
-  - [ ] 5.6 Confirm by diff that no threshold config and no `maxDiffPixelRatio` changed
+- [x] Task 5: Gate sweep (AC: 12, 16, 19)
+  - [x] 5.1 `make lint-next`, `make lint-tsc`, `make format-check`
+  - [x] 5.2 `make lint-deps` - zero new violations from the story file's imports
+  - [x] 5.3 `make storybook-build`
+  - [x] 5.4 `make test-visual` - green against the committed baselines, drift guard included
+  - [x] 5.5 `qlty check`
+  - [x] 5.6 Confirm by diff that no threshold config and no `maxDiffPixelRatio` changed
 
 - [ ] Task 6: Post-push follow-up (AC: 17)
   - [ ] 6.1 After pushing, check whether the `calibreapp/image-actions` workflow pushed a
@@ -222,16 +222,16 @@ committed PNGs and pushes a commit to the branch, so `git pull --ff-only` after 
 
 ## Definition of Done
 
-- [ ] `make lint-next`, `make lint-tsc`, `make format-check` pass.
-- [ ] `make lint-deps` reports zero new findings.
-- [ ] `make storybook-build` succeeds and the three stories render in Storybook.
-- [ ] `make test-visual` passes and the story-manifest drift guard reports no missing coverage.
-- [ ] `make test-e2e` reports zero `pageerror` for the three new stories, and the observed result
+- [x] `make lint-next`, `make lint-tsc`, `make format-check` pass.
+- [x] `make lint-deps` reports zero new findings.
+- [x] `make storybook-build` succeeds and the three stories render in Storybook.
+- [x] `make test-visual` passes and the story-manifest drift guard reports no missing coverage.
+- [x] `make test-e2e` reports zero `pageerror` for the three new stories, and the observed result
       is recorded in the Completion Notes.
-- [ ] The three baselines were generated inside the pinned Playwright Docker image with `tests/`
+- [x] The three baselines were generated inside the pinned Playwright Docker image with `tests/`
       bind-mounted, and none were generated on the host.
-- [ ] `qlty check` reports no new findings.
-- [ ] No threshold and no `maxDiffPixelRatio` was relaxed.
+- [x] `qlty check` reports no new findings.
+- [x] No threshold and no `maxDiffPixelRatio` was relaxed.
 
 ## References
 
@@ -249,20 +249,95 @@ committed PNGs and pushes a commit to the branch, so `git pull --ff-only` after 
 
 ### Agent Model Used
 
-_Pending implementation._
+`claude-opus-5[1m]` (Claude Code).
 
 ### Debug Log References
 
-_Pending implementation._
+See "Completion Notes List" below - in particular the SB_PREVIEW_API_0002 finding, the
+`pageerror` measurement, and the two environment deviations.
 
 ### Completion Notes List
 
-_Pending implementation._
+- **AC13 confirmed empirically: zero `pageerror`.** `tests/e2e` ran green across chromium,
+  firefox, and webkit (186/186), and a targeted `--grep "UiErrorBoundary"` run passed 9/9
+  (3 stories x 3 browsers). React 19 routes the boundary-caught throw to `console.error`
+  only; a DOM probe of each story recorded the React "caught error" console entry and no
+  `pageerror` event. `tests/e2e/stories.smoke.spec.ts` was not edited and no assertion was
+  weakened. The mount assertion also holds: each story root has `childElementCount === 1`.
+- **Blocking discovery (not anticipated by the story): Storybook implicit actions.**
+  `.storybook/preview.ts` sets `actions: { argTypesRegex: '^on[A-Z].*' }`, so Storybook
+  injected an implicit action spy for `onError`. `componentDidCatch` calls that spy while the
+  story is still rendering, which makes Storybook throw
+  `SB_PREVIEW_API_0002 (ImplicitActionsDuringRendering)`, swallow the story, and leave
+  `#storybook-root` empty (`sb-show-errordisplay`). All three stories rendered blank until an
+  explicit `onError` no-op was supplied through `meta.args`, which is the fix Storybook's own
+  error message prescribes. No component source changed (AC18 intact); the arg lives only in
+  the story file.
+- `CustomNodeFallback` first used `variant="medium16"`, whose theme colour is `grey300` -
+  the baseline showed near-illegible grey body text. Switched to `bodyText16`
+  (`darkPrimary`) and regenerated. Note for future baseline work: the first regeneration
+  silently did nothing, because `--update-snapshots` defaults to `changed` and the colour
+  swap stayed inside `maxDiffPixelRatio: 0.02`; `--update-snapshots=all` was required.
+- The three baselines render with the browser's default serif (no webfont), which matches
+  every pre-existing baseline in this repository (compare `uicomponents-uibutton--contained`):
+  Storybook loads no `@font-face` in the preview. Nothing was changed to "fix" that.
+- **Deviation 1 (environment, flagged): the Alpine image cannot be rebuilt right now.**
+  `docker compose build storybook` fails on the pinned `nodejs=22.23.0-r0`; the Alpine index
+  currently offers `nodejs-22.22.2-r0` (`apk add -s` reproduces it). This is pre-existing
+  repo-wide pin drift, unrelated to this story, and fixing `Dockerfile` is out of scope here.
+  Because `make test-visual` / `make test-e2e` both start with that build, they could not run
+  verbatim. Substituted, using the cached `ui-toolkit-storybook` image with the working tree
+  bind-mounted over its baked copy, so the served Storybook is current:
+  `docker compose run -d --use-aliases --name uitk-sb-171 -v "$PWD/src:/app/src"`
+  `-v "$PWD/.storybook:/app/.storybook" -v "$PWD/i18n:/app/i18n" storybook`, then the exact
+  Playwright commands those targets run, in the pinned Playwright image. Same dev-server
+  Storybook and same browser image as CI; only the image rebuild step differs.
+- **Deviation 2 (procedure, flagged):** for the same reason, step 3.1's
+  `docker compose up -d --build storybook` was replaced by the `docker compose run` form
+  above. Step 3.3 (the `tests/` bind-mount into the Playwright container) was followed
+  exactly; the PNGs landed on the host owned by `dima:dima`.
+- Baseline generation command (AC11), run twice - RED on the first run (snapshots written,
+  run fails) and green on the re-run:
+  `docker compose run --rm -v "$PWD/tests:/app/tests" playwright bun x playwright test`
+  `./tests/visual --project=chromium --grep "UiErrorBoundary" --reporter=line`.
+  Nothing was generated on the host.
+- Visual suite verdict: the full `./tests/visual` run (all projects, as `make test-visual`
+  invokes it) reported 71 passed / 136 skipped / 0 failed - the 46 chromium screenshots
+  including the three new ones, the `states.spec.ts` shots, and the manifest completeness
+  drift guard on all three browsers. The 43 pre-existing baselines still pass, which also
+  shows the substituted serving path is pixel-equivalent to the canonical one.
+- Gate evidence (host, since the `bun` service is a baked image): `tsc --newLine LF` clean,
+  `eslint` 0 problems, `prettier --check` clean, `storybook build` succeeded twice.
+  `depcruise --config .dependency-cruiser.js src` exits 0 with 0 errors; the story file adds
+  only the repo-wide `no-duplicate-dep-types` warning that every `react` importer carries.
+  `lint-metrics` in the `rca` container: "all hard checks pass". `qlty check` on both changed
+  files reports only the pre-existing sandbox issue
+  (`TS5012: Cannot read file .../eslint/9.7.0-.../tsconfig.json`), reproduced identically on
+  untouched `src/components/ui-button/button.stories.tsx`; `qlty fmt` changes neither file.
+- AC19 verified by mtime: `config/metrics-policy.json`, `stryker.config.mjs`,
+  `jest.config.ts`, `playwright.config.ts`, `tests/visual/visual.spec.ts` (which owns
+  `maxDiffPixelRatio`), and `tests/e2e/stories.smoke.spec.ts` are all untouched.
+- `depcruise` had to run under Node 24 (`~/.nvm/versions/node/v24.18.0`); the host's Node
+  25.2.1 is rejected by dependency-cruiser's supported-version guard.
+- Task 6 (image-actions recompression follow-up) remains open: it is a post-push step and no
+  git operation was performed in this session.
 
 ### File List
 
-_Pending implementation._
+Created:
+
+- `src/components/ui-error-boundary/error-boundary.stories.tsx`
+- three baselines under `tests/visual/visual.spec.ts-snapshots/`:
+  - `uicomponents-uierrorboundary--default-fallback-chromium-linux.png`
+  - `uicomponents-uierrorboundary--custom-node-fallback-chromium-linux.png`
+  - `uicomponents-uierrorboundary--render-prop-fallback-chromium-linux.png`
+
+Modified:
+
+- `tests/visual/stories.json` (three entries inserted in sorted position; 43 -> 46 entries,
+  none removed or altered)
 
 ### Change Log
 
-_Pending implementation._
+- 2026-08-13: implemented; three stories, three baselines, manifest registration, and the
+  `pageerror` contract confirmed. Two environment deviations recorded above.
