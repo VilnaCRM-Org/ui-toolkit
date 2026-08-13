@@ -640,19 +640,32 @@ _Pending implementation._
 
 ### Debug Log References
 
-_Pending implementation._
+See "Completion Notes (2026-08-13)" and the mutation addendum below.
 
 ### Completion Notes List
 
-_Pending implementation._
+Consolidated in "Completion Notes (2026-08-13)" below.
 
 ### File List
 
-_Pending implementation._
+Consolidated in "Completion Notes (2026-08-13)" below.
 
 ### Change Log
 
-_Pending implementation._
+- 2026-08-13: implemented, reviewed, and mutation-hardened; see the addendum.
+
+### Mutation addendum (targeted host Stryker, 2026-08-13)
+
+- Touched-files run: score 95.74 against break 80. `ui-form` files 100.
+- Two review-added killers: a shrinking `resetKeys` list with identical remaining entries
+  (pins the length guard the element-wise walk cannot see) and an exact child render-count
+  assertion (mount + increment + rerender = 3) on the healthy-keys-change case.
+- Two surviving mutants on `index.tsx:36` (the `componentDidUpdate` healthy early-return
+  flipped to `false` / emptied) are EQUIVALENT mutants, accepted and documented: without the
+  guard the healthy boundary performs a no-op `setState`, and React bails out of re-rendering
+  children whose element identity is unchanged, so no child render, DOM change, or callback is
+  observable from any consumer-visible surface. The guard is kept as the story mandates
+  (a healthy boundary is never touched); final `index.tsx` score 94.74, break 80.
 
 ## Completion Notes (2026-08-13)
 

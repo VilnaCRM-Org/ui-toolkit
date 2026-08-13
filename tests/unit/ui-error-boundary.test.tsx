@@ -29,6 +29,7 @@ mockConsoleError();
 const warn = mockConsoleWarn();
 
 const childMounted = jest.fn();
+const childRendered = jest.fn();
 
 function Boom({ shouldThrow }: { shouldThrow: boolean }): React.ReactElement {
   if (shouldThrow) {
@@ -42,11 +43,14 @@ function Silent(): React.ReactElement {
   throw new Error();
 }
 
-// Carries observable mount and state identity, so a recovery can be proven to
-// remount the subtree rather than merely re-render it.
+// Carries observable mount, render, and state identity, so a recovery can be
+// proven to remount the subtree rather than merely re-render it, and a healthy
+// boundary can be proven not to re-render its children at all.
 function Counter({ shouldThrow }: { shouldThrow: boolean }): React.ReactElement {
   const [count, setCount] = React.useState<number>(0);
   const increment = (): void => setCount((value: number): number => value + 1);
+
+  childRendered();
 
   React.useEffect((): void => {
     childMounted();
@@ -258,6 +262,17 @@ describe('UiErrorBoundary resetKeys', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  // A shrinking list whose remaining entries are identical is the one length
+  // change the element-wise walk cannot see, so it pins the length guard.
+  it('recovers when the key list shrinks with identical remaining keys', () => {
+    const { rerender } = render(boomTree(true, [1, 2]));
+
+    rerender(boomTree(false, [1]));
+
+    expect(screen.getByText(HEALTHY_TEXT)).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('keeps the fallback while the keys stay identical', () => {
     const { rerender } = render(boomTree(true, [1]));
 
@@ -286,6 +301,9 @@ describe('UiErrorBoundary resetKeys', () => {
 
     expect(screen.getByText('count: 1')).toBeInTheDocument();
     expect(childMounted).toHaveBeenCalledTimes(1);
+    // Exactly mount + increment + rerender: a boundary that consults its keys
+    // while healthy would schedule one more child render than these three.
+    expect(childRendered).toHaveBeenCalledTimes(3);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });
