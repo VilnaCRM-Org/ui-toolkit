@@ -1,7 +1,7 @@
 # Story 3.6 — Epic 3 Quality Gate Closure
 
 - **Issue:** [#29](https://github.com/VilnaCRM-Org/ui-toolkit/issues/29)
-- **PR:** _assigned at hand-off_
+- **PR:** [#132](https://github.com/VilnaCRM-Org/ui-toolkit/pull/132)
 - **Branch:** `feat/issue-27-quality-gate-closure`
 - **Epic:** Epic 3 — Data Presentation and Cards
 - **Status:** review

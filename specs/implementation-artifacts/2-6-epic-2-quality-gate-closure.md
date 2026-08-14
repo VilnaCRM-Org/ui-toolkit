@@ -1,7 +1,7 @@
 # Story 2.6 — Epic 2 Quality Gate Closure
 
 - **Issue:** [#28](https://github.com/VilnaCRM-Org/ui-toolkit/issues/28)
-- **PR:** _assigned at hand-off_
+- **PR:** [#132](https://github.com/VilnaCRM-Org/ui-toolkit/pull/132)
 - **Branch:** `feat/issue-27-quality-gate-closure`
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
 - **Status:** review

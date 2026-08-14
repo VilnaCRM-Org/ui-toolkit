@@ -1,7 +1,7 @@
 # Story 1.4 — Epic 1 Quality Gate Closure
 
 - **Issue:** [#27](https://github.com/VilnaCRM-Org/ui-toolkit/issues/27)
-- **PR:** _assigned at hand-off_
+- **PR:** [#132](https://github.com/VilnaCRM-Org/ui-toolkit/pull/132)
 - **Branch:** `feat/issue-27-quality-gate-closure`
 - **Epic:** Epic 1 — Core Controls and Contract Foundation
 - **Status:** review
