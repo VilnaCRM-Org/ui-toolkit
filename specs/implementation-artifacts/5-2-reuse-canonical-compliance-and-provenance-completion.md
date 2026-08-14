@@ -134,8 +134,9 @@ weaken documentation evidence, and a merged PR does not supply evidence it never
 
 Roll-up: 7 rows `Complete`, 15 rows `Evidence-elsewhere`, 1 row `Gap`. The single `Gap` is the
 parity layer's §6, ruled on immediately below. The three `Complete` closure rows (Stories 1.4,
-2.6, 3.6) were appended by the Epic 1-3 quality-gate closure story, as group H of the guard
-requires for every new artifact.
+2.6, 3.6) were appended by the Epic 1-3 quality-gate closure story, as group H of
+`tests/unit/component-provenance-traceability.test.ts` requires for every new
+implementation artifact.
 
 ### Dependency note
 

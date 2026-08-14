@@ -114,18 +114,6 @@ function storyModules(module: string): string[] {
   return readdirSync(dir).filter(name => name.endsWith('.stories.tsx'));
 }
 
-// Registry-style suites name every export by construction, so a hit inside
-// one of them is not behaviour evidence. Excluding them is a ruling: the unit
-// surface a closure story signs off is a suite that exercises the component,
-// not a list that enumerates it.
-const REGISTRY_SUITES: string[] = [
-  'epic-quality-gate-closure.test.ts',
-  'components-index.test.ts',
-  'export-contract-integrity.test.ts',
-  'component-provenance-traceability.test.ts',
-  'board-coverage-traceability.test.ts',
-];
-
 interface UnitSuite {
   file: string;
   body: string;
@@ -134,14 +122,27 @@ interface UnitSuite {
 function unitSuites(): UnitSuite[] {
   return readdirSync(join(REPO_ROOT, UNIT_TESTS_DIR))
     .filter(name => /\.test\.tsx?$/.test(name))
-    .filter(name => !REGISTRY_SUITES.includes(name))
     .map(file => ({ file, body: readFileSync(join(REPO_ROOT, UNIT_TESTS_DIR, file), 'utf8') }));
 }
 
 const behaviourSuites: UnitSuite[] = unitSuites();
 
-function behaviourSuitesNaming(exportName: string): string[] {
-  return behaviourSuites.filter(suite => suite.body.includes(exportName)).map(suite => suite.file);
+/** Hyphen-insensitive key, so `ui-check-box.test.tsx` answers for `ui-checkbox`. */
+function flatName(name: string): string {
+  return name.replace(/-/g, '');
+}
+
+// An incidental mention of an export inside another component's suite (a
+// `UiLink` rendered as a calendar fixture, say) is not coverage evidence, so
+// the gate only accepts a suite whose filename is keyed to the module — the
+// repo's `ui-<module>*.test.*` convention — and which names the export in its
+// body. Deleting a component's dedicated suite fails this gate even while
+// other suites still mention the export.
+function dedicatedSuitesNaming({ module, exportName }: GatedModule): string[] {
+  return behaviourSuites
+    .filter(suite => flatName(suite.file).startsWith(flatName(module)))
+    .filter(suite => suite.body.includes(exportName))
+    .map(suite => suite.file);
 }
 
 function artifactBody(gate: EpicGate): string {
@@ -185,9 +186,9 @@ describe('epic quality-gate closure', () => {
     });
 
     it.each(allGatedModules)(
-      '$exportName is exercised by a behaviour-level unit suite',
-      ({ exportName }) => {
-        expect(behaviourSuitesNaming(exportName).length).toBeGreaterThan(0);
+      '$exportName is exercised by a dedicated behaviour-level unit suite',
+      gated => {
+        expect(dedicatedSuitesNaming(gated).length).toBeGreaterThan(0);
       }
     );
 

@@ -79,8 +79,9 @@ This artifact instantiates the shared Definition-of-Done checklist (below), and 
 closure surface is the guard:
 
 `tests/unit/epic-quality-gate-closure.test.ts` pins, for every Epic 1 module: a Storybook story
-module on disk, a behaviour-level unit suite naming the export (registry-style suites excluded by
-ruling), the public barrel export, and at least one registered visual baseline. It also binds this
+module on disk, a dedicated behaviour unit suite — its filename keyed to the module, so an
+incidental mention of the export in another component's suite is not coverage evidence — the
+public barrel export, and at least one registered visual baseline. It also binds this
 artifact itself — the file must exist, name every gated module, cite only repo paths that resolve,
 and name the guard as its enforcement. The guard was verified failing-first: before the three
 closure artifacts existed, its 12 artifact-bound assertions failed and its 88 component-surface
