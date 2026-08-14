@@ -132,6 +132,19 @@ function flatName(name: string): string {
   return name.replace(/-/g, '');
 }
 
+/** Flattened hyphen-boundary prefixes: `ui-check-box-styles` → `ui`, `uicheck`, `uicheckbox`, … */
+function boundaryPrefixes(base: string): string[] {
+  const parts: string[] = base.split('-');
+  return parts.map((_, index) => parts.slice(0, index + 1).join(''));
+}
+
+// The module key must end on a hyphen boundary of the suite's basename, so a
+// module name that is a bare prefix of a sibling's (`ui-check` against
+// `ui-checkbox.test.tsx`) cannot borrow that sibling's suite.
+function isDedicatedSuite(file: string, module: string): boolean {
+  return boundaryPrefixes(file.replace(/\.test\.tsx?$/, '')).includes(flatName(module));
+}
+
 // An incidental mention of an export inside another component's suite (a
 // `UiLink` rendered as a calendar fixture, say) is not coverage evidence, so
 // the gate only accepts a suite whose filename is keyed to the module — the
@@ -140,7 +153,7 @@ function flatName(name: string): string {
 // other suites still mention the export.
 function dedicatedSuitesNaming({ module, exportName }: GatedModule): string[] {
   return behaviourSuites
-    .filter(suite => flatName(suite.file).startsWith(flatName(module)))
+    .filter(suite => isDedicatedSuite(suite.file, module))
     .filter(suite => suite.body.includes(exportName))
     .map(suite => suite.file);
 }
