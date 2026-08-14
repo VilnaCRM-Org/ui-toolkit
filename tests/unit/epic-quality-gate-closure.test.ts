@@ -148,9 +148,9 @@ function artifactBody(gate: EpicGate): string {
   return readFileSync(join(REPO_ROOT, ARTIFACTS_DIR, gate.artifact), 'utf8');
 }
 
-/** Repo-relative `src/…` / `tests/…` citations with line suffixes dropped. */
+/** Repo-relative `src/…` / `tests/…` / `specs/…` citations with line suffixes dropped. */
 function citedRepoPaths(text: string): string[] {
-  return [...text.matchAll(/`((?:src|tests)\/[^`\n]+)`/g)]
+  return [...text.matchAll(/`((?:src|tests|specs)\/[^`\n]+)`/g)]
     .map(match => match[1].replace(/:[\d,-]+$/, ''))
     .filter(path => !path.includes('…'));
 }
