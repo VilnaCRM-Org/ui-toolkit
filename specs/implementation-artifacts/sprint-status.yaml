@@ -46,7 +46,7 @@ development_status:
   1-1-core-contract-and-export-baseline: review
   1-2-core-control-state-parity-completion: review
   1-3-accessibility-and-interaction-consistency-hardening: review
-  1-4-epic-1-quality-gate-closure: backlog
+  1-4-epic-1-quality-gate-closure: review
   epic-1-retrospective: optional
   epic-2: in-progress
   2-1-search-and-select-foundation: review
@@ -55,7 +55,7 @@ development_status:
   2-4-radio-group-input-workflow: review
   2-4a-file-upload-input-workflows: review
   2-5-pagination-workflow-component-delivery: review
-  2-6-epic-2-quality-gate-closure: backlog
+  2-6-epic-2-quality-gate-closure: review
   epic-2-retrospective: optional
   epic-3: in-progress
   3-1-item-row-and-list-data-presentation: review
@@ -63,7 +63,7 @@ development_status:
   3-3-profile-select-card-workflow: review
   3-4-integration-card-workflow: review
   3-5-board-a-micro-components: review
-  3-6-epic-3-quality-gate-closure: backlog
+  3-6-epic-3-quality-gate-closure: review
   epic-3-retrospective: optional
   epic-4: in-progress
   4-1-crm-skeleton-baseline-and-provenance-lock: review
