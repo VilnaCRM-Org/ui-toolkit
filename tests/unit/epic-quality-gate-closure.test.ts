@@ -132,7 +132,7 @@ function flatName(name: string): string {
   return name.replace(/-/g, '');
 }
 
-/** Flattened hyphen-boundary prefixes: `ui-check-box-styles` → `ui`, `uicheck`, `uicheckbox`, … */
+/** Flattened hyphen-boundary prefixes: `ui-check-box-styles` -> `ui`, `uicheck`, `uicheckbox`. */
 function boundaryPrefixes(base: string): string[] {
   const parts: string[] = base.split('-');
   return parts.map((_, index) => parts.slice(0, index + 1).join(''));
