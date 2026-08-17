@@ -189,6 +189,26 @@ describe('interaction gate helpers', () => {
     expect(scanMetaTitle('decoy.stories.tsx', source)).toBe('Real/Meta');
   });
 
+  it('resolves a meta aliased with `export { meta as default }`', () => {
+    // The alias form is a plain ExportDeclaration, not an ExportAssignment; missing
+    // it would make the drift guard reject a perfectly valid story file as untitled.
+    const source: string = [
+      "const helper = { title: 'Decoy/NotTheMeta' };",
+      "const meta = { title: 'Aliased/Meta', parameters: helper };",
+      'export { meta as default };',
+    ].join('\n');
+
+    expect(scanMetaTitle('aliased.stories.tsx', source)).toBe('Aliased/Meta');
+  });
+
+  it('does not resolve a default re-exported from another module', () => {
+    // `export { meta as default } from './other'` declares nothing locally, so
+    // there is no initializer to read — failing loudly beats guessing.
+    const source: string = "export { meta as default } from './other-meta';";
+
+    expect(scanMetaTitle('reexport.stories.tsx', source)).toBeNull();
+  });
+
   it('reports no title when the default export is missing or is not an object', () => {
     expect(scanMetaTitle('orphan.stories.tsx', "const meta = { title: 'Orphan' };")).toBeNull();
     expect(scanMetaTitle('absent.stories.tsx', 'export default composeMeta();')).toBeNull();

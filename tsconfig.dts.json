@@ -15,6 +15,9 @@
   "include": ["src"],
   "exclude": [
     "node_modules",
+    "src/**/*.stories.js",
+    "src/**/*.stories.jsx",
+    "src/**/*.stories.mjs",
     "src/**/*.stories.ts",
     "src/**/*.stories.tsx",
     "src/**/*.test.ts",

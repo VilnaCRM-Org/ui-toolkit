@@ -46,7 +46,7 @@ module.exports = {
           '\\.d\\.ts$', // type declarations (Types.d.ts, styles.d.ts, react-app-env.d.ts)
           '(^|/)tsconfig\\.json$',
           '(^|/)(?:babel|webpack)\\.config\\.(?:js|cjs|mjs|ts|json)$',
-          '[.]stories[.](?:tsx?|jsx?)$', // Storybook stories are entry points, not orphans
+          '[.]stories[.](?:mjs|tsx?|jsx?)$', // Storybook stories are entry points, not orphans
           'fonts\\.css$', // side-effect import in src/components/index.ts
           '^src/(components/)?index\\.(ts|tsx)$', // public entry barrels
         ],
@@ -118,7 +118,7 @@ module.exports = {
         'This module uses a peerDependency directly. For a published component ' +
         'library this is expected (the consumer supplies it); kept visible as ' +
         'an advisory warn.',
-      from: { pathNot: '[.](?:spec|test|stories)[.](?:tsx?|jsx?)$' },
+      from: { pathNot: '[.](?:spec|test|stories)[.](?:mjs|tsx?|jsx?)$' },
       to: { dependencyTypes: ['npm-peer'] },
     },
     // ---- Dev-only dependency leak (re-scoped for a dev+peer library) ----
@@ -131,7 +131,7 @@ module.exports = {
         'library mirrors into both devDependencies and peerDependencies are ' +
         'spared via dependencyTypesNot: [npm-peer] (combinedDependencies tags ' +
         'them as both npm-dev and npm-peer), so only true dev-only modules fail.',
-      from: { path: '^src', pathNot: '[.](?:spec|test|stories)[.](?:tsx?|jsx?)$' },
+      from: { path: '^src', pathNot: '[.](?:spec|test|stories)[.](?:mjs|tsx?|jsx?)$' },
       to: {
         dependencyTypes: ['npm-dev'],
         dependencyTypesNot: ['npm-peer', 'type-only'],
@@ -161,7 +161,7 @@ module.exports = {
       comment:
         'Production src/ code must not import a *.stories.* file. Stories are ' +
         'Storybook entry points, not shippable modules.',
-      from: { path: '^src', pathNot: '[.]stories[.](?:tsx?|jsx?)$' },
+      from: { path: '^src', pathNot: '[.]stories[.](?:mjs|tsx?|jsx?)$' },
       to: { path: '\\.stories\\.' },
     },
     {

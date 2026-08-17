@@ -19,7 +19,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { readFileSync, realpathSync } from 'node:fs';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 import {
   MINIMUM_COMPONENTS,
@@ -40,6 +40,10 @@ const REPORT_NAME: string = 'interactions.xml';
 const OUTSIDE_ROOT: string =
   'refusing to read an interaction manifest from outside the project root';
 const UNREADABLE: string = 'the interaction manifest is missing or is not valid JSON';
+// A path escapes the root only when `..` is a whole leading SEGMENT — testing the
+// bare `..` prefix would also reject an in-root file or directory merely named
+// `..something`.
+const PARENT_SEGMENT: string = `..${sep}`;
 
 /** Aborts the gate; every failure funnels through `main`'s handler. */
 function fail(message: string): never {
@@ -61,7 +65,12 @@ function readManifest(candidate: string): InteractionStory[] {
   const resolved: string = resolve(PROJECT_ROOT, candidate);
   const relativeToRoot: string = relative(PROJECT_ROOT, resolved);
 
-  if (relativeToRoot === '' || relativeToRoot.startsWith('..') || isAbsolute(relativeToRoot)) {
+  if (
+    relativeToRoot === '' ||
+    relativeToRoot === '..' ||
+    relativeToRoot.startsWith(PARENT_SEGMENT) ||
+    isAbsolute(relativeToRoot)
+  ) {
     return fail(OUTSIDE_ROOT);
   }
 
@@ -75,7 +84,12 @@ function readManifest(candidate: string): InteractionStory[] {
 
   const canonicalToRoot: string = relative(realpathSync(PROJECT_ROOT), canonical);
 
-  if (canonicalToRoot === '' || canonicalToRoot.startsWith('..') || isAbsolute(canonicalToRoot)) {
+  if (
+    canonicalToRoot === '' ||
+    canonicalToRoot === '..' ||
+    canonicalToRoot.startsWith(PARENT_SEGMENT) ||
+    isAbsolute(canonicalToRoot)
+  ) {
     return fail(OUTSIDE_ROOT);
   }
 
@@ -178,7 +192,7 @@ function runTestRunner(url: string): void {
   }
 }
 
-/** The play tests proven to have passed; every manifest row must be among them. */
+/** The DISTINCT play tests proven to have passed; every manifest row must be among them. */
 function assertEveryStoryRan(manifest: InteractionStory[]): string[] {
   const reportPath: string = resolve(PROJECT_ROOT, REPORT_DIR, REPORT_NAME);
   let report: string;
@@ -196,7 +210,10 @@ function assertEveryStoryRan(manifest: InteractionStory[]): string[] {
     fail(`the executed play tests do not match the manifest:\n${drift}`);
   }
 
-  return passed;
+  // `junitPlayTestKeys` returns report ROWS and the drift compare is set-based, so
+  // a report carrying the same case twice would pass while inflating the count.
+  // Collapse to distinct stories: the printed number is evidence, not a row tally.
+  return [...new Set(passed)];
 }
 
 async function main(): Promise<void> {

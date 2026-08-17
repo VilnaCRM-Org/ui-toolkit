@@ -139,11 +139,29 @@ function initializerOf(sourceFile: ts.SourceFile, name: string): ts.Expression |
 }
 
 /**
- * The object Storybook receives as the module's default export — either written
- * inline (`export default { title: … }`) or named (`const meta = …; export
- * default meta;`). A named export is resolved back to ITS declaration: reading
- * the first titled object in the file instead would let an unrelated helper
- * object declared above `meta` supply the wrong title.
+ * The local name a `export { meta as default }` clause aliases, if the module uses
+ * that form instead of `export default`. Re-exports (`export { x as default } from
+ * './y'`) carry a module specifier and are skipped: their declaration is in another
+ * file, so there is nothing to resolve here.
+ */
+function defaultAlias(sourceFile: ts.SourceFile): string | undefined {
+  return sourceFile.statements
+    .filter(ts.isExportDeclaration)
+    .filter(declaration => declaration.moduleSpecifier === undefined)
+    .flatMap(declaration =>
+      declaration.exportClause && ts.isNamedExports(declaration.exportClause)
+        ? [...declaration.exportClause.elements]
+        : []
+    )
+    .find(element => element.name.text === 'default')?.propertyName?.text;
+}
+
+/**
+ * The object Storybook receives as the module's default export, written inline
+ * (`export default { title: … }`), named (`const meta = …; export default meta;`)
+ * or aliased (`export { meta as default };`). A name is resolved back to ITS
+ * declaration: reading the first titled object in the file instead would let an
+ * unrelated helper object declared above `meta` supply the wrong title.
  */
 function defaultExport(sourceFile: ts.SourceFile): ts.Expression | undefined {
   const assignment: ts.ExportAssignment | undefined = sourceFile.statements.find(
@@ -151,7 +169,9 @@ function defaultExport(sourceFile: ts.SourceFile): ts.Expression | undefined {
   );
 
   if (!assignment) {
-    return undefined;
+    const alias: string | undefined = defaultAlias(sourceFile);
+
+    return alias === undefined ? undefined : initializerOf(sourceFile, alias);
   }
 
   const exported: ts.Expression = unwrap(assignment.expression);
