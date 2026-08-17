@@ -34,8 +34,8 @@ COPY src ./src
 COPY tests ./tests
 
 RUN bun install --frozen-lockfile \
-    && mkdir -p /home/pwuser/.bun-cache \
-    && chown -R pwuser:pwuser /home/pwuser/.bun-cache \
+    && mkdir -p /home/pwuser/.bun-cache /app/node_modules/.cache \
+    && chown -R pwuser:pwuser /home/pwuser/.bun-cache /app/node_modules/.cache \
     && chown pwuser:pwuser /app
 
 USER pwuser
