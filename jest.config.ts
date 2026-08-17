@@ -10,7 +10,7 @@ const config: Config = {
   // barrel and ambient declarations carry no testable logic.
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{ts,tsx}',
-    '!<rootDir>/src/**/*.stories.tsx',
+    '!<rootDir>/src/**/*.stories.{ts,tsx}',
     '!<rootDir>/src/**/*.d.ts',
     '!<rootDir>/src/**/types.ts',
     '!<rootDir>/src/index.ts',

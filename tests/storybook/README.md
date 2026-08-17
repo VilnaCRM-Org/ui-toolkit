@@ -30,7 +30,10 @@ vanished from the whole library. The suite fails closed instead.
 2. Tag it `tags: ['interaction', '!autodocs']` and write the `play` function with
    `within`, `userEvent` and `expect` imported from `storybook/test`. Pass explicit
    `fn()` spies for the handlers you assert on — an implicit action arg throws when
-   a play function invokes it.
+   a play function invokes it. When a second component needs the same interaction,
+   move the body into `.storybook/` (as `field-typeahead-interactions.ts` does for
+   the typeahead fields) instead of copying it — duplicated play bodies are a
+   duplication finding, and the two copies drift apart.
 3. Rebuild Storybook (`make storybook-build`, or `bun x storybook build`) and
    regenerate both manifests from the fresh index — `../visual/stories.json` (every
    story, see `../visual/README.md`) and this one (the `interaction`-tagged subset,

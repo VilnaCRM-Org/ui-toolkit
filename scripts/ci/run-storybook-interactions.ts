@@ -18,15 +18,17 @@
  *   service sets it), falling back to http://127.0.0.1:6006.
  */
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
 
 import {
   MINIMUM_COMPONENTS,
+  duplicateKeys,
   formatDrift,
   interactionStoryKeys,
   junitPlayTestKeys,
   liveInteractionStories,
+  playTestKeys,
   type InteractionStory,
 } from './storybook-interaction-manifest';
 
@@ -35,6 +37,9 @@ const DEFAULT_MANIFEST: string = 'tests/storybook/interaction-stories.json';
 const DEFAULT_URL: string = 'http://127.0.0.1:6006';
 const REPORT_DIR: string = 'reports/storybook';
 const REPORT_NAME: string = 'interactions.xml';
+const OUTSIDE_ROOT: string =
+  'refusing to read an interaction manifest from outside the project root';
+const UNREADABLE: string = 'the interaction manifest is missing or is not valid JSON';
 
 /** Aborts the gate; every failure funnels through `main`'s handler. */
 function fail(message: string): never {
@@ -44,21 +49,40 @@ function fail(message: string): never {
 /**
  * Resolves the caller-supplied manifest path against the project root and refuses
  * anything that escapes it — the gate must never read (and then trust) a file from
- * outside the repository. The containment check sits in the same function as the
- * filesystem read so the sanitized path is the only one that can reach it.
+ * outside the repository. Containment is checked TWICE, both times in the same
+ * function as the filesystem read so the sanitized path is the only one that can
+ * reach it: lexically first, so no `fs` call ever sees an unvalidated path, then
+ * again on the `realpathSync` result, because a symlink that sits inside the
+ * repository can still target a file outside it and would pass a purely lexical
+ * test. The realpath/read window is deliberately left open — the threat model
+ * already assumes the checkout itself is untampered during a CI run.
  */
 function readManifest(candidate: string): InteractionStory[] {
   const resolved: string = resolve(PROJECT_ROOT, candidate);
   const relativeToRoot: string = relative(PROJECT_ROOT, resolved);
 
   if (relativeToRoot === '' || relativeToRoot.startsWith('..') || isAbsolute(relativeToRoot)) {
-    throw new Error('refusing to read an interaction manifest from outside the project root');
+    return fail(OUTSIDE_ROOT);
+  }
+
+  let canonical: string;
+
+  try {
+    canonical = realpathSync(resolved);
+  } catch {
+    return fail(UNREADABLE);
+  }
+
+  const canonicalToRoot: string = relative(realpathSync(PROJECT_ROOT), canonical);
+
+  if (canonicalToRoot === '' || canonicalToRoot.startsWith('..') || isAbsolute(canonicalToRoot)) {
+    return fail(OUTSIDE_ROOT);
   }
 
   try {
-    return JSON.parse(readFileSync(resolved, 'utf8')) as InteractionStory[];
+    return JSON.parse(readFileSync(canonical, 'utf8')) as InteractionStory[];
   } catch {
-    return fail('the interaction manifest is missing or is not valid JSON');
+    return fail(UNREADABLE);
   }
 }
 
@@ -91,14 +115,23 @@ function assertManifestMatchesIndex(manifest: InteractionStory[], live: Interact
     fail(`only ${components.size} components carry interactions; at least ${MINIMUM_COMPONENTS}`);
   }
 
-  // The drift comparison below is set-based, so a duplicated row would inflate the
-  // registry without demanding a second passing play test. Reject duplicates.
-  const keys: string[] = interactionStoryKeys(manifest);
-  if (new Set(keys).size !== keys.length) {
-    fail('the interaction manifest lists the same story more than once');
+  // Both drift comparisons are set-based, so a row duplicated in EITHER key space
+  // would inflate the registry without demanding a second passing play test. The
+  // id space is what the live index is reconciled against; the title+exportName
+  // space is what the JUnit report is reconciled against, and two rows can collide
+  // there while carrying distinct ids. Reject duplicates in both.
+  const duplicates: string[] = [
+    ...duplicateKeys(interactionStoryKeys(manifest)),
+    ...duplicateKeys(playTestKeys(manifest)),
+  ];
+  if (duplicates.length > 0) {
+    fail(`the interaction manifest lists the same story more than once: ${duplicates.join(', ')}`);
   }
 
-  const drift: string | null = formatDrift(keys, interactionStoryKeys(live));
+  const drift: string | null = formatDrift(
+    interactionStoryKeys(manifest),
+    interactionStoryKeys(live)
+  );
 
   if (drift) {
     fail(`the manifest and the live Storybook index disagree:\n${drift}`);
@@ -145,7 +178,8 @@ function runTestRunner(url: string): void {
   }
 }
 
-function assertEveryStoryRan(manifest: InteractionStory[]): void {
+/** The play tests proven to have passed; every manifest row must be among them. */
+function assertEveryStoryRan(manifest: InteractionStory[]): string[] {
   const reportPath: string = resolve(PROJECT_ROOT, REPORT_DIR, REPORT_NAME);
   let report: string;
 
@@ -155,14 +189,14 @@ function assertEveryStoryRan(manifest: InteractionStory[]): void {
     return fail('the interaction suite produced no JUnit report');
   }
 
-  const drift: string | null = formatDrift(
-    manifest.map(story => `${story.title} ${story.exportName}`),
-    junitPlayTestKeys(report)
-  );
+  const passed: string[] = junitPlayTestKeys(report);
+  const drift: string | null = formatDrift(playTestKeys(manifest), passed);
 
   if (drift) {
     fail(`the executed play tests do not match the manifest:\n${drift}`);
   }
+
+  return passed;
 }
 
 async function main(): Promise<void> {
@@ -171,9 +205,10 @@ async function main(): Promise<void> {
 
   assertManifestMatchesIndex(manifest, await fetchLiveStories(url));
   runTestRunner(url);
-  assertEveryStoryRan(manifest);
+  // Report what was reconciled, not what was registered, so the count is evidence.
+  const passed: string[] = assertEveryStoryRan(manifest);
 
-  process.stdout.write(`storybook interaction gate: ${manifest.length} play tests passed.\n`);
+  process.stdout.write(`storybook interaction gate: ${passed.length} play tests passed.\n`);
 }
 
 main().catch((error: unknown) => {

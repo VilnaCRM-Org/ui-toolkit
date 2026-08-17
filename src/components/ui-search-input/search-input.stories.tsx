@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
 import React from 'react';
-import { expect, screen, userEvent, within } from 'storybook/test';
 
 import {
   booleanControlArgType,
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
+import { expectTypeaheadNarrowsAndSelects } from '../../../.storybook/field-typeahead-interactions';
 
 import UiSearchInput from './index';
 
@@ -57,21 +57,17 @@ export const SearchInput: Story = {
 };
 
 // Interaction story (`interaction` tag): proves typing filters the suggestions and
-// picking one writes it back into the field. The listbox is portalled outside the
-// story canvas, so it is queried from `screen`. See tests/storybook/README.md.
+// picking one writes it back into the field.
 export const SuggestionPickFillsField: Story = {
   tags: ['interaction', '!autodocs'],
   render: SearchInputInteractionStory,
   play: async ({ canvasElement }): Promise<void> => {
-    const field: HTMLElement = within(canvasElement).getByRole('combobox', { name: searchLabel });
-
-    await userEvent.type(field, typedQuery);
-    const match: HTMLElement = await screen.findByRole('option', { name: chosenSuggestion });
-
-    await expect(screen.queryByRole('option', { name: filteredOutSuggestion })).toBeNull();
-
-    await userEvent.click(match);
-
-    await expect(field).toHaveValue(chosenSuggestion);
+    await expectTypeaheadNarrowsAndSelects({
+      canvasElement,
+      fieldName: searchLabel,
+      query: typedQuery,
+      chosenOption: chosenSuggestion,
+      filteredOutOption: filteredOutSuggestion,
+    });
   },
 };

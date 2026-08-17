@@ -17,6 +17,32 @@ export interface ScannedStory {
   tags: string[];
 }
 
+// Mirrors the stories glob in `.storybook/main.ts` (`*.stories.@(js|jsx|mjs|ts|tsx)`).
+// Narrowing this to `.tsx` alone would let a CSF module in any other flavour carry a
+// `play` function that the drift guard never sees.
+const STORY_FILE = /\.stories\.(?:mjs|jsx?|tsx?)$/;
+
+/** `true` when `fileName` is a CSF story module in any flavour Storybook loads. */
+export function isStoryFile(fileName: string): boolean {
+  return STORY_FILE.test(fileName);
+}
+
+/**
+ * Parses a story module under the grammar its extension implies. Only a plain `.ts`
+ * module gets the non-JSX grammar: read with TSX rules it would mis-parse a bare
+ * generic (`<T>(v: T) => v`) as an unclosed JSX tag and swallow the rest of the
+ * file, hiding its stories. Every other flavour tolerates the JSX-capable variant.
+ */
+function parse(fileName: string, source: string): ts.SourceFile {
+  return ts.createSourceFile(
+    fileName,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.TSX
+  );
+}
+
 /** Strips the wrappers CSF authors put around a story object (`as`, `satisfies`). */
 function unwrap(expression: ts.Expression): ts.Expression {
   let current: ts.Expression = expression;
@@ -88,61 +114,52 @@ function scanStatement(statement: ts.Statement): ScannedStory[] {
 
 /** Every exported CSF story object in `source`, with its `play`/`tags` facts. */
 export function scanStories(fileName: string, source: string): ScannedStory[] {
-  const sourceFile: ts.SourceFile = ts.createSourceFile(
-    fileName,
-    source,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  );
-
-  return sourceFile.statements.flatMap(scanStatement);
+  return parse(fileName, source).statements.flatMap(scanStatement);
 }
 
-function titleIn(literal: ts.ObjectLiteralExpression | null): string[] {
+function titleOf(literal: ts.ObjectLiteralExpression | null): string | null {
   const title: ts.ObjectLiteralElementLike | undefined = literal
     ? propertyNamed(literal, 'title')
     : undefined;
 
   if (!title || !ts.isPropertyAssignment(title) || !ts.isStringLiteralLike(title.initializer)) {
-    return [];
+    return null;
   }
 
-  return [title.initializer.text];
+  return title.initializer.text;
 }
 
-// `export default { title: … }` — the meta object is the default export itself.
-function defaultExportTitle(statement: ts.Statement): string[] {
-  return ts.isExportAssignment(statement) ? titleIn(objectLiteralOf(statement.expression)) : [];
+/** The initializer of the top-level `const <name> = …` declaration, if any. */
+function initializerOf(sourceFile: ts.SourceFile, name: string): ts.Expression | undefined {
+  return sourceFile.statements
+    .filter(ts.isVariableStatement)
+    .flatMap(statement => statement.declarationList.declarations)
+    .find(declaration => ts.isIdentifier(declaration.name) && declaration.name.text === name)
+    ?.initializer;
 }
 
-// `const meta = { title: … }; export default meta;` — the common CSF shape. Any
-// declared object carrying a string `title` is a meta candidate; the unit guard
-// asserts every story file yields exactly one, so an ambiguous file fails loudly.
-function declaredTitle(statement: ts.Statement): string[] {
-  if (!ts.isVariableStatement(statement)) {
-    return [];
-  }
-
-  return statement.declarationList.declarations.flatMap(declaration =>
-    titleIn(objectLiteralOf(declaration.initializer))
+/**
+ * The object Storybook receives as the module's default export — either written
+ * inline (`export default { title: … }`) or named (`const meta = …; export
+ * default meta;`). A named export is resolved back to ITS declaration: reading
+ * the first titled object in the file instead would let an unrelated helper
+ * object declared above `meta` supply the wrong title.
+ */
+function defaultExport(sourceFile: ts.SourceFile): ts.Expression | undefined {
+  const assignment: ts.ExportAssignment | undefined = sourceFile.statements.find(
+    ts.isExportAssignment
   );
+
+  if (!assignment) {
+    return undefined;
+  }
+
+  const exported: ts.Expression = unwrap(assignment.expression);
+
+  return ts.isIdentifier(exported) ? initializerOf(sourceFile, exported.text) : exported;
 }
 
 /** The `title` of the CSF meta object (the default export), or `null` when absent. */
 export function scanMetaTitle(fileName: string, source: string): string | null {
-  const sourceFile: ts.SourceFile = ts.createSourceFile(
-    fileName,
-    source,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  );
-  const exported: string[] = sourceFile.statements.flatMap(defaultExportTitle);
-
-  if (exported.length > 0) {
-    return exported[0];
-  }
-
-  return sourceFile.statements.flatMap(declaredTitle)[0] ?? null;
+  return titleOf(objectLiteralOf(defaultExport(parse(fileName, source))));
 }

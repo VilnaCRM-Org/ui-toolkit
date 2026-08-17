@@ -46,7 +46,7 @@ module.exports = {
           '\\.d\\.ts$', // type declarations (Types.d.ts, styles.d.ts, react-app-env.d.ts)
           '(^|/)tsconfig\\.json$',
           '(^|/)(?:babel|webpack)\\.config\\.(?:js|cjs|mjs|ts|json)$',
-          '\\.stories\\.tsx$', // Storybook stories are entry points, not orphans
+          '[.]stories[.](?:tsx?|jsx?)$', // Storybook stories are entry points, not orphans
           'fonts\\.css$', // side-effect import in src/components/index.ts
           '^src/(components/)?index\\.(ts|tsx)$', // public entry barrels
         ],
@@ -161,7 +161,7 @@ module.exports = {
       comment:
         'Production src/ code must not import a *.stories.* file. Stories are ' +
         'Storybook entry points, not shippable modules.',
-      from: { path: '^src', pathNot: '\\.stories\\.tsx$' },
+      from: { path: '^src', pathNot: '[.]stories[.](?:tsx?|jsx?)$' },
       to: { path: '\\.stories\\.' },
     },
     {

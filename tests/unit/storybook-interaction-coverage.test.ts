@@ -1,7 +1,9 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import {
+  isStoryFile,
   scanMetaTitle,
   scanStories,
   type ScannedStory,
@@ -9,9 +11,12 @@ import {
 import {
   INTERACTION_TAG,
   MINIMUM_COMPONENTS,
+  duplicateKeys,
   formatDrift,
+  interactionStoryKeys,
   junitPlayTestKeys,
   liveInteractionStories,
+  playTestKeys,
   type InteractionStory,
 } from '../../scripts/ci/storybook-interaction-manifest';
 
@@ -33,7 +38,9 @@ function storyFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
     const full: string = path.join(directory, entry.name);
     if (entry.isDirectory()) return storyFiles(full);
-    return entry.name.endsWith('.stories.tsx') ? [full] : [];
+    // Every CSF flavour Storybook loads — a non-TSX story module must not escape
+    // the scan, or it could carry an unregistered `play` function.
+    return isStoryFile(entry.name) ? [full] : [];
   });
 }
 
@@ -87,12 +94,13 @@ describe('Storybook interaction manifest', () => {
     expect(untagged).toEqual([]);
   });
 
-  it('registers each story exactly once', () => {
-    const keys: string[] = manifest.map(key);
-
-    // The gate's drift comparison is set-based, so a duplicated row would inflate
-    // the registry without demanding a second passing play test.
-    expect(keys).toEqual([...new Set(keys)]);
+  it('registers each story exactly once in both of the gate comparison key spaces', () => {
+    // Both drift comparisons are set-based, so a row duplicated in either key
+    // space would inflate the registry without demanding a second passing play
+    // test — the id space is reconciled against the live Storybook index, the
+    // title+exportName space against the JUnit report.
+    expect(duplicateKeys(interactionStoryKeys(manifest))).toEqual([]);
+    expect(duplicateKeys(playTestKeys(manifest))).toEqual([]);
   });
 
   it('only registers stories that the shared story manifest knows about', () => {
@@ -167,6 +175,79 @@ describe('interaction gate helpers', () => {
     expect(scanStories('wrapped.stories.tsx', source)).toEqual([
       { exportName: 'Plain', hasPlay: true, tags: ['interaction'] },
     ]);
+  });
+
+  it('reads the title off the object `export default` names, not the first one', () => {
+    // A titled helper declared ABOVE `meta` must not win: taking the first
+    // declared title would key the manifest check on the wrong component.
+    const source: string = [
+      "const docsPage = { title: 'Decoy/NotTheMeta' };",
+      "const meta = { title: 'Real/Meta', parameters: { docs: docsPage } };",
+      'export default meta;',
+    ].join('\n');
+
+    expect(scanMetaTitle('decoy.stories.tsx', source)).toBe('Real/Meta');
+  });
+
+  it('reports no title when the default export is missing or is not an object', () => {
+    expect(scanMetaTitle('orphan.stories.tsx', "const meta = { title: 'Orphan' };")).toBeNull();
+    expect(scanMetaTitle('absent.stories.tsx', 'export default composeMeta();')).toBeNull();
+    expect(scanMetaTitle('unknown.stories.tsx', 'export default notDeclaredHere;')).toBeNull();
+  });
+
+  it('treats every CSF flavour `.storybook/main.ts` loads as a story file', () => {
+    // The glob there is `*.stories.@(js|jsx|mjs|ts|tsx)`; anything this predicate
+    // misses is a module that can carry an unregistered `play` function.
+    const loaded: string[] = ['js', 'jsx', 'mjs', 'ts', 'tsx'].map(ext => `x.stories.${ext}`);
+
+    expect(loaded.filter(isStoryFile)).toEqual(loaded);
+    expect(
+      ['x.stories.mdx', 'x.story.ts', 'x.stories.ts.bak', 'stories.ts'].some(isStoryFile)
+    ).toBe(false);
+  });
+
+  it('scans TypeScript-only CSF modules the same way as TSX ones', () => {
+    // A bare generic arrow is valid TS but reads as an unclosed JSX tag under TSX
+    // rules, so this fixture also pins the per-extension parser choice.
+    const source: string = [
+      'const pick = <T>(values: T[]): T => values[0];',
+      "const meta = { title: 'TsOnly/Meta', args: { items: pick([[1]]) } };",
+      'export default meta;',
+      "export const Play = { tags: ['interaction'], play: async () => {} };",
+    ].join('\n');
+
+    expect(scanMetaTitle('ts-only.stories.ts', source)).toBe('TsOnly/Meta');
+    expect(scanStories('ts-only.stories.ts', source)).toEqual([
+      { exportName: 'Play', hasPlay: true, tags: ['interaction'] },
+    ]);
+  });
+
+  it('walks a real directory tree and picks up every story flavour in it', () => {
+    // The source-string fixtures above prove the parser; this proves the on-disk
+    // discovery walk, which is what a `.stories.ts` module would have bypassed.
+    const root: string = fs.mkdtempSync(path.join(os.tmpdir(), 'story-walk-'));
+
+    try {
+      fs.mkdirSync(path.join(root, 'nested'));
+      ['a.stories.ts', 'b.stories.tsx', 'c.stories.mdx', 'd.ts'].forEach(name =>
+        fs.writeFileSync(path.join(root, name), '')
+      );
+      fs.writeFileSync(path.join(root, 'nested', 'e.stories.js'), '');
+
+      expect(
+        storyFiles(root)
+          .map(file => path.relative(root, file))
+          .sort()
+      ).toEqual(['a.stories.ts', 'b.stories.tsx', path.join('nested', 'e.stories.js')]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('reports every key a manifest lists more than once', () => {
+    expect(duplicateKeys(['b', 'a', 'b', 'c', 'a'])).toEqual(['a', 'b']);
+    expect(duplicateKeys(['a', 'b'])).toEqual([]);
+    expect(playTestKeys([{ id: 'i', title: 'T', name: 'N', exportName: 'E' }])).toEqual(['T E']);
   });
 
   it('reports both missing and unregistered keys', () => {

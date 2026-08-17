@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
 import React from 'react';
-import { expect, screen, userEvent, within } from 'storybook/test';
 
 import {
   booleanControlArgType,
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
+import { expectTypeaheadNarrowsAndSelects } from '../../../.storybook/field-typeahead-interactions';
 
 import type { UiSelectWithSearchOption } from './types';
 
@@ -66,20 +66,16 @@ export const SelectWithSearch: Story = {
 
 // Interaction story (`interaction` tag): proves the search text narrows the
 // listbox and the picked option becomes the field's value.
-// See tests/storybook/README.md.
 export const SearchNarrowsAndSelectsOption: Story = {
   tags: ['interaction', '!autodocs'],
   render: SelectWithSearchInteractionStory,
   play: async ({ canvasElement }): Promise<void> => {
-    const field: HTMLElement = within(canvasElement).getByRole('combobox', { name: cityLabel });
-
-    await userEvent.type(field, typedQuery);
-    const match: HTMLElement = await screen.findByRole('option', { name: chosenCity });
-
-    await expect(screen.queryByRole('option', { name: filteredOutCity })).toBeNull();
-
-    await userEvent.click(match);
-
-    await expect(field).toHaveValue(chosenCity);
+    await expectTypeaheadNarrowsAndSelects({
+      canvasElement,
+      fieldName: cityLabel,
+      query: typedQuery,
+      chosenOption: chosenCity,
+      filteredOutOption: filteredOutCity,
+    });
   },
 };

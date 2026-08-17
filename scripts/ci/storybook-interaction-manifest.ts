@@ -62,6 +62,34 @@ export function interactionStoryKeys(stories: InteractionStory[]): string[] {
   return stories.map(story => `${story.id} (${story.title} / ${story.exportName})`);
 }
 
+/** The JUnit test names the runner emits for a set of interaction stories. */
+export function playTestKeys(stories: InteractionStory[]): string[] {
+  return stories.map(story => `${story.title} ${story.exportName}`);
+}
+
+/**
+ * Every key that `keys` lists more than once, sorted.
+ *
+ * {@link formatDrift} compares SETS, so a key that appears twice on the expected
+ * side is satisfied by a single occurrence on the actual side. Both of the gate's
+ * key spaces must therefore be checked for duplicates before they are compared,
+ * or a duplicated registry row would stop demanding its own passing play test.
+ */
+export function duplicateKeys(keys: string[]): string[] {
+  const seen: Set<string> = new Set();
+  const duplicates: Set<string> = new Set();
+
+  keys.forEach(key => {
+    if (seen.has(key)) {
+      duplicates.add(key);
+      return;
+    }
+    seen.add(key);
+  });
+
+  return [...duplicates].sort((a, b) => a.localeCompare(b));
+}
+
 const TEST_CASE = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
 const CASE_NAME = /\bname="([^"]*)"/;
 const NOT_PASSED = /<(?:failure|error|skipped)\b/;
