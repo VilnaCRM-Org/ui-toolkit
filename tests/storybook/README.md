@@ -31,9 +31,19 @@ vanished from the whole library. The suite fails closed instead.
    `within`, `userEvent` and `expect` imported from `storybook/test`. Pass explicit
    `fn()` spies for the handlers you assert on — an implicit action arg throws when
    a play function invokes it.
-3. Regenerate both manifests (see `../visual/README.md` for the story-index
-   snippet); `interaction-stories.json` keeps the `interaction`-tagged subset plus
-   each story's `exportName`.
+3. Rebuild Storybook (`make storybook-build`, or `bun x storybook build`) and
+   regenerate both manifests from the fresh index — `../visual/stories.json` (every
+   story, see `../visual/README.md`) and this one (the `interaction`-tagged subset,
+   plus each story's `exportName`):
+
+   ```bash
+   node -e 'const j=require("./storybook-static/index.json");const fs=require("fs");\
+   const tagged=e=>e.type==="story"&&(e.tags||[]).includes("interaction");\
+   const s=Object.values(j.entries).filter(tagged)\
+   .map(e=>({id:e.id,title:e.title,name:e.name,exportName:e.exportName}))\
+   .sort((a,b)=>a.id.localeCompare(b.id));\
+   fs.writeFileSync("tests/storybook/interaction-stories.json",JSON.stringify(s,null,2)+"\n")'
+   ```
 
 `tests/unit/storybook-interaction-coverage.test.ts` statically scans the story
 sources, so a `play` function that is not tagged and registered fails the unit
