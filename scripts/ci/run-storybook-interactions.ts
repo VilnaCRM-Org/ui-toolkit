@@ -36,30 +36,27 @@ const DEFAULT_URL: string = 'http://127.0.0.1:6006';
 const REPORT_DIR: string = 'reports/storybook';
 const REPORT_NAME: string = 'interactions.xml';
 
+/** Aborts the gate; every failure funnels through `main`'s handler. */
 function fail(message: string): never {
-  process.stderr.write(`storybook interaction gate: ${message}\n`);
-  process.exit(1);
+  throw new Error(message);
 }
 
 /**
- * Resolves the manifest argument against the project root and refuses anything
- * that escapes it, so a caller-supplied path can never make this gate read (and
- * then trust) a file from outside the repository.
+ * Resolves the caller-supplied manifest path against the project root and refuses
+ * anything that escapes it — the gate must never read (and then trust) a file from
+ * outside the repository. The containment check sits in the same function as the
+ * filesystem read so the sanitized path is the only one that can reach it.
  */
-function resolveManifestPath(candidate: string): string {
+function readManifest(candidate: string): InteractionStory[] {
   const resolved: string = resolve(PROJECT_ROOT, candidate);
   const relativeToRoot: string = relative(PROJECT_ROOT, resolved);
 
   if (relativeToRoot === '' || relativeToRoot.startsWith('..') || isAbsolute(relativeToRoot)) {
-    fail('refusing to read an interaction manifest from outside the project root');
+    throw new Error('refusing to read an interaction manifest from outside the project root');
   }
 
-  return resolved;
-}
-
-function readManifest(path: string): InteractionStory[] {
   try {
-    return JSON.parse(readFileSync(path, 'utf8')) as InteractionStory[];
+    return JSON.parse(readFileSync(resolved, 'utf8')) as InteractionStory[];
   } catch {
     return fail('the interaction manifest is missing or is not valid JSON');
   }
@@ -165,9 +162,8 @@ function assertEveryStoryRan(manifest: InteractionStory[]): void {
 }
 
 async function main(): Promise<void> {
-  const manifestPath: string = resolveManifestPath(process.argv[2] ?? DEFAULT_MANIFEST);
   const url: string = trimTrailingSlashes(process.env.REACT_APP_STORYBOOK_URL ?? DEFAULT_URL);
-  const manifest: InteractionStory[] = readManifest(manifestPath);
+  const manifest: InteractionStory[] = readManifest(process.argv[2] ?? DEFAULT_MANIFEST);
 
   assertManifestMatchesIndex(manifest, await fetchLiveStories(url));
   runTestRunner(url);
@@ -177,5 +173,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  fail(`the gate crashed: ${error instanceof Error ? error.message : 'unknown error'}`);
+  const reason: string = error instanceof Error ? error.message : 'unknown error';
+  process.stderr.write(`storybook interaction gate: ${reason}\n`);
+  process.exit(1);
 });
