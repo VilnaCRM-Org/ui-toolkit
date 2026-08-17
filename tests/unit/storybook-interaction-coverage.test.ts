@@ -87,6 +87,14 @@ describe('Storybook interaction manifest', () => {
     expect(untagged).toEqual([]);
   });
 
+  it('registers each story exactly once', () => {
+    const keys: string[] = manifest.map(key);
+
+    // The gate's drift comparison is set-based, so a duplicated row would inflate
+    // the registry without demanding a second passing play test.
+    expect(keys).toEqual([...new Set(keys)]);
+  });
+
   it('only registers stories that the shared story manifest knows about', () => {
     const live: Set<string> = new Set(allStories.map(story => `${story.id}|${story.title}`));
     const unknown: string[] = manifest
@@ -140,6 +148,25 @@ describe('interaction gate helpers', () => {
     ].join('\n');
 
     expect(junitPlayTestKeys(report)).toEqual(['T A', 'T D']);
+  });
+
+  it('decodes XML entities in JUnit test names', () => {
+    const report: string =
+      '<testcase classname="c" name="Ui &amp; Co &lt;B&gt; play-test" time="1"/>';
+
+    expect(junitPlayTestKeys(report)).toEqual(['Ui & Co <B>']);
+  });
+
+  it('sees through `as` and `satisfies` wrappers and a direct default export', () => {
+    const source: string = [
+      "export default { title: 'Wrapped/Meta' } as Meta;",
+      "export const Plain = { tags: ['interaction'], play: async () => {} } satisfies Story;",
+    ].join('\n');
+
+    expect(scanMetaTitle('wrapped.stories.tsx', source)).toBe('Wrapped/Meta');
+    expect(scanStories('wrapped.stories.tsx', source)).toEqual([
+      { exportName: 'Plain', hasPlay: true, tags: ['interaction'] },
+    ]);
   });
 
   it('reports both missing and unregistered keys', () => {

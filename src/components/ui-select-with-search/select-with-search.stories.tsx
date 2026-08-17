@@ -22,6 +22,7 @@ const cityLabel: string = t('City');
 const cityPlaceholder: string = t('Search city');
 const typedQuery: string = 'Lv';
 const chosenCity: string = 'Lviv';
+const filteredOutCity: string = 'Odesa';
 
 // The combobox is fully controlled, so the interaction story owns the selection.
 function SelectWithSearchInteractionStory(): React.ReactElement {
@@ -73,7 +74,11 @@ export const SearchNarrowsAndSelectsOption: Story = {
     const field: HTMLElement = within(canvasElement).getByRole('combobox', { name: cityLabel });
 
     await userEvent.type(field, typedQuery);
-    await userEvent.click(await screen.findByRole('option', { name: chosenCity }));
+    const match: HTMLElement = await screen.findByRole('option', { name: chosenCity });
+
+    await expect(screen.queryByRole('option', { name: filteredOutCity })).toBeNull();
+
+    await userEvent.click(match);
 
     await expect(field).toHaveValue(chosenCity);
   },

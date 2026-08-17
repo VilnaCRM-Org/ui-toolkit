@@ -17,9 +17,30 @@ export interface ScannedStory {
   tags: string[];
 }
 
-function objectLiteralOf(declaration: ts.VariableDeclaration): ts.ObjectLiteralExpression | null {
-  const initializer: ts.Expression | undefined = declaration.initializer;
-  return initializer && ts.isObjectLiteralExpression(initializer) ? initializer : null;
+/** Strips the wrappers CSF authors put around a story object (`as`, `satisfies`). */
+function unwrap(expression: ts.Expression): ts.Expression {
+  let current: ts.Expression = expression;
+
+  while (
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isParenthesizedExpression(current)
+  ) {
+    current = current.expression;
+  }
+
+  return current;
+}
+
+function objectLiteralOf(
+  initializer: ts.Expression | undefined
+): ts.ObjectLiteralExpression | null {
+  if (!initializer) {
+    return null;
+  }
+  const unwrapped: ts.Expression = unwrap(initializer);
+
+  return ts.isObjectLiteralExpression(unwrapped) ? unwrapped : null;
 }
 
 function propertyNamed(
@@ -51,7 +72,7 @@ function scanStatement(statement: ts.Statement): ScannedStory[] {
   }
 
   return statement.declarationList.declarations.flatMap(declaration => {
-    const literal: ts.ObjectLiteralExpression | null = objectLiteralOf(declaration);
+    const literal: ts.ObjectLiteralExpression | null = objectLiteralOf(declaration.initializer);
     if (!literal || !ts.isIdentifier(declaration.name)) {
       return [];
     }
@@ -78,22 +99,34 @@ export function scanStories(fileName: string, source: string): ScannedStory[] {
   return sourceFile.statements.flatMap(scanStatement);
 }
 
-function titleOf(statement: ts.Statement): string[] {
+function titleIn(literal: ts.ObjectLiteralExpression | null): string[] {
+  const title: ts.ObjectLiteralElementLike | undefined = literal
+    ? propertyNamed(literal, 'title')
+    : undefined;
+
+  if (!title || !ts.isPropertyAssignment(title) || !ts.isStringLiteralLike(title.initializer)) {
+    return [];
+  }
+
+  return [title.initializer.text];
+}
+
+// `export default { title: … }` — the meta object is the default export itself.
+function defaultExportTitle(statement: ts.Statement): string[] {
+  return ts.isExportAssignment(statement) ? titleIn(objectLiteralOf(statement.expression)) : [];
+}
+
+// `const meta = { title: … }; export default meta;` — the common CSF shape. Any
+// declared object carrying a string `title` is a meta candidate; the unit guard
+// asserts every story file yields exactly one, so an ambiguous file fails loudly.
+function declaredTitle(statement: ts.Statement): string[] {
   if (!ts.isVariableStatement(statement)) {
     return [];
   }
 
-  return statement.declarationList.declarations.flatMap(declaration => {
-    const literal: ts.ObjectLiteralExpression | null = objectLiteralOf(declaration);
-    const title: ts.ObjectLiteralElementLike | undefined = literal
-      ? propertyNamed(literal, 'title')
-      : undefined;
-
-    if (!title || !ts.isPropertyAssignment(title) || !ts.isStringLiteralLike(title.initializer)) {
-      return [];
-    }
-    return [title.initializer.text];
-  });
+  return statement.declarationList.declarations.flatMap(declaration =>
+    titleIn(objectLiteralOf(declaration.initializer))
+  );
 }
 
 /** The `title` of the CSF meta object (the default export), or `null` when absent. */
@@ -105,6 +138,11 @@ export function scanMetaTitle(fileName: string, source: string): string | null {
     true,
     ts.ScriptKind.TSX
   );
+  const exported: string[] = sourceFile.statements.flatMap(defaultExportTitle);
 
-  return sourceFile.statements.flatMap(titleOf)[0] ?? null;
+  if (exported.length > 0) {
+    return exported[0];
+  }
+
+  return sourceFile.statements.flatMap(declaredTitle)[0] ?? null;
 }

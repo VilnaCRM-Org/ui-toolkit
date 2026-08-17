@@ -14,6 +14,7 @@ const suggestions: string[] = ['Top performers', 'Top sales this month', 'Top sa
 const searchLabel: string = t('Search');
 const typedQuery: string = 'Top sales';
 const chosenSuggestion: string = 'Top sales this year';
+const filteredOutSuggestion: string = 'Top performers';
 
 // The field is fully controlled, so the interaction story owns the search text.
 function SearchInputInteractionStory(): React.ReactElement {
@@ -65,7 +66,11 @@ export const SuggestionPickFillsField: Story = {
     const field: HTMLElement = within(canvasElement).getByRole('combobox', { name: searchLabel });
 
     await userEvent.type(field, typedQuery);
-    await userEvent.click(await screen.findByRole('option', { name: chosenSuggestion }));
+    const match: HTMLElement = await screen.findByRole('option', { name: chosenSuggestion });
+
+    await expect(screen.queryByRole('option', { name: filteredOutSuggestion })).toBeNull();
+
+    await userEvent.click(match);
 
     await expect(field).toHaveValue(chosenSuggestion);
   },

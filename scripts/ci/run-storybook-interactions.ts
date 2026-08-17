@@ -91,10 +91,14 @@ function assertManifestMatchesIndex(manifest: InteractionStory[], live: Interact
     fail(`only ${components.size} components carry interactions; at least ${MINIMUM_COMPONENTS}`);
   }
 
-  const drift: string | null = formatDrift(
-    interactionStoryKeys(manifest),
-    interactionStoryKeys(live)
-  );
+  // The drift comparison below is set-based, so a duplicated row would inflate the
+  // registry without demanding a second passing play test. Reject duplicates.
+  const keys: string[] = interactionStoryKeys(manifest);
+  if (new Set(keys).size !== keys.length) {
+    fail('the interaction manifest lists the same story more than once');
+  }
+
+  const drift: string | null = formatDrift(keys, interactionStoryKeys(live));
 
   if (drift) {
     fail(`the manifest and the live Storybook index disagree:\n${drift}`);

@@ -65,7 +65,21 @@ export function interactionStoryKeys(stories: InteractionStory[]): string[] {
 const TEST_CASE = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
 const CASE_NAME = /\bname="([^"]*)"/;
 const NOT_PASSED = /<(?:failure|error|skipped)\b/;
+const XML_ENTITY = /&(?:amp|lt|gt|quot|apos|#39);/g;
+const XML_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&apos;': "'",
+  '&#39;': "'",
+};
 const PLAY_TEST_SUFFIX: string = ' play-test';
+
+/** Reverses the escaping jest-junit applies to attribute values. */
+function decodeXml(value: string): string {
+  return value.replace(XML_ENTITY, entity => XML_ENTITIES[entity] ?? entity);
+}
 
 /**
  * Names of the play tests that actually PASSED, read from a jest-junit report.
@@ -75,7 +89,7 @@ const PLAY_TEST_SUFFIX: string = ' play-test';
  */
 export function junitPlayTestKeys(report: string): string[] {
   return [...report.matchAll(TEST_CASE)]
-    .map(match => ({ name: CASE_NAME.exec(match[1])?.[1] ?? '', body: match[2] ?? '' }))
+    .map(match => ({ name: decodeXml(CASE_NAME.exec(match[1])?.[1] ?? ''), body: match[2] ?? '' }))
     .filter(entry => entry.name.endsWith(PLAY_TEST_SUFFIX) && !NOT_PASSED.test(entry.body))
     .map(entry => entry.name.slice(0, -PLAY_TEST_SUFFIX.length))
     .sort((a, b) => a.localeCompare(b));
