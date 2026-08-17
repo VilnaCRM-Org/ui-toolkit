@@ -68,6 +68,7 @@ EOF
 test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
 test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --pass-with-no-tests
 test-memory-leak|if [ ! -f tests/memory-leak/runMemlabTests.js ]; then|Skipping memory leak tests because this bootstrap PR does not include the app test files yet.|bun x storybook dev --ci --host 0.0.0.0 -p 3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js
+test-storybook|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun scripts/ci/run-storybook-interactions.ts tests/storybook/interaction-stories.json
 EOF
 }
 
@@ -83,7 +84,24 @@ EOF
   done <<'EOF'
 test-e2e|docker compose -f docker-compose.override.yml build playwright
 test-visual|docker compose -f docker-compose.override.yml build playwright
+test-storybook|docker compose -f docker-compose.override.yml build playwright
 EOF
+}
+
+@test "test-storybook runs the interaction gate instead of a Playwright spec run" {
+  reset_command_log
+  run_make_target test-storybook
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose run --rm playwright bun scripts/ci/run-storybook-interactions.ts'
+  assert_log_not_contains 'bun x playwright test'
+}
+
+@test "the shared helper still defaults to the Playwright runner for other targets" {
+  reset_command_log
+  run_make_target test-e2e
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose run --rm playwright bun x playwright test ./tests/e2e'
+  assert_log_not_contains 'run-storybook-interactions.ts'
 }
 
 @test "load-tests builds the k6 image and runs the homepage scenario" {

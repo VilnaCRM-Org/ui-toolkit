@@ -96,6 +96,7 @@ own subdirectory:
 - `tests/integration` — Jest composition tests across components
 - `tests/e2e` — Playwright end-to-end specs run against Storybook
 - `tests/visual` — Playwright visual-regression specs and their snapshots
+- `tests/storybook` — the Storybook interaction (play function) registry and its docs
 - `tests/load` — k6 load tests
 - `tests/memory-leak` — Memlab leak scenarios
 - `tests/bats` — Bats coverage for Makefile and CI shell flows

@@ -35,6 +35,7 @@ more than one. Match the change to the suite and run its verification command.
 | Integration       | Composed components rendered with real children | `make test-integration` |
 | End-to-end (e2e)  | Storybook-driven component behavior end to end  | `make test-e2e`         |
 | Visual regression | Any change to rendered UI, layout, or styling   | `make test-visual`      |
+| Interaction       | Behaviour demonstrated by a story `play` fn     | `make test-storybook`   |
 
 Unit tests run on Jest with React Testing Library in a jsdom env; specs are centralized in
 `tests/unit/**/*.test.tsx` (and `*.test.ts` for non-render logic). Integration specs live in
@@ -54,6 +55,13 @@ Storybook is a first-class coverage layer here, not just documentation. Every ne
 component MUST ship stories that render its full state matrix (see Step 2); e2e and visual
 suites run against those stories, so missing states are missing coverage. Provenance for each
 component must also be recorded per `specs/planning-artifacts/architecture.md`.
+
+Interactive components must also DEMONSTRATE their behaviour: add a dedicated story tagged
+`['interaction', '!autodocs']` whose `play` function drives the component with `userEvent` and
+asserts with `expect` (both from `storybook/test`), register it in
+`tests/storybook/interaction-stories.json`, and run `make test-storybook`. Never attach `play`
+to an existing story — Storybook autoplays it, which would destabilise that story's visual
+baseline. See `tests/storybook/README.md`.
 
 Add a specialized suite when the change touches its concern: `make test-mutation` (test
 strength, Stryker), `make test-bats` (Makefile and CI shell flows), `make test-memory-leak`
@@ -122,6 +130,7 @@ make test-unit             # Jest unit suite (jsdom)
 make test-integration      # Jest composition suite (for cross-component changes)
 make test-e2e              # Storybook-driven behavior (for behavior changes)
 make test-visual           # Visual regression (for UI or styling changes)
+make test-storybook        # Story interaction tests (for interactive behavior changes)
 make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
 ```
 

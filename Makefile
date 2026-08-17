@@ -34,12 +34,16 @@ MUTATION_REPORTS_DIR = reports/mutation
 .PHONY: help build lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
+	test-storybook \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop build-k6-docker load-tests run-storybook-playwright \
 	lint-dep-ranges lint-deps lint-metrics lint-metrics-run \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports
 
 PLAYWRIGHT_TEST_ARGS =
+# Command the shared helper runs against the booted Storybook. Playwright specs are
+# the default; `test-storybook` swaps in the Storybook interaction-suite gate.
+PLAYWRIGHT_RUN_CMD ?= bun x playwright test
 
 run-storybook-playwright:
 	@test -n "$(PLAYWRIGHT_TEST_TARGET)"
@@ -52,7 +56,7 @@ run-storybook-playwright:
 			$(DOCKER_COMPOSE) logs storybook; \
 			exit 1; \
 		fi; \
-		$(DOCKER_COMPOSE) run --rm playwright bun x playwright test $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
+		$(DOCKER_COMPOSE) run --rm playwright $(PLAYWRIGHT_RUN_CMD) $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -237,6 +241,11 @@ test-visual: PLAYWRIGHT_TEST_TARGET = ./tests/visual
 test-visual: PLAYWRIGHT_TEST_ARGS = --pass-with-no-tests
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
+
+test-storybook: PLAYWRIGHT_RUN_CMD = bun scripts/ci/run-storybook-interactions.ts
+test-storybook: PLAYWRIGHT_TEST_TARGET = tests/storybook/interaction-stories.json
+test-storybook: ## Start Storybook and run the story interaction (play function) tests in a Docker container.
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_RUN_CMD="$(PLAYWRIGHT_RUN_CMD)" PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)"
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build
