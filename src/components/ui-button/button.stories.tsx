@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import UiButton from './index';
+
+const clickableLabel: string = t('header.actions.try_it_out');
 
 const meta: Meta<typeof UiButton> = {
   title: 'UiComponents/UiButton',
@@ -64,5 +67,26 @@ export const SocialButton: Story = {
     variant: 'outlined',
     size: 'medium',
     name: 'socialButton',
+  },
+};
+
+// Interaction story (`interaction` tag): proves the demoed button actually
+// dispatches `onClick` in a real browser. See tests/storybook/README.md.
+export const ClickInvokesHandler: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    children: clickableLabel,
+    variant: 'contained',
+    size: 'small',
+    onClick: fn(),
+  },
+  play: async ({ args, canvasElement }): Promise<void> => {
+    const button: HTMLElement = within(canvasElement).getByRole('button', {
+      name: clickableLabel,
+    });
+
+    await userEvent.click(button);
+
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
   },
 };

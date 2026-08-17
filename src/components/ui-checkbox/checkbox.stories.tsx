@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import UiCheckbox from './index';
+
+const toggleLabel: string = t('Send me product updates');
 
 const meta: Meta<typeof UiCheckbox> = {
   title: 'UiComponents/UiCheckbox',
@@ -47,5 +50,26 @@ export const Checkbox: Story = {
   args: {
     error: false,
     label: t('Checkbox label text'),
+  },
+};
+
+// Interaction story (`interaction` tag): proves a click flips the checked state
+// and reports it through `onChange`. See tests/storybook/README.md.
+export const ClickTogglesCheckedState: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    error: false,
+    label: toggleLabel,
+    onChange: fn(),
+  },
+  play: async ({ args, canvasElement }): Promise<void> => {
+    const box: HTMLElement = within(canvasElement).getByRole('checkbox', { name: toggleLabel });
+
+    await expect(box).not.toBeChecked();
+
+    await userEvent.click(box);
+
+    await expect(box).toBeChecked();
+    await expect(args.onChange).toHaveBeenCalledTimes(1);
   },
 };

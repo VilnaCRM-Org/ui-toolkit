@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
+import React from 'react';
+import { expect, screen, userEvent, within } from 'storybook/test';
 
 import {
   booleanControlArgType,
@@ -16,6 +18,25 @@ const options: UiSelectWithSearchOption[] = [
   { label: 'Odesa', value: 'odesa' },
   { label: 'Kharkiv', value: 'kharkiv' },
 ];
+const cityLabel: string = t('City');
+const cityPlaceholder: string = t('Search city');
+const typedQuery: string = 'Lv';
+const chosenCity: string = 'Lviv';
+
+// The combobox is fully controlled, so the interaction story owns the selection.
+function SelectWithSearchInteractionStory(): React.ReactElement {
+  const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(null);
+
+  return (
+    <UiSelectWithSearch
+      options={options}
+      label={cityLabel}
+      placeholder={cityPlaceholder}
+      value={value}
+      onChange={setValue}
+    />
+  );
+}
 
 const meta: Meta<typeof UiSelectWithSearch> = {
   title: 'UiComponents/UiSelectWithSearch',
@@ -36,8 +57,24 @@ type Story = StoryObj<typeof UiSelectWithSearch>;
 export const SelectWithSearch: Story = {
   args: {
     options,
-    label: t('City'),
-    placeholder: t('Search city'),
+    label: cityLabel,
+    placeholder: cityPlaceholder,
     error: false,
+  },
+};
+
+// Interaction story (`interaction` tag): proves the search text narrows the
+// listbox and the picked option becomes the field's value.
+// See tests/storybook/README.md.
+export const SearchNarrowsAndSelectsOption: Story = {
+  tags: ['interaction', '!autodocs'],
+  render: SelectWithSearchInteractionStory,
+  play: async ({ canvasElement }): Promise<void> => {
+    const field: HTMLElement = within(canvasElement).getByRole('combobox', { name: cityLabel });
+
+    await userEvent.type(field, typedQuery);
+    await userEvent.click(await screen.findByRole('option', { name: chosenCity }));
+
+    await expect(field).toHaveValue(chosenCity);
   },
 };
