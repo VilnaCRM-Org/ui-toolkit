@@ -65,7 +65,7 @@ export function interactionStoryKeys(stories: InteractionStory[]): string[] {
 const TEST_CASE = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
 const CASE_NAME = /\bname="([^"]*)"/;
 const NOT_PASSED = /<(?:failure|error|skipped)\b/;
-const PLAY_TEST_SUFFIX = / play-test$/;
+const PLAY_TEST_SUFFIX: string = ' play-test';
 
 /**
  * Names of the play tests that actually PASSED, read from a jest-junit report.
@@ -76,8 +76,8 @@ const PLAY_TEST_SUFFIX = / play-test$/;
 export function junitPlayTestKeys(report: string): string[] {
   return [...report.matchAll(TEST_CASE)]
     .map(match => ({ name: CASE_NAME.exec(match[1])?.[1] ?? '', body: match[2] ?? '' }))
-    .filter(entry => PLAY_TEST_SUFFIX.test(entry.name) && !NOT_PASSED.test(entry.body))
-    .map(entry => entry.name.replace(PLAY_TEST_SUFFIX, ''))
+    .filter(entry => entry.name.endsWith(PLAY_TEST_SUFFIX) && !NOT_PASSED.test(entry.body))
+    .map(entry => entry.name.slice(0, -PLAY_TEST_SUFFIX.length))
     .sort((a, b) => a.localeCompare(b));
 }
 
@@ -88,8 +88,9 @@ export function junitPlayTestKeys(report: string): string[] {
 export function formatDrift(expected: string[], actual: string[]): string | null {
   const expectedSet: Set<string> = new Set(expected);
   const actualSet: Set<string> = new Set(actual);
-  const missing: string[] = expected.filter(key => !actualSet.has(key)).sort();
-  const unexpected: string[] = actual.filter(key => !expectedSet.has(key)).sort();
+  const byName = (a: string, b: string): number => a.localeCompare(b);
+  const missing: string[] = expected.filter(key => !actualSet.has(key)).sort(byName);
+  const unexpected: string[] = actual.filter(key => !expectedSet.has(key)).sort(byName);
 
   if (missing.length === 0 && unexpected.length === 0) {
     return null;

@@ -15,7 +15,10 @@ const requiredMessage: string = 'Email is required';
 const validEmail: string = 'ada@vilnacrm.com';
 const submitSpy: ReturnType<typeof fn> = fn();
 
-function ignoreSubmit(): void {}
+function ignoreSubmit(): void {
+  // The demo form has no backend; the presentational stories only need a valid
+  // submit handler, and the interaction story swaps in a spy.
+}
 
 const meta: Meta<typeof UiForm> = {
   title: 'UiComponents/UiForm',
