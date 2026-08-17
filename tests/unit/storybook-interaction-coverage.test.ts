@@ -48,11 +48,23 @@ function sourceStories(): SourceStory[] {
   });
 }
 
+const sources: string[] = storyFiles(path.join(projectRoot, 'src'));
 const scanned: SourceStory[] = sourceStories();
 const key = (story: { title: string; exportName: string }): string =>
   `${story.title} ${story.exportName}`;
 
 describe('Storybook interaction manifest', () => {
+  it('reads a meta title out of every story file', () => {
+    // `sourceStories` drops files whose title it cannot read; without this,
+    // an unparsable story file would silently hide its play functions.
+    const untitled: string[] = sources.filter(
+      file => scanMetaTitle(file, fs.readFileSync(file, 'utf8')) === null
+    );
+
+    expect(sources.length).toBeGreaterThan(0);
+    expect(untitled).toEqual([]);
+  });
+
   it('is not empty and covers at least the required number of components', () => {
     expect(manifest.length).toBeGreaterThan(0);
     expect(new Set(manifest.map(story => story.title)).size).toBeGreaterThanOrEqual(
