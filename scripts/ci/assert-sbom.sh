@@ -4,25 +4,51 @@
 # `syft` exits 0 when it finds nothing to inventory, so a misconfigured source
 # would otherwise publish an empty CycloneDX document as a green artifact. This
 # check makes "the SBOM was generated" mean "the SBOM has contents".
+#
+# Usage: assert-sbom.sh <cyclonedx-json-path> [minimum-npm-components]
+#
+# The optional npm floor exists because a total-component count is too weak for
+# the package SBOM: syft also catalogues the repository's GitHub Actions, so a
+# document with zero npm packages in it still clears a "more than nothing" bar.
 set -euo pipefail
 
 sbom_path="${1:-}"
+minimum_npm="${2:-0}"
 
-if [ -z "$sbom_path" ]; then
-  echo "::error::usage: assert-sbom.sh <cyclonedx-json-path>" >&2
+if [[ -z "$sbom_path" ]]; then
+  echo "::error::usage: assert-sbom.sh <cyclonedx-json-path> [minimum-npm-components]" >&2
   exit 2
 fi
 
-if [ ! -f "$sbom_path" ]; then
+if [[ ! -f "$sbom_path" ]]; then
   echo "::error::SBOM was not generated at ${sbom_path}." >&2
   exit 1
 fi
 
 component_count="$(jq '(.components // []) | length' "$sbom_path")"
+npm_count="$(jq '[(.components // [])[] | select((.purl // "") | startswith("pkg:npm/"))] | length' \
+  "$sbom_path")"
 
-if [ "$component_count" -lt 1 ]; then
+# jq prints nothing (and still exits 0) for an empty input, and prints one line
+# per document for a truncated or concatenated file. Either way the comparison
+# below would error out and, as an `if` condition, read as false — passing the
+# very case this script exists to catch. Require a plain integer first.
+for count in "$component_count" "$npm_count"; do
+  if [[ ! "$count" =~ ^[0-9]+$ ]]; then
+    echo "::error::${sbom_path} is not a single well-formed CycloneDX document." >&2
+    exit 1
+  fi
+done
+
+if [[ "$component_count" -lt 1 ]]; then
   echo "::error::${sbom_path} inventoried 0 components; the SBOM is empty." >&2
   exit 1
 fi
 
-echo "${sbom_path}: ${component_count} components inventoried."
+if [[ "$npm_count" -lt "$minimum_npm" ]]; then
+  echo "::error::${sbom_path} inventoried ${npm_count} npm components, expected at least" \
+    "${minimum_npm}; the dependency tree was not parsed." >&2
+  exit 1
+fi
+
+echo "${sbom_path}: ${component_count} components inventoried (${npm_count} npm)."

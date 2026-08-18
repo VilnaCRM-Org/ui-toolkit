@@ -96,6 +96,30 @@ EOF
   assert_log_not_contains '--pass-with-no-tests'
 }
 
+@test "lint-next fails closed instead of skipping when there is nothing to lint" {
+  reset_command_log
+  run_make_target lint-next
+  [ "$status" -eq 0 ]
+
+  # The docker stub logs the whole one-line shell body, so the guard can be run
+  # directly against fixture trees the stub itself could never provide.
+  local logged script
+  logged="$(cat "$COMMAND_LOG")"
+  script="${logged#docker compose run --rm --entrypoint sh bun -lc }"
+  [ "$script" != "$logged" ]
+
+  mkdir -p "$BATS_TEST_TMPDIR/no-src"
+  run bash -c 'cd "$1" && shift && sh -c "$1"' _ "$BATS_TEST_TMPDIR/no-src" "$script"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'Expected lint directory src is missing'
+
+  mkdir -p "$BATS_TEST_TMPDIR/empty/src" "$BATS_TEST_TMPDIR/empty/scripts" \
+    "$BATS_TEST_TMPDIR/empty/tests"
+  run bash -c 'cd "$1" && shift && sh -c "$1"' _ "$BATS_TEST_TMPDIR/empty" "$script"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'refusing to report a vacuous pass'
+}
+
 @test "storybook-backed playwright targets honor DOCKER_COMPOSE overrides" {
   while IFS='|' read -r target expected_command; do
     [ -n "$target" ] || continue

@@ -48,20 +48,23 @@ workflow_files() {
   fi
 }
 
+# Both counts are anchored to the four-space job-key indent. A step-level
+# `timeout-minutes` is legal YAML but bounds one step, not the job, so counting
+# it would let a job drop its own limit while the totals still balanced.
 @test "every job declares timeout-minutes" {
   local offenders=""
 
   while IFS= read -r workflow; do
     local jobs timeouts
-    jobs="$(grep -cE '^[[:space:]]+runs-on:' "$workflow")"
-    timeouts="$(grep -cE '^[[:space:]]+timeout-minutes:' "$workflow")"
+    jobs="$(grep -cE '^    runs-on:' "$workflow" || true)"
+    timeouts="$(grep -cE '^    timeout-minutes:[[:space:]]*[0-9]+$' "$workflow" || true)"
     if [ "$jobs" != "$timeouts" ]; then
       offenders="$offenders $(basename "$workflow")($timeouts/$jobs)"
     fi
   done < <(workflow_files)
 
   if [ -n "$offenders" ]; then
-    echo "Workflows whose jobs are missing timeout-minutes:$offenders" >&2
+    echo "Workflows whose jobs are missing a job-level timeout-minutes:$offenders" >&2
     return 1
   fi
 }
