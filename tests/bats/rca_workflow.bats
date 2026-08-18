@@ -46,8 +46,13 @@ WORKFLOW="$PROJECT_ROOT/.github/workflows/rust-code-analysis.yml"
 
 # ---- checkout step -----------------------------------------------------------
 
-@test "workflow pins actions/checkout to the repo-standard immutable SHA" {
-  grep -qE 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' "$WORKFLOW"
+@test "workflow pins actions/checkout to an immutable SHA with a version comment" {
+  grep -qE 'actions/checkout@[0-9a-f]{40} # v[0-9]+\.[0-9]+\.[0-9]+' "$WORKFLOW"
+}
+
+@test "workflow pins every action to a SHA, never a mutable tag" {
+  run grep -nE 'uses: [^ ]+@(v[0-9]|main|master)' "$WORKFLOW"
+  [ "$status" -ne 0 ]
 }
 
 @test "checkout step sets persist-credentials: false" {
@@ -68,34 +73,26 @@ WORKFLOW="$PROJECT_ROOT/.github/workflows/rust-code-analysis.yml"
   [ "$status" -ne 0 ]
 }
 
-# ---- file detection step -----------------------------------------------------
-
-@test "workflow has a 'Detect runtime project files' step" {
-  grep -qi 'Detect runtime project files' "$WORKFLOW"
-}
-
-@test "detection step checks for config/metrics-policy.json" {
-  grep -q 'config/metrics-policy.json' "$WORKFLOW"
-}
-
-@test "detection step writes a flag to GITHUB_OUTPUT" {
-  grep -q 'GITHUB_OUTPUT' "$WORKFLOW"
-}
-
 # ---- lint-metrics step -------------------------------------------------------
 
 @test "workflow runs make lint-metrics" {
   grep -q 'make lint-metrics' "$WORKFLOW"
 }
 
-@test "make lint-metrics step is gated on the detection flag" {
-  grep -B 3 'make lint-metrics' "$WORKFLOW" | grep -q "steps\\.project\\.outputs\\.present"
+# ---- fail-closed contract (issue #96) ----------------------------------------
+#
+# The metrics gate used to be wrapped in a "bootstrap PR" detection step that
+# turned any missing input into a permanently green skip. The gate now runs
+# unconditionally: a missing input has to make the job red.
+
+@test "the metrics gate runs unconditionally, with no detection flag" {
+  run grep -nE "steps\\.[A-Za-z_][A-Za-z0-9_-]*\\.outputs\\.present" "$WORKFLOW"
+  [ "$status" -ne 0 ]
 }
 
-# ---- skip / bootstrap guard --------------------------------------------------
-
-@test "workflow has a skip step for bootstrap PRs" {
-  grep -qi 'skip\|Skipping' "$WORKFLOW"
+@test "workflow keeps no bootstrap skip branch" {
+  run grep -nE 'present=(true|false)|Skipping ' "$WORKFLOW"
+  [ "$status" -ne 0 ]
 }
 
 # ---- no manual docker lifecycle ----------------------------------------------

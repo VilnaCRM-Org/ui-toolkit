@@ -5,6 +5,8 @@ on:
     branches:
       - main
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -13,6 +15,7 @@ jobs:
   performance:
     name: lighthouse ${{ matrix.formFactor }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     strategy:
@@ -25,30 +28,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
-
-      - name: Detect performance inputs
-        id: project
-        run: |
-          if [[ -f package.json && -f bun.lock && -f lighthouserc.js ]]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip performance tests
-        if: steps.project.outputs.present != 'true'
-        run: echo "Skipping performance tests because this bootstrap PR does not include the project runtime files yet."
 
       # Lighthouse targets run in their own `docker compose run --rm` container
       # (RUN_BUN_SH) and build Storybook themselves, so no long-lived service is
       # needed here.
       - name: Run ${{ matrix.formFactor }} Lighthouse audit
-        if: steps.project.outputs.present == 'true'
         run: make lighthouse-${{ matrix.formFactor }}
 
       - name: Stop docker test environment
-        if: always() && steps.project.outputs.present == 'true'
+        if: always()
         run: make down
