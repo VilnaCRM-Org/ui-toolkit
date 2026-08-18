@@ -17,14 +17,16 @@ class ScenarioBuilder {
     };
   }
 
-  storyUrl(storyId) {
-    return () => `${this.baseUrl()}/iframe.html?id=${storyId}&viewMode=story`;
+  // storyArgs uses Storybook's URL args encoding, e.g. `arrow:!false`.
+  storyUrl(storyId, storyArgs) {
+    const args = storyArgs ? `&args=${storyArgs}` : '';
+    return () => `${this.baseUrl()}/iframe.html?id=${storyId}&viewMode=story${args}`;
   }
 
-  // scenarioOptions: { storyId?, url?, action, back, setup?, ...memlab hooks }
+  // scenarioOptions: { storyId?, storyArgs?, url?, action, back, setup?, ...memlab hooks }
   createScenario(scenarioOptions) {
-    const { storyId, url, ...rest } = scenarioOptions;
-    const resolvedUrl = url || (storyId ? this.storyUrl(storyId) : () => this.baseUrl());
+    const { storyId, storyArgs, url, ...rest } = scenarioOptions;
+    const resolvedUrl = url || (storyId ? this.storyUrl(storyId, storyArgs) : () => this.baseUrl());
 
     return { ...rest, url: resolvedUrl };
   }
