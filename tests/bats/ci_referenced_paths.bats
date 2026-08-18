@@ -28,7 +28,9 @@ run_guard() {
 
 @test "lint-ci-paths passes over this repository's whole Makefile and workflow surface" {
   local workflows expected
-  workflows="$(find "$PROJECT_ROOT/.github/workflows" -maxdepth 1 -name '*.yml' | wc -l)"
+  # Both extensions, matching defaultSources() in the guard itself.
+  workflows="$(find "$PROJECT_ROOT/.github/workflows" -maxdepth 1 \
+    \( -name '*.yml' -o -name '*.yaml' \) | wc -l)"
   expected=$((workflows + 1))
   [ "$expected" -gt 1 ]
 

@@ -56,6 +56,36 @@ workflow_files() {
 # than comparing file-wide totals: a step-level `timeout-minutes` (legal YAML
 # that bounds one step, not the job) or one in a comment could otherwise
 # rebalance the count for a job that dropped its limit. Reports the job by name.
+# Lists the job keys the walker can see. A reformat that moved job keys off the
+# two-space indent would otherwise leave the walker finding nothing, and "no
+# jobs" would read as "no jobs missing a timeout" - a fail-open of exactly the
+# kind this file exists to prevent. The companion test asserts it stays honest.
+jobs_in_workflow() {
+  awk '
+    /^jobs:[[:space:]]*$/ { in_jobs = 1; next }
+    !in_jobs { next }
+    /^[^[:space:]#]/ { in_jobs = 0; next }
+    /^  [A-Za-z0-9_-]+:[[:space:]]*$/ { print substr($1, 1, length($1) - 1) }
+  ' "$1"
+}
+
+@test "the job walker recognises the layout of every workflow" {
+  local offenders=""
+
+  while IFS= read -r workflow; do
+    local seen
+    seen="$(jobs_in_workflow "$workflow" | wc -l)"
+    if [ "$seen" -lt 1 ]; then
+      offenders="$offenders $(basename "$workflow")"
+    fi
+  done < <(workflow_files)
+
+  if [ -n "$offenders" ]; then
+    echo "Workflows whose jobs the timeout walker cannot see:$offenders" >&2
+    return 1
+  fi
+}
+
 jobs_without_timeout() {
   awk '
     /^jobs:[[:space:]]*$/ { in_jobs = 1; next }
