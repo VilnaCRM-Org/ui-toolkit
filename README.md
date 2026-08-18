@@ -1,5 +1,7 @@
 # ui-toolkit
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/VilnaCRM-Org/ui-toolkit/badge)](https://scorecard.dev/viewer/?uri=github.com/VilnaCRM-Org/ui-toolkit)
+
 React UI component library built with Bun, Storybook, and MUI.
 
 ## Stack
@@ -40,6 +42,11 @@ locally before pushing. See [agents.md](agents.md) for which test layer a given 
 
 The `lint-metrics` target runs a `rust-code-analysis` complexity gate over `src/`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the policy details and remediation guidance.
+
+`make lint` also runs `make lint-ci-paths`, which fails when the `Makefile` or a workflow names a
+repository path that does not exist — the class of drift that once left the memory-leak gate green
+while it executed nothing. See
+[CI gate integrity](CONTRIBUTING.md#ci-gate-integrity-fail-closed) in `CONTRIBUTING.md`.
 
 ### Bats Shell Coverage
 
@@ -91,7 +98,12 @@ in `CONTRIBUTING.md` for what it enforces, how it complements ESLint, and how to
 
 ## Security
 
-Report vulnerabilities through the private reporting guidance in [SECURITY.md](SECURITY.md).
+Report vulnerabilities through the private reporting guidance in [SECURITY.md](SECURITY.md), which
+also documents the supported-version window and the response targets.
+
+Supply-chain posture is measured in CI: the `sbom` workflow publishes a CycloneDX SBOM for the npm
+package and for each CI image, and the `OSSF Scorecard` workflow publishes the repository score
+behind the badge above.
 
 ## Contributing
 

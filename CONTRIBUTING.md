@@ -96,13 +96,39 @@ own subdirectory:
 - `tests/integration` — Jest composition tests across components
 - `tests/e2e` — Playwright end-to-end specs run against Storybook
 - `tests/visual` — Playwright visual-regression specs and their snapshots
-- `tests/load` — k6 load tests
+- `tests/load` — rationale for the deliberately omitted load tier (see its `README.md`)
 - `tests/memory-leak` — Memlab leak scenarios
 - `tests/bats` — Bats coverage for Makefile and CI shell flows
 
 `make lint-test-structure` enforces this layout: it fails when any `*.test.*` or `*.spec.*` file
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
+
+### CI gate integrity (fail-closed)
+
+A gate that passes without running is worse than no gate: it manufactures confidence. The
+memory-leak gate proved this — a rename left the Makefile and its workflow pointing at
+`tests/memory-leak/runMemlabTests.js`, so for weeks the job reported success having executed
+nothing.
+
+Three rules follow from that, and all three are enforced:
+
+1. **No conditional skips in workflows.** Steps run unconditionally. A missing input must turn a
+   job red, never green. There is no "bootstrap PR" escape hatch any more.
+2. **No vacuous passes.** Jest runs without `--passWithNoTests`, Playwright without
+   `--pass-with-no-tests`, `make lint-next` fails when it finds nothing to lint, and the memlab
+   runner fails when its scenario directory is empty or when a scenario reports a leak.
+3. **No dead references.** `make lint-ci-paths` extracts every repository-relative path named by
+   the `Makefile` and by `.github/workflows/*.yml` and fails when one of them does not exist:
+
+   ```bash
+   make lint-ci-paths
+   ```
+
+   It ignores interpolations (`$(VAR)`, `${{ ctx }}`), globs, comments and generated output
+   directories, because those cannot be resolved statically or are absent from a fresh checkout.
+   The gate runs inside `make lint` and as its own step in the static testing workflow, and its
+   behaviour is pinned by `tests/bats/ci_referenced_paths.bats`.
 
 ### Complexity metrics gate
 
@@ -327,6 +353,32 @@ waives every non-Alpine base in that file — so scrutinise multi-stage Dockerfi
 
 Current documented exception: `Dockerfile.playwright` — the official Playwright browser base
 is glibc-only, with no Alpine/musl variant published.
+
+### Supply-chain pinning and inventory
+
+Everything the CI executes is pinned to an immutable reference, and everything shipped is
+inventoried.
+
+- **Actions.** Every `uses:` in `.github/workflows/` is pinned to a full commit SHA with a
+  trailing `# v<semver>` comment. A mutable tag can be retargeted at attacker-controlled code
+  that then runs with the job's token. `zizmor` (a qlty plugin) reports `unpinned-uses`.
+- **Base images.** Every `FROM` carries an `@sha256:` digest alongside its human-readable tag.
+- **Token posture.** Every workflow declares a top-level `permissions:` block — `{}` unless the
+  workflow genuinely needs more — so a job added later cannot silently inherit a broad token.
+  Every job declares `timeout-minutes`, so a hung browser cannot burn the 6-hour default.
+- **Freshness.** Dependabot watches three ecosystems (`npm`, `github-actions`, `docker`) weekly.
+  npm version updates are grouped by dependency type; security updates stay ungrouped so each
+  arrives as its own immediately reviewable pull request.
+- **Inventory.** The `sbom` workflow publishes a CycloneDX SBOM for the npm package and for each
+  CI image as build artifacts, and `assert-sbom.sh` fails the job when a generated SBOM is empty.
+  The `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
+  findings to code scanning.
+
+When you add a step that uses an action, resolve its SHA before committing:
+
+```bash
+gh api repos/<owner>/<repo>/git/ref/tags/<tag> --jq '.object.sha'
+```
 
 ### Pull Request
 
