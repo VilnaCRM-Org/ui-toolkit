@@ -130,6 +130,16 @@ EOF
   [ "$status" -eq 0 ]
 }
 
+@test "lint-ci-paths keeps checking past a hash inside a quoted argument" {
+  local fixture="$BATS_TEST_TMPDIR/quoted-hash.yml"
+  printf 'jobs:\n  a:\n    steps:\n      - run: echo "colour #ff0000"; bash scripts/ci/gone.sh\n' \
+    > "$fixture"
+
+  run_guard "$fixture"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'scripts/ci/gone.sh'
+}
+
 @test "lint-ci-paths fails closed when asked to audit a source that does not exist" {
   run_guard "$BATS_TEST_TMPDIR/absent.yml"
   [ "$status" -eq 2 ]

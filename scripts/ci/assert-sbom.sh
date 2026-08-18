@@ -25,20 +25,29 @@ if [[ ! -f "$sbom_path" ]]; then
   exit 1
 fi
 
-component_count="$(jq '(.components // []) | length' "$sbom_path")"
-npm_count="$(jq '[(.components // [])[] | select((.purl // "") | startswith("pkg:npm/"))] | length' \
-  "$sbom_path")"
+# `.components` must be an array: jq reports a positive length for an object
+# too, so a malformed document would otherwise clear the count below. A missing
+# or wrongly typed array yields -1 and is reported as such.
+components='(.components | if type == "array" then . else null end)'
+component_count="$(jq "${components} | if . == null then -1 else length end" "$sbom_path")"
+npm_count="$(jq "[${components} // [] | .[] | select((.purl? // \"\") | startswith(\"pkg:npm/\"))] \
+  | length" "$sbom_path")"
 
 # jq prints nothing (and still exits 0) for an empty input, and prints one line
 # per document for a truncated or concatenated file. Either way the comparison
 # below would error out and, as an `if` condition, read as false — passing the
 # very case this script exists to catch. Require a plain integer first.
 for count in "$component_count" "$npm_count"; do
-  if [[ ! "$count" =~ ^[0-9]+$ ]]; then
+  if [[ ! "$count" =~ ^-?[0-9]+$ ]]; then
     echo "::error::${sbom_path} is not a single well-formed CycloneDX document." >&2
     exit 1
   fi
 done
+
+if [[ "$component_count" -lt 0 ]]; then
+  echo "::error::${sbom_path} has no CycloneDX components array." >&2
+  exit 1
+fi
 
 if [[ "$component_count" -lt 1 ]]; then
   echo "::error::${sbom_path} inventoried 0 components; the SBOM is empty." >&2

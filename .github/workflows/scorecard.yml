@@ -25,8 +25,9 @@ jobs:
       security-events: write
       # Publish the score to the OpenSSF REST API so the README badge resolves.
       id-token: write
+      # Checkout only. `actions: read` is a private-repository scope and this
+      # repository is public, so it is deliberately not granted.
       contents: read
-      actions: read
 
     steps:
       - name: Checkout code

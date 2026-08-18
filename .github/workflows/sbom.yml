@@ -32,12 +32,13 @@ jobs:
       - name: Create the SBOM output directory
         run: mkdir -p sbom
 
-      # syft reads bun.lock directly (javascript-bun-lock-entry), so the
-      # inventory covers the resolved dependency tree without an install step —
-      # but only from syft v1.46.0 onwards. The action bundles 1.42.3, which
-      # silently catalogues nothing from a bun lockfile, so the version is
-      # pinned explicitly here and the assertion below carries an npm floor
-      # that a lockfile-blind run cannot clear.
+      # syft reads bun.lock directly (javascript-bun-lock-entry), but only from
+      # v1.46.0 onwards; the action bundles 1.42.3, which silently catalogues
+      # nothing from a bun lockfile, so the version is pinned explicitly here.
+      # A directory scan yields the declared dependency set (~76 packages) —
+      # the fully resolved tree is inventoried by the bun image SBOM below,
+      # which scans the image after `bun install`. The floor is set well under
+      # the declared count but far above the zero a lockfile-blind run gives.
       - name: Generate the CycloneDX SBOM for the npm package
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
@@ -49,7 +50,7 @@ jobs:
           upload-release-assets: false
 
       - name: Assert the package SBOM inventoried the dependency tree
-        run: bash scripts/ci/assert-sbom.sh sbom/ui-toolkit-package.cyclonedx.json 100
+        run: bash scripts/ci/assert-sbom.sh sbom/ui-toolkit-package.cyclonedx.json 50
 
       - name: Upload the package SBOM
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

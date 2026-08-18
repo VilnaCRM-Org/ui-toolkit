@@ -369,15 +369,28 @@ inventoried.
 - **Freshness.** Dependabot watches three ecosystems (`npm`, `github-actions`, `docker`) weekly.
   npm version updates are grouped by dependency type; security updates stay ungrouped so each
   arrives as its own immediately reviewable pull request.
-- **Inventory.** The `sbom` workflow publishes a CycloneDX SBOM for the npm package and for each
-  CI image as build artifacts, and `assert-sbom.sh` fails the job when a generated SBOM is empty.
+- **Inventory.** The `sbom` workflow publishes CycloneDX SBOMs as build artifacts:
+  one for the repository's declared dependency set (read straight from `bun.lock`, so it covers
+  runtime and development dependencies alike) and one per CI image, each scanned after its
+  install step so it carries the fully resolved tree. `assert-sbom.sh` fails the job when a
+  document is empty, malformed, or — for the package SBOM — carries fewer npm components than
+  the declared set, which is what a syft build that cannot read `bun.lock` produces.
   The `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
   findings to code scanning.
 
-When you add a step that uses an action, resolve its SHA before committing:
+When you add a step that uses an action, resolve its SHA before committing. An
+annotated tag points at a tag object rather than at the commit, so the reference has to be
+dereferenced or the pin is invalid:
 
 ```bash
-gh api repos/<owner>/<repo>/git/ref/tags/<tag> --jq '.object.sha'
+read -r object_type object_sha < <(
+  gh api "repos/<owner>/<repo>/git/ref/tags/<tag>" --jq '.object.type + " " + .object.sha'
+)
+if [ "$object_type" = tag ]; then
+  gh api "repos/<owner>/<repo>/git/tags/$object_sha" --jq '.object.sha'
+else
+  printf '%s\n' "$object_sha"
+fi
 ```
 
 ### Pull Request

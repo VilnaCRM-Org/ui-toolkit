@@ -35,36 +35,56 @@ workflow_files() {
   fi
 }
 
-@test "every workflow declares a top-level permissions block" {
+# The value matters as much as the presence: `permissions: write-all`, or any
+# mapping, would satisfy a bare "has a permissions key" check while handing the
+# default token broad access to every job added later. Grants belong at job
+# level, where they are visible next to the step that needs them.
+@test "every workflow denies the default token at the top level" {
   local offenders=""
 
   while IFS= read -r workflow; do
-    grep -qE '^permissions:' "$workflow" || offenders="$offenders $(basename "$workflow")"
+    grep -qxF 'permissions: {}' "$workflow" || offenders="$offenders $(basename "$workflow")"
   done < <(workflow_files)
 
   if [ -n "$offenders" ]; then
-    echo "Workflows without a top-level permissions block:$offenders" >&2
+    echo "Workflows whose top-level permissions are not {}:$offenders" >&2
     return 1
   fi
 }
 
-# Both counts are anchored to the four-space job-key indent. A step-level
-# `timeout-minutes` is legal YAML but bounds one step, not the job, so counting
-# it would let a job drop its own limit while the totals still balanced.
-@test "every job declares timeout-minutes" {
+# Walks the jobs mapping and pairs every job key with its own timeout, rather
+# than comparing file-wide totals: a step-level `timeout-minutes` (legal YAML
+# that bounds one step, not the job) or one in a comment could otherwise
+# rebalance the count for a job that dropped its limit. Reports the job by name.
+jobs_without_timeout() {
+  awk '
+    /^jobs:[[:space:]]*$/ { in_jobs = 1; next }
+    !in_jobs { next }
+    /^[^[:space:]#]/ { if (job != "" && !timeout) print job; job = ""; in_jobs = 0; next }
+    /^  [A-Za-z0-9_-]+:[[:space:]]*$/ {
+      if (job != "" && !timeout) print job
+      job = substr($1, 1, length($1) - 1)
+      timeout = 0
+      next
+    }
+    /^    timeout-minutes:[[:space:]]*[0-9]+[[:space:]]*$/ { timeout = 1 }
+    END { if (job != "" && !timeout) print job }
+  ' "$1"
+}
+
+@test "every job declares its own job-level timeout-minutes" {
   local offenders=""
 
   while IFS= read -r workflow; do
-    local jobs timeouts
-    jobs="$(grep -cE '^    runs-on:' "$workflow" || true)"
-    timeouts="$(grep -cE '^    timeout-minutes:[[:space:]]*[0-9]+$' "$workflow" || true)"
-    if [ "$jobs" != "$timeouts" ]; then
-      offenders="$offenders $(basename "$workflow")($timeouts/$jobs)"
+    local missing
+    missing="$(jobs_without_timeout "$workflow" | tr '\n' ' ')"
+    if [ -n "${missing// /}" ]; then
+      offenders="$offenders $(basename "$workflow"):[${missing% }]"
     fi
   done < <(workflow_files)
 
   if [ -n "$offenders" ]; then
-    echo "Workflows whose jobs are missing a job-level timeout-minutes:$offenders" >&2
+    echo "Jobs without a job-level timeout-minutes:$offenders" >&2
     return 1
   fi
 }
