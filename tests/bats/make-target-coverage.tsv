@@ -1,6 +1,5 @@
 target	coverage	evidence	details
 build	bats	tests/bats/makefile_targets.bats	Validated as the Docker-backed project build entrypoint.
-build-k6-docker	bats	tests/bats/makefile_targets.bats	Validated as the Docker image build step for local k6 runs.
 copy-coverage	bats	tests/bats/makefile_targets.bats	Validated for the missing-container, missing-coverage, and copy-success branches.
 down	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that tear down the Docker environment.
 format-check	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
@@ -45,3 +44,4 @@ test-mutation-shard	bats	tests/bats/makefile_targets.bats	Validated for the runn
 copy-mutation-report	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the copy-success branch.
 stage-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the host-to-container copy branch.
 merge-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the running-container and fresh-container branches of the merge gate.
+lint-ci-paths	bats	tests/bats/ci_referenced_paths.bats	Validated for the passing repository scan, the historic memlab-rename failure, missing sources, and false-positive noise.
