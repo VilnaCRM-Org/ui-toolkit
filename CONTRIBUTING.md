@@ -113,8 +113,12 @@ nothing.
 
 Three rules follow from that, and all three are enforced:
 
-1. **No conditional skips in workflows.** Steps run unconditionally. A missing input must turn a
-   job red, never green. There is no "bootstrap PR" escape hatch any more.
+1. **No input-detection skips in workflows.** A step never asks whether its inputs exist; a missing
+   input must turn a job red, never green, and there is no "bootstrap PR" escape hatch any more.
+   The `if:` conditions that remain are the ones that make failures _more_ visible or are unrelated
+   to gating: `always()` on teardown and artifact upload, `!cancelled()` so the mutation merge gate
+   still runs (and fails) when a shard dies, an explicit shard-result assertion, and fork guards on
+   the two jobs that need a write token.
 2. **No vacuous passes.** Jest runs without `--passWithNoTests`, Playwright without
    `--pass-with-no-tests`, `make lint-next` fails when it finds nothing to lint, and the memlab
    runner fails when its scenario directory is empty or when a scenario reports a leak.
@@ -372,7 +376,8 @@ inventoried.
 - **Inventory.** The `sbom` workflow publishes CycloneDX SBOMs as build artifacts:
   one for the repository's declared dependency set (read straight from `bun.lock`, so it covers
   runtime and development dependencies alike) and one per CI image, each scanned after its
-  install step so it carries the fully resolved tree. `assert-sbom.sh` fails the job when a
+  install step so it carries the fully resolved tree. Both run on every pull request to `main`
+  and every push to `main`. `assert-sbom.sh` fails the job when a
   document is empty, malformed, or — for the package SBOM — carries fewer npm components than
   the declared set, which is what a syft build that cannot read `bun.lock` produces.
   The `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its

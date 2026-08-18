@@ -65,9 +65,9 @@ duplicate that list, so it cannot go stale.
 
 Supply-chain posture is measured continuously:
 
-- the `sbom` workflow publishes CycloneDX SBOMs as build artifacts on every pull request and
-  every push to `main`: one for the declared dependency set and one per CI image, the latter
-  scanned after installation so it carries the fully resolved tree;
+- the `sbom` workflow publishes CycloneDX SBOMs as build artifacts on every pull request to
+  `main` and every push to `main`: one for the declared dependency set and one per CI image, the
+  latter scanned after installation so it carries the fully resolved tree;
 - the `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
   findings to code scanning;
-- CodeQL (`security testing`) analyses the TypeScript sources on every pull request.
+- CodeQL (`security testing`) analyses the TypeScript sources on every pull request to `main`.

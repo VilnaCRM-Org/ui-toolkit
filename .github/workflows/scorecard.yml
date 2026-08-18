@@ -11,9 +11,11 @@ on:
 
 permissions: {}
 
+# All three triggers resolve to the same ref on `main`, so cancelling would let
+# a push discard the scheduled analysis (or the reverse). They queue instead.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   analysis:
