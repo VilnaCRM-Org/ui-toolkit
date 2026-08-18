@@ -378,8 +378,9 @@ inventoried.
   runtime and development dependencies alike) and one per CI image, each scanned after its
   install step so it carries the fully resolved tree. Both run on every pull request to `main`
   and every push to `main`. `assert-sbom.sh` fails the job when a
-  document is empty, malformed, or — for the package SBOM — carries fewer npm components than
-  the declared set, which is what a syft build that cannot read `bun.lock` produces.
+  document is empty, malformed, or — for the package SBOM — carries fewer npm components than a
+  fixed floor set well below the declared count, which is what a syft build that cannot read
+  `bun.lock` produces.
   The `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
   findings to code scanning.
 

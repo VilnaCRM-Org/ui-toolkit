@@ -65,7 +65,7 @@ jobs_in_workflow() {
     /^jobs:[[:space:]]*$/ { in_jobs = 1; next }
     !in_jobs { next }
     /^[^[:space:]#]/ { in_jobs = 0; next }
-    /^  [A-Za-z0-9_-]+:[[:space:]]*$/ { print substr($1, 1, length($1) - 1) }
+    /^  [A-Za-z0-9_-]+:[[:space:]]*(#.*)?$/ { print substr($1, 1, length($1) - 1) }
   ' "$1"
 }
 
@@ -91,7 +91,7 @@ jobs_without_timeout() {
     /^jobs:[[:space:]]*$/ { in_jobs = 1; next }
     !in_jobs { next }
     /^[^[:space:]#]/ { if (job != "" && !timeout) print job; job = ""; in_jobs = 0; next }
-    /^  [A-Za-z0-9_-]+:[[:space:]]*$/ {
+    /^  [A-Za-z0-9_-]+:[[:space:]]*(#.*)?$/ {
       if (job != "" && !timeout) print job
       job = substr($1, 1, length($1) - 1)
       timeout = 0

@@ -93,8 +93,10 @@ WORKFLOW="$PROJECT_ROOT/.github/workflows/rust-code-analysis.yml"
 
 @test "the metrics gate runs unconditionally, with no step condition at all" {
   # Not just the removed `present` flag: any step-level `if:` can restore a
-  # green skip, so the workflow must carry none.
-  run grep -nE '^[[:space:]]+if:' "$WORKFLOW"
+  # green skip, so the workflow must carry none. Scoped to step indentation
+  # (six spaces or deeper) — a job-level condition gates the whole job, which
+  # shows up as a skipped check rather than as a gate that passed empty.
+  run grep -nE '^[[:space:]]{6,}if:' "$WORKFLOW"
   [ "$status" -ne 0 ]
 }
 

@@ -20,8 +20,11 @@ if [[ -z "$sbom_path" ]]; then
   exit 2
 fi
 
-if [[ ! "$minimum_npm" =~ ^[0-9]+$ ]]; then
-  echo "::error::minimum-npm-components must be a non-negative integer, got '${minimum_npm}'." >&2
+# Bounded to nine digits: bash arithmetic is 64-bit and wraps silently, so an
+# absurd floor would otherwise compare as negative and accept any SBOM.
+if [[ ! "$minimum_npm" =~ ^[0-9]{1,9}$ ]]; then
+  echo "::error::minimum-npm-components must be an integer of at most 9 digits," \
+    "got '${minimum_npm}'." >&2
   exit 2
 fi
 
