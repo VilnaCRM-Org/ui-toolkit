@@ -35,10 +35,11 @@ jobs:
       # syft reads bun.lock directly (javascript-bun-lock-entry), but only from
       # v1.46.0 onwards; the action bundles 1.42.3, which silently catalogues
       # nothing from a bun lockfile, so the version is pinned explicitly here.
-      # A directory scan yields the declared dependency set (~76 packages) —
-      # the fully resolved tree is inventoried by the bun image SBOM below,
-      # which scans the image after `bun install`. The floor is set well under
-      # the declared count but far above the zero a lockfile-blind run gives.
+      # A directory scan yields the declared dependency set, not the ~2100
+      # resolved packages; the fully resolved tree is inventoried by the bun
+      # image SBOM below, which scans the image after `bun install`. The floor
+      # sits well under the declared count and far above the zero a
+      # lockfile-blind run produces.
       - name: Generate the CycloneDX SBOM for the npm package
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
