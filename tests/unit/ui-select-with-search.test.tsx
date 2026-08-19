@@ -11,7 +11,9 @@ import mockConsoleWarn from './utils/mock-console-warn';
 // silence it for the whole file and assert on the spy in the dedicated block.
 const warn = mockConsoleWarn();
 
-const options: UiSelectWithSearchOption[] = [
+// Tuple-typed so the per-index reads below stay definite
+// `UiSelectWithSearchOption`s under `noUncheckedIndexedAccess`.
+const options: [UiSelectWithSearchOption, UiSelectWithSearchOption, UiSelectWithSearchOption] = [
   { label: 'Kyiv', value: 'kyiv' },
   { label: 'Lviv', value: 'lviv' },
   { label: 'Odesa', value: 'odesa' },
@@ -169,11 +171,11 @@ describe('UiSelectWithSearch — combobox ARIA and keyboard navigation', () => {
     const renderedOptions: HTMLElement[] = screen.getAllByRole('option');
 
     await user.keyboard('{ArrowDown}');
-    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0].id);
+    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0]!.id);
     expect(combobox).toHaveFocus();
 
     await user.keyboard('{ArrowDown}');
-    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[1].id);
+    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[1]!.id);
   });
 
   it('filters the options as the user types', async () => {

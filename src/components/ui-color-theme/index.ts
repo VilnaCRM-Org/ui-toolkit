@@ -1,6 +1,6 @@
 import { Theme, createTheme } from '@mui/material';
 
-export const sharedPalette: Record<string, { main: string }> = {
+export const sharedPalette = {
   primary: {
     main: '#1EAEFF',
   },
@@ -76,7 +76,7 @@ export const sharedPalette: Record<string, { main: string }> = {
   textLinkActive: {
     main: '#0399ED',
   },
-} as const;
+} as const satisfies Record<string, { main: string }>;
 
 export const websiteColorTheme: Theme = createTheme({
   palette: {

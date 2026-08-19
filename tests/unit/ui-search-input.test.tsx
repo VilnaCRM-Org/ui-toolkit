@@ -195,7 +195,7 @@ describe('UiSearchInput — typeahead suggestions', () => {
 
     expect(combobox).toHaveAttribute('aria-expanded', 'true');
     const renderedOptions: HTMLElement[] = screen.getAllByRole('option');
-    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0].id);
+    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0]!.id);
     expect(combobox).toHaveFocus();
   });
 

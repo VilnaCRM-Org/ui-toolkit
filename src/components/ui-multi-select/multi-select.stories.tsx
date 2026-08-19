@@ -10,7 +10,14 @@ import type { UiMultiSelectOption } from './types';
 
 import UiMultiSelect from './index';
 
-const options: UiMultiSelectOption[] = [
+// Tuple-typed so indexing a fixed entry (the preselected chips below) stays a
+// definite `UiMultiSelectOption` under `noUncheckedIndexedAccess`.
+const options: [
+  UiMultiSelectOption,
+  UiMultiSelectOption,
+  UiMultiSelectOption,
+  UiMultiSelectOption,
+] = [
   { label: 'Kyiv', value: 'kyiv' },
   { label: 'Lviv', value: 'lviv' },
   { label: 'Odesa', value: 'odesa' },

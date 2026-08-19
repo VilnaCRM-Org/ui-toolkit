@@ -6,12 +6,12 @@ import type { UiCalendarMultiSelectProps } from './types';
 import { useCalendarActions } from './use-calendar-actions';
 import { useCalendarModel } from './use-calendar-model';
 import { useRovingFocus } from './use-roving-focus';
-import { buildCellRows, type CellDescriptor } from './view-model';
+import { buildCellRows, type CellRow } from './view-model';
 
 export interface CalendarController {
   rovingRef: (node: HTMLElement | null) => void;
   caption: string;
-  cellRows: CellDescriptor[][];
+  cellRows: CellRow[];
   /** Polite live-region text; non-empty only after button-driven month changes. */
   monthAnnouncement: string;
   onPrevMonth: () => void;
@@ -27,7 +27,7 @@ export function useCalendar(props: UiCalendarMultiSelectProps): CalendarControll
   const focus: ReturnType<typeof useRovingFocus> = useRovingFocus();
   const actions: ReturnType<typeof useCalendarActions> = useCalendarActions(props, model, focus);
 
-  const cellRows: CellDescriptor[][] = buildCellRows({
+  const cellRows: CellRow[] = buildCellRows({
     visibleMonth: model.visibleMonth,
     selected: model.selectedSet,
     focusedISO: model.focusedISO,
