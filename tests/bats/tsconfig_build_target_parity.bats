@@ -19,17 +19,40 @@ DELETED_OPTIONS=(
   emitDecoratorMetadata
 )
 
+# The full bracket content of `target: [...]`, quote-agnostic, with quotes and
+# spaces stripped — so a reformatted or multi-element target list changes the
+# extracted value instead of slipping past the comparison.
+extract_esbuild_targets() {
+  sed -nE "s/.*target:[[:space:]]*\[([^]]*)\].*/\1/p" "$BUILD_CONFIG" | tr -d "\"' "
+}
+
 @test "tsconfig typecheck target matches the esbuild build target" {
   tsconfig_target=$(jq -r '.compilerOptions.target' "$TSCONFIG" | tr '[:upper:]' '[:lower:]')
-  esbuild_target=$(sed -n "s/^.*target: \['\([a-z0-9]*\)'\].*$/\1/p" "$BUILD_CONFIG")
+  esbuild_targets=$(extract_esbuild_targets)
 
-  if [ -z "$esbuild_target" ]; then
-    echo "Could not extract the esbuild target from $BUILD_CONFIG" >&2
+  if [ -z "$esbuild_targets" ]; then
+    echo "Could not extract the esbuild target list from $BUILD_CONFIG" >&2
     return 1
   fi
 
-  if [ "$tsconfig_target" != "$esbuild_target" ]; then
-    echo "tsconfig target ($tsconfig_target) diverges from esbuild target ($esbuild_target)" >&2
+  if [ "$(printf '%s\n' "$esbuild_targets" | wc -l)" -ne 1 ]; then
+    echo "Expected exactly one esbuild target list, got: $esbuild_targets" >&2
+    return 1
+  fi
+
+  if [ "$tsconfig_target" != "$esbuild_targets" ]; then
+    echo "tsconfig target ($tsconfig_target) diverges from esbuild target ($esbuild_targets)" >&2
+    return 1
+  fi
+}
+
+@test "tsconfig lib pins its ECMAScript surface to the build target" {
+  tsconfig_target=$(jq -r '.compilerOptions.target' "$TSCONFIG" | tr '[:upper:]' '[:lower:]')
+  es_libs=$(jq -r '[.compilerOptions.lib[] | ascii_downcase | select(startswith("es"))] | join(",")' \
+    "$TSCONFIG")
+
+  if [ "$es_libs" != "$tsconfig_target" ]; then
+    echo "Expected the only ES lib entry to equal the target ($tsconfig_target), got: $es_libs" >&2
     return 1
   fi
 }
