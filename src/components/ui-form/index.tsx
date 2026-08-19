@@ -20,15 +20,15 @@ export interface UiFormProps<T extends FieldValues> {
   defaultValues: DefaultValues<T>;
   children: ReactNode;
   formOptions?: Omit<UseFormProps<T>, 'defaultValues'>;
-  isSubmitting?: boolean;
-  error?: string | null;
+  isSubmitting?: boolean | undefined;
+  error?: string | null | undefined;
   submitLabel: string;
   title: ReactNode;
   subtitle?: ReactNode;
   showTitle?: boolean;
   showSubtitle?: boolean;
   resetOnSuccess?: boolean;
-  isSubmitDisabled?: boolean;
+  isSubmitDisabled?: boolean | undefined;
 }
 
 type SubmitHandlerOptions<T extends FieldValues> = {

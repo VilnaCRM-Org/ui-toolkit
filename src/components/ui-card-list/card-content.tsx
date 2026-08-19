@@ -51,7 +51,7 @@ export default function CardContent({
 }: {
   item: UiCardItemData;
   isSmallCard: boolean;
-  headingComponent?: HeadingLevel;
+  headingComponent?: HeadingLevel | undefined;
 }): React.ReactElement {
   return (
     <>

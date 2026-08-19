@@ -6,6 +6,10 @@ import { useForm, Control } from 'react-hook-form';
 import { UiTextFieldForm } from '../../src/components';
 import breakpointsTheme from '../../src/components/ui-breakpoints';
 import colorTheme from '../../src/components/ui-color-theme';
+import {
+  toControllerRules,
+  type ControllerRules,
+} from '../../src/components/ui-text-field-form/controller-rules';
 import textFieldFormStyles from '../../src/components/ui-text-field-form/styles';
 
 import { testPlaceholder, testText } from './constants';
@@ -265,5 +269,22 @@ describe('UiTextFieldForm defaultValue branch', () => {
     render(<FormDefaultWrapper />);
 
     expect(screen.getByRole('textbox')).toHaveValue('form-seeded');
+  });
+});
+
+describe('toControllerRules', () => {
+  type RulesFormValues = { testField: string };
+
+  it('forwards a provided rules object unchanged', () => {
+    const rules: ControllerRules<RulesFormValues> = { required: 'This field is required' };
+
+    expect(toControllerRules<RulesFormValues>(rules)).toBe(rules);
+  });
+
+  it('substitutes an empty options object when rules are omitted', () => {
+    // `undefined` and `{}` register identically in react-hook-form, so the
+    // substitution keeps `Controller`'s exact-optional `rules` prop satisfied
+    // without changing what the field registers.
+    expect(toControllerRules<RulesFormValues>(undefined)).toEqual({});
   });
 });

@@ -5,13 +5,13 @@ import React from 'react';
 import { hasText } from './has-text';
 
 export interface FieldRenderInputConfig {
-  label?: string;
-  placeholder?: string;
-  required?: boolean;
-  error?: boolean;
+  label?: string | undefined;
+  placeholder?: string | undefined;
+  required?: boolean | undefined;
+  error?: boolean | undefined;
   helperText?: React.ReactNode;
-  variant?: 'outlined' | 'filled' | 'standard';
-  ariaLabel?: string;
+  variant?: 'outlined' | 'filled' | 'standard' | undefined;
+  ariaLabel?: string | undefined;
   /** Optional leading adornment (e.g. the search magnifier); omitted for select. */
   startAdornment?: React.ReactNode;
 }
