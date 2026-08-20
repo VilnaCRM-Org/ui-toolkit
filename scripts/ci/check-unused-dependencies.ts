@@ -1,17 +1,16 @@
 /**
  * CLI entry point for the unused-dependency gate.
  *
- * Reads a `package.json` and scans the source tree beside it for a mention of
- * every declared package, so a dependency whose last consumer disappeared fails
- * the build instead of accumulating silently. Exits `0` when every dependency is
- * referenced, `1` when one is not, and `2` when the manifest or the scan corpus
- * cannot be read. See {@link ./unused-dependency-policy.ts} for the rules.
+ * Reads the `package.json` of the current working directory and scans the source
+ * tree beside it for a mention of every declared package, so a dependency whose
+ * last consumer disappeared fails the build instead of accumulating silently.
+ * Exits `0` when every dependency is referenced, `1` when one is not, and `2`
+ * when the manifest or the scan corpus cannot be read. See
+ * {@link ./unused-dependency-policy.ts} for the rules.
  *
- * Usage: `bun scripts/ci/check-unused-dependencies.ts [base-dir]`
- *
- * `base-dir` defaults to the working directory (the repository root under the
- * Makefile). It exists so the Bats suite can point the gate at a fixture tree;
- * every read stays rooted at it.
+ * Usage: `bun scripts/ci/check-unused-dependencies.ts` — it takes no arguments
+ * and always scans the working directory (the repository root under the
+ * Makefile); the Bats suite exercises fixture trees by changing into them.
  *
  * The corpus is the git index when the tree has one, and a filesystem walk
  * otherwise — the case inside the bun image, whose build context excludes
@@ -20,8 +19,20 @@
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { evaluatePackageJson } from './unused-dependency-policy';
+
+const BASE_DIR = process.cwd();
+
+/** The one root every manifest, listing, and corpus read resolves inside. */
+const SCAN_ROOT = resolve(BASE_DIR);
+
+/**
+ * Absolute git locations, in lookup order. The gate resolves the binary from
+ * this fixed list of non-writable install paths rather than through PATH, whose
+ * contents the surrounding environment controls.
+ */
+const GIT_BINARIES = ['/usr/bin/git', '/usr/local/bin/git', '/opt/homebrew/bin/git'];
 
 /**
  * Directories that must never enter the corpus: installed packages and tool
@@ -86,10 +97,29 @@ function isScannable(relativePath: string): boolean {
   return !relativePath.split('/').some(segment => SKIPPED_DIRECTORIES.has(segment));
 }
 
-/** Lists the repository's tracked files, relative to `baseDir`. */
-function listTrackedFiles(baseDir: string): string[] {
-  const stdout = execFileSync('git', ['ls-files', '-z'], {
-    cwd: baseDir,
+/**
+ * Returns `absolutePath` once it is proven to sit at or under {@link SCAN_ROOT}.
+ * Every path handed to the filesystem already comes from a listing rooted there;
+ * this is the belt-and-braces invariant that keeps the scan provably inside the
+ * tree even if a listing source ever changes.
+ */
+function insideScanRoot(absolutePath: string): string {
+  if (absolutePath !== SCAN_ROOT && !absolutePath.startsWith(SCAN_ROOT + sep)) {
+    throw new Error(`Refusing to read a path outside the scan root: ${absolutePath}`);
+  }
+
+  return absolutePath;
+}
+
+/** The first installed git binary, or `undefined` when the host has none. */
+function findGitBinary(): string | undefined {
+  return GIT_BINARIES.find(candidate => existsSync(candidate));
+}
+
+/** Lists the repository's tracked files, relative to {@link SCAN_ROOT}. */
+function listTrackedFiles(gitBinary: string): string[] {
+  const stdout = execFileSync(gitBinary, ['ls-files', '-z'], {
+    cwd: SCAN_ROOT,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
   });
@@ -97,45 +127,35 @@ function listTrackedFiles(baseDir: string): string[] {
   return stdout.split('\0').filter(entry => entry !== '');
 }
 
-/** Lists every file under `baseDir` — the fallback for a fixture tree with no git index. */
-function walkFiles(baseDir: string, relativeDir: string): string[] {
-  return readdirSync(join(baseDir, relativeDir), { withFileTypes: true }).flatMap(entry => {
+/** Lists every file under {@link SCAN_ROOT} — the fallback when there is no git index to read. */
+function walkFiles(relativeDir: string): string[] {
+  const directory = insideScanRoot(resolve(SCAN_ROOT, relativeDir));
+
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
     const relativePath = relativeDir === '' ? entry.name : `${relativeDir}/${entry.name}`;
 
     if (entry.isDirectory()) {
-      return SKIPPED_DIRECTORIES.has(entry.name) ? [] : walkFiles(baseDir, relativePath);
+      return SKIPPED_DIRECTORIES.has(entry.name) ? [] : walkFiles(relativePath);
     }
 
     return entry.isFile() ? [relativePath] : [];
   });
 }
 
-function listScannableFiles(baseDir: string): string[] {
-  const paths = existsSync(join(baseDir, '.git'))
-    ? listTrackedFiles(baseDir)
-    : walkFiles(baseDir, '');
+function listScannableFiles(): string[] {
+  const gitBinary = existsSync(join(SCAN_ROOT, '.git')) ? findGitBinary() : undefined;
+  const paths = gitBinary === undefined ? walkFiles('') : listTrackedFiles(gitBinary);
 
   return paths.filter(isScannable);
 }
 
-function readCorpus(baseDir: string, relativePaths: string[]): string[] {
-  return relativePaths.map(relativePath => {
-    const absolutePath = resolve(baseDir, relativePath);
-
-    // Every path already comes from a listing rooted at baseDir. Re-assert
-    // containment before reading so the scan stays provably inside the tree
-    // even if the listing source ever changes.
-    const inside = relative(baseDir, absolutePath);
-    if (inside === '' || inside.startsWith('..') || isAbsolute(inside)) {
-      throw new Error(`Refusing to read a file outside the scan root: ${absolutePath}`);
-    }
-
-    return readFileSync(absolutePath, 'utf8');
-  });
+function readCorpus(relativePaths: string[]): string[] {
+  return relativePaths.map(relativePath =>
+    readFileSync(insideScanRoot(resolve(SCAN_ROOT, relativePath)), 'utf8')
+  );
 }
 
-const BASE_DIR = resolve(process.argv[2] ?? process.cwd());
-const MANIFEST_PATH = resolve(BASE_DIR, 'package.json');
+const MANIFEST_PATH = resolve(SCAN_ROOT, 'package.json');
 
 let pkg: unknown;
 
@@ -149,9 +169,9 @@ try {
 let corpus: string[];
 
 try {
-  corpus = readCorpus(BASE_DIR, listScannableFiles(BASE_DIR));
+  corpus = readCorpus(listScannableFiles());
 } catch (error) {
-  console.error(`Failed to build the scan corpus under ${BASE_DIR}: ${String(error)}`);
+  console.error(`Failed to build the scan corpus under ${SCAN_ROOT}: ${String(error)}`);
   process.exit(2);
 }
 

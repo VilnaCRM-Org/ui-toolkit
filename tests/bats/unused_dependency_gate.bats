@@ -20,9 +20,18 @@ setup() {
 
 # Build a fixture tree whose only real reference is `used-lib`, imported from
 # src/index.ts. The tree has no git index, so the gate falls back to its walk.
+# The optional third argument names a package declared in both `dependencies`
+# and `peerDependencies`, for the rule that the peer exemption is devDependency
+# scoped.
 write_fixture() {
   local dir="$1"
   local dev_dependencies="$2"
+  local peer_production_package="${3:-}"
+
+  local peer_production_entry=''
+  if [ -n "$peer_production_package" ]; then
+    peer_production_entry=", \"$peer_production_package\": \"^1.0.0\""
+  fi
 
   mkdir -p "$dir/src"
   printf "import used from 'used-lib';\n\nexport default used;\n" > "$dir/src/index.ts"
@@ -30,9 +39,9 @@ write_fixture() {
   cat > "$dir/package.json" <<EOF
 {
   "name": "unused-dependency-fixture",
-  "dependencies": { "used-lib": "^1.0.0" },
+  "dependencies": { "used-lib": "^1.0.0"$peer_production_entry },
   "devDependencies": { $dev_dependencies },
-  "peerDependencies": { "peer-only": "^1.0.0" }
+  "peerDependencies": { "peer-only": "^1.0.0"$peer_production_entry }
 }
 EOF
 }
@@ -59,7 +68,7 @@ EOF
   local fixture="$BATS_TEST_TMPDIR/referenced"
   write_fixture "$fixture" "$IMPLICITLY_USED_DEV_DEPENDENCIES"
 
-  run bun "$GATE_SCRIPT" "$fixture"
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
   [ "$status" -eq 0 ]
   assert_output_contains 'Every dependency and devDependency is referenced'
 }
@@ -68,9 +77,18 @@ EOF
   local fixture="$BATS_TEST_TMPDIR/unreferenced"
   write_fixture "$fixture" "$IMPLICITLY_USED_DEV_DEPENDENCIES, \"never-referenced-pkg\": \"^1.0.0\""
 
-  run bun "$GATE_SCRIPT" "$fixture"
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
   [ "$status" -eq 1 ]
   assert_output_contains 'devDependencies.never-referenced-pkg'
+}
+
+@test "the peer exemption does not cover a production dependency" {
+  local fixture="$BATS_TEST_TMPDIR/peer-production"
+  write_fixture "$fixture" "$IMPLICITLY_USED_DEV_DEPENDENCIES" 'peer-production-pkg'
+
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'dependencies.peer-production-pkg'
 }
 
 @test "the gate ignores planning prose under specs/ when deciding a package is used" {
@@ -79,7 +97,7 @@ EOF
   mkdir -p "$fixture/specs"
   printf 'The plan considered specs-only-pkg but nothing adopted it.\n' > "$fixture/specs/plan.md"
 
-  run bun "$GATE_SCRIPT" "$fixture"
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
   [ "$status" -eq 1 ]
   assert_output_contains 'devDependencies.specs-only-pkg'
 }
@@ -90,18 +108,21 @@ EOF
   printf 'The README discusses prose-only-pkg without importing it.\n' > "$fixture/README.md"
   printf 'SOME_URL="http://localhost/api/prose-only-pkg"\n' > "$fixture/.env.example"
 
-  run bun "$GATE_SCRIPT" "$fixture"
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
   [ "$status" -eq 1 ]
   assert_output_contains 'devDependencies.prose-only-pkg'
 }
 
 @test "the gate exits 2 when the manifest cannot be read" {
-  run bun "$GATE_SCRIPT" "$BATS_TEST_TMPDIR/does-not-exist"
+  local empty="$BATS_TEST_TMPDIR/no-manifest"
+  mkdir -p "$empty"
+
+  run bash -c "cd '$empty' && bun '$GATE_SCRIPT'"
   [ "$status" -eq 2 ]
   assert_output_contains 'Failed to read or parse'
 }
 
 @test "the real repository manifest passes the gate" {
-  run bun "$GATE_SCRIPT" "$PROJECT_ROOT"
+  run bash -c "cd '$PROJECT_ROOT' && bun '$GATE_SCRIPT'"
   [ "$status" -eq 0 ]
 }

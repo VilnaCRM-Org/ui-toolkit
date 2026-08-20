@@ -10,8 +10,9 @@
 
 /**
  * Manifest fields the policy scans. `peerDependencies` is deliberately absent:
- * it is an implicit-usage source (see {@link findUnusedDependencies}), not a
- * field whose entries must themselves be referenced.
+ * it is an implicit-usage source for `devDependencies` only (see
+ * {@link findUnusedDependencies}), not a field whose entries must themselves be
+ * referenced.
  */
 export const SCANNED_DEPENDENCY_FIELDS = ['dependencies', 'devDependencies'] as const;
 
@@ -84,37 +85,57 @@ function isReferenced(name: string, corpus: readonly string[]): boolean {
   return corpus.some(contents => contents.includes(name));
 }
 
+const NO_REFERENCE_REASON = 'no file in the scan corpus names this package';
+
 /**
- * Returns every declared dependency that no corpus file names. A package is
- * treated as used when it is a `@types/*` package, when it also appears in
- * `peerDependencies` (the toolkit requires the consumer to supply it, and the
- * devDependency exists to satisfy that peer locally), or when it carries a
- * documented {@link IMPLICITLY_RESOLVED} entry.
+ * True when `name` needs no corpus reference at all: it is a `@types/*` package,
+ * it is a `devDependencies` entry that also appears in `peerDependencies` (that
+ * devDependency exists only to satisfy the peer locally — a `dependencies` entry
+ * is exempted by no such mechanism and must be genuinely consumed), or it
+ * carries a documented {@link IMPLICITLY_RESOLVED} entry.
+ */
+function isExemptFromNameScan(
+  field: string,
+  name: string,
+  peers: ReadonlySet<string> | null
+): boolean {
+  if (isTypesPackage(name)) return true;
+  if (field === 'devDependencies' && peers?.has(name) === true) return true;
+
+  return findImplicitUsage(name) !== undefined;
+}
+
+/** The entries of one manifest field that are neither exempt nor named by the corpus. */
+function findUnusedInField(
+  field: string,
+  entries: Record<string, unknown>,
+  corpus: readonly string[],
+  peers: ReadonlySet<string> | null
+): UnusedDependency[] {
+  return Object.keys(entries)
+    .filter(name => !isExemptFromNameScan(field, name, peers) && !isReferenced(name, corpus))
+    .map(name => ({ field, name, reason: NO_REFERENCE_REASON }));
+}
+
+/**
+ * Returns every declared dependency that no corpus file names, applying the
+ * exemptions documented on {@link isExemptFromNameScan} — note that the
+ * `peerDependencies` overlap exempts `devDependencies` entries only, so a
+ * production dependency that doubles as a peer still has to be consumed here.
  */
 export function findUnusedDependencies(
   pkg: unknown,
   corpus: readonly string[]
 ): UnusedDependency[] {
-  const unused: UnusedDependency[] = [];
-  if (!isRecord(pkg)) return unused;
+  if (!isRecord(pkg)) return [];
 
   const peers = isRecord(pkg.peerDependencies) ? new Set(Object.keys(pkg.peerDependencies)) : null;
 
-  for (const field of SCANNED_DEPENDENCY_FIELDS) {
+  return SCANNED_DEPENDENCY_FIELDS.flatMap(field => {
     const entries = pkg[field];
-    if (!isRecord(entries)) continue;
 
-    for (const name of Object.keys(entries)) {
-      if (isTypesPackage(name)) continue;
-      if (peers?.has(name)) continue;
-      if (findImplicitUsage(name)) continue;
-      if (isReferenced(name, corpus)) continue;
-
-      unused.push({ field, name, reason: 'no file in the scan corpus names this package' });
-    }
-  }
-
-  return unused;
+    return isRecord(entries) ? findUnusedInField(field, entries, corpus, peers) : [];
+  });
 }
 
 /** Renders unused dependencies as an indented, human-readable report (empty string when none). */
