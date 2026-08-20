@@ -36,7 +36,7 @@ MUTATION_REPORTS_DIR = reports/mutation
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop build-k6-docker load-tests run-storybook-playwright \
-	lint-dep-ranges lint-deps lint-metrics lint-metrics-run \
+	lint-dep-ranges lint-unused-deps lint-deps lint-metrics lint-metrics-run \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports
 
 PLAYWRIGHT_TEST_ARGS =
@@ -61,7 +61,7 @@ help:
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps lint-metrics ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-unused-deps lint-test-structure lint-deps lint-metrics ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
@@ -95,6 +95,9 @@ format-check: ## Check Prettier formatting inside the docker container.
 
 lint-dep-ranges: ## Enforce caret (^) version ranges in package.json inside the docker container.
 	$(BUN) scripts/ci/check-dependency-ranges.ts
+
+lint-unused-deps: ## Fail on package.json dependencies nothing references, inside the docker container.
+	$(BUN) scripts/ci/check-unused-dependencies.ts
 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.
 	sh ./scripts/check-test-structure.sh

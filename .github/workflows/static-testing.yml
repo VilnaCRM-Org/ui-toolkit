@@ -55,6 +55,10 @@ jobs:
         if: steps.project.outputs.present == 'true'
         run: make lint-dep-ranges
 
+      - name: Run unused dependency linter
+        if: steps.project.outputs.present == 'true'
+        run: make lint-unused-deps
+
       - name: Enforce test directory structure
         if: steps.project.outputs.present == 'true'
         run: make lint-test-structure
