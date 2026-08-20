@@ -15,10 +15,12 @@
  * The corpus is the git index when the tree has one, and a filesystem walk
  * otherwise — the case inside the bun image, whose build context excludes
  * `.git`. Both paths apply the same skip rules below, so a run in the container
- * sees the same source set CI's clean checkout produces.
+ * sees the same source set CI's clean checkout produces. A tree that has a git
+ * index but no git binary exits `2` rather than walking, because the walk would
+ * also see untracked files and silently diverge from CI.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 import { evaluatePackageJson } from './unused-dependency-policy';
 
@@ -101,14 +103,19 @@ function isScannable(relativePath: string): boolean {
  * Returns `absolutePath` once it is proven to sit at or under {@link SCAN_ROOT}.
  * Every path handed to the filesystem already comes from a listing rooted there;
  * this is the belt-and-braces invariant that keeps the scan provably inside the
- * tree even if a listing source ever changes.
+ * tree even if a listing source ever changes. The comparison uses real paths so
+ * a tracked symlink cannot smuggle content from outside the tree into the
+ * corpus.
  */
 function insideScanRoot(absolutePath: string): string {
-  if (absolutePath !== SCAN_ROOT && !absolutePath.startsWith(SCAN_ROOT + sep)) {
+  const realRoot = realpathSync(SCAN_ROOT);
+  const realPath = realpathSync(absolutePath);
+
+  if (realPath !== realRoot && !realPath.startsWith(realRoot + sep)) {
     throw new Error(`Refusing to read a path outside the scan root: ${absolutePath}`);
   }
 
-  return absolutePath;
+  return realPath;
 }
 
 /** The first installed git binary, or `undefined` when the host has none. */
@@ -143,10 +150,21 @@ function walkFiles(relativeDir: string): string[] {
 }
 
 function listScannableFiles(): string[] {
-  const gitBinary = existsSync(join(SCAN_ROOT, '.git')) ? findGitBinary() : undefined;
-  const paths = gitBinary === undefined ? walkFiles('') : listTrackedFiles(gitBinary);
+  if (!existsSync(join(SCAN_ROOT, '.git'))) {
+    return walkFiles('').filter(isScannable);
+  }
 
-  return paths.filter(isScannable);
+  // With a git index present the walk would see untracked and git-ignored
+  // files the CI checkout never has, so a missing binary fails closed instead
+  // of producing a silently divergent corpus.
+  const gitBinary = findGitBinary();
+  if (gitBinary === undefined) {
+    throw new Error(
+      `The tree has a .git index but no git binary exists at: ${GIT_BINARIES.join(', ')}`
+    );
+  }
+
+  return listTrackedFiles(gitBinary).filter(isScannable);
 }
 
 function readCorpus(relativePaths: string[]): string[] {

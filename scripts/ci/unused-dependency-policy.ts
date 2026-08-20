@@ -80,9 +80,25 @@ export function findImplicitUsage(name: string): ImplicitUsage | undefined {
   return IMPLICITLY_RESOLVED.find(entry => entry.name === name);
 }
 
-/** True when any corpus file mentions the package name. */
+const REGEXP_SPECIAL_CHARACTERS = /[.*+?^${}()|[\]\\]/g;
+
+/**
+ * A reference is the package name not embedded in a longer word — `semverRange`
+ * must not keep a dead `semver` alive. Punctuation such as `-`, `/`, `.`, and
+ * quotes still counts as a boundary, since specifiers, bin invocations, and
+ * config keys legitimately abut it.
+ */
+function referencePattern(name: string): RegExp {
+  const escaped = name.replace(REGEXP_SPECIAL_CHARACTERS, '\\$&');
+
+  return new RegExp(`(?<![A-Za-z0-9_])${escaped}(?![A-Za-z0-9_])`);
+}
+
+/** True when any corpus file mentions the package name as a whole token. */
 function isReferenced(name: string, corpus: readonly string[]): boolean {
-  return corpus.some(contents => contents.includes(name));
+  const pattern = referencePattern(name);
+
+  return corpus.some(contents => pattern.test(contents));
 }
 
 const NO_REFERENCE_REASON = 'no file in the scan corpus names this package';

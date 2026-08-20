@@ -113,6 +113,28 @@ EOF
   assert_output_contains 'devDependencies.prose-only-pkg'
 }
 
+@test "the gate does not count a package name embedded in a longer word as a reference" {
+  local fixture="$BATS_TEST_TMPDIR/embedded-name"
+  write_fixture "$fixture" "$IMPLICITLY_USED_DEV_DEPENDENCIES, \"range\": \"^1.0.0\""
+  printf "export const arrangement = 'x';\n" > "$fixture/src/range.ts"
+
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'devDependencies.range'
+}
+
+# The bun image bakes no git binary, so a fixture that carries a .git index must
+# hit the fail-closed branch instead of silently walking a divergent corpus.
+@test "the gate exits 2 when a git index exists but no git binary does" {
+  local fixture="$BATS_TEST_TMPDIR/git-no-binary"
+  write_fixture "$fixture" "$IMPLICITLY_USED_DEV_DEPENDENCIES"
+  mkdir -p "$fixture/.git"
+
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
+  [ "$status" -eq 2 ]
+  assert_output_contains 'no git binary'
+}
+
 @test "the gate exits 2 when the manifest cannot be read" {
   local empty="$BATS_TEST_TMPDIR/no-manifest"
   mkdir -p "$empty"
