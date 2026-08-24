@@ -125,8 +125,14 @@ make test-visual           # Visual regression (for UI or styling changes)
 make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
 ```
 
-Run only the suites the change affects, but never skip a suite that does apply. If a
-deliberate, reviewed UI change makes visual baselines stale, regenerate them with
+Run only the suites the change affects, but never skip a suite that does apply. When you want
+the whole gate set instead of a hand-picked subset, use the aggregate targets — `make ci` for
+the fast pre-push set (lint, build, unit, integration, Bats) and `make verify` for the entire
+merge bar (`make ci` plus mutation, e2e, visual, memory-leak, and both Lighthouse form
+factors). Both fail fast and print a `gate → pass/FAIL/skipped` summary; a green `make verify`
+is the same proof a merge requires. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+If a deliberate, reviewed UI change makes visual baselines stale, regenerate them with
 `make test-visual PLAYWRIGHT_TEST_ARGS="--update-snapshots"` and review the diff before
 committing.
 

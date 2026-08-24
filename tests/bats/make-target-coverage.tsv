@@ -45,3 +45,6 @@ test-mutation-shard	bats	tests/bats/makefile_targets.bats	Validated for the runn
 copy-mutation-report	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the copy-success branch.
 stage-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the host-to-container copy branch.
 merge-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the running-container and fresh-container branches of the merge gate.
+ci	bats	tests/bats/aggregate_gate_targets.bats	Validated as the fast pre-push aggregate gate set, including fail-fast ordering and the summary table.
+verify	bats	tests/bats/aggregate_gate_targets.bats	Validated as the full merge-bar aggregate, including workflow-gate reachability.
+run-gates	bats	tests/bats/aggregate_gate_targets.bats	Validated as the shared gate runner behind ci and verify, including the empty-GATE_SET guard.
