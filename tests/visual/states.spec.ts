@@ -186,3 +186,30 @@ test.describe('Visual states (Figma state grid) — pagination', () => {
     await shoot(page, 'pagination-link-hover.png');
   });
 });
+
+test.describe('Visual states (Figma state grid) — item row', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  // The row stretches to its container width, so this grid gets a wide viewport;
+  // one row plus its inset focus ring fits comfortably in the shorter height.
+  test.use({ viewport: { width: 760, height: 140 } });
+
+  test('item row hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiitemrow--item-row');
+    // Real `:hover` on the wired row: the accent border darkens and the per-method
+    // row shadow appears — proving the theme's scoped hover recipe actually fires.
+    await page.getByRole('button').hover();
+    await shoot(page, 'item-row-hover.png');
+  });
+
+  test('item row focus-visible', async ({ page }) => {
+    await openStory(page, 'uicomponents-uiitemrow--item-row');
+    // Keyboard focus draws the inset ring, which the overflow:hidden radius must not
+    // clip (a11y contract §3.5) — a state no static tile can capture.
+    await page.keyboard.press('Tab');
+    await shoot(page, 'item-row-focus.png');
+  });
+});

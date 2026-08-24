@@ -55,6 +55,27 @@ export const sharedPalette: Record<string, { main: string }> = {
   containedButtonHover: {
     main: '#00A3FF',
   },
+  // REST-method hover accents for the item row (border + badge text darken on
+  // hover; the rest accents reuse primary/secondary/success/error).
+  getMethodHover: {
+    main: '#0091E2',
+  },
+  putMethodHover: {
+    main: '#DD9F00',
+  },
+  postMethodHover: {
+    main: '#00AE70',
+  },
+  // Darker than the DELETE base (`error #DC3939`) so the accent genuinely darkens
+  // on hover like the other methods; matches the DELETE row-hover-shadow tone
+  // (`rgb(199, 44, 44)`) so the hover recipe stays internally consistent.
+  deleteMethodHover: {
+    main: '#C72C2C',
+  },
+  // Muted (grey) item row: badge text + path darken to this ink on hover.
+  mutedInkHover: {
+    main: '#1C2022',
+  },
   containedButtonActive: {
     main: '#0399ED',
   },
