@@ -5,7 +5,7 @@ copy-coverage	bats	tests/bats/makefile_targets.bats	Validated for the missing-co
 down	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that tear down the Docker environment.
 format-check	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 generate-ts-doc	bats	tests/bats/makefile_targets.bats	Validated as the API Extractor documentation entrypoint.
-git-hooks-install	bats	tests/bats/makefile_targets.bats	Validated as the Husky installation command.
+git-hooks-install	bats	tests/bats/makefile_targets.bats	Validated as the host-side Husky 9 hook installer, with no deprecated install subcommand.
 help	bats	tests/bats/makefile_targets.bats	Validated through the help output contract and `test-bats` discoverability.
 install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency install entrypoint used before browser-style jobs.
 lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.

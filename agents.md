@@ -157,4 +157,7 @@ A change to tests is done only when every statement below is true.
   alone, and keyboard, focus, and accessibility-visible behavior are asserted where the UI
   changed.
 - The relevant test commands above were run and passed, including `make lint`.
-- Commits follow Conventional Commits.
+- Commits follow Conventional Commits: `<type>(#<issue>): <subject>`, enforced by the
+  `.husky/commit-msg` hook and the `commit convention` workflow. The pull request title follows
+  the same rule, because squash-merge lands it on `main` as the release-driving header. See
+  [CONTRIBUTING.md](CONTRIBUTING.md) for the full format and the breaking-change footer.

@@ -113,8 +113,11 @@ lint-metrics-run: ## Evaluate metrics policy (run inside rca container via make 
 	export METRICS_POLICY_SCHEMA=config/metrics-policy.schema.json; \
 	sh scripts/lint-metrics.sh
 
-git-hooks-install: ## Install git hooks.
-	$(BUN_X) husky install
+# Host-side on purpose: the bun image bakes the repo without .git (.dockerignore) and has no
+# bind mount, so hooks written inside a container are thrown away with it. Husky 9 dropped the
+# `install` subcommand; `bun install` runs this same command through package.json's `prepare`.
+git-hooks-install: ## Install the Husky git hooks in this clone (host, not Docker).
+	bun x husky
 
 storybook-start: ## Start Storybook inside the docker container.
 	$(BUN_X) storybook dev -p 6006
