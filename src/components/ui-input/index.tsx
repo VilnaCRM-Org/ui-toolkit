@@ -1,5 +1,7 @@
-import { TextField, ThemeProvider } from '@mui/material';
+import { TextField } from '@mui/material';
 import React from 'react';
+
+import ScopedThemeProvider from '@/components/theme-scope';
 
 import theme from './theme';
 import type { UiInputProps } from './types';
@@ -78,9 +80,9 @@ const UiInput: React.ForwardRefExoticComponent<
     : slotProps;
 
   return (
-    <ThemeProvider theme={theme}>
+    <ScopedThemeProvider theme={theme}>
       <TextField {...rest} inputRef={ref} slotProps={mergedSlotProps} />
-    </ThemeProvider>
+    </ScopedThemeProvider>
   );
 });
 

@@ -18,6 +18,12 @@ export * from './shared-card-styles';
 const MISSING_CARD_LIST_WARNING: string =
   'UiCardList received a nullish `cardList`; rendering an empty list. Pass an array of card items.';
 
+// Module scope, not a fresh `[]` per render: the fallback is handed to the
+// memoized grid/swiper, and a new array each render would defeat their shallow
+// prop comparison on every parent re-render. Frozen because a single instance is
+// now shared by every mount that degrades.
+const EMPTY_CARD_LIST: UiCardItemData[] = Object.freeze<UiCardItemData[]>([]) as UiCardItemData[];
+
 export default function UiCardList({
   cardList,
   headingComponent,
@@ -26,7 +32,7 @@ export default function UiCardList({
   // Normalize once at the public entry so both children keep their simple
   // `UiCardItemData[]` contract; a nullish runtime value degrades to an empty
   // grid/swiper instead of crashing the whole subtree on `.map`.
-  const safeCardList: UiCardItemData[] = cardList ?? [];
+  const safeCardList: UiCardItemData[] = cardList ?? EMPTY_CARD_LIST;
 
   // Render exactly one variant. Gating CardGrid on `!isSmallScreen` (rather than
   // mounting it always and hiding it with CSS) avoids rendering the whole card
