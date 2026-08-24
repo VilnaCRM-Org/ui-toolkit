@@ -6,6 +6,11 @@ import { FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
 import UiForm from '../../../src/components/ui-form';
 import UiInput from '../../../src/components/ui-input';
 import UiTextFieldForm from '../../../src/components/ui-text-field-form';
+import mockConsoleWarn from '../../unit/utils/mock-console-warn';
+
+// A rejection arriving with no onSubmitError is reported through devWarn; keep
+// the suite quiet and assert on the spy where the rejection tests need it.
+const warn = mockConsoleWarn();
 
 // Integration tier: render UiForm with its REAL composed children (UiInput and
 // UiTextFieldForm) inside the live react-hook-form context provided by UiForm.
@@ -65,13 +70,19 @@ function LoginFields(): React.ReactElement {
 
 type RenderFormOptions = {
   onSubmit: SubmitHandler<LoginForm>;
+  onSubmitError?: (error: unknown) => void;
   resetOnSuccess?: boolean;
 };
 
-function renderLoginForm({ onSubmit, resetOnSuccess = false }: RenderFormOptions): void {
+function renderLoginForm({
+  onSubmit,
+  onSubmitError = undefined,
+  resetOnSuccess = false,
+}: RenderFormOptions): void {
   render(
     <UiForm<LoginForm>
       onSubmit={onSubmit}
+      onSubmitError={onSubmitError}
       defaultValues={DEFAULT_VALUES}
       submitLabel={SUBMIT_LABEL}
       title={FORM_TITLE}
@@ -80,6 +91,14 @@ function renderLoginForm({ onSubmit, resetOnSuccess = false }: RenderFormOptions
       <LoginFields />
     </UiForm>
   );
+}
+
+async function fillValidLoginAndSubmit(): Promise<void> {
+  const user = userEvent.setup();
+
+  await user.type(screen.getByLabelText(EMAIL_LABEL), 'ada@example.com');
+  await user.type(screen.getByLabelText(PASSWORD_LABEL), 'hunter22');
+  await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
 }
 
 describe('UiForm integration (real composed inputs)', () => {
@@ -223,6 +242,34 @@ describe('UiForm integration (real composed inputs)', () => {
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByLabelText(EMAIL_LABEL)).toHaveValue(''));
     expect(screen.getByLabelText(PASSWORD_LABEL)).toHaveValue('');
+  });
+});
+
+describe('UiForm rejection containment (real composed inputs)', () => {
+  it('routes a rejected onSubmit to onSubmitError and keeps the typed values', async () => {
+    const failure: Error = new Error('backend rejected the login');
+    const onSubmit: jest.Mock = jest.fn().mockRejectedValue(failure);
+    const onSubmitError: jest.Mock = jest.fn();
+
+    renderLoginForm({ onSubmit, onSubmitError, resetOnSuccess: true });
+    await fillValidLoginAndSubmit();
+
+    await waitFor((): void => expect(onSubmitError).toHaveBeenCalledTimes(1));
+    expect(onSubmitError).toHaveBeenCalledWith(failure);
+    expect(screen.getByLabelText(EMAIL_LABEL)).toHaveValue('ada@example.com');
+  });
+
+  it('warns through the dev channel when a rejection arrives with no handler', async () => {
+    const onSubmit: jest.Mock = jest.fn().mockRejectedValue(new Error('backend down'));
+
+    renderLoginForm({ onSubmit });
+    await fillValidLoginAndSubmit();
+
+    await waitFor((): void =>
+      expect(warn.spy).toHaveBeenCalledWith(
+        'UiForm caught a rejected onSubmit; pass onSubmitError to handle it.'
+      )
+    );
   });
 });
 

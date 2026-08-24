@@ -14,6 +14,7 @@ import UiTypography from '../ui-typography';
 
 import FormProviderBridge from './form-provider-bridge';
 import styles from './styles';
+import buildSubmitHandler from './submit-handler';
 
 export interface UiFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
@@ -29,14 +30,18 @@ export interface UiFormProps<T extends FieldValues> {
   showSubtitle?: boolean;
   resetOnSuccess?: boolean;
   isSubmitDisabled?: boolean;
+  /**
+   * Receives whatever value a rejected `onSubmit` carried, so the rejection is contained
+   * instead of escaping. With no handler attached the rejection is still contained and a
+   * development-only warning is emitted in its place.
+   *
+   * Accessibility: the `error` display prop's banner and an escalation into an error
+   * boundary are mutually exclusive paths for one failure. Wiring both produces two
+   * competing `role="alert"` regions, whose announcements are duplicated, interrupted,
+   * or dropped. Pick exactly one path per failure.
+   */
+  onSubmitError?: (error: unknown) => void;
 }
-
-type SubmitHandlerOptions<T extends FieldValues> = {
-  onSubmit: SubmitHandler<T>;
-  methods: UseFormReturn<T>;
-  defaultValues: DefaultValues<T>;
-  resetOnSuccess: boolean;
-};
 
 type SubmitControlsProps = {
   submitting: boolean;
@@ -49,7 +54,13 @@ type SubmitControlsProps = {
 // signature), so a new display prop on UiFormProps must also be defaulted there.
 type FormViewProps<T extends FieldValues> = Omit<
   UiFormProps<T>,
-  'onSubmit' | 'defaultValues' | 'formOptions' | 'isSubmitting' | 'resetOnSuccess' | 'children'
+  | 'onSubmit'
+  | 'defaultValues'
+  | 'formOptions'
+  | 'isSubmitting'
+  | 'resetOnSuccess'
+  | 'children'
+  | 'onSubmitError'
 >;
 
 type FormBodyProps<T extends FieldValues> = {
@@ -95,21 +106,6 @@ function FormHeader({
       ) : null}
     </>
   );
-}
-
-function buildSubmitHandler<T extends FieldValues>({
-  onSubmit,
-  methods,
-  defaultValues,
-  resetOnSuccess,
-}: SubmitHandlerOptions<T>): SubmitHandler<T> {
-  return async (data, event) => {
-    await onSubmit(data, event);
-
-    if (resetOnSuccess) {
-      methods.reset(defaultValues);
-    }
-  };
 }
 
 function SubmitControls({
@@ -174,6 +170,7 @@ export default function UiForm<T extends FieldValues>({
   formOptions = {},
   isSubmitting = undefined,
   resetOnSuccess = false,
+  onSubmitError = undefined,
   children,
   ...view
 }: UiFormProps<T>): React.ReactElement {
@@ -188,6 +185,7 @@ export default function UiForm<T extends FieldValues>({
     methods,
     defaultValues,
     resetOnSuccess,
+    onSubmitError,
   });
 
   return (
