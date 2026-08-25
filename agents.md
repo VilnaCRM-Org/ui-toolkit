@@ -129,8 +129,8 @@ bun x prettier . --write   # Auto-format (lint runs format-check, so format firs
 make test-unit             # Jest unit suite (jsdom)
 make test-integration      # Jest composition suite (for cross-component changes)
 make test-e2e              # Storybook-driven behavior (for behavior changes)
-make test-visual           # Visual regression (for UI or styling changes)
 make test-storybook        # Story interaction tests (for interactive behavior changes)
+make test-visual           # Visual regression (for UI or styling changes)
 make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
 ```
 
