@@ -66,6 +66,43 @@ When you add or change a public Make target:
 - add or update Bats coverage for uncovered shell flows, or record the PR workflow that already
   exercises the target end to end
 
+### Prove it green before you push: `make ci` and `make verify`
+
+The merge bar is defined once, in the `Makefile`. Two aggregate targets replay it locally:
+
+```bash
+make ci       # fast pre-push set: lint, build, test-unit, test-integration, test-bats
+make verify   # the whole merge bar: make ci plus test-mutation, test-e2e, test-visual,
+              # test-memory-leak, lighthouse-desktop, and lighthouse-mobile
+```
+
+Run `make ci` before every push. Run `make verify` when you want the same proof a merge
+requires — a clean checkout with Docker goes from clone to fully-proven green with
+`make install && make verify`.
+
+Both targets run their gates in the listed order, stop at the first failure, exit non-zero,
+and finish with a summary table of `gate → pass / FAIL / skipped`, so a partial run can never
+be mistaken for a green one:
+
+| Gate               | Status    |
+| ------------------ | --------- |
+| `lint`             | `pass`    |
+| `build`            | `pass`    |
+| `test-unit`        | `FAIL`    |
+| `test-integration` | `skipped` |
+
+The gate sets live in the `CI_GATES` and `VERIFY_GATES` variables at the top of the `Makefile`.
+The workflows do not call `make ci` or `make verify`; each job invokes the same underlying gate
+targets directly, alongside its own setup and teardown steps. Editing a gate set therefore does
+not reconfigure CI — the two definitions are held together by a test instead. When you add a
+gate to a pull-request workflow, add it to `VERIFY_GATES` in the same change:
+`tests/bats/aggregate_gate_targets.bats` compares every `run: make …` line in
+`.github/workflows/` against the transitive dependency graph of `verify` and fails when a
+workflow runs a gate `make verify` cannot reach. Environment plumbing (`make start-bun`,
+`make down`, `make copy-coverage`, and the mutation report-shuffling targets) is exempt — those
+prove nothing on their own — and the sharded CI mutation targets map onto the single
+`test-mutation` gate that `make verify` runs.
+
 ### Dependency version ranges
 
 Every entry in `dependencies` and `devDependencies` of the root `package.json`
@@ -331,6 +368,75 @@ Commit the changes once you are happy with them.
 Don't forget to self-review to speed up the review process :zap:.
 
 Our commits are based on [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+
+#### Commit header format
+
+The published version is generated from these headers: `autorelease.yml` feeds the commits merged
+into `main` to `TriPSs/conventional-changelog-action`, which decides the semver bump and writes
+`CHANGELOG.md`. A malformed header is therefore not a style problem — the action cannot parse it,
+silently discards it, and the change ships under the wrong version or under none at all.
+`commitlint.config.js` is the contract, and every header must match `<type>(#<issue>): <subject>`:
+
+- **type** — one of `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`,
+  `style`, `test`. Only `feat` raises the minor version; the rest stay a patch.
+- **scope** — the issue the change closes: `#87`, or `#24,#25` when one change closes several
+  stories. `deps` and `deps-dev` are reserved for Dependabot, which has no issue to cite.
+- **subject** — lower case, no trailing period. The whole header stays within 100 characters.
+
+Headers that pass:
+
+```bash
+git commit -m "feat(#87): enforce the commit convention in CI"
+git commit -m "fix(#74): guard against a nullish image source"
+git commit -m "feat(#24,#25): add the skeleton parity baseline"
+```
+
+Headers that fail: `Fix button` (no type, no scope), `feat: add a gate` (no issue),
+`feat(release): ship a tarball` (the scope is not an issue), `feat(#87): Add A Gate` (title case).
+
+The only exempt messages are the ones no contributor can rewrite: merge and revert commits, the
+`chore(release):` commit the release action makes, and the `Optimised images with
+calibre/image-actions` commit that `image-optimization.yml` pushes onto pull request branches.
+
+#### Breaking changes and the version bump
+
+Mark a breaking change in the header **and** in the body. The `!` marker documents it for readers;
+the `BREAKING CHANGE:` footer is what the release action turns into a major bump:
+
+```bash
+git commit -m "feat(#87)!: drop the legacy entry point" \
+  -m "BREAKING CHANGE: consumers must now import styles from @vilnacrm/ui-toolkit/styles.css."
+```
+
+Leaving the footer out ships a breaking change as a patch — the exact failure this convention
+exists to prevent.
+
+#### How the convention is enforced
+
+Two layers run the same `commitlint.config.js`:
+
+- **Locally.** `bun install` runs the `prepare` script, which installs Husky 9 and activates the
+  committed `.husky/commit-msg` hook; it rejects a bad header before the commit exists. Use
+  `make git-hooks-install` to (re)install the hooks on their own. Both run on the host rather than
+  in Docker, because git hooks live in your clone and the `bun` image is built without `.git`.
+- **In CI.** The `commit convention` workflow lints every commit the pull request adds, and the
+  pull request **title**. Merges here are squash-only, so the title becomes the commit header on
+  `main` — it is release-driving input, and the job re-runs whenever the title is edited. The
+  title is linted with the `(#<number>)` suffix GitHub appends at merge, so the 100-character
+  limit applies to the header that actually lands. The workflow deliberately has no `branches:`
+  filter, so it also covers pull requests stacked onto other feature branches, and it has no
+  bootstrap-skip guard: deleting `package.json` turns it red rather than green.
+
+Check your work before pushing:
+
+```bash
+bun x commitlint --from origin/main --to HEAD --verbose
+bun x commitlint --last
+```
+
+As with the mutation gate, a maintainer must add the `commitlint` job under
+**Settings → Branches → Branch protection rules** for it to block a merge; until then it reports
+without gating.
 
 ### Docker base-image policy (Alpine)
 

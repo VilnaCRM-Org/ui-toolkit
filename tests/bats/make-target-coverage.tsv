@@ -4,7 +4,7 @@ copy-coverage	bats	tests/bats/makefile_targets.bats	Validated for the missing-co
 down	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that tear down the Docker environment.
 format-check	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 generate-ts-doc	bats	tests/bats/makefile_targets.bats	Validated as the API Extractor documentation entrypoint.
-git-hooks-install	bats	tests/bats/makefile_targets.bats	Validated as the Husky installation command.
+git-hooks-install	bats	tests/bats/makefile_targets.bats	Validated as the host-side Husky 9 hook installer, with no deprecated install subcommand.
 help	bats	tests/bats/makefile_targets.bats	Validated through the help output contract and `test-bats` discoverability.
 install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency install entrypoint used before browser-style jobs.
 lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.
@@ -45,3 +45,6 @@ copy-mutation-report	bats	tests/bats/makefile_targets.bats	Validated for the mis
 stage-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the host-to-container copy branch.
 merge-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the running-container and fresh-container branches of the merge gate.
 lint-ci-paths	bats	tests/bats/ci_referenced_paths.bats	Validated for the passing repository scan, the historic memlab-rename failure, missing sources, and false-positive noise.
+ci	bats	tests/bats/aggregate_gate_targets.bats	Validated as the fast pre-push aggregate gate set, including fail-fast ordering and the summary table.
+verify	bats	tests/bats/aggregate_gate_targets.bats	Validated as the full merge-bar aggregate, including workflow-gate reachability.
+run-gates	bats	tests/bats/aggregate_gate_targets.bats	Validated as the shared gate runner behind ci and verify, including the empty-GATE_SET guard.

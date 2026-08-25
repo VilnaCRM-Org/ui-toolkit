@@ -14,6 +14,11 @@ GUARD_SOURCE='scripts/ci/check-referenced-paths.ts'
 
 setup() {
   setup_makefile_test_env
+  # The shared helper puts a logging `bun` stub that always exits 0 on PATH, which is what
+  # the Makefile-recipe tests want. This file is the exception: it runs the guard for real,
+  # and under the stub every fail-closed assertion below would pass vacuously. Dropping the
+  # stub leaves the real interpreter, further along the same PATH, to answer.
+  rm -f "$STUB_BIN_DIR/bun"
 }
 
 # The guard resolves the project root from the working directory, so the root it
