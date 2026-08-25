@@ -257,6 +257,20 @@ An app that observed failed submits through a global `unhandledrejection` listen
 - `make lint-next` runs ESLint. The name predates the library split — it is not
   Next.js-specific — and is kept only to avoid renaming churn across CI and tooling.
 
+## Observability
+
+The toolkit ships **zero runtime telemetry by design**: no analytics, no error reporting, no
+session replay, and no web-vitals collection. Components render and emit callbacks; nothing in
+this package phones home.
+
+Error reporting and performance monitoring are the consuming application's responsibility. The
+integration seam today is composition — wrap toolkit components in your own React error boundary
+and report from its handler. A toolkit-owned `UiErrorBoundary` is tracked in issue #71.
+
+The `make lint-unused-deps` gate keeps the stance honest: it fails on any declared package that
+nothing in the source tree references, so telemetry dependencies (such as the removed `@sentry/*`
+and `web-vitals`) cannot sit unused in `package.json` waiting to be wired up.
+
 ## Security
 
 Report vulnerabilities through the private reporting guidance in [SECURITY.md](SECURITY.md).

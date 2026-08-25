@@ -149,6 +149,18 @@ Prefer meaningful behavior assertions over shallow rendering or snapshot-only co
 - Treat snapshots and screenshots as a supplement that guards appearance; the load-bearing
   assertions must check behavior and state.
 
+## Observability Stance
+
+Do not add telemetry to this toolkit. The stance is zero-telemetry-by-design: no analytics,
+error-reporting, session-replay, or web-vitals dependencies, and no runtime instrumentation
+inside components. Error reporting and performance monitoring belong to the consuming
+application, which wraps toolkit components in its own React error boundary.
+
+`make lint-unused-deps` enforces the other half of the rule: every declared dependency must be
+referenced by the source tree, so a telemetry package cannot be parked in `package.json` ahead
+of the code that would use it. If a change genuinely needs instrumentation, raise it as an issue
+first instead of reintroducing a reporting SDK.
+
 ## Definition of Done
 
 A change to tests is done only when every statement below is true.
