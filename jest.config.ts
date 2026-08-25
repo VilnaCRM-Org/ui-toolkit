@@ -10,7 +10,9 @@ const config: Config = {
   // barrel and ambient declarations carry no testable logic.
   collectCoverageFrom: [
     '<rootDir>/src/**/*.{ts,tsx}',
-    '!<rootDir>/src/**/*.stories.tsx',
+    // Mirrors the stories glob in .storybook/main.ts — every flavour Storybook
+    // loads must be excluded, or the first one added fails the 100% gate.
+    '!<rootDir>/src/**/*.stories.{js,jsx,mjs,ts,tsx}',
     '!<rootDir>/src/**/*.d.ts',
     '!<rootDir>/src/**/types.ts',
     '!<rootDir>/src/index.ts',

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "uicomponents-uibacktomain--keyboard-focus-reaches-back-link",
+    "title": "UiComponents/UiBackToMain",
+    "name": "Keyboard Focus Reaches Back Link",
+    "exportName": "KeyboardFocusReachesBackLink"
+  },
+  {
+    "id": "uicomponents-uibutton--click-invokes-handler",
+    "title": "UiComponents/UiButton",
+    "name": "Click Invokes Handler",
+    "exportName": "ClickInvokesHandler"
+  },
+  {
+    "id": "uicomponents-uicalendarmultiselect--day-toggle-updates-selection",
+    "title": "UiComponents/UiCalendarMultiSelect",
+    "name": "Day Toggle Updates Selection",
+    "exportName": "DayToggleUpdatesSelection"
+  },
+  {
+    "id": "uicomponents-uicheckbox--click-toggles-checked-state",
+    "title": "UiComponents/UiCheckbox",
+    "name": "Click Toggles Checked State",
+    "exportName": "ClickTogglesCheckedState"
+  },
+  {
+    "id": "uicomponents-uiform--validation-blocks-empty-submit",
+    "title": "UiComponents/UiForm",
+    "name": "Validation Blocks Empty Submit",
+    "exportName": "ValidationBlocksEmptySubmit"
+  },
+  {
+    "id": "uicomponents-uiinput--typing-updates-value",
+    "title": "UiComponents/UiInput",
+    "name": "Typing Updates Value",
+    "exportName": "TypingUpdatesValue"
+  },
+  {
+    "id": "uicomponents-uilink--keyboard-focus-exposes-new-tab-hint",
+    "title": "UiComponents/UiLink",
+    "name": "Keyboard Focus Exposes New Tab Hint",
+    "exportName": "KeyboardFocusExposesNewTabHint"
+  },
+  {
+    "id": "uicomponents-uimultiselect--picking-options-adds-chips",
+    "title": "UiComponents/UiMultiSelect",
+    "name": "Picking Options Adds Chips",
+    "exportName": "PickingOptionsAddsChips"
+  },
+  {
+    "id": "uicomponents-uiradiogroup--choosing-option-moves-selection",
+    "title": "UiComponents/UiRadioGroup",
+    "name": "Choosing Option Moves Selection",
+    "exportName": "ChoosingOptionMovesSelection"
+  },
+  {
+    "id": "uicomponents-uisearchinput--suggestion-pick-fills-field",
+    "title": "UiComponents/UiSearchInput",
+    "name": "Suggestion Pick Fills Field",
+    "exportName": "SuggestionPickFillsField"
+  },
+  {
+    "id": "uicomponents-uiselectwithsearch--search-narrows-and-selects-option",
+    "title": "UiComponents/UiSelectWithSearch",
+    "name": "Search Narrows And Selects Option",
+    "exportName": "SearchNarrowsAndSelectsOption"
+  },
+  {
+    "id": "uicomponents-uitextfieldform--validation-surfaces-field-error",
+    "title": "UiComponents/UiTextFieldForm",
+    "name": "Validation Surfaces Field Error",
+    "exportName": "ValidationSurfacesFieldError"
+  },
+  {
+    "id": "uicomponents-uitooltip--click-opens-tooltip",
+    "title": "UiComponents/UITooltip",
+    "name": "Click Opens Tooltip",
+    "exportName": "ClickOpensTooltip"
+  }
+]

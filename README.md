@@ -57,6 +57,7 @@ locally before pushing. See [agents.md](agents.md) for which test layer a given 
 | `make test-integration` | Jest composition suite: composed components, real children     |
 | `make test-e2e`         | Playwright behavior against a Storybook build                  |
 | `make test-visual`      | Playwright visual-regression snapshots                         |
+| `make test-storybook`   | Storybook interaction (play function) tests in a browser       |
 | `make test-mutation`    | Stryker mutation-strength gate                                 |
 | `make test-bats`        | Bats coverage of Makefile shell flows and their contracts      |
 
@@ -81,6 +82,20 @@ make test-bats BATS_FORMATTER=tap
 When you add or change a public Make target, update `tests/bats/make-target-coverage.tsv` in the
 same change. Either add or adjust direct Bats coverage for uncovered shell behavior, or point the
 manifest at the pull-request workflow that already exercises the target.
+
+### Storybook interaction tests
+
+Every interactive component ships a story whose `play` function drives it in a real
+browser, so the demonstration surface is also a behavioural gate:
+
+```bash
+make test-storybook
+```
+
+The run fails closed — it exits non-zero when no interaction story is discovered, when
+the live Storybook index and `tests/storybook/interaction-stories.json` disagree, or when
+any registered play test does not pass. See
+[tests/storybook/README.md](tests/storybook/README.md).
 
 ### Dependency graph hygiene
 

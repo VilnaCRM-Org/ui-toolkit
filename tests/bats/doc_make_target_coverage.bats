@@ -18,7 +18,7 @@ load './test_helper.bash'
 # such as memory-leak and lighthouse are documented in agents.md but not listed
 # here); keep it in sync with the README table. Adding a target here means it
 # must be documented in README.md or agents.md.
-GATING_TARGETS=(lint test-unit test-integration test-e2e test-visual test-mutation test-bats)
+GATING_TARGETS=(lint test-unit test-integration test-e2e test-visual test-storybook test-mutation test-bats)
 
 # Print, one per line, every `make <target>` invocation that appears in a CODE
 # context (a fenced code block or an inline `code` span) of the given Markdown

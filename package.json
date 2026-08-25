@@ -33,6 +33,7 @@
     "@storybook/addon-webpack5-compiler-swc": "^4.0.3",
     "@storybook/react": "^10.4.2",
     "@storybook/react-webpack5": "^10.4.2",
+    "@storybook/test-runner": "^0.24.4",
     "@stryker-mutator/core": "^9.6.1",
     "@stryker-mutator/jest-runner": "^9.6.1",
     "@stryker-mutator/typescript": "^4.0.0",

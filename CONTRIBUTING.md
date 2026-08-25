@@ -132,6 +132,7 @@ own subdirectory:
 - `tests/unit` — Jest unit and component tests (`*.test.ts`, `*.test.tsx`, `*.spec.js`)
 - `tests/integration` — Jest composition tests across components
 - `tests/e2e` — Playwright end-to-end specs run against Storybook
+- `tests/storybook` — the Storybook interaction (play function) registry and its docs
 - `tests/visual` — Playwright visual-regression specs and their snapshots
 - `tests/load` — k6 load tests
 - `tests/memory-leak` — Memlab leak scenarios

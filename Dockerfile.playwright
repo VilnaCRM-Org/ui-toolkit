@@ -10,7 +10,7 @@ ENV BUN_INSTALL_CACHE_DIR=/home/pwuser/.bun-cache
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-      curl=7.81.0-1ubuntu1.25 \
+      curl=7.81.0-1ubuntu1.27 \
       g++=4:11.2.0-1ubuntu1 \
       make=4.3-4.1build1 \
       procps=2:3.3.17-6ubuntu2.1 \
@@ -34,8 +34,8 @@ COPY src ./src
 COPY tests ./tests
 
 RUN bun install --frozen-lockfile \
-    && mkdir -p /home/pwuser/.bun-cache \
-    && chown -R pwuser:pwuser /home/pwuser/.bun-cache \
+    && mkdir -p /home/pwuser/.bun-cache /app/node_modules/.cache \
+    && chown -R pwuser:pwuser /home/pwuser/.bun-cache /app/node_modules/.cache \
     && chown pwuser:pwuser /app
 
 USER pwuser

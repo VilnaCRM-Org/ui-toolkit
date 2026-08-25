@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import UiBackToMain from './index';
+
+const backLabel: string = 'Back to main';
+const backDestination: string = '/dashboard';
 
 const meta: Meta<typeof UiBackToMain> = {
   title: 'UiComponents/UiBackToMain',
@@ -26,4 +30,19 @@ export const CustomDestination: Story = {
 
 export const CustomLabel: Story = {
   args: { to: '/', label: 'Return home' },
+};
+
+// Interaction story (`interaction` tag): proves the back affordance is a keyboard
+// reachable link pointing at `to`. See tests/storybook/README.md.
+export const KeyboardFocusReachesBackLink: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: { to: backDestination, label: backLabel },
+  play: async ({ canvasElement }): Promise<void> => {
+    const link: HTMLElement = within(canvasElement).getByRole('link', { name: backLabel });
+
+    await userEvent.tab();
+
+    await expect(link).toHaveFocus();
+    await expect(link).toHaveAttribute('href', backDestination);
+  },
 };

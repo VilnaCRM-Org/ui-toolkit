@@ -1,0 +1,146 @@
+/**
+ * Pure helpers shared by the Storybook interaction gate
+ * ({@link ./run-storybook-interactions.ts}) and its unit tests.
+ *
+ * The manifest at `tests/storybook/interaction-stories.json` is the registry of
+ * stories that MUST carry a `play` function. Keeping the comparison logic pure
+ * here lets the unit tier assert the gate's behaviour without booting Storybook.
+ */
+
+/** Registry row: one story that must carry a `play` function. */
+export interface InteractionStory {
+  /** Storybook story id, e.g. `uicomponents-uibutton--click-invokes-handler`. */
+  id: string;
+  /** Component title, e.g. `UiComponents/UiButton`. */
+  title: string;
+  /** Display name, e.g. `Click Invokes Handler`. */
+  name: string;
+  /** CSF export, e.g. `ClickInvokesHandler` — how the JUnit report names the test. */
+  exportName: string;
+}
+
+/** The Storybook tag that routes a story into the interaction suite. */
+export const INTERACTION_TAG: string = 'interaction';
+
+/**
+ * Coverage floor from issue #100 ("≥ 8 interactive components have play
+ * functions"). It is a floor, never a target: raise it, never lower it.
+ */
+export const MINIMUM_COMPONENTS: number = 8;
+
+interface RawIndexEntry {
+  type?: string;
+  id?: string;
+  title?: string;
+  name?: string;
+  exportName?: string;
+  tags?: string[];
+}
+
+function isInteractionEntry(entry: RawIndexEntry): boolean {
+  return entry.type === 'story' && (entry.tags ?? []).includes(INTERACTION_TAG);
+}
+
+/** Extracts the interaction-tagged stories from a live Storybook `index.json`. */
+export function liveInteractionStories(index: unknown): InteractionStory[] {
+  const entries: Record<string, RawIndexEntry> =
+    (index as { entries?: Record<string, RawIndexEntry> })?.entries ?? {};
+
+  return Object.values(entries)
+    .filter(isInteractionEntry)
+    .map(entry => ({
+      id: entry.id ?? '',
+      title: entry.title ?? '',
+      name: entry.name ?? '',
+      exportName: entry.exportName ?? '',
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/** Stable comparison keys for a set of interaction stories. */
+export function interactionStoryKeys(stories: InteractionStory[]): string[] {
+  return stories.map(story => `${story.id} (${story.title} / ${story.exportName})`);
+}
+
+/** The JUnit test names the runner emits for a set of interaction stories. */
+export function playTestKeys(stories: InteractionStory[]): string[] {
+  return stories.map(story => `${story.title} ${story.exportName}`);
+}
+
+/**
+ * Every key that `keys` lists more than once, sorted.
+ *
+ * {@link formatDrift} compares SETS, so a key that appears twice on the expected
+ * side is satisfied by a single occurrence on the actual side. Both of the gate's
+ * key spaces must therefore be checked for duplicates before they are compared,
+ * or a duplicated registry row would stop demanding its own passing play test.
+ */
+export function duplicateKeys(keys: string[]): string[] {
+  const seen: Set<string> = new Set();
+  const duplicates: Set<string> = new Set();
+
+  keys.forEach(key => {
+    if (seen.has(key)) {
+      duplicates.add(key);
+      return;
+    }
+    seen.add(key);
+  });
+
+  return [...duplicates].sort((a, b) => a.localeCompare(b));
+}
+
+const TEST_CASE = /<testcase\b([^>]*?)(?:\/>|>([\s\S]*?)<\/testcase>)/g;
+const CASE_NAME = /\bname="([^"]*)"/;
+const NOT_PASSED = /<(?:failure|error|skipped)\b/;
+const XML_ENTITY = /&(?:amp|lt|gt|quot|apos|#39);/g;
+const XML_ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&apos;': "'",
+  '&#39;': "'",
+};
+const PLAY_TEST_SUFFIX: string = ' play-test';
+
+/** Reverses the escaping jest-junit applies to attribute values. */
+function decodeXml(value: string): string {
+  return value.replace(XML_ENTITY, entity => XML_ENTITIES[entity] ?? entity);
+}
+
+/**
+ * Names of the play tests that actually PASSED, read from a jest-junit report.
+ * A skipped or failed case carries a `<skipped/>` / `<failure>` / `<error>` child,
+ * so only `play-test` cases with an empty body count as executed proof — that is
+ * what makes a silently-skipped interaction suite fail the gate.
+ */
+export function junitPlayTestKeys(report: string): string[] {
+  return [...report.matchAll(TEST_CASE)]
+    .map(match => ({ name: decodeXml(CASE_NAME.exec(match[1])?.[1] ?? ''), body: match[2] ?? '' }))
+    .filter(entry => entry.name.endsWith(PLAY_TEST_SUFFIX) && !NOT_PASSED.test(entry.body))
+    .map(entry => entry.name.slice(0, -PLAY_TEST_SUFFIX.length))
+    .sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Compares two key sets, returning a human-readable drift report or `null` when
+ * they are identical.
+ */
+export function formatDrift(expected: string[], actual: string[]): string | null {
+  const expectedSet: Set<string> = new Set(expected);
+  const actualSet: Set<string> = new Set(actual);
+  const byName = (a: string, b: string): number => a.localeCompare(b);
+  const missing: string[] = expected.filter(key => !actualSet.has(key)).sort(byName);
+  const unexpected: string[] = actual.filter(key => !expectedSet.has(key)).sort(byName);
+
+  if (missing.length === 0 && unexpected.length === 0) {
+    return null;
+  }
+
+  const lines: string[] = [];
+  missing.forEach(key => lines.push(`  - missing: ${key}`));
+  unexpected.forEach(key => lines.push(`  - unregistered: ${key}`));
+
+  return lines.join('\n');
+}

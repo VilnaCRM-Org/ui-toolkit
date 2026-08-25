@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
 import React from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import {
   booleanControlArgType,
@@ -52,11 +53,39 @@ export default meta;
 
 type Story = StoryObj<typeof UiRadioGroup>;
 
+const groupLabel: string = t('Preferred contact method');
+const secondOptionLabel: string = 'SMS';
+const thirdOptionLabel: string = 'Push notification';
+
 export const RadioGroup: Story = {
   args: {
     options,
-    label: t('Preferred contact method'),
+    label: groupLabel,
     error: false,
   },
   render: (args: UiRadioGroupProps): React.ReactElement => <RadioGroupStory args={args} />,
+};
+
+// Interaction story (`interaction` tag): proves choosing a radio checks it and
+// unchecks the previous choice — the single-choice contract.
+// See tests/storybook/README.md.
+export const ChoosingOptionMovesSelection: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    options,
+    label: groupLabel,
+    error: false,
+  },
+  render: (args: UiRadioGroupProps): React.ReactElement => <RadioGroupStory args={args} />,
+  play: async ({ canvasElement }): Promise<void> => {
+    const canvas: ReturnType<typeof within> = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('radio', { name: secondOptionLabel }));
+    await expect(canvas.getByRole('radio', { name: secondOptionLabel })).toBeChecked();
+
+    await userEvent.click(canvas.getByRole('radio', { name: thirdOptionLabel }));
+
+    await expect(canvas.getByRole('radio', { name: thirdOptionLabel })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: secondOptionLabel })).not.toBeChecked();
+  },
 };

@@ -1,0 +1,39 @@
+name: Storybook interaction tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  storybook-interaction-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      CI: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      # No "detect inputs / skip" guard on purpose (issue #100): a conditional skip
+      # path would let the interaction suite disappear silently. The gate itself is
+      # fail-closed — scripts/ci/run-storybook-interactions.ts exits non-zero when
+      # the live Storybook index and tests/storybook/interaction-stories.json
+      # disagree, when fewer than the required components carry play functions, or
+      # when any registered play test does not run and pass.
+      - name: Install dependencies
+        run: make install
+
+      - name: Run Storybook interaction tests
+        run: make test-storybook

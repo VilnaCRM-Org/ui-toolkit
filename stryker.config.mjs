@@ -34,9 +34,11 @@ const config = {
     'lhci-reports-desktop/**',
     'lhci-reports-mobile/**',
     'tests/memory-leak/results/**',
-    '**/*.stories.tsx',
-    '**/*.stories.ts',
   ],
+  // Stories are excluded from `mutate` above but must still be COPIED into the
+  // sandbox: tests/unit/storybook-interaction-coverage.test.ts scans them from
+  // disk, and an ignored story file would make that drift guard see an empty
+  // library and fail every mutant run.
   thresholds: { high: 90, break: 80 },
 };
 
