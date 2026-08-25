@@ -82,22 +82,6 @@ When you add or change a public Make target, update `tests/bats/make-target-cove
 same change. Either add or adjust direct Bats coverage for uncovered shell behavior, or point the
 manifest at the pull-request workflow that already exercises the target.
 
-### Releases
-
-The library is not published to the public npm registry. Pushing to `main` runs the release
-workflow, which bumps the version, tags it, and attaches the packed
-`vilnacrm-ui-toolkit-<version>.tgz` to the GitHub release; `crm` and `website` depend on that
-asset URL directly. Reproduce the artifact locally with:
-
-```bash
-make start-bun
-make package
-```
-
-The tarball lands in `dist/`, and the recipe fails if it does not carry the entry points that
-`package.json` promises. [CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
-`website` pin a release, verify it, and move to a later one.
-
 ### Dependency graph hygiene
 
 A zero-tolerance [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) gate guards
@@ -265,6 +249,22 @@ One behavioural exception, both halves documented above: a rejected `onSubmit` n
 An app that observed failed submits through a global `unhandledrejection` listener, or that reads
 `formState.isSubmitSuccessful` as a failure signal, must switch those call sites to
 `onSubmitError`.
+
+## Releases
+
+The library is not published to the public npm registry. Pushing to `main` runs the release
+workflow, which bumps the version, tags it, and attaches the packed
+`vilnacrm-ui-toolkit-<version>.tgz` to the GitHub release; `crm` and `website` depend on that
+asset URL directly. Reproduce the artifact locally with:
+
+```bash
+make start-bun
+make package
+```
+
+The tarball lands in `dist/`, and the recipe fails if it does not carry the entry points that
+`package.json` promises. [CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
+`website` pin a release, verify it, and move to a later one.
 
 ## Notes
 
