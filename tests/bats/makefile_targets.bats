@@ -25,7 +25,6 @@ setup() {
   done <<'EOF'
 build|docker compose run --rm bun node ./build.config.mjs|
 install|docker compose run --rm bun bun install --frozen-lockfile|
-git-hooks-install|docker compose run --rm bun bun x husky install|
 storybook-start|docker compose run --rm bun bun x storybook dev -p 6006|
 storybook-build|docker compose run --rm bun bun x storybook build|
 generate-ts-doc|docker compose run --rm bun bun x api-extractor run --local --verbose|
@@ -41,6 +40,21 @@ build-k6-docker|docker build -t k6 -f ./tests/load/Dockerfile .|
 lighthouse-desktop|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.preset=desktop
 lighthouse-mobile|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.formFactor=mobile
 EOF
+}
+
+@test "git-hooks-install runs husky 9 on the host, not inside the bun container" {
+  reset_command_log
+  run_make_target git-hooks-install
+  [ "$status" -eq 0 ]
+
+  # Husky must write .husky/_ and core.hooksPath into the developer's own clone. The bun
+  # image bakes the repository without .git and is not bind-mounted, so a containerised run
+  # would silently no-op.
+  assert_log_contains 'bun x husky'
+  assert_log_not_contains 'docker compose run --rm bun bun x husky'
+
+  # `husky install` is the Husky 8 form; Husky 9 deprecates it and Husky 10 removes it.
+  assert_log_not_contains 'husky install'
 }
 
 @test "run-storybook-playwright preserves the shared docker compose flow" {

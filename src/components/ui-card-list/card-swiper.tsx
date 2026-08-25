@@ -12,6 +12,16 @@ import 'swiper/css/pagination';
 
 const TOOLTIP_SELECTOR: string = '[role="tooltip"].base-Popper-root';
 
+type SwiperRef = React.RefObject<HTMLDivElement | null>;
+
+// One document-level observer for the whole page, shared by every mounted
+// swiper. Per-instance observers meant K swipers each woke up on EVERY
+// body-level childList mutation — portals, modals, toasts included — to run the
+// same document query K times. The registry keeps that down to one observer and
+// one wake-up, fanned out to the subscribers that actually need syncing.
+const subscribers: Set<SwiperRef> = new Set();
+let bodyObserver: MutationObserver | null = null;
+
 function isToolTip(node: Node): boolean {
   return node instanceof Element && node.matches(TOOLTIP_SELECTOR);
 }
@@ -38,40 +48,58 @@ function syncPointerEvents(swiper: HTMLElement | null): void {
   swiper.style.setProperty('pointer-events', hasToolTip ? 'none' : 'auto');
 }
 
-function handleMutations(mutationsList: MutationRecord[], swiper: HTMLElement | null): void {
+function handleMutations(mutationsList: MutationRecord[]): void {
   if (mutationsList.some(mutationTouchesToolTip)) {
-    syncPointerEvents(swiper);
+    subscribers.forEach(swiperRef => syncPointerEvents(swiperRef.current));
   }
 }
 
-function useTooltipPointerEventsSync(swiperRef: React.RefObject<HTMLDivElement | null>): void {
-  useEffect(() => {
-    const target: HTMLElement | null = document.querySelector('body');
+function observeBody(): MutationObserver {
+  const target: HTMLElement | null = document.querySelector('body');
+  const observer: MutationObserver = new MutationObserver(handleMutations);
 
-    const observer: MutationObserver = new MutationObserver((mutationsList: MutationRecord[]) =>
-      handleMutations(mutationsList, swiperRef.current)
-    );
+  if (target) {
+    observer.observe(target, { childList: true });
+  }
 
-    if (target) {
-      observer.observe(target, { childList: true });
-    }
-
-    return (): void => observer.disconnect();
-    // swiperRef is a stable useRef object, so this subscribes once on mount —
-    // equivalent to []. Keep it here to satisfy exhaustive-deps without a disable.
-  }, [swiperRef]);
+  return observer;
 }
 
-export default function CardSwiper({
-  cardList,
-  headingComponent,
-}: UiCardListProps): React.ReactElement {
-  const swiperRef: React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null);
+// Refcounted: the first swiper on the page starts the observation, the last one
+// to leave stops it, and everything in between reuses the same observer.
+function subscribe(swiperRef: SwiperRef): () => void {
+  const observer: MutationObserver = bodyObserver ?? observeBody();
+  bodyObserver = observer;
+  subscribers.add(swiperRef);
+
+  return (): void => {
+    subscribers.delete(swiperRef);
+    if (subscribers.size === 0) {
+      observer.disconnect();
+      bodyObserver = null;
+    }
+  };
+}
+
+/**
+ * Subscribes a swiper wrapper to the shared tooltip watch for as long as it is
+ * mounted. Exported so the registry contract — including a subscriber whose
+ * element is not (or no longer) attached — can be exercised on its own.
+ */
+export function useTooltipPointerEventsSync(swiperRef: SwiperRef): void {
+  // swiperRef is a stable useRef object, so this subscribes once on mount —
+  // equivalent to []. Keep it here to satisfy exhaustive-deps without a disable.
+  useEffect(() => subscribe(swiperRef), [swiperRef]);
+}
+
+function CardSwiper({ cardList, headingComponent }: UiCardListProps): React.ReactElement {
+  const swiperRef: SwiperRef = useRef<HTMLDivElement>(null);
 
   useTooltipPointerEventsSync(swiperRef);
 
   // Layout is chosen once from the first item: the card list is expected to be
-  // homogeneous (all small or all large cards).
+  // homogeneous (all small or all large cards). Both arms are module-scope
+  // objects, so the selection is already referentially stable across renders.
   const gridMobile: SxProps<Theme> =
     cardList[0]?.type === 'smallCard' ? styles.gridSmallMobile : styles.gridLargeMobile;
 
@@ -95,3 +123,7 @@ export default function CardSwiper({
     </Grid>
   );
 }
+
+// See CardGrid: the swiper variant carries the same referentially-stable props,
+// so an unrelated parent re-render must not walk the slides again.
+export default React.memo(CardSwiper);

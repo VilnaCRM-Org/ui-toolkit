@@ -16,6 +16,11 @@ IMPLICITLY_USED_DEV_DEPENDENCIES='"@types/node": "^26.0.0", "jest-environment-js
 
 setup() {
   setup_makefile_test_env
+  # The shared helper puts a logging `bun` stub that always exits 0 on PATH, which is what
+  # the Makefile-dispatch tests above want. The gate-verdict tests below run the real gate,
+  # and under the stub every one of them would pass vacuously. Dropping the stub leaves the
+  # real interpreter, further along the same PATH, to answer.
+  rm -f "$STUB_BIN_DIR/bun"
 }
 
 # Build a fixture tree whose only real reference is `used-lib`, imported from
