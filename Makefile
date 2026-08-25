@@ -112,22 +112,6 @@ run-gates: ## Run each target in GATE_SET in order, then print a gate summary (u
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-# Uses the long-running bun service rather than `run --rm`: the service has no
-# volume mount, so a throwaway container would take the tarball down with it.
-# Everything is produced inside the container, then copied back to the host.
-package: ## Build and copy the publishable npm tarball out of the running bun container.
-	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
-	if [ -z "$$container_id" ]; then \
-		echo "bun service is not running; run 'make start-bun' first"; \
-		exit 1; \
-	fi; \
-	$(EXEC_BUN) sh -lc 'rm -rf $(PACKAGE_DIR) build && mkdir -p $(PACKAGE_DIR)' \
-		&& $(EXEC_BUN) node ./build.config.mjs \
-		&& $(EXEC_BUN) npm pack --pack-destination $(PACKAGE_DIR) \
-		&& $(EXEC_BUN) sh $(PACKAGE_VERIFIER) $(PACKAGE_DIR) \
-		&& rm -rf ./$(PACKAGE_DIR) \
-		&& $(DOCKER_COMPOSE) cp bun:/app/$(PACKAGE_DIR) ./$(PACKAGE_DIR)
-
 lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps lint-metrics ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
@@ -194,6 +178,22 @@ storybook-build: ## Build Storybook inside the docker container.
 
 generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
 	$(BUN_X) api-extractor run --local --verbose
+
+# Uses the long-running bun service rather than `run --rm`: the service has no
+# volume mount, so a throwaway container would take the tarball down with it.
+# Everything is produced inside the container, then copied back to the host.
+package: ## Build and copy the publishable npm tarball out of the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first"; \
+		exit 1; \
+	fi; \
+	$(EXEC_BUN) sh -lc 'rm -rf $(PACKAGE_DIR) build && mkdir -p $(PACKAGE_DIR)' \
+		&& $(EXEC_BUN) node ./build.config.mjs \
+		&& $(EXEC_BUN) npm pack --pack-destination $(PACKAGE_DIR) \
+		&& $(EXEC_BUN) sh $(PACKAGE_VERIFIER) $(PACKAGE_DIR) \
+		&& rm -rf ./$(PACKAGE_DIR) \
+		&& $(DOCKER_COMPOSE) cp bun:/app/$(PACKAGE_DIR) ./$(PACKAGE_DIR)
 
 test-e2e: PLAYWRIGHT_TEST_TARGET = ./tests/e2e
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
