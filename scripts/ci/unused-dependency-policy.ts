@@ -83,15 +83,18 @@ export function findImplicitUsage(name: string): ImplicitUsage | undefined {
 const REGEXP_SPECIAL_CHARACTERS = /[.*+?^${}()|[\]\\]/g;
 
 /**
- * A reference is the package name not embedded in a longer word — `semverRange`
- * must not keep a dead `semver` alive. Punctuation such as `-`, `/`, `.`, and
- * quotes still counts as a boundary, since specifiers, bin invocations, and
- * config keys legitimately abut it.
+ * A reference is the package name not embedded in a longer identifier —
+ * `semverRange` must not keep a dead `semver` alive, and neither must
+ * `@storybook/react-webpack5` keep a dead `@storybook/react` alive: a hyphen is
+ * how the registry composes one package name out of another, so it belongs to
+ * the identifier rather than to the boundary. Path, dot, and quote punctuation
+ * still counts as a boundary, since specifiers, bin invocations, and config keys
+ * legitimately abut those.
  */
 function referencePattern(name: string): RegExp {
   const escaped = name.replace(REGEXP_SPECIAL_CHARACTERS, '\\$&');
 
-  return new RegExp(`(?<![A-Za-z0-9_])${escaped}(?![A-Za-z0-9_])`);
+  return new RegExp(`(?<![A-Za-z0-9_-])${escaped}(?![A-Za-z0-9_-])`);
 }
 
 /** True when any corpus file mentions the package name as a whole token. */

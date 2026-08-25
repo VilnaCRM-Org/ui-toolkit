@@ -128,6 +128,21 @@ EOF
   assert_output_contains 'devDependencies.range'
 }
 
+# A hyphen composes one registry name out of another, so it has to read as part of
+# the identifier rather than as a word boundary: otherwise a surviving sibling
+# keeps its dead prefix package alive, in either direction.
+@test "the gate does not count a hyphenated sibling package as a reference" {
+  local fixture="$BATS_TEST_TMPDIR/hyphenated-sibling"
+  write_fixture "$fixture" \
+    "$IMPLICITLY_USED_DEV_DEPENDENCIES, \"scope-tool\": \"^1.0.0\", \"lint\": \"^1.0.0\""
+  printf "import 'scope-tool-webpack5';\nimport 'plugin-lint';\n" > "$fixture/src/siblings.ts"
+
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'devDependencies.scope-tool'
+  assert_output_contains 'devDependencies.lint'
+}
+
 # The bun image bakes no git binary, so a fixture that carries a .git index must
 # hit the fail-closed branch instead of silently walking a divergent corpus.
 @test "the gate exits 2 when a git index exists but no git binary does" {

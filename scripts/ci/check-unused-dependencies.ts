@@ -99,6 +99,21 @@ function isScannable(relativePath: string): boolean {
   return !relativePath.split('/').some(segment => SKIPPED_DIRECTORIES.has(segment));
 }
 
+let resolvedScanRoot: string | undefined;
+
+/**
+ * {@link SCAN_ROOT} resolved through symlinks, computed on first use and reused.
+ * The root cannot change during a run, and the check below runs once per corpus
+ * file — resolving it each time would repeat one syscall thousands of times.
+ * Resolving lazily rather than at module load keeps a failure inside the caller's
+ * guard, where it still exits `2` instead of escaping as an uncaught error.
+ */
+function realScanRoot(): string {
+  resolvedScanRoot ??= realpathSync(SCAN_ROOT);
+
+  return resolvedScanRoot;
+}
+
 /**
  * Returns `absolutePath` once it is proven to sit at or under {@link SCAN_ROOT}.
  * Every path handed to the filesystem already comes from a listing rooted there;
@@ -108,7 +123,7 @@ function isScannable(relativePath: string): boolean {
  * corpus.
  */
 function insideScanRoot(absolutePath: string): string {
-  const realRoot = realpathSync(SCAN_ROOT);
+  const realRoot = realScanRoot();
   const realPath = realpathSync(absolutePath);
 
   if (realPath !== realRoot && !realPath.startsWith(realRoot + sep)) {
