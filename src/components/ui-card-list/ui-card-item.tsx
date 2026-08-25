@@ -8,10 +8,7 @@ import CardContent from './card-content';
 import styles from './styles';
 import type { UiCardItemProps } from './types';
 
-export default function UiCardItem({
-  item,
-  headingComponent,
-}: UiCardItemProps): React.ReactElement {
+function UiCardItem({ item, headingComponent }: UiCardItemProps): React.ReactElement {
   const { t } = useTranslation();
   const isSmallCard: boolean = item.type === 'smallCard';
 
@@ -28,3 +25,8 @@ export default function UiCardItem({
     </Stack>
   );
 }
+
+// A card list re-renders whenever its parent does, but the card data objects are
+// referentially stable, so the default shallow comparison keeps every card (and
+// the provider/Emotion work under it) out of that pass.
+export default React.memo(UiCardItem);

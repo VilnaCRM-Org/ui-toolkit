@@ -1,5 +1,7 @@
-import { Button, ThemeProvider } from '@mui/material';
+import { Button } from '@mui/material';
 import React from 'react';
+
+import ScopedThemeProvider from '../theme-scope';
 
 import { theme } from './theme';
 import type { UiButtonProps } from './types';
@@ -77,11 +79,11 @@ function UiButton({
   const elementProps: ButtonElementProps = resolveButtonProps({ to, href, component, type });
 
   return (
-    <ThemeProvider theme={theme}>
+    <ScopedThemeProvider theme={theme}>
       <Button {...elementProps} {...rest}>
         {children}
       </Button>
-    </ThemeProvider>
+    </ScopedThemeProvider>
   );
 }
 

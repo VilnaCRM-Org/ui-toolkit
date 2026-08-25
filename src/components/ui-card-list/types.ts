@@ -25,6 +25,10 @@ export interface UiCardListProps {
    * on runtime data: a nullish `cardList` is normalized to an empty list — the
    * grid/swiper mounts with no cards instead of crashing on `.map` — and logs a
    * development-only `console.warn`.
+   *
+   * Update a card by replacing its object (and the array holding it) rather than
+   * mutating it in place: the rendered cards are memoized on referential
+   * equality, so an in-place edit will not reach the screen.
    */
   cardList: UiCardItemData[];
   /**
