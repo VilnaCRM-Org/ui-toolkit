@@ -110,6 +110,21 @@
     "name": "Default"
   },
   {
+    "id": "uicomponents-uierrorboundary--custom-node-fallback",
+    "title": "UiComponents/UiErrorBoundary",
+    "name": "Custom Node Fallback"
+  },
+  {
+    "id": "uicomponents-uierrorboundary--default-fallback",
+    "title": "UiComponents/UiErrorBoundary",
+    "name": "Default Fallback"
+  },
+  {
+    "id": "uicomponents-uierrorboundary--render-prop-fallback",
+    "title": "UiComponents/UiErrorBoundary",
+    "name": "Render Prop Fallback"
+  },
+  {
     "id": "uicomponents-uifooter--footer",
     "title": "UiComponents/UiFooter",
     "name": "Footer"

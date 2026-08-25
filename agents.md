@@ -134,8 +134,14 @@ make test-storybook        # Story interaction tests (for interactive behavior c
 make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
 ```
 
-Run only the suites the change affects, but never skip a suite that does apply. If a
-deliberate, reviewed UI change makes visual baselines stale, regenerate them with
+Run only the suites the change affects, but never skip a suite that does apply. When you want
+the whole gate set instead of a hand-picked subset, use the aggregate targets — `make ci` for
+the fast pre-push set (lint, build, unit, integration, Bats) and `make verify` for the entire
+merge bar (`make ci` plus mutation, e2e, visual, memory-leak, and both Lighthouse form
+factors). Both fail fast and print a `gate → pass/FAIL/skipped` summary; a green `make verify`
+is the same proof a merge requires. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+If a deliberate, reviewed UI change makes visual baselines stale, regenerate them with
 `make test-visual PLAYWRIGHT_TEST_ARGS="--update-snapshots"` and review the diff before
 committing.
 
@@ -166,4 +172,7 @@ A change to tests is done only when every statement below is true.
   alone, and keyboard, focus, and accessibility-visible behavior are asserted where the UI
   changed.
 - The relevant test commands above were run and passed, including `make lint`.
-- Commits follow Conventional Commits.
+- Commits follow Conventional Commits: `<type>(#<issue>): <subject>`, enforced by the
+  `.husky/commit-msg` hook and the `commit convention` workflow. The pull request title follows
+  the same rule, because squash-merge lands it on `main` as the release-driving header. See
+  [CONTRIBUTING.md](CONTRIBUTING.md) for the full format and the breaking-change footer.

@@ -1,8 +1,10 @@
 import { Grid, SxProps, Theme } from '@mui/material';
-import { render, screen, waitFor } from '@testing-library/react';
+import { RenderResult, render, renderHook, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 
-import CardSwiper from '../../src/components/ui-card-list/card-swiper';
+import CardSwiper, {
+  useTooltipPointerEventsSync,
+} from '../../src/components/ui-card-list/card-swiper';
 import gridStyles from '../../src/components/ui-card-list/styles';
 import type { UiCardItemData } from '../../src/components/ui-card-list/types';
 
@@ -63,8 +65,12 @@ function captureObserverCallback(): {
 // with no semantic role, so it can only be reached as the parent of the mocked
 // swiper element. Used only for asserting the wrapper's inline pointer-events
 // style, which has no semantic query equivalent.
+function toWrapper(swiper: HTMLElement): HTMLElement {
+  return swiper.parentElement as HTMLElement;
+}
+
 function getSwiperWrapper(): HTMLElement {
-  return screen.getByTestId('swiper').parentElement as HTMLElement;
+  return toWrapper(screen.getByTestId('swiper'));
 }
 
 // CardSwiper renders the local parity card (`./ui-card-item`), not the canonical
@@ -84,17 +90,19 @@ function addTooltipNode(): HTMLDivElement {
   return tooltip;
 }
 
-describe('CardSwiper component', () => {
-  afterEach(() => {
-    // Restore unconditionally so a test that throws before its own restore()
-    // cannot leak the patched constructor into later tests.
-    global.MutationObserver = RealMutationObserver;
-    screen
-      .queryAllByRole('tooltip')
-      .filter(node => node.classList.contains('base-Popper-root'))
-      .forEach(node => node.remove());
-  });
+// File scope, not per-describe: every suite below drives tooltip nodes into
+// <body>, and RTL's cleanup only unmounts React roots. Restoring the constructor
+// unconditionally also stops a test that throws before its own restore() from
+// leaking the patched one into later tests.
+afterEach(() => {
+  global.MutationObserver = RealMutationObserver;
+  screen
+    .queryAllByRole('tooltip')
+    .filter(node => node.classList.contains('base-Popper-root'))
+    .forEach(node => node.remove());
+});
 
+describe('CardSwiper component', () => {
   it('renders a swiper slide for every card item', () => {
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
@@ -175,22 +183,23 @@ describe('CardSwiper component', () => {
     restore();
   });
 
-  it('no-ops when the swiper ref is null while syncing pointer events', () => {
+  it('stops syncing a swiper once it has unmounted', () => {
     const { getCallback, restore } = captureObserverCallback();
 
     const { unmount } = render(React.createElement(CardSwiper, { cardList: smallCardList }));
+    const wrapper: HTMLElement = getSwiperWrapper();
     const callback: ObserverCallback | undefined = getCallback();
 
     expect(callback).toBeDefined();
-    // After unmount React resets swiperRef.current to null. The captured closure
-    // still holds that ref, so driving it with a tooltip mutation exercises the
-    // `if (!swiper) return` guard and must not throw.
+    // Unmounting deregisters the swiper from the shared registry, so a later
+    // tooltip mutation must neither throw nor write to the detached wrapper.
     unmount();
     document.body.appendChild(makeTooltipNode());
 
     expect(() =>
       callback?.([makeRecord('childList', [makeTooltipNode()])], {} as MutationObserver)
     ).not.toThrow();
+    expect(wrapper.getAttribute('style') ?? '').not.toContain('pointer-events');
 
     restore();
   });
@@ -391,19 +400,111 @@ describe('CardSwiper tooltip mutation detection', () => {
   });
 
   it('does not observe when no body element exists to watch', () => {
+    const { getCallback, restore } = captureObserverCallback();
     const observeSpy: jest.SpyInstance = jest.spyOn(MutationObserver.prototype, 'observe');
     const querySpy: jest.SpyInstance = jest.spyOn(document, 'querySelector').mockReturnValue(null);
 
     // With `document.querySelector('body')` returning null, the real `if (target)`
     // guard skips observation. The `if (true)` mutant would call
     // `observer.observe(null, ...)`, so asserting observe was never called (and
-    // that render does not throw) kills the line-60 ConditionalExpression mutant.
+    // that render does not throw) kills the ConditionalExpression mutant.
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
+    // A freshly constructed observer proves the shared registry really was
+    // empty on entry, so the assertion below is about this render's init path
+    // and not about an observer some earlier test left connected.
+    expect(getCallback()).toBeDefined();
     expect(observeSpy).not.toHaveBeenCalled();
 
     querySpy.mockRestore();
     observeSpy.mockRestore();
+    restore();
+  });
+});
+
+describe('CardSwiper shared tooltip observer', () => {
+  function renderTwoSwipers(): { first: RenderResult; second: RenderResult } {
+    return {
+      first: render(React.createElement(CardSwiper, { cardList: smallCardList })),
+      second: render(React.createElement(CardSwiper, { cardList: largeCardList })),
+    };
+  }
+
+  it('attaches exactly one body observer however many swipers are mounted', () => {
+    const observeSpy: jest.SpyInstance = jest.spyOn(MutationObserver.prototype, 'observe');
+
+    renderTwoSwipers();
+
+    // The whole point of the registry: two mounted swipers, one document watch.
+    expect(observeSpy).toHaveBeenCalledTimes(1);
+
+    observeSpy.mockRestore();
+  });
+
+  it('syncs every mounted swiper from that single observer', () => {
+    const { getCallback, restore } = captureObserverCallback();
+
+    renderTwoSwipers();
+    const wrappers: HTMLElement[] = screen.getAllByTestId('swiper').map(toWrapper);
+    addTooltipNode();
+
+    getCallback()?.([makeRecord('childList', [makeTooltipNode()])], {} as MutationObserver);
+
+    expect(wrappers).toHaveLength(2);
+    wrappers.forEach(wrapper => expect(wrapper).toHaveStyle({ pointerEvents: 'none' }));
+
+    restore();
+  });
+
+  it('keeps observing until the last swiper unmounts', () => {
+    const disconnectSpy: jest.SpyInstance = jest.spyOn(MutationObserver.prototype, 'disconnect');
+
+    const { first, second } = renderTwoSwipers();
+    first.unmount();
+
+    // Kills the `subscribers.size === 0` -> `true` collapse: tearing the
+    // observer down here would leave the still-mounted swiper unsynced.
+    expect(disconnectSpy).not.toHaveBeenCalled();
+
+    second.unmount();
+    expect(disconnectSpy).toHaveBeenCalledTimes(1);
+
+    disconnectSpy.mockRestore();
+  });
+
+  it('starts a fresh observation for a swiper mounted after the registry emptied', () => {
+    const observeSpy: jest.SpyInstance = jest.spyOn(MutationObserver.prototype, 'observe');
+
+    render(React.createElement(CardSwiper, { cardList: smallCardList })).unmount();
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+
+    // Kills the `bodyObserver ?? observeBody()` -> left-hand-only mutant: the
+    // disconnected observer must not be reused for the second mount.
+    expect(observeSpy).toHaveBeenCalledTimes(2);
+
+    observeSpy.mockRestore();
+  });
+});
+
+describe('useTooltipPointerEventsSync subscriber contract', () => {
+  it('skips an element-less subscriber without starving the live ones', () => {
+    const { getCallback, restore } = captureObserverCallback();
+    const detachedRef: React.RefObject<HTMLDivElement | null> = { current: null };
+
+    renderHook(() => useTooltipPointerEventsSync(detachedRef));
+    render(React.createElement(CardSwiper, { cardList: smallCardList }));
+    addTooltipNode();
+
+    // Exercises the `if (!swiper) return` guard in the sync: a registered
+    // subscriber can be element-less between React detaching the ref and the
+    // effect cleanup running. That must skip only that subscriber — the guard
+    // returns from one sync call, it does not abort the fan-out.
+    expect(() =>
+      getCallback()?.([makeRecord('childList', [makeTooltipNode()])], {} as MutationObserver)
+    ).not.toThrow();
+    expect(getSwiperWrapper()).toHaveStyle({ pointerEvents: 'none' });
+
+    restore();
   });
 });
 
