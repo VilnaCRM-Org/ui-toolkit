@@ -1,0 +1,75 @@
+name: commit convention
+
+# No `branches:` filter on purpose. PRs in this repository are stacked onto each other's
+# feature branches, so a `branches: [main]` gate would never see them. `edited` is required
+# because retitling a pull request changes the header that squash-merge lands on main.
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      # The head commit rather than the default merge ref: this job only reads history, and a
+      # conflicted pull request has no merge ref, which would redden the gate for an unrelated
+      # reason. fetch-depth: 0 still brings the base branch in for the merge-base below.
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # No bootstrap-skip guard here, unlike the other workflows: this gate must fail closed.
+      # A pull request that deletes package.json or bun.lock has to turn the check red rather
+      # than let its own commits through unlinted.
+      #
+      # --ignore-scripts keeps dependency lifecycle scripts out of CI. It also skips this
+      # package's own `prepare`, which is only wanted in a developer's clone: this job lints
+      # messages, it does not commit any.
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      - name: Lint the pull request commits
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          merge_base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          echo "Linting commits in ${merge_base}..${HEAD_SHA}"
+          # The lockfile-resolved binary, not `bun x`, so no unpinned release is fetched.
+          ./node_modules/.bin/commitlint --from "$merge_base" --to "$HEAD_SHA" --verbose
+
+      # Merges are squash-only here, so the pull request title becomes the commit header on
+      # main -- with ` (#<number>)` appended by GitHub. Linting the title exactly as it will
+      # land is what makes header-max-length measure the real released header.
+      - name: Lint the pull request title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          echo "Linting the squash header this pull request would land:"
+          printf '%s (#%s)\n' "$PR_TITLE" "$PR_NUMBER"
+          printf '%s (#%s)\n' "$PR_TITLE" "$PR_NUMBER" | ./node_modules/.bin/commitlint --verbose

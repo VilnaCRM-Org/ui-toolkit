@@ -1,5 +1,6 @@
-import { ThemeProvider } from '@mui/material';
 import React from 'react';
+
+import ScopedThemeProvider from '../theme-scope';
 
 import theme from './theme';
 import WrapperUiTooltip from './tooltip-wrapper';
@@ -14,7 +15,7 @@ function UiTooltip({
   triggerLabel,
 }: UiTooltipProps): React.ReactElement {
   return (
-    <ThemeProvider theme={theme}>
+    <ScopedThemeProvider theme={theme}>
       <WrapperUiTooltip
         title={title}
         placement={placement}
@@ -24,7 +25,7 @@ function UiTooltip({
       >
         {children}
       </WrapperUiTooltip>
-    </ThemeProvider>
+    </ScopedThemeProvider>
   );
 }
 
