@@ -28,6 +28,18 @@ MUTATION_SHARD_TOTAL ?= 1
 MUTATION_SHARD_INDEX ?= 0
 MUTATION_REPORTS_DIR = reports/mutation
 
+# Aggregate gate sets: the local definition of the merge bar. `ci` is the fast
+# pre-push set, `verify` is everything a merge requires. The pull-request workflows
+# invoke these same gate targets directly rather than calling ci/verify, so
+# tests/bats/aggregate_gate_targets.bats holds the two definitions together: it
+# fails when a workflow runs a gate `verify` cannot reach.
+CI_GATES = lint build test-unit test-integration test-bats
+VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-memory-leak lighthouse-desktop lighthouse-mobile
+VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
+GATE_SET_NAME = gates
+GATE_SET =
+MAKE_GATE = $(MAKE) --no-print-directory
+
 # Misc
 .DEFAULT_GOAL = help
 .RECIPEPREFIX +=
@@ -37,7 +49,8 @@ MUTATION_REPORTS_DIR = reports/mutation
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop build-k6-docker load-tests run-storybook-playwright \
 	lint-dep-ranges lint-deps lint-metrics lint-metrics-run \
-	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports
+	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports \
+	ci verify run-gates
 
 PLAYWRIGHT_TEST_ARGS =
 
@@ -57,6 +70,38 @@ run-storybook-playwright:
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
 	@grep -E '^[-a-zA-Z0-9_\.\/]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-20s\033[0m %s\n", $$1, $$2}'
+
+ci: ## Run the fast pre-push gate set: lint, build, unit, integration, and Bats.
+	@$(MAKE) --no-print-directory run-gates GATE_SET_NAME=ci GATE_SET="$(CI_GATES)"
+
+verify: ## Run every gate a merge requires: make ci plus mutation, e2e, visual, memory-leak, and Lighthouse.
+	@$(MAKE) --no-print-directory run-gates GATE_SET_NAME=verify GATE_SET="$(VERIFY_GATES)"
+
+run-gates: ## Run each target in GATE_SET in order, then print a gate summary (used by ci and verify).
+	@test -n "$(GATE_SET)" || { echo "run-gates needs a non-empty GATE_SET; run 'make ci' or 'make verify'" >&2; exit 1; }
+	@name="$(GATE_SET_NAME)"; \
+		failed=""; \
+		summary=""; \
+		for gate in $(GATE_SET); do \
+			if [ -n "$$failed" ]; then \
+				summary="$$summary$$gate\tskipped\n"; \
+				continue; \
+			fi; \
+			printf '==> %s: make %s\n' "$$name" "$$gate"; \
+			if $(MAKE_GATE) $$gate; then \
+				summary="$$summary$$gate\tpass\n"; \
+			else \
+				summary="$$summary$$gate\tFAIL\n"; \
+				failed="$$gate"; \
+			fi; \
+		done; \
+		printf '\n%s gate summary\n' "$$name"; \
+		printf '%b' "$$summary" | awk -F'\t' '{ printf "  %-20s %s\n", $$1, $$2 }'; \
+		if [ -n "$$failed" ]; then \
+			printf '\n%s FAILED at gate: %s\n' "$$name" "$$failed" >&2; \
+			exit 1; \
+		fi; \
+		printf '\n%s PASSED: every gate is green\n' "$$name"
 
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
@@ -113,8 +158,11 @@ lint-metrics-run: ## Evaluate metrics policy (run inside rca container via make 
 	export METRICS_POLICY_SCHEMA=config/metrics-policy.schema.json; \
 	sh scripts/lint-metrics.sh
 
-git-hooks-install: ## Install git hooks.
-	$(BUN_X) husky install
+# Host-side on purpose: the bun image bakes the repo without .git (.dockerignore) and has no
+# bind mount, so hooks written inside a container are thrown away with it. Husky 9 dropped the
+# `install` subcommand; `bun install` runs this same command through package.json's `prepare`.
+git-hooks-install: ## Install the Husky git hooks in this clone (host, not Docker).
+	bun x husky
 
 storybook-start: ## Start Storybook inside the docker container.
 	$(BUN_X) storybook dev -p 6006

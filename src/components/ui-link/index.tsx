@@ -1,5 +1,7 @@
-import { Box, Link, ThemeProvider } from '@mui/material';
+import { Box, Link } from '@mui/material';
 import React from 'react';
+
+import ScopedThemeProvider from '../theme-scope';
 
 import theme from './theme';
 import type { UiLinkProps } from './types';
@@ -34,7 +36,7 @@ function UiLink({
     : rel;
 
   return (
-    <ThemeProvider theme={theme}>
+    <ScopedThemeProvider theme={theme}>
       <Link href={href} target={target} rel={computedRel} sx={sx}>
         {children}
         {opensInNewTab && newTabLabel ? (
@@ -43,7 +45,7 @@ function UiLink({
           </Box>
         ) : null}
       </Link>
-    </ThemeProvider>
+    </ScopedThemeProvider>
   );
 }
 
