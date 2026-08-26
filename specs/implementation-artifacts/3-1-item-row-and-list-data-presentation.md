@@ -76,9 +76,10 @@ recipe all resolve to existing `ui-color-theme` tokens, and the border/badge/row
 tints derive from them via MUI `alpha()`. The one addition is the **hover ink
 set** the Figma hover masters introduce, added to `ui-color-theme`:
 `getMethodHover #0091E2`, `putMethodHover #DD9F00`, `postMethodHover #00AE70`,
-`deleteMethodHover #C72C2C`, and the muted `mutedInkHover #1C2022`. (`deleteMethodHover`
-is a genuine darken of the `#DC3939` DELETE base, matching the DELETE row-hover
-shadow tone `rgb(199, 44, 44)`, so every method's accent darkens on hover.)
+`deleteMethodHover #FF2F2F`, and the muted `mutedInkHover #1C2022`.
+(`deleteMethodHover` is the Figma hover master `439:19776` taken literally —
+the one accent that BRIGHTENS on hover; the owner ruled on 2026-08-26 to match
+the design over the earlier darken-for-consistency `#C72C2C` substitute.)
 
 ### `UiItemRow` behaviour
 

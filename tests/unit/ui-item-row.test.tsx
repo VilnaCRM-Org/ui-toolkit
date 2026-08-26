@@ -363,10 +363,10 @@ describe('resolveRecipe — per-method colour maps (exact, mutation-killing)', (
     const r: RowRecipe = resolveRecipe('delete', false);
     expect(r).toMatchObject({
       accent: '#DC3939',
-      accentHover: '#C72C2C',
+      accentHover: '#FF2F2F',
       tint: 'rgba(220, 57, 57, 0.1)',
       badgeInk: '#DC3939',
-      badgeInkHover: '#C72C2C',
+      badgeInkHover: '#FF2F2F',
       badgeShadow: '0 8px 13.5px #F4B0B0',
       rowHoverShadow: '0 4px 9px rgba(199, 44, 44, 0.18)',
     });

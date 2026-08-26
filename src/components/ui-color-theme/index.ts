@@ -55,7 +55,7 @@ export const sharedPalette: Record<string, { main: string }> = {
   containedButtonHover: {
     main: '#00A3FF',
   },
-  // REST-method hover accents for the item row (border + badge text darken on
+  // REST-method hover accents for the item row (border + badge text shift on
   // hover; the rest accents reuse primary/secondary/success/error).
   getMethodHover: {
     main: '#0091E2',
@@ -66,11 +66,11 @@ export const sharedPalette: Record<string, { main: string }> = {
   postMethodHover: {
     main: '#00AE70',
   },
-  // Darker than the DELETE base (`error #DC3939`) so the accent genuinely darkens
-  // on hover like the other methods; matches the DELETE row-hover-shadow tone
-  // (`rgb(199, 44, 44)`) so the hover recipe stays internally consistent.
+  // The one hover accent BRIGHTER than its base (`error #DC3939`): the Figma
+  // DELETE hover master (439:19776) paints #FF2F2F, kept literally by owner
+  // ruling (2026-08-26) over the earlier darken-for-consistency substitute.
   deleteMethodHover: {
-    main: '#C72C2C',
+    main: '#FF2F2F',
   },
   // Muted (grey) item row: badge text + path darken to this ink on hover.
   mutedInkHover: {
