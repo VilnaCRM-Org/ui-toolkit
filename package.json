@@ -30,8 +30,8 @@
     "@storybook/addon-webpack5-compiler-swc": "^4.0.3",
     "@storybook/react": "^10.4.2",
     "@storybook/react-webpack5": "^10.4.2",
-    "@stryker-mutator/core": "^9.6.1",
-    "@stryker-mutator/jest-runner": "^9.6.1",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/jest-runner": "^10.0.0",
     "@stryker-mutator/typescript": "^4.0.0",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
@@ -79,7 +79,7 @@
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "web-vitals": "^5.3.0",
+    "web-vitals": "^6.1.0",
     "webpack": "^5.90.0"
   },
   "engines": {
