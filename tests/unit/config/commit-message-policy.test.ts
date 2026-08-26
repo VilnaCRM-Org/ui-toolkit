@@ -4,7 +4,7 @@ import commitlintConfig from '../../../commitlint.config';
 // (.github/workflows/autorelease.yml). These cases are the shapes the repository's own
 // contributors and bots actually produce, so a change here changes what can be released.
 
-const taskNumberRule = commitlintConfig.plugins[0].rules['check-task-number-rule'];
+const taskNumberRule = commitlintConfig.plugins[0]!.rules['check-task-number-rule'];
 
 const accepts = (header: string): boolean => taskNumberRule({ header })[0] === true;
 const explain = (header: string): string => String(taskNumberRule({ header })[1]);

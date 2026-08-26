@@ -10,10 +10,10 @@ import { hasText } from './has-text';
 // accessible name, and when it is in `error` with no `helperText` to explain
 // why. `componentName` tailors each message to the calling control.
 interface FieldWarningProps {
-  label?: string;
-  'aria-label'?: string;
-  id?: string;
-  error?: boolean;
+  label?: string | undefined;
+  'aria-label'?: string | undefined;
+  id?: string | undefined;
+  error?: boolean | undefined;
   helperText?: ReactNode;
 }
 

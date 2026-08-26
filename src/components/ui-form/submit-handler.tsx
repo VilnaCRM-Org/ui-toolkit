@@ -15,7 +15,7 @@ export type SubmitHandlerOptions<T extends FieldValues> = {
   methods: UseFormReturn<T>;
   defaultValues: DefaultValues<T>;
   resetOnSuccess: boolean;
-  onSubmitError?: (error: unknown) => void;
+  onSubmitError?: ((error: unknown) => void) | undefined;
 };
 
 const UNHANDLED_SUBMIT_REJECTION_WARNING: string =

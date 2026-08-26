@@ -21,8 +21,8 @@ export interface UiSearchInputProps {
   /** Called with the search text on every change — typing or picking a suggestion. */
   onChange?: (value: string) => void;
   /** Optional typeahead suggestions. Omit for a plain search box. */
-  options?: string[];
-  disabled?: boolean;
+  options?: string[] | undefined;
+  disabled?: boolean | undefined;
   error?: boolean;
   /**
    * Marks the field required for assistive technology via the native `required`

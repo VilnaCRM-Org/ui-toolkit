@@ -8,6 +8,7 @@ import {
   formatDayLabel,
   formatMonthCaption,
   type CalendarCell,
+  type CalendarWeek,
 } from '../../src/components/ui-calendar-multi-select/calendar-month';
 import {
   pad2,
@@ -152,34 +153,48 @@ describe('calendar date-utils — comparisons', () => {
 });
 
 describe('calendar date-utils — buildMonthMatrix', () => {
-  const matrix: CalendarCell[][] = buildMonthMatrix(new Date(2026, 6, 1));
+  const matrix: CalendarWeek[] = buildMonthMatrix(new Date(2026, 6, 1));
+  const cells: CalendarCell[] = matrix.flatMap(week => week.cells);
 
   it('is a fixed six-week by seven-day grid', () => {
     expect(matrix).toHaveLength(6);
-    matrix.forEach(row => expect(row).toHaveLength(7));
+    matrix.forEach(week => expect(week.cells).toHaveLength(7));
   });
 
   it('starts on the Monday on or before the first of the month', () => {
     // July 2026 starts on a Wednesday, so the grid opens on Mon 2026-06-29.
-    expect(formatISO(matrix[0][0].date)).toBe('2026-06-29');
-    expect(matrix[0][0].inCurrentMonth).toBe(false);
+    const first: CalendarCell = cells[0]!;
+    expect(formatISO(first.date)).toBe('2026-06-29');
+    expect(first.inCurrentMonth).toBe(false);
+  });
+
+  it('carries the row start date of every week', () => {
+    matrix.forEach(week => expect(formatISO(week.start)).toBe(formatISO(week.cells[0]!.date)));
+    expect(matrix.map(week => formatISO(week.start))).toEqual([
+      '2026-06-29',
+      '2026-07-06',
+      '2026-07-13',
+      '2026-07-20',
+      '2026-07-27',
+      '2026-08-03',
+    ]);
   });
 
   it('flags in-month days and pads with adjacent months', () => {
-    const inMonth: CalendarCell[] = matrix.flat().filter(cell => cell.inCurrentMonth);
+    const inMonth: CalendarCell[] = cells.filter(cell => cell.inCurrentMonth);
     expect(inMonth).toHaveLength(31); // July has 31 days
-    expect(formatISO(inMonth[0].date)).toBe('2026-07-01');
-    expect(formatISO(inMonth[30].date)).toBe('2026-07-31');
+    expect(formatISO(inMonth[0]!.date)).toBe('2026-07-01');
+    expect(formatISO(inMonth[30]!.date)).toBe('2026-07-31');
     // Trailing pad belongs to the next month.
-    const last: CalendarCell = matrix[5][6];
+    const last: CalendarCell = cells[cells.length - 1]!;
     expect(last.inCurrentMonth).toBe(false);
     expect(last.date.getMonth()).toBe(7);
   });
 
   it('handles a February that fits in a tidy grid', () => {
-    const feb: CalendarCell[][] = buildMonthMatrix(new Date(2026, 1, 1));
+    const feb: CalendarWeek[] = buildMonthMatrix(new Date(2026, 1, 1));
     expect(feb).toHaveLength(6);
-    expect(feb.flat().filter(cell => cell.inCurrentMonth)).toHaveLength(28);
+    expect(feb.flatMap(week => week.cells).filter(cell => cell.inCurrentMonth)).toHaveLength(28);
   });
 });
 

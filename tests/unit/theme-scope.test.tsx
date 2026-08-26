@@ -46,7 +46,7 @@ describe('ScopedThemeProvider', () => {
     // this also kills the `if` -> `true` ConditionalExpression collapse:
     // skipping here would render the subtree against those defaults.
     expect(screen.getByText('probe')).toBeInTheDocument();
-    expect(seen[0].components).toBe(scopedTheme.components);
+    expect(seen[0]!.components).toBe(scopedTheme.components);
   });
 
   it('mounts nothing when the surrounding context already resolves to that theme', () => {
@@ -99,9 +99,9 @@ describe('ScopedThemeProvider', () => {
     // Kills the `every` -> `some` MethodExpression mutant: the two themes share
     // several top-level slots by reference, so `some` would report "already
     // applied" and drop the provider, leaking the foreign `components` in.
-    expect(inner.seen[0]).not.toBe(outer.seen[0]);
-    expect(inner.seen[0].components).toBe(scopedTheme.components);
-    expect(outer.seen[0].components).toBe(foreignTheme.components);
+    expect(inner.seen[0]!).not.toBe(outer.seen[0]!);
+    expect(inner.seen[0]!.components).toBe(scopedTheme.components);
+    expect(outer.seen[0]!.components).toBe(foreignTheme.components);
   });
 
   it('applies the theme when the surrounding context carries CSS variables', () => {
@@ -121,8 +121,8 @@ describe('ScopedThemeProvider', () => {
       </ThemeProvider>
     );
 
-    expect(outer.seen[0].vars).toEqual({});
-    expect(inner.seen[0]).not.toBe(outer.seen[0]);
-    expect(inner.seen[0].vars).toBeNull();
+    expect(outer.seen[0]!.vars).toEqual({});
+    expect(inner.seen[0]!).not.toBe(outer.seen[0]!);
+    expect(inner.seen[0]!.vars).toBeNull();
   });
 });

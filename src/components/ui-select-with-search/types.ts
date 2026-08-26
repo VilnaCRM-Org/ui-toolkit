@@ -23,7 +23,7 @@ export interface UiSelectWithSearchProps {
   /** Selectable options. */
   options: UiSelectWithSearchOption[];
   /** Controlled selected option (`null` when nothing is selected). */
-  value?: UiSelectWithSearchOption | null;
+  value?: UiSelectWithSearchOption | null | undefined;
   /** Called with the newly selected option, or `null` when the value is cleared. */
   onChange?: (value: UiSelectWithSearchOption | null) => void;
   disabled?: boolean;

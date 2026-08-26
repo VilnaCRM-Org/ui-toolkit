@@ -9,5 +9,5 @@ type ButtonLinkTarget =
     };
 
 export interface UiButtonProps extends ButtonProps {
-  to?: ButtonLinkTarget;
+  to?: ButtonLinkTarget | undefined;
 }

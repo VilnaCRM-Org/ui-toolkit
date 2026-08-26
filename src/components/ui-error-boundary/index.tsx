@@ -28,14 +28,14 @@ export default class UiErrorBoundary extends React.Component<
     return { error };
   }
 
-  public componentDidCatch(error: Error, info: React.ErrorInfo): void {
+  public override componentDidCatch(error: Error, info: React.ErrorInfo): void {
     this.reportBoundaryError(error, info);
   }
 
   // The `prevState.error` half of the guard keeps a keys change that lands in
   // the same commit as the throw itself from resetting straight back into the
   // still-throwing child (which would double every `onError` report).
-  public componentDidUpdate(
+  public override componentDidUpdate(
     prevProps: UiErrorBoundaryProps,
     prevState: UiErrorBoundaryState
   ): void {
@@ -48,7 +48,7 @@ export default class UiErrorBoundary extends React.Component<
     }
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { error } = this.state;
 
     if (error === null) {
