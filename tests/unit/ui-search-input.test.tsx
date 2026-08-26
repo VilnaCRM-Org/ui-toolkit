@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiSearchInput, UiLink } from '../../src/components';
+import UiLink from '../../src/components/ui-link';
+import UiSearchInput from '../../src/components/ui-search-input';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 

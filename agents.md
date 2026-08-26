@@ -61,8 +61,11 @@ strength, Stryker), `make test-bats` (Makefile and CI shell flows), `make test-m
 `make lighthouse-mobile` (performance, accessibility, best practices).
 
 `make test-mutation` runs the full, gated Stryker suite locally. In CI it is sharded across a
-parallel matrix (`make test-mutation-shard`) and a final job merges the per-shard reports and
-re-enforces the same `break` threshold (`make merge-mutation-reports`) — same gate, much faster.
+parallel matrix (`make test-mutation-shard`), bin-packed by file size, and a final job merges the
+per-shard reports and re-enforces the same `break` threshold (`make merge-mutation-reports`) —
+same gate, much faster. Each mutant's Jest run is scoped to the suites that actually reach the
+mutated module, so a new test must deep-import the component under test, never the public barrel
+`'../../src/components'`, or it stays "related" to every mutant and the gate slows back down.
 Every workflow cancels superseded runs via `concurrency`, so a new push aborts the previous one.
 See CONTRIBUTING.md ("CI speed and the mutation-testing gate") for the full flow.
 

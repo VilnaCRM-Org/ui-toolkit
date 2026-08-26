@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiContainer } from '../../src/components';
+import UiContainer from '../../src/components/ui-container';
 
 describe('UiContainer', () => {
   it('renders children inside the shared container wrapper', () => {

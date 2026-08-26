@@ -2,7 +2,7 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiLink } from '../../src/components';
+import UiLink from '../../src/components/ui-link';
 
 import { testText, testUrl } from './constants';
 

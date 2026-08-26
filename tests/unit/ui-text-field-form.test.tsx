@@ -3,9 +3,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { useForm, Control } from 'react-hook-form';
 
-import { UiTextFieldForm } from '../../src/components';
 import breakpointsTheme from '../../src/components/ui-breakpoints';
 import colorTheme from '../../src/components/ui-color-theme';
+import UiTextFieldForm from '../../src/components/ui-text-field-form';
 import textFieldFormStyles from '../../src/components/ui-text-field-form/styles';
 
 import { testPlaceholder, testText } from './constants';

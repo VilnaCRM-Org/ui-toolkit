@@ -1,7 +1,7 @@
 import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiInput } from '../../src/components';
+import UiInput from '../../src/components/ui-input';
 
 import { testText, testEmail, testPlaceholder } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';

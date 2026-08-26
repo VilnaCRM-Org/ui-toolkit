@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiCalendarMultiSelect, UiLink } from '../../src/components';
+import UiCalendarMultiSelect from '../../src/components/ui-calendar-multi-select';
+import UiLink from '../../src/components/ui-link';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 

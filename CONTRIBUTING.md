@@ -293,7 +293,7 @@ IDE/editor integration and visual/graph reporting (`dot`/`archi` output) are out
 ### CI speed and the mutation-testing gate
 
 GitHub runs the pull-request workflows in parallel, so PR feedback is gated by the slowest single
-job. Two things keep that fast without dropping or weakening any check — every gate still runs on
+job. Four things keep that fast without dropping or weakening any check — every gate still runs on
 every PR.
 
 **Cancel superseded runs.** Every workflow declares a `concurrency` group keyed on the workflow and
@@ -303,16 +303,48 @@ that PR instead of letting it finish. The release workflows (`autorelease`, `aut
 the `bun` service with `make start-bun` rather than `make start`, which also builds the Storybook and
 Playwright images they do not need.
 
-**Mutation testing is sharded, not slowed.** Stryker over the whole component surface took close to
-an hour as one job. `mutation-testing.yml` now fans `make test-mutation-shard` across a 4-way matrix;
-each shard mutates a deterministic, disjoint slice of the same file set (`stryker.shard.config.mjs`)
-and uploads a per-shard JSON report. A final `merge and enforce gate` job runs
+**Jest was loading every suite for every mutant.** A round-robin run took ~1h58m wall clock over
+750 mutants (worst shard 72 min, best 23 — a 3.2x spread), because `stryker.config.mjs` had
+`jest.enableFindRelatedTests: false`: Jest resolved and loaded all 63 test suites for each mutant
+and only then filtered by `testNamePattern`, at ~15.8 s/mutant. That flag is now `true`, so each
+mutant's Jest run is restricted to the suites that actually reach the mutated module.
+
+Turning the flag on was not enough by itself: every unit test imported the public barrel
+`'../../src/components'`, and in Jest's reverse dependency graph that import makes a test "related"
+to every component, so it is reloaded for every mutant regardless. New component tests must
+deep-import the component under test (e.g. `'../../src/components/ui-button'`), never the barrel.
+Only the structural guards whose subject IS the public surface may import it;
+`jest.mutation.config.ts` excludes those suites (`components-index`, `ui-core-contract`) from the
+mutation tier via `testPathIgnorePatterns` — safe because they assert on export names and types,
+never on rendered behaviour, so they kill zero mutants, which was checked against the baseline
+report's `killedBy` data rather than assumed. They still run in the unit gate, and dropping a suite
+from the mutation tier can only ever lower a score, never inflate one.
+
+**A type-invalid mutant no longer survives as unkillable.** Stryker's TypeScript checker
+(`checkers: ['typescript']`) now runs ahead of Jest, so a mutant that cannot compile is reported
+`CompileError` and dropped from the score denominator instead of executing — `esbuild-jest` strips
+types, so today such a mutant runs and survives every test. Two settings make it work and must not
+be "cleaned up": `disableTypeChecks: false` (the default `true` writes `// @ts-nocheck` into every
+sandbox file, turning the checker into a silent no-op) and `tsconfigFile: 'tsconfig.stryker.json'`
+(the root `tsconfig` also pulls in tests, scripts and `.storybook`; narrowing to `src/**` is what
+keeps the per-mutant check affordable).
+
+**Sharding is bin-packed by file size, not round-robin.** A sharded run costs whatever its slowest
+shard costs, and round-robin left the worst shard carrying 3.2x the best (72 min against 23).
+`mutation-testing.yml` fans `make test-mutation-shard` across a 6-way matrix whose slices are
+balanced by file weight rather than file count. `scripts/ci/mutation-scope.mjs` is now the single
+source of truth for the mutated file set: `stryker.config.mjs` and `stryker.shard.config.mjs` both
+derive from it, so the two can no longer drift apart and silently drop mutants from the merged
+score. Each shard uploads a per-shard JSON report. A final `merge and enforce gate` job runs
 `make merge-mutation-reports`, which unions the shard reports and re-enforces the **unchanged**
 Stryker `break` threshold (`stryker.config.mjs` — `break: 80`) over the whole set, computing the
 mutation score exactly as an unsharded run would. Sharding by file is score-preserving: each mutant
-runs against the full suite regardless of which shard owns it. A missing shard report makes the merge
-fail (it never passes the gate vacuously). The merge math is unit-tested in
-`tests/unit/mutation-report.test.ts`.
+runs against the full suite regardless of which shard owns it. A missing shard report makes the
+merge fail (it never passes the gate vacuously). The merge math is unit-tested in
+`tests/unit/mutation-report.test.ts`, and the runner settings above are pinned by
+`tests/unit/mutation-runner-scope.test.ts`. Both jobs carry `timeout-minutes` as a regression
+tripwire, so a silent return to full-suite reloading fails the job instead of quietly burning
+runner time.
 
 Run it locally either way:
 
@@ -320,8 +352,8 @@ Run it locally either way:
 make test-mutation                                   # full, gated, single-process run
 # or reproduce the sharded CI flow against a running bun service:
 make start-bun
-make test-mutation-shard MUTATION_SHARD_TOTAL=4 MUTATION_SHARD_INDEX=0   # repeat for 1..3
-make merge-mutation-reports MUTATION_SHARD_TOTAL=4
+make test-mutation-shard MUTATION_SHARD_TOTAL=6 MUTATION_SHARD_INDEX=0   # repeat for 1..5
+make merge-mutation-reports MUTATION_SHARD_TOTAL=6
 ```
 
 **Required status checks.** When mutation testing is a required check, the gate is now the
