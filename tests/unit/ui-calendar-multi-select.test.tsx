@@ -572,6 +572,33 @@ describe('UiCalendarMultiSelect — disabled semantics', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it('drops the pointer affordance on every day while the whole calendar is disabled', () => {
+    // The click handler was already inert here, but the cell still advertised
+    // `cursor: pointer` and painted the hover disc: `day.disabled` is per-date
+    // (`isOutOfRange` only), so a calendar disabled as a WHOLE never set it. The
+    // affordance now keys off the same `selectable` flag that gates `onClick`.
+    render(
+      <UiCalendarMultiSelect
+        label="Dates"
+        defaultMonth={MONTH}
+        value={SELECTED}
+        disabled
+        onChange={noop}
+      />
+    );
+
+    // An in-range, unselected day — the case `day.disabled` leaves false.
+    expect(gridcell('6 September 2025')).toHaveStyle({ cursor: 'default' });
+  });
+
+  it('keeps the pointer affordance when the calendar is enabled', () => {
+    render(
+      <UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} value={SELECTED} onChange={noop} />
+    );
+
+    expect(gridcell('6 September 2025')).toHaveStyle({ cursor: 'pointer' });
+  });
+
   it('suppresses the error state while disabled', () => {
     render(
       <UiCalendarMultiSelect

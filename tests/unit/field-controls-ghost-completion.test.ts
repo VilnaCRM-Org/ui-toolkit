@@ -9,7 +9,7 @@ import {
 
 function acceptKeyEvent(
   key: string,
-  opts: { shiftKey?: boolean; value?: string; caret?: number } = {}
+  opts: { shiftKey?: boolean; value?: string; caret?: number; composing?: boolean } = {}
 ): React.KeyboardEvent<HTMLInputElement> {
   const value: string = opts.value ?? '';
   const caret: number = opts.caret ?? value.length;
@@ -17,6 +17,9 @@ function acceptKeyEvent(
     key,
     shiftKey: opts.shiftKey ?? false,
     currentTarget: { value, selectionStart: caret, selectionEnd: caret },
+    // Real keydown events always carry this; an IME sets it while a candidate is
+    // still being composed.
+    nativeEvent: { isComposing: opts.composing ?? false },
   } as unknown as React.KeyboardEvent<HTMLInputElement>;
 }
 
@@ -93,5 +96,21 @@ describe('isGhostAcceptKey', () => {
 
   it('ignores any other key', () => {
     expect(isGhostAcceptKey(acceptKeyEvent('a'))).toBe(false);
+  });
+
+  it('never accepts while an IME composition is in progress', () => {
+    // Both accept keys are load-bearing during composition — ArrowRight walks the
+    // candidate list / clause boundary and Tab commits the candidate — so treating
+    // either as "accept the ghost" would preventDefault the IME's own key and
+    // replace the in-progress composition with the first prefix match.
+    expect(isGhostAcceptKey(acceptKeyEvent('Tab', { composing: true }))).toBe(false);
+    expect(
+      isGhostAcceptKey(acceptKeyEvent('ArrowRight', { value: 'Top', caret: 3, composing: true }))
+    ).toBe(false);
+    // The same gestures still accept once composition has ended.
+    expect(isGhostAcceptKey(acceptKeyEvent('Tab', { composing: false }))).toBe(true);
+    expect(
+      isGhostAcceptKey(acceptKeyEvent('ArrowRight', { value: 'Top', caret: 3, composing: false }))
+    ).toBe(true);
   });
 });

@@ -34,7 +34,7 @@ function DayCell({
       aria-disabled={day.disabled ? true : undefined}
       aria-label={day.label}
       onClick={selectable ? handleClick : undefined}
-      sx={dayCellSx(day)}
+      sx={dayCellSx(day, selectable)}
     >
       <Box component="span" className="ui-day-circle" sx={dayCircleSx(day)}>
         {day.dayNumber}

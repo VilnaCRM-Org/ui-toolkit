@@ -23,15 +23,24 @@ function dayInk(day: DayDescriptor): string {
   return day.selected ? palette.white.main : enabledInk;
 }
 
-/** One 24px day cell hosting the circle (the range band sits on the row behind). */
-export function dayCellSx(day: DayDescriptor): SxProps<Theme> {
+/**
+ * One 24px day cell hosting the circle (the range band sits on the row behind).
+ *
+ * `selectable` is the SAME flag the cell uses to decide whether to bind `onClick`
+ * (`interactive && !day.disabled`), so the affordance and the behaviour cannot drift
+ * apart. Keying the cursor and hover tint off `day.disabled` alone was not enough:
+ * that flag is per-date (`view-model.ts` sets it from `isOutOfRange` only), so a
+ * calendar disabled as a WHOLE still advertised a pointer cursor and painted the
+ * hover disc on every in-range day, while the click handler was already inert.
+ */
+export function dayCellSx(day: DayDescriptor, selectable: boolean): SxProps<Theme> {
   const interactiveHover: object =
-    day.disabled || day.selected ? {} : { '&:hover .ui-day-circle': { backgroundColor: BAND } };
+    selectable && !day.selected ? { '&:hover .ui-day-circle': { backgroundColor: BAND } } : {};
   return {
     width: `${CIRCLE_PX}px`,
     height: `${CIRCLE_PX}px`,
     outline: 'none',
-    cursor: day.disabled ? 'default' : 'pointer',
+    cursor: selectable ? 'pointer' : 'default',
     '&:focus-visible .ui-day-circle': { boxShadow: FOCUS_RING },
     ...interactiveHover,
   };

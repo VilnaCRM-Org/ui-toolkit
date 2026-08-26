@@ -45,9 +45,24 @@ export function firstGhostMatch(query: string, options: readonly string[]): stri
 // today has no Tab/ArrowRight cases in single-select). Re-audit this set on any
 // MUI upgrade or before adding a key — an overlap would race the ghost's
 // preventDefault against MUI's own handling of the same event.
-export function isGhostAcceptKey(event: React.KeyboardEvent<HTMLInputElement>): boolean {
-  if (event.key === 'Tab') return !event.shiftKey;
-  if (event.key !== 'ArrowRight') return false;
+// ArrowRight only commits from the very end of the value; anywhere else it is an
+// ordinary caret move. Split out so `isGhostAcceptKey` stays inside the metrics
+// gate's per-function exit budget.
+function isCaretAtEnd(event: React.KeyboardEvent<HTMLInputElement>): boolean {
   const end: number = event.currentTarget.value.length;
   return event.currentTarget.selectionStart === end && event.currentTarget.selectionEnd === end;
+}
+
+export function isGhostAcceptKey(event: React.KeyboardEvent<HTMLInputElement>): boolean {
+  // Never accept mid-composition. An IME dispatches keydown while a candidate is
+  // being composed, and both accept keys are load-bearing there — ArrowRight walks
+  // the candidate list / clause boundary and Tab commits the candidate. Treating
+  // either as "accept the ghost" would `preventDefault` the IME's own key and
+  // replace the user's in-progress composition with the first prefix match. The
+  // guard lives in the shared predicate so the search ghost and the select ghost
+  // are both covered; `isComposing` is false for every non-IME keystroke, so this
+  // changes nothing for Latin input.
+  if (event.nativeEvent.isComposing) return false;
+  if (event.key === 'Tab') return !event.shiftKey;
+  return event.key === 'ArrowRight' && isCaretAtEnd(event);
 }
