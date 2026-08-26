@@ -250,6 +250,22 @@ An app that observed failed submits through a global `unhandledrejection` listen
 `formState.isSubmitSuccessful` as a failure signal, must switch those call sites to
 `onSubmitError`.
 
+## Releases
+
+The library is not published to the public npm registry. Pushing to `main` runs the release
+workflow, which bumps the version, tags it, and attaches the packed
+`vilnacrm-ui-toolkit-<version>.tgz` to the GitHub release; `crm` and `website` depend on that
+asset URL directly. Reproduce the artifact locally with:
+
+```bash
+make start-bun
+make package
+```
+
+The tarball lands in `dist/`, and the recipe fails if it does not carry the entry points that
+`package.json` promises. [CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
+`website` pin a release, verify it, and move to a later one.
+
 ## Notes
 
 - This repository is a React UI library, not a Next.js app.

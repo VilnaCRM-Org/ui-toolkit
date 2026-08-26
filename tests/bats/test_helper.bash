@@ -20,6 +20,13 @@ create_docker_stub() {
 #!/usr/bin/env bash
 printf 'docker %s\n' "$*" >> "${COMMAND_LOG:?}"
 
+# Lets a test make one specific docker invocation fail, so recipes that chain
+# several container commands can be checked for aborting on the first failure.
+if [ -n "${FAKE_DOCKER_FAILING_COMMAND:-}" ] \
+  && printf '%s' "$*" | grep -qF -- "$FAKE_DOCKER_FAILING_COMMAND"; then
+  exit 1
+fi
+
 if [ "$1" = "compose" ] && [ "$2" = "ps" ] && [ "${3:-}" = "-q" ] && [ "${4:-}" = "bun" ]; then
   if [ -n "${FAKE_DOCKER_COMPOSE_BUN_ID:-}" ]; then
     printf '%s\n' "$FAKE_DOCKER_COMPOSE_BUN_ID"

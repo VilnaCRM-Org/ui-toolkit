@@ -20,6 +20,7 @@ lint-test-structure	ci	.github/workflows/static-testing.yml	Executed directly by
 load-tests	bats	tests/bats/makefile_targets.bats	Validated as the combined k6 image build and homepage load-run entrypoint.
 logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose follow-logs command.
 new-logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose tail-from-now logs command.
+package	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the build, pack, verify, and copy-out branch.
 playwright-install	bats	tests/bats/makefile_targets.bats	Validated as the Playwright runner image build command.
 ps	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose status command.
 run-storybook-playwright	bats	tests/bats/makefile_targets.bats	Validated as the shared Storybook-backed Playwright helper flow.

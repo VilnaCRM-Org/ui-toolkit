@@ -162,6 +162,48 @@ EOF
   assert_log_contains 'docker compose cp bun:/app/coverage ./coverage'
 }
 
+@test "package fails clearly when the bun service is not running" {
+  reset_command_log
+  run_make_target package
+  [ "$status" -ne 0 ]
+  assert_output_contains "bun service is not running; run 'make start-bun' first"
+  assert_log_contains 'docker compose ps -q bun'
+  assert_log_not_contains 'npm pack'
+}
+
+@test "package builds, packs, verifies and copies the tarball out of the bun container" {
+  reset_command_log
+  run_make_target_with_env package FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose exec -T bun sh -lc rm -rf dist build && mkdir -p dist'
+  assert_log_contains 'docker compose exec -T bun node ./build.config.mjs'
+  assert_log_contains 'docker compose exec -T bun npm pack --pack-destination dist'
+  assert_log_contains 'docker compose exec -T bun sh scripts/ci/verify-package-tarball.sh dist'
+  assert_log_contains 'docker compose cp bun:/app/dist ./dist'
+  assert_log_not_contains 'docker compose run --rm'
+}
+
+@test "package stops at the first failing step instead of shipping a stale tarball" {
+  reset_command_log
+  run_make_target_with_env package \
+    FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id \
+    FAKE_DOCKER_FAILING_COMMAND='node ./build.config.mjs'
+  [ "$status" -ne 0 ]
+  assert_log_not_contains 'npm pack'
+  assert_log_not_contains 'docker compose cp bun:/app/dist ./dist'
+}
+
+@test "package does not attach an unverified tarball when verification fails" {
+  reset_command_log
+  run_make_target_with_env package \
+    FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id \
+    FAKE_DOCKER_FAILING_COMMAND='verify-package-tarball.sh'
+  [ "$status" -ne 0 ]
+  assert_log_contains 'docker compose exec -T bun node ./build.config.mjs'
+  assert_log_contains 'docker compose exec -T bun npm pack --pack-destination dist'
+  assert_log_not_contains 'docker compose cp bun:/app/dist ./dist'
+}
+
 @test "start-bun builds and starts only the bun service" {
   reset_command_log
   run_make_target start-bun
