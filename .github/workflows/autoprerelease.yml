@@ -8,6 +8,8 @@ on:
       - 'package.json'
       - 'CHANGELOG.md'
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
@@ -15,33 +17,20 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     permissions:
       contents: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
 
-      - name: Detect release manifest
-        id: manifest
-        run: |
-          if [[ -f package.json ]]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip prerelease preview
-        if: steps.manifest.outputs.present != 'true'
-        run: echo "Skipping prerelease preview because main does not contain package.json yet."
-
       - name: Conventional Changelog Action
-        if: steps.manifest.outputs.present == 'true'
         id: changelog
-        uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f
+        uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f # v4.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: 'false'

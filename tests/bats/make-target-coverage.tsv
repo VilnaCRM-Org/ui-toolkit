@@ -1,6 +1,5 @@
 target	coverage	evidence	details
 build	bats	tests/bats/makefile_targets.bats	Validated as the Docker-backed project build entrypoint.
-build-k6-docker	bats	tests/bats/makefile_targets.bats	Validated as the Docker image build step for local k6 runs.
 copy-coverage	bats	tests/bats/makefile_targets.bats	Validated for the missing-container, missing-coverage, and copy-success branches.
 down	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that tear down the Docker environment.
 format-check	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
@@ -12,12 +11,13 @@ lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the deskto
 lighthouse-mobile	bats	tests/bats/makefile_targets.bats	Validated as the mobile Lighthouse shell entrypoint.
 lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the static testing workflow's individual lint targets.
 lint-deps	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
+lint-ci-paths	bats	tests/bats/ci_referenced_paths.bats	Validated for the passing repository scan, the historic memlab-rename failure, missing sources, and false-positive noise.
 lint-md	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-next	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-tsc	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-dep-ranges	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-test-structure	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow to keep test files under the root tests/ tree.
-load-tests	bats	tests/bats/makefile_targets.bats	Validated as the combined k6 image build and homepage load-run entrypoint.
+load-tests	bats	tests/bats/makefile_targets.bats	Validated as the deliberately omitted load tier that reports tests/load/README.md and builds no k6 image.
 logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose follow-logs command.
 new-logs	bats	tests/bats/makefile_targets.bats	Validated as the Docker Compose tail-from-now logs command.
 package	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure and the build, pack, verify, and copy-out branch.
@@ -32,7 +32,7 @@ storybook-start	bats	tests/bats/makefile_targets.bats	Validated as the Storybook
 test-bats	ci	.github/workflows/bats-testing.yml	Executed directly by the dedicated Bats pull-request workflow.
 test-e2e	bats	tests/bats/makefile_targets.bats	Validated as the Storybook-backed E2E flow delegated through the shared helper target.
 test-e2e-local	bats	tests/bats/makefile_targets.bats	Validated as the local Playwright runner entrypoint with a rebuilt image.
-test-memory-leak	bats	tests/bats/makefile_targets.bats	Validated as the inline Memlab shell flow, including the bootstrap skip guard.
+test-memory-leak	bats	tests/bats/makefile_targets.bats	Validated as the inline Memlab shell flow: no bootstrap skip path remains and the real run-memlab-tests.js runner is invoked.
 test-mutation	ci	.github/workflows/mutation-testing.yml	Executed directly by the mutation testing workflow.
 test-unit	bats	tests/bats/makefile_targets.bats	Validated for both the running-container and fresh-container branches.
 test-visual	bats	tests/bats/makefile_targets.bats	Validated as the Storybook-backed visual flow delegated through the shared helper target.

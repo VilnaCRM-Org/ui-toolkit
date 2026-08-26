@@ -1,5 +1,4 @@
 # Parameters
-K6 = $(DOCKER) run -v ./tests/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats="avg,min,med,max,p(95),p(99)"
 BATS_FORMATTER ?= pretty
 
 # Executables
@@ -53,8 +52,8 @@ MAKE_GATE = $(MAKE) --no-print-directory
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
-	up down sh ps logs new-logs start start-bun stop build-k6-docker load-tests run-storybook-playwright \
-	lint-dep-ranges lint-deps lint-metrics lint-metrics-run \
+	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
+	lint-dep-ranges lint-deps lint-metrics lint-metrics-run lint-ci-paths \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports \
 	ci verify run-gates
 
@@ -112,25 +111,23 @@ run-gates: ## Run each target in GATE_SET in order, then print a gate summary (u
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps lint-metrics ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-test-structure lint-deps lint-metrics lint-ci-paths ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
 		set -e; \
 		targets=""; \
 		for dir in src scripts tests; do \
-			if [ -d "$$dir" ]; then \
-				targets="$$targets $$dir"; \
+			if [ ! -d "$$dir" ]; then \
+				echo "Expected lint directory $$dir is missing; refusing to report a vacuous pass."; \
+				exit 1; \
 			fi; \
+			targets="$$targets $$dir"; \
 		done; \
-		if [ -z "$$targets" ]; then \
-			echo "No lint targets found, skipping ESLint."; \
-			exit 0; \
-		fi; \
 		files=$$(find $$targets -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \)); \
 		if [ -z "$$files" ]; then \
-			echo "No lint files found, skipping ESLint."; \
-			exit 0; \
+			echo "No lint files found under$$targets; refusing to report a vacuous pass."; \
+			exit 1; \
 		fi; \
 		bun x eslint $$files \
 	'
@@ -149,6 +146,9 @@ lint-dep-ranges: ## Enforce caret (^) version ranges in package.json inside the 
 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.
 	sh ./scripts/check-test-structure.sh
+
+lint-ci-paths: ## Verify every repo path referenced by the Makefile and CI workflows exists.
+	$(BUN) scripts/ci/check-referenced-paths.ts
 
 lint-deps: ## Run dependency-cruiser graph-hygiene gate inside the docker container.
 	$(BUN_X) depcruise --config .dependency-cruiser.js src
@@ -205,17 +205,17 @@ test-e2e-local: ## Open the local Playwright runner inside the docker container.
 test-unit: ## Run Jest unit tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
-		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests; \
+		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
 	else \
-		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests; \
+		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --verbose; \
 	fi
 
 test-integration: ## Run Jest integration (composition) tests inside the docker container.
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
-		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests; \
+		$(EXEC_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose; \
 	else \
-		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests; \
+		$(RUN_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose; \
 	fi
 
 copy-coverage: ## Copy the Jest coverage directory from the docker container.
@@ -271,10 +271,6 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	INSTALL_CHROMIUM=true $(DOCKER_COMPOSE) build bun
 	@$(RUN_BUN_SH) '\
 		set -e; \
-		if [ ! -f tests/memory-leak/runMemlabTests.js ]; then \
-			echo "Skipping memory leak tests because this bootstrap PR does not include the app test files yet."; \
-			exit 0; \
-		fi; \
 		CI=1 bun x storybook dev --ci --host 0.0.0.0 -p 3000 >/tmp/ui-toolkit-app.log 2>&1 & \
 		pid=$$!; \
 		trap "kill $$pid >/dev/null 2>&1 || true" EXIT; \
@@ -282,7 +278,7 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 			cat /tmp/ui-toolkit-app.log; \
 			exit 1; \
 		fi; \
-		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js \
+		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/run-memlab-tests.js \
 	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
@@ -304,7 +300,6 @@ test-bats: ## Run Bats coverage for Makefile shell flows and coverage contracts 
 	$(DOCKER_COMPOSE) run --rm --build bun bun x bats --formatter $(BATS_FORMATTER) -r tests/bats
 
 test-visual: PLAYWRIGHT_TEST_TARGET = ./tests/visual
-test-visual: PLAYWRIGHT_TEST_ARGS = --pass-with-no-tests
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
 
@@ -334,8 +329,6 @@ start-bun: ## Build and start only the Bun service (skips Storybook/Playwright b
 stop: ## Stop docker services.
 	$(DOCKER_COMPOSE) stop
 
-build-k6-docker:
-	$(DOCKER) build -t k6 -f ./tests/load/Dockerfile .
-
-load-tests: build-k6-docker
-	$(K6) --out 'web-dashboard=period=1s&export=/loadTests/results/homepage.html' /loadTests/homepage.js
+load-tests: ## Report the deliberately omitted load-test tier (see tests/load/README.md).
+	@echo "Load tests are deliberately not implemented for a component library."
+	@echo "Rationale and the alternative coverage: tests/load/README.md"
