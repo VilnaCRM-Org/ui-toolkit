@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.59.1-jammy@sha256:8a0360d39d1973be506dd59002904a774f6d697d4946c94063b3fd006461c8ff
+FROM mcr.microsoft.com/playwright:v1.62.1-jammy@sha256:b3251f7ff1a9fa559a28d1c67eaa15fc1a9800f7845e82756caea7842967f615
 # alpine-exception: Playwright's official browser image is Debian (jammy); Chromium/Firefox/WebKit and their system libraries require glibc, and Microsoft publishes no Alpine/musl Playwright base.
 
 # perf-exception:size,dive: glibc-only Playwright vendor base
