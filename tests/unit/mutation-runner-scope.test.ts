@@ -89,6 +89,8 @@ interface ProbeResult {
   mutateFiles: string[];
   shards: Record<string, string[][]>;
   rangeGuards: RangeGuardResults;
+  /** `${left}|${right}` -> compareCodeUnits(left, right), sampled in the probe. */
+  comparator: Record<string, number>;
 }
 
 // Executed once (see `beforeAll` below) inside the real Node ESM loader: loads
@@ -96,7 +98,11 @@ interface ProbeResult {
 // so every assertion below reads genuine output rather than a re-implementation.
 const PROBE_SCRIPT = `
 import strykerConfig from './stryker.config.mjs';
-import { collectMutateFiles, shardMutateFiles } from './scripts/ci/mutation-scope.mjs';
+import {
+  collectMutateFiles,
+  compareCodeUnits,
+  shardMutateFiles,
+} from './scripts/ci/mutation-scope.mjs';
 
 function tryCall(fn) {
   try {
@@ -112,10 +118,16 @@ for (const total of ${JSON.stringify(SHARD_TOTALS_UNDER_TEST)}) {
   shards[total] = Array.from({ length: total }, (_, i) => shardMutateFiles(total, i));
 }
 
+const comparator = {};
+for (const [left, right] of [['Z', 'a'], ['B', 'a'], ['a', 'a']]) {
+  comparator[left + '|' + right] = compareCodeUnits(left, right);
+}
+
 process.stdout.write(JSON.stringify({
   strykerConfig,
   mutateFiles: collectMutateFiles(),
   shards,
+  comparator,
   rangeGuards: {
     totalZero: tryCall(() => shardMutateFiles(0, 0)),
     totalNegative: tryCall(() => shardMutateFiles(-1, 0)),
@@ -127,8 +139,8 @@ process.stdout.write(JSON.stringify({
 }));
 `;
 
-// `envOverride` lets callers (the cross-locale check below) run this exact
-// script under a different LC_ALL without duplicating it.
+// `envOverride` lets a caller run this exact script under a different
+// environment without duplicating it.
 function runProbe(envOverride?: Readonly<Record<string, string>>): ProbeResult {
   const stdout = execFileSync('node', ['--input-type=module'], {
     cwd: REPO_ROOT,
@@ -246,16 +258,6 @@ function stemOf(relPath: string): string {
   return basename(relPath).split('.')[0] ?? '';
 }
 
-// Comparison partner for LC_ALL=C: en_US collates case/diacritics differently
-// from C's plain byte order, so it actually exercises the localeCompare-vs-
-// code-unit split the comparator documents. Fall back to C.UTF-8 only if
-// en_US truly isn't installed here, so the check never quietly degrades into
-// comparing C against itself (which would pass for the wrong reason).
-function pickSecondaryLocale(): string {
-  const installed = execFileSync('locale', ['-a'], { encoding: 'utf8' });
-  return /^en_US\.(utf-?8)$/im.test(installed) ? 'en_US.UTF-8' : 'C.UTF-8';
-}
-
 function extractShardTotals(workflowText: string): number[] {
   const pattern = /MUTATION_SHARD_TOTAL:\s*'(\d+)'/g;
   return [...workflowText.matchAll(pattern)].map(m => Number(m[1]));
@@ -340,14 +342,20 @@ describe('mutate-scope integrity (scripts/ci/mutation-scope.mjs)', () => {
     expect([...flat].sort()).toEqual([...probe.mutateFiles].sort());
   });
 
-  it('returns identical shard slices under LC_ALL=C and a real second locale', () => {
-    // Two calls in one process (the old version of this test) are always
-    // equal and can never catch a regression. The actual risk the comparator
-    // comment warns about is locale-dependent sort order across machines, so
-    // this must run the split in two real processes under two real locales.
-    const underC = runProbe({ LC_ALL: 'C' });
-    const underSecondary = runProbe({ LC_ALL: pickSecondaryLocale() });
-    expect(underSecondary.shards).toEqual(underC.shards);
+  // The real 61-file set cannot distinguish the two orderings — every path is
+  // lowercase ASCII, and code-unit and localeCompare agree on all 61. So the
+  // file list can never catch a swap to localeCompare; the comparator has to be
+  // pinned directly, on inputs where the two genuinely disagree.
+  it.each([
+    ['Z', 'a'],
+    ['B', 'a'],
+  ])('orders %s before %s by code unit, where localeCompare would not', (left, right) => {
+    expect(probe.comparator[`${left}|${right}`]).toBeLessThan(0);
+    expect(Math.sign(left.localeCompare(right))).toBeGreaterThan(0);
+  });
+
+  it('returns 0 for equal inputs, per the sort comparator contract', () => {
+    expect(probe.comparator['a|a']).toBe(0);
   });
 
   it.each([

@@ -20,7 +20,7 @@ const MUTATE_ROOT = 'src/components';
 // the machine's locale. Every runner must compute the identical split.
 // Equality returns 0 to satisfy the sort() comparator contract (paths are
 // unique in practice, so this is a contract fix, not a behaviour change).
-function compareCodeUnits(a, b) {
+export function compareCodeUnits(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
