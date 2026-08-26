@@ -74,10 +74,16 @@ export function shardMutateFiles(total, index) {
 
   const shards = Array.from({ length: total }, () => ({ files: [], weight: 0 }));
   for (const { file, size } of weighted) {
-    // First shard at the minimum weight wins ties, so packing is deterministic
-    // even when several shards are equally light (e.g. every shard at 0 for
-    // the first `total` files).
-    const lightest = shards.reduce((min, shard) => (shard.weight < min.weight ? shard : min));
+    // Strict `<` keeps the FIRST shard at the minimum weight, so packing stays
+    // deterministic when several shards are equally light (e.g. all at 0 for
+    // the first `total` files). The seed is shards[0] rather than an implicit
+    // first element: `total >= 1` is already validated above, but a seedless
+    // reduce() throws on an empty array, and this is the one line where that
+    // would surface as a crash instead of a bad split.
+    const lightest = shards.reduce(
+      (min, shard) => (shard.weight < min.weight ? shard : min),
+      shards[0]
+    );
     lightest.files.push(file);
     lightest.weight += size;
   }
