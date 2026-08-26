@@ -41,9 +41,14 @@ export function SelectAutocomplete(props: Readonly<SelectAutocompleteProps>): Re
       id={fieldId}
       isOptionEqualToValue={isOptionEqualToValue}
       popupIcon={POPUP_ICON}
-      open={control.open}
+      open={field.resolvedOpen}
+      onOpen={field.handleOpen}
+      onClose={field.handleClose}
       disablePortal={control.disablePortal}
       renderInput={field.renderInput}
+      // Demo-only: the frozen popper override keys off the RAW `control.open`
+      // (never `field.resolvedOpen`) — a real open must keep Popper flip and
+      // overflow handling or the listbox clips near the viewport edge.
       slotProps={control.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps}
     />
   );

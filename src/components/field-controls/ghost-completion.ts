@@ -39,6 +39,12 @@ export function firstGhostMatch(query: string, options: readonly string[]): stri
 // Tab (not Shift+Tab, which must still move focus backward), or ArrowRight with the
 // caret at the very end, commits the completion. Shared by the freeSolo search
 // ghost and the select ghost so the accept gesture stays identical.
+//
+// INVARIANT: no key listed here may overlap a key MUI Autocomplete handles on
+// its root (its switch checks `defaultMuiPrevented`, not `preventDefault`, and
+// today has no Tab/ArrowRight cases in single-select). Re-audit this set on any
+// MUI upgrade or before adding a key — an overlap would race the ghost's
+// preventDefault against MUI's own handling of the same event.
 export function isGhostAcceptKey(event: React.KeyboardEvent<HTMLInputElement>): boolean {
   if (event.key === 'Tab') return !event.shiftKey;
   if (event.key !== 'ArrowRight') return false;

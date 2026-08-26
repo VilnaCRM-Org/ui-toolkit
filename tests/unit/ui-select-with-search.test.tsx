@@ -318,3 +318,65 @@ describe('UiSelectWithSearch — accessibility guidance', () => {
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
 });
+
+// A minimal controlled consumer: the accepted option must feed `value` back,
+// which is what lets MUI reset the input text and the ghost clear.
+function ControlledSelect(): React.ReactElement {
+  const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(null);
+  return (
+    <>
+      <UiSelectWithSearch aria-label="City" options={options} value={value} onChange={setValue} />
+      <UiLink href="/after">after</UiLink>
+    </>
+  );
+}
+
+describe('UiSelectWithSearch — ghost accept closes the popup', () => {
+  it('closes the popup and commits the match when Tab accepts the ghost', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSelect />);
+
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    await user.click(combobox);
+    await user.keyboard('Ky');
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+
+    await user.tab();
+
+    // The accept commits the option and lands in the APG post-selection state:
+    // collapsed, no listbox, no active descendant, value in the field.
+    expect((combobox as HTMLInputElement).value).toBe('Kyiv');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(combobox).toHaveAttribute('aria-expanded', 'false');
+    expect(combobox).not.toHaveAttribute('aria-activedescendant');
+    expect(combobox).toHaveFocus();
+  });
+
+  it('reopens with the full option list after an accept', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSelect />);
+
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('Ky');
+    await user.tab();
+
+    await user.keyboard('{ArrowDown}');
+
+    // The reset path restored the unfiltered list, not the stale 'Ky' filter.
+    expect(screen.getAllByRole('option')).toHaveLength(options.length);
+  });
+
+  it('lets the second Tab leave the field (the accept is one-shot)', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSelect />);
+
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('Ky');
+    await user.tab();
+    expect(screen.getByRole('combobox')).toHaveFocus();
+
+    await user.tab();
+
+    expect(screen.getByRole('link', { name: 'after' })).toHaveFocus();
+  });
+});

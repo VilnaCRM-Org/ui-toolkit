@@ -51,7 +51,11 @@ export interface UiSelectWithSearchProps {
   helperText?: React.ReactNode;
   /** Associates an external `<label htmlFor>`; also seeds the combobox/listbox ids. */
   id?: string;
-  /** Forces the dropdown open. For demos/visual states only; omit in app use. */
+  /**
+   * Forces the dropdown open. For demos/visual states only; OMIT in app use —
+   * do not pass `false` (it is a forced mask, not an "initially closed" hint,
+   * and would permanently wedge keyboard opening).
+   */
   open?: boolean;
   /** Renders the dropdown inline instead of in a portal. Pairs with `open` for demos. */
   disablePortal?: boolean;

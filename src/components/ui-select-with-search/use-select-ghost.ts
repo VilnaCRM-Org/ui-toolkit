@@ -33,23 +33,35 @@ function findGhostMatch(
   );
 }
 
-// Accepting the ghost (Tab / ArrowRight-at-end) selects the matched option; MUI then
-// shows its label and the completion clears on the resulting reset event.
+// Accepting the ghost (Tab / ArrowRight-at-end) selects the matched option and
+// closes the popup — the swallowed key never reaches MUI, so without the explicit
+// close the listbox would stay open over a selection MUI was never told about.
+// Everything lives INSIDE the accept guard: an ArrowRight with no active ghost
+// must not collapse a legitimately open popup mid-browse. `clearTyped` runs
+// synchronously too — the MUI `reset` event only fires for controlled parents,
+// and without it a stale match would re-arm the accept on every following Tab.
 function acceptGhost(
   match: UiSelectWithSearchOption | undefined,
-  onChange: UiSelectWithSearchProps['onChange'],
+  ghost: { onChange: UiSelectWithSearchProps['onChange']; closePopup: () => void },
   event: React.KeyboardEvent<HTMLInputElement>
-): void {
+): { accepted: boolean } {
   if (match !== undefined && isGhostAcceptKey(event)) {
     event.preventDefault();
-    onChange?.(match);
+    ghost.onChange?.(match);
+    ghost.closePopup();
+    return { accepted: true };
   }
+  return { accepted: false };
 }
 
 // Inline typeahead for the single-select combobox (Figma node 448:25572). The
 // overlay is purely visual — the input value stays MUI-managed; this hook only
 // OBSERVES the typed text (via `onInputChange`) to draw the grey completion.
-export function useSelectGhost(props: UiSelectWithSearchProps): SelectGhost {
+// `closePopup` is the popup mirror's setter from `useSelectField`.
+export function useSelectGhost(
+  props: UiSelectWithSearchProps,
+  closePopup: () => void
+): SelectGhost {
   const { options, onChange } = props;
   const [typed, setTyped] = React.useState<string>('');
   const [focused, setFocused] = React.useState<boolean>(false);
@@ -67,6 +79,10 @@ export function useSelectGhost(props: UiSelectWithSearchProps): SelectGhost {
     handleInputChange: (_event, value, reason): void => setTyped(reason === 'input' ? value : ''),
     handleFocus: (): void => setFocused(true),
     handleBlur: (): void => setFocused(false),
-    handleKeyDown: (event): void => acceptGhost(match, onChange, event),
+    handleKeyDown: (event): void => {
+      if (acceptGhost(match, { onChange, closePopup }, event).accepted) {
+        setTyped('');
+      }
+    },
   };
 }
