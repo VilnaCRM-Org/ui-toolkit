@@ -1,13 +1,15 @@
-import { Toolbar, ThemeProvider } from '@mui/material';
+import { Toolbar } from '@mui/material';
 import React from 'react';
+
+import ScopedThemeProvider from '../theme-scope';
 
 import theme from './theme';
 
 function UiToolbar({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
-    <ThemeProvider theme={theme}>
+    <ScopedThemeProvider theme={theme}>
       <Toolbar>{children}</Toolbar>
-    </ThemeProvider>
+    </ScopedThemeProvider>
   );
 }
 

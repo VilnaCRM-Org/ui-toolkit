@@ -46,9 +46,20 @@ EOF
   chmod +x "$STUB_BIN_DIR/docker"
 }
 
+create_bun_stub() {
+  cat > "$STUB_BIN_DIR/bun" <<'EOF'
+#!/usr/bin/env bash
+printf 'bun %s\n' "$*" >> "${COMMAND_LOG:?}"
+exit 0
+EOF
+
+  chmod +x "$STUB_BIN_DIR/bun"
+}
+
 setup_makefile_test_env() {
   setup_stub_dir
   create_docker_stub
+  create_bun_stub
 
   export MAKEFILE_SANDBOX="$BATS_TEST_TMPDIR/makefile-sandbox"
   mkdir -p "$MAKEFILE_SANDBOX"

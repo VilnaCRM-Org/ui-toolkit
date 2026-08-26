@@ -15,6 +15,7 @@ const expectedPublicExports: string[] = [
   'UiCheckbox',
   'UiColorTheme',
   'UiContainer',
+  'UiErrorBoundary',
   'UiFileUploadInput',
   'UiFooter',
   'UiForm',

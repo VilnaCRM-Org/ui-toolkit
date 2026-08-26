@@ -37,7 +37,7 @@ jest.mock('../../src/components/ui-card-list/card-grid', () => {
 
 describe('UiCardList component', () => {
   const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
-  const mockedCardSwiper: jest.Mock = CardSwiper as jest.Mock;
+  const mockedCardSwiper: jest.Mock = CardSwiper as unknown as jest.Mock;
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -98,8 +98,8 @@ describe('UiCardList media query argument', () => {
 describe('UiCardList nullish cardList degradation', () => {
   const warn = mockConsoleWarn();
   const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
-  const mockedCardGrid: jest.Mock = CardGrid as jest.Mock;
-  const mockedCardSwiper: jest.Mock = CardSwiper as jest.Mock;
+  const mockedCardGrid: jest.Mock = CardGrid as unknown as jest.Mock;
+  const mockedCardSwiper: jest.Mock = CardSwiper as unknown as jest.Mock;
 
   // The strict `cardList` type forbids nullish values, but runtime data can
   // supply one; the entry must normalize it to [] so neither child crashes.
@@ -131,6 +131,21 @@ describe('UiCardList nullish cardList degradation', () => {
     render(React.createElement(UiCardList, { cardList }));
 
     expect(mockedCardGrid.mock.calls[0][0]).toEqual(expect.objectContaining({ cardList }));
+  });
+
+  it('reuses one empty-list fallback across re-renders', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    const { rerender } = render(React.createElement(UiCardList, { cardList: nullishCardList }));
+    rerender(React.createElement(UiCardList, { cardList: nullishCardList }));
+
+    // The children are memoized on shallow prop equality, so a fresh `[]` per
+    // render would hand them a new `cardList` every pass and undo it. Identity,
+    // not deep equality, is what the memo compares.
+    const [first, second]: UiCardItemData[][] = mockedCardGrid.mock.calls.map(
+      call => call[0].cardList
+    );
+    expect(second).toBe(first);
   });
 
   it('warns in development when cardList is nullish', () => {

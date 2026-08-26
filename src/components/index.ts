@@ -41,3 +41,4 @@ export {
 } from './ui-breakpoints';
 export { default as UiTextFieldForm } from './ui-text-field-form';
 export { default as UiTooltip } from './ui-tooltip';
+export { default as UiErrorBoundary } from './ui-error-boundary';
