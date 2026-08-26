@@ -137,6 +137,7 @@ describe('UiForm', () => {
     // status region below is what announces), so there is no progressbar role.
     const button: HTMLElement = screen.getByRole('button', { name: 'Submit' });
     expect(button).toBeDisabled();
+    // eslint-disable-next-line testing-library/no-node-access
     expect(button.querySelector('.MuiCircularProgress-root')).not.toBeNull();
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
@@ -158,6 +159,7 @@ describe('UiForm', () => {
     const status: HTMLElement = screen.getByRole('status');
     expect(status).toHaveTextContent('Signing you in');
     expect(status).toHaveAttribute('aria-atomic', 'true');
+    // eslint-disable-next-line testing-library/no-node-access
     expect(screen.getByRole('button', { name: 'Submit' }).closest('form')).toHaveAttribute(
       'aria-busy',
       'true'
@@ -177,6 +179,7 @@ describe('UiForm', () => {
     );
 
     expect(screen.getByRole('status')).toHaveTextContent('');
+    // eslint-disable-next-line testing-library/no-node-access
     expect(screen.getByRole('button', { name: 'Submit' }).closest('form')).toHaveAttribute(
       'aria-busy',
       'false'
@@ -198,6 +201,7 @@ describe('UiForm', () => {
 
     const button: HTMLElement = screen.getByRole('button', { name: 'Submit' });
     expect(button).toBeDisabled();
+    // eslint-disable-next-line testing-library/no-node-access
     expect(button.querySelector('.MuiCircularProgress-root')).toBeNull();
   });
 });

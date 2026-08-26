@@ -46,10 +46,12 @@ describe('UiBackToMain default icon', () => {
     render(<UiBackToMain />);
 
     const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
+    // eslint-disable-next-line testing-library/no-node-access
     const chevron: SVGElement | null = link.querySelector('svg');
     expect(chevron).not.toBeNull();
     // The CRM back-arrow export geometry: an 8x14 chevron at stroke 2, round caps.
     expect(chevron).toHaveAttribute('viewBox', '0 0 8 14');
+    // eslint-disable-next-line testing-library/no-node-access
     const path: SVGElement | null = (chevron as SVGElement).querySelector('path');
     expect(path).toHaveAttribute('d', 'M7 13L1 7L7 1');
     expect(path).toHaveAttribute('stroke', 'currentColor');
@@ -60,6 +62,7 @@ describe('UiBackToMain default icon', () => {
     render(<UiBackToMain />);
 
     const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
+    // eslint-disable-next-line testing-library/no-node-access
     const chevron: SVGElement | null = link.querySelector('svg');
     expect(chevron).toHaveAttribute('aria-hidden', 'true');
     expect(chevron).toHaveAttribute('focusable', 'false');
@@ -69,6 +72,7 @@ describe('UiBackToMain default icon', () => {
     render(<UiBackToMain icon={<span>home</span>} />);
 
     const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
+    // eslint-disable-next-line testing-library/no-node-access
     expect(link.querySelector('svg')).toBeNull();
   });
 });
