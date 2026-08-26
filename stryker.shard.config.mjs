@@ -18,8 +18,9 @@ if (index >= total) {
 
 // Byte-weighted longest-processing-time bin packing (see mutation-scope.mjs);
 // sharding by file is mutation-score-preserving regardless of how the split is
-// balanced: each mutant runs against the full suite no matter which shard owns
-// its file, so the union of disjoint shards equals one full run.
+// balanced: a mutant's related-test set is derived from the mutated file, so
+// it is identical no matter which shard owns that file, and the union of
+// disjoint shards equals one full run.
 // scripts/ci/merge-mutation-reports.ts re-enforces the real break gate over
 // that union.
 const sliced = shardMutateFiles(total, index);

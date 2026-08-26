@@ -338,8 +338,10 @@ derive from it, so the two can no longer drift apart and silently drop mutants f
 score. Each shard uploads a per-shard JSON report. A final `merge and enforce gate` job runs
 `make merge-mutation-reports`, which unions the shard reports and re-enforces the **unchanged**
 Stryker `break` threshold (`stryker.config.mjs` — `break: 80`) over the whole set, computing the
-mutation score exactly as an unsharded run would. Sharding by file is score-preserving: each mutant
-runs against the full suite regardless of which shard owns it. A missing shard report makes the
+mutation score exactly as an unsharded run would. Sharding by file is score-preserving: a
+mutant's related-test set is derived from the mutated file, so it is identical no matter which
+shard owns that file — sharding partitions the work without changing any mutant's verdict. A
+missing shard report makes the
 merge fail (it never passes the gate vacuously). The merge math is unit-tested in
 `tests/unit/mutation-report.test.ts`, and the runner settings above are pinned by
 `tests/unit/mutation-runner-scope.test.ts`. Both jobs carry `timeout-minutes` as a regression

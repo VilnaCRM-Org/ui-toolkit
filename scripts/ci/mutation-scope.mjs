@@ -18,8 +18,10 @@ const MUTATE_ROOT = 'src/components';
 // tiebreak decides shard membership (see shardMutateFiles below), and a
 // locale-aware compare can order the same two paths differently depending on
 // the machine's locale. Every runner must compute the identical split.
+// Equality returns 0 to satisfy the sort() comparator contract (paths are
+// unique in practice, so this is a contract fix, not a behaviour change).
 function compareCodeUnits(a, b) {
-  return a < b ? -1 : 1;
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 function walk(dir) {

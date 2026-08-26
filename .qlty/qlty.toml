@@ -103,8 +103,9 @@ name = "eslint"
 # plugin calls `context.getFilename()`, which ESLint 10 removed, so every build
 # dies with "Error while loading rule 'react/display-name'" and the check
 # reports only a generic "Build errored" with no findings attached. Keep in step
-# with package.json so Qlty and `make lint-next` stay the same check.
-version = "9.39.4"
+# with the version bun.lock actually resolves (not just package.json's range),
+# so Qlty and `make lint-next` stay the same check.
+version = "9.39.5"
 package_file = "package.json"
 package_filters = ["eslint", "jest", "prettier"]
 

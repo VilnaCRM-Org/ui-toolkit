@@ -39,8 +39,14 @@ const MUTATION_BREAK_THRESHOLD_FLOOR = 80;
 const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7];
 
 // Single- and double-quoted, with or without an explicit `/index` and a
-// trailing slash — every variant resolves to the same barrel module.
-const BARREL_IMPORT_PATTERN = /from ['"](\.\.\/)+src\/components(\/index)?\/?['"]/;
+// trailing slash — every variant resolves to the same barrel module. The
+// `@/` alias counts too: jest.config.ts's moduleNameMapper maps `^@/(.*)$`
+// to `<rootDir>/src/$1`, so an `@/components` specifier resolves to the same
+// public barrel and would otherwise bypass this guard undetected. (Written
+// here as `@/components`, not `from '...'`, so this comment doesn't trip the
+// pattern it documents.)
+const BARREL_IMPORT_PATTERN =
+  /from ['"](?:(?:\.\.\/)+src\/components|@\/components)(?:\/index)?\/?['"]/;
 
 interface StrykerJestOptions {
   configFile: string;
@@ -82,7 +88,6 @@ interface ProbeResult {
   strykerConfig: StrykerConfigShape;
   mutateFiles: string[];
   shards: Record<string, string[][]>;
-  determinism: { run1: string[]; run2: string[] };
   rangeGuards: RangeGuardResults;
 }
 
@@ -111,7 +116,6 @@ process.stdout.write(JSON.stringify({
   strykerConfig,
   mutateFiles: collectMutateFiles(),
   shards,
-  determinism: { run1: shardMutateFiles(6, 0), run2: shardMutateFiles(6, 0) },
   rangeGuards: {
     totalZero: tryCall(() => shardMutateFiles(0, 0)),
     totalNegative: tryCall(() => shardMutateFiles(-1, 0)),
@@ -123,14 +127,41 @@ process.stdout.write(JSON.stringify({
 }));
 `;
 
-function runProbe(): ProbeResult {
+// `envOverride` lets callers (the cross-locale check below) run this exact
+// script under a different LC_ALL without duplicating it.
+function runProbe(envOverride?: Readonly<Record<string, string>>): ProbeResult {
   const stdout = execFileSync('node', ['--input-type=module'], {
     cwd: REPO_ROOT,
     input: PROBE_SCRIPT,
     encoding: 'utf8',
     maxBuffer: 16 * 1024 * 1024,
+    env: envOverride ? { ...process.env, ...envOverride } : process.env,
   });
   return JSON.parse(stdout) as ProbeResult;
+}
+
+// Separate script, not a shared one: `stryker.shard.config.mjs` reads
+// MUTATION_SHARD_TOTAL/INDEX at import time, and ESM caches a module on first
+// import, so the env must be set before THIS process's one import happens.
+// One subprocess per (total, index) case is the simplest way to guarantee that.
+const SHARD_WIRING_PROBE_SCRIPT = `
+import shardConfig from './stryker.shard.config.mjs';
+process.stdout.write(JSON.stringify(shardConfig.mutate));
+`;
+
+function runShardWiringProbe(total: number, index: number): string[] {
+  const stdout = execFileSync('node', ['--input-type=module'], {
+    cwd: REPO_ROOT,
+    input: SHARD_WIRING_PROBE_SCRIPT,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+    env: {
+      ...process.env,
+      MUTATION_SHARD_TOTAL: String(total),
+      MUTATION_SHARD_INDEX: String(index),
+    },
+  });
+  return JSON.parse(stdout) as string[];
 }
 
 // Generic recursive walker, reused for both the independent src/components
@@ -215,6 +246,26 @@ function stemOf(relPath: string): string {
   return basename(relPath).split('.')[0] ?? '';
 }
 
+// Comparison partner for LC_ALL=C: en_US collates case/diacritics differently
+// from C's plain byte order, so it actually exercises the localeCompare-vs-
+// code-unit split the comparator documents. Fall back to C.UTF-8 only if
+// en_US truly isn't installed here, so the check never quietly degrades into
+// comparing C against itself (which would pass for the wrong reason).
+function pickSecondaryLocale(): string {
+  const installed = execFileSync('locale', ['-a'], { encoding: 'utf8' });
+  return /^en_US\.(utf-?8)$/im.test(installed) ? 'en_US.UTF-8' : 'C.UTF-8';
+}
+
+function extractShardTotals(workflowText: string): number[] {
+  const pattern = /MUTATION_SHARD_TOTAL:\s*'(\d+)'/g;
+  return [...workflowText.matchAll(pattern)].map(m => Number(m[1]));
+}
+
+function extractMatrixIndices(workflowText: string): number[] {
+  const match = /index:\s*\[([^\]]*)\]/.exec(workflowText);
+  return match ? match[1].split(',').map(Number) : [];
+}
+
 let probe: ProbeResult;
 
 beforeAll(() => {
@@ -289,8 +340,14 @@ describe('mutate-scope integrity (scripts/ci/mutation-scope.mjs)', () => {
     expect([...flat].sort()).toEqual([...probe.mutateFiles].sort());
   });
 
-  it('returns the same slice on repeated calls with identical arguments', () => {
-    expect(probe.determinism.run1).toEqual(probe.determinism.run2);
+  it('returns identical shard slices under LC_ALL=C and a real second locale', () => {
+    // Two calls in one process (the old version of this test) are always
+    // equal and can never catch a regression. The actual risk the comparator
+    // comment warns about is locale-dependent sort order across machines, so
+    // this must run the split in two real processes under two real locales.
+    const underC = runProbe({ LC_ALL: 'C' });
+    const underSecondary = runProbe({ LC_ALL: pickSecondaryLocale() });
+    expect(underSecondary.shards).toEqual(underC.shards);
   });
 
   it.each([
@@ -312,7 +369,10 @@ describe('mutate-scope integrity (scripts/ci/mutation-scope.mjs)', () => {
     const binPacked = probe.shards['6'] ?? [];
     const heaviestBinPacked = Math.max(...binPacked.map(shard => shardWeight(shard, sizes)));
     const heaviestRoundRobin = roundRobinHeaviestWeight(files, sizes, 6);
-    expect(heaviestBinPacked).toBeLessThanOrEqual(heaviestRoundRobin);
+    // Strict: equality would mean bin packing gave up nothing over round
+    // robin, which is the regression (a silent revert to round robin) this
+    // guard exists to catch.
+    expect(heaviestBinPacked).toBeLessThan(heaviestRoundRobin);
   });
 });
 
@@ -338,5 +398,27 @@ describe('structural-guard exclusion (jest.mutation.config.ts)', () => {
   it('no other suite under tests/ imports the public barrel', () => {
     const barrelImporters = allSuiteFiles().filter(importsPublicBarrel).sort();
     expect(barrelImporters).toEqual([...STRUCTURAL_GUARD_FILES].sort());
+  });
+});
+
+// The suites above pin shardMutateFiles() in isolation. Neither one checks
+// that stryker.shard.config.mjs actually calls it, nor that the CI matrix
+// agrees with MUTATION_SHARD_TOTAL — the exact drift the workflow's own
+// lock-step comment warns about but nothing previously enforced.
+describe('shard wiring (stryker.shard.config.mjs + CI matrix agree)', () => {
+  it("stryker.shard.config.mjs's mutate array is shardMutateFiles(total, index)", () => {
+    const wired = runShardWiringProbe(6, 2);
+    expect(wired).toEqual(probe.shards['6']?.[2] ?? []);
+  });
+
+  it('keeps MUTATION_SHARD_TOTAL and the index matrix in lock-step', () => {
+    const text = readFileSync(join(REPO_ROOT, '.github/workflows/mutation-testing.yml'), 'utf8');
+    const totals = extractShardTotals(text);
+    expect(totals.length).toBeGreaterThan(0);
+    expect(new Set(totals).size).toBe(1);
+
+    const total = totals[0] ?? 0;
+    const indices = extractMatrixIndices(text).sort((a, b) => a - b);
+    expect(indices).toEqual(Array.from({ length: total }, (_, i) => i));
   });
 });
