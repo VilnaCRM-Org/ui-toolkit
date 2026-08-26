@@ -64,10 +64,13 @@ strength, Stryker), `make test-bats` (Makefile and CI shell flows), `make test-m
 parallel matrix (`make test-mutation-shard`), bin-packed by file size, and a final job merges the
 per-shard reports and re-enforces the same `break` threshold (`make merge-mutation-reports`) —
 same gate, much faster. Each mutant's Jest run is scoped to the suites that actually reach the
-mutated module, so a new test must deep-import the component under test, never the public barrel
-`'../../src/components'`, or it stays "related" to every mutant and the gate slows back down.
-Every workflow cancels superseded runs via `concurrency`, so a new push aborts the previous one.
-See CONTRIBUTING.md ("CI speed and the mutation-testing gate") for the full flow.
+mutated module, so a component-behaviour test must deep-import the component under test rather
+than the public barrel `'../../src/components'`, or it stays "related" to every mutant and the
+gate slows back down. Exception: structural guard suites whose subject IS the public surface
+(`components-index`, `ui-core-contract`) may import the barrel, and are excluded from the
+mutation tier for exactly that reason. Every workflow cancels superseded runs via `concurrency`,
+so a new push aborts the previous one. See CONTRIBUTING.md ("CI speed and the mutation-testing
+gate") for the full flow.
 
 ### Step 2 — Cover Every Applicable Scenario Class
 

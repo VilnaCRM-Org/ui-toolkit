@@ -38,7 +38,9 @@ const MUTATION_BREAK_THRESHOLD_FLOOR = 80;
 
 const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7];
 
-const BARREL_IMPORT_PATTERN = /from '(\.\.\/)+src\/components'/;
+// Single- and double-quoted, with or without an explicit `/index` and a
+// trailing slash — every variant resolves to the same barrel module.
+const BARREL_IMPORT_PATTERN = /from ['"](\.\.\/)+src\/components(\/index)?\/?['"]/;
 
 interface StrykerJestOptions {
   configFile: string;

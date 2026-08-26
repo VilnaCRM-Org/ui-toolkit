@@ -22,10 +22,14 @@ const config = {
   tsconfigFile: 'tsconfig.stryker.json',
   typescriptChecker: {
     // Deliberate accuracy-for-speed trade, per Stryker's own docs: skips some
-    // of the checker's cross-file accuracy work in exchange for throughput.
-    // A mutant this misclassifies still falls back to running as a normal
-    // Jest mutant, so the trade only risks missing a CompileError shortcut,
-    // never miscounting the final score.
+    // of the checker's cross-file accuracy work in exchange for throughput,
+    // which can leave a type-invalid mutant with a status other than
+    // CompileError — Stryker's docs say the report "may not be 100%
+    // accurate" as a result. A misclassified mutant just runs as a normal
+    // Jest mutant instead of being excluded; if it survives, it counts as
+    // Survived. The error is CONSERVATIVE in direction — it can only depress
+    // the score, never inflate it, so it cannot turn a failing gate green —
+    // but the denominator is not exact.
     prioritizePerformanceOverAccuracy: true,
   },
   concurrency: 2,

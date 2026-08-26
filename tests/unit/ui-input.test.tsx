@@ -115,6 +115,19 @@ describe('UiInput', () => {
     expect(inputElement).toHaveAttribute('aria-describedby', 'obj-desc');
     expect(inputElement).toHaveAttribute('aria-label', 'input-props-wins');
   });
+
+  it('forwards size and variant to UiInput', () => {
+    render(<UiInput size="small" variant="filled" />);
+
+    const input: HTMLElement = screen.getByRole('textbox');
+    // The filled variant class lands on the input element itself.
+    expect(input).toHaveClass('MuiFilledInput-input');
+    // The filled-root and small-size classes live on the MUI wrapper element.
+    // eslint-disable-next-line testing-library/no-node-access -- wrapper class, no semantic query
+    const inputRoot: HTMLElement | null = input.closest('.MuiInputBase-root');
+    expect(inputRoot).toHaveClass('MuiFilledInput-root');
+    expect(inputRoot).toHaveClass('MuiInputBase-sizeSmall');
+  });
 });
 
 describe('UiInput accessible-name guidance', () => {

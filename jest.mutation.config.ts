@@ -18,10 +18,14 @@ import baseConfig from './jest.config';
 // for every mutant and the run would stay as slow as an unfiltered one.
 //
 // They are safe to drop from the mutation tier because none of them can kill a
-// mutant: they assert on names and files, never on rendered behaviour. That is
-// measured, not assumed — `tests/unit/mutation-runner-scope.test.ts` fails if
-// any entry here starts killing mutants, and dropping a test can only ever
-// LOWER the score, never inflate it. All of them still run in the unit gate.
+// mutant: they assert on names and files, never on rendered behaviour. That
+// zero-kill property was verified point-in-time against the baseline mutation
+// report's `killedBy` data (main run 32894014689, 750 mutants: both suites
+// recorded zero kills, sole or shared). The guard test
+// (`tests/unit/mutation-runner-scope.test.ts`) pins the exclusion list and the
+// no-other-barrel-importer rule, not a live kill count. Dropping a suite from
+// the mutation tier can only ever LOWER the score, never inflate it, so this
+// cannot manufacture a passing gate. All of them still run in the unit gate.
 const STRUCTURAL_GUARDS = [
   '<rootDir>/tests/unit/components-index\\.test\\.ts$',
   '<rootDir>/tests/unit/ui-core-contract\\.test\\.tsx$',
