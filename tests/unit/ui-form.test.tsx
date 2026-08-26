@@ -120,7 +120,7 @@ describe('UiForm', () => {
     expect(screen.queryByText('Use your work email')).not.toBeInTheDocument();
   });
 
-  it('shows the loader and disables submit while submitting is forced on', () => {
+  it('shows the in-button spinner and disables submit while submitting is forced on', () => {
     render(
       <UiForm<FormValues>
         onSubmit={jest.fn()}
@@ -133,8 +133,54 @@ describe('UiForm', () => {
       </UiForm>
     );
 
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    // CRM parity: the spinner renders inside the button (aria-hidden — the
+    // status region below is what announces), so there is no progressbar role.
+    const button: HTMLElement = screen.getByRole('button', { name: 'Submit' });
+    expect(button).toBeDisabled();
+    expect(button.querySelector('.MuiCircularProgress-root')).not.toBeNull();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
+  it('marks the form busy and announces the submitting state politely', () => {
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        submittingLabel="Signing you in"
+        title="Sign in"
+        isSubmitting
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    const status: HTMLElement = screen.getByRole('status');
+    expect(status).toHaveTextContent('Signing you in');
+    expect(status).toHaveAttribute('aria-atomic', 'true');
+    expect(screen.getByRole('button', { name: 'Submit' }).closest('form')).toHaveAttribute(
+      'aria-busy',
+      'true'
+    );
+  });
+
+  it('keeps the status region empty while idle', () => {
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('');
+    expect(screen.getByRole('button', { name: 'Submit' }).closest('form')).toHaveAttribute(
+      'aria-busy',
+      'false'
+    );
   });
 
   it('disables submit when isSubmitDisabled is set without a loader', () => {
@@ -150,8 +196,9 @@ describe('UiForm', () => {
       </UiForm>
     );
 
-    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    const button: HTMLElement = screen.getByRole('button', { name: 'Submit' });
+    expect(button).toBeDisabled();
+    expect(button.querySelector('.MuiCircularProgress-root')).toBeNull();
   });
 });
 
