@@ -46,33 +46,54 @@ const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7];
 const BARREL_SPECIFIER = String.raw`(?:(?:\.\.\/)+src\/components|@\/components)(?:\/index)?\/?`;
 
 // Three ways to reach the barrel, all with the same effect on the module graph:
-// a binding import (`from <barrel>`), a side-effect import (a line that starts
-// with `import` and goes straight to the specifier), and a CommonJS `require`
-// (which eslint leaves enabled for this tree). A side-effect import binds nothing
-// but still loads every component, so leaving it out would let the audits below
-// pass over the very thing they exist to catch.
+// a binding import (`from <barrel>`), a side-effect import (`import` straight to
+// the specifier), and a CommonJS `require` (which eslint leaves enabled for this
+// tree). A side-effect import binds nothing but still loads every component, so
+// leaving it out would let the audits below pass over the very thing they exist
+// to catch.
 //
-// The bare-`import` and `require` arms are line-scoped, so a prose comment naming
-// either shape cannot trip them. `require` accepts ANY non-comment prefix rather
-// than a list of binding keywords — `const x =`, `module.exports =`, `exports.x =`
-// and a bare call all load the barrel identically, and enumerating the forms just
-// invites the next one to slip through. The `from` arm cannot be line-scoped:
-// Prettier wraps a long import list and leaves `from` on its own continuation
-// line, and anchoring would turn that into a silent miss — far worse than the
-// false positive. So, as before, this file never writes that shape literally.
-const NOT_A_COMMENT_LINE = String.raw`^(?!\s*(?:\/\/|\*|\/\*))[^'"\n]*`;
-
+// A regex cannot tell code from prose. Anchoring the `require` arm to a line
+// start missed `module.exports = require(<barrel>)`; letting it take any prefix
+// then matched a TRAILING comment — both were caught in review, and chasing one
+// with the other just trades a false negative for a false positive forever.
+//
+// So the audits strip comments FIRST and match against code only, which lets the
+// pattern go back to being a plain "one of the three import shapes, then the
+// barrel specifier" with no anchors at all.
 const BARREL_IMPORT_PATTERN = new RegExp(
-  String.raw`(?:from\s*|^\s*import\s*|` +
-    NOT_A_COMMENT_LINE +
-    String.raw`require\(\s*)['"]` +
-    BARREL_SPECIFIER +
-    String.raw`['"]`,
-  'm'
+  String.raw`(?:from|import|require\()\s*['"]` + BARREL_SPECIFIER + String.raw`['"]`
 );
 
-// Deliberately assembled, never written as a literal specifier next to an
-// import keyword, so this file stays out of its own audit.
+// Block comments go whole. A line comment is cut at the first `//` that is not
+// inside a string, so a quoted `//` — a URL in a fixture, say — cannot truncate
+// the line and hide an import that follows it.
+function stripLineComment(line: string): string {
+  let quote: string = '';
+  for (let index: number = 0; index < line.length - 1; index += 1) {
+    const character: string = line.charAt(index);
+    if (quote !== '') {
+      quote = character === quote ? '' : quote;
+    } else if (character === "'" || character === '"' || character === '`') {
+      quote = character;
+    } else if (character === '/' && line.charAt(index + 1) === '/') {
+      return line.slice(0, index);
+    }
+  }
+  return line;
+}
+
+function codeOf(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .map(stripLineComment)
+    .join('\n');
+}
+
+function containsBarrelImport(source: string): boolean {
+  return BARREL_IMPORT_PATTERN.test(codeOf(source));
+}
+
 const PUBLIC_BARREL_SPECIFIER = `@/${'components'}`;
 
 interface StrykerJestOptions {
@@ -237,7 +258,7 @@ function allSourceModules(): string[] {
 }
 
 function importsPublicBarrel(relPath: string): boolean {
-  return BARREL_IMPORT_PATTERN.test(readFileSync(join(REPO_ROOT, relPath), 'utf8'));
+  return containsBarrelImport(readFileSync(join(REPO_ROOT, relPath), 'utf8'));
 }
 
 // Narrow glob->RegExp translation, only for the shapes jest.config.ts's
@@ -467,18 +488,29 @@ describe('structural-guard exclusion (jest.mutation.config.ts)', () => {
     ],
     ['named CommonJS re-export', (barrel: string): string => `exports.ui = require('${barrel}');`],
   ])('the audit pattern catches a %s of the barrel', (_label, build) => {
-    expect(BARREL_IMPORT_PATTERN.test(build(PUBLIC_BARREL_SPECIFIER))).toBe(true);
-    expect(BARREL_IMPORT_PATTERN.test(build(`${PUBLIC_BARREL_SPECIFIER}/ui-button`))).toBe(false);
+    expect(containsBarrelImport(build(PUBLIC_BARREL_SPECIFIER))).toBe(true);
+    expect(containsBarrelImport(build(`${PUBLIC_BARREL_SPECIFIER}/ui-button`))).toBe(false);
   });
 
-  // The anchored arms exist so prose can describe these shapes without a file
-  // that imports nothing being failed by the audits above.
+  // Comment stripping is what lets prose describe these shapes without failing a
+  // file that imports nothing — including a comment trailing real code, which no
+  // line anchor can catch.
   it.each([
     ['line comment', (barrel: string): string => `// import '${barrel}';`],
     ['line comment naming a require', (barrel: string): string => `// require('${barrel}')`],
-    ['jsdoc continuation', (barrel: string): string => ` * require('${barrel}')`],
+    ['jsdoc block', (barrel: string): string => `/**\n * require('${barrel}')\n */`],
+    ['block comment', (barrel: string): string => `/* import '${barrel}'; */`],
+    [
+      'comment trailing real code',
+      (barrel: string): string => `const a = 1; // require('${barrel}')`,
+    ],
   ])('the audit pattern ignores a %s', (_label, build) => {
-    expect(BARREL_IMPORT_PATTERN.test(build(PUBLIC_BARREL_SPECIFIER))).toBe(false);
+    expect(containsBarrelImport(build(PUBLIC_BARREL_SPECIFIER))).toBe(false);
+  });
+
+  it('does not let a quoted // truncate a line and hide the import after it', () => {
+    const line: string = `const u = 'https://example.test'; import '${PUBLIC_BARREL_SPECIFIER}';`;
+    expect(containsBarrelImport(line)).toBe(true);
   });
 });
 
