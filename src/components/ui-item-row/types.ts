@@ -6,7 +6,7 @@ import type { SxProps, Theme } from '@mui/material';
  * the ONLY variant axis — there is intentionally no auth/locked semantic prop
  * (the open padlock is decorative for Story 3.1; see the a11y contract §5.2/5.3).
  */
-export type ItemRowMethod = 'get' | 'put' | 'post' | 'delete';
+export type ItemRowMethod = 'get' | 'put' | 'post' | 'delete' | 'patch';
 
 /**
  * One REST-API endpoint row (Figma "atom switcher"): an HTTP-method badge, the

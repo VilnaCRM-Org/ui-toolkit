@@ -18,6 +18,7 @@ const METHOD_ACCENT: Record<ItemRowMethod, string> = {
   put: palette.secondary.main,
   post: palette.success.main,
   delete: palette.error.main,
+  patch: palette.patchMethod.main,
 };
 
 const METHOD_ACCENT_HOVER: Record<ItemRowMethod, string> = {
@@ -25,25 +26,33 @@ const METHOD_ACCENT_HOVER: Record<ItemRowMethod, string> = {
   put: palette.putMethodHover.main,
   post: palette.postMethodHover.main,
   delete: palette.deleteMethodHover.main,
+  patch: palette.patchMethodHover.main,
 };
 
-// Badge drop shadow: 0 8px 13.5px <tint>, per method.
+// Badge drop shadow: 0 8px 13.5px <tint>, per method. The website's badge carries
+// no shadow at all, so these are the Figma masters — and PATCH, which Figma has no
+// master for, takes the neutral tint GET and the grey recipe already share rather
+// than inventing an accent-derived one.
+const NEUTRAL_BADGE_SHADOW: string = '0 8px 13.5px rgba(49, 59, 67, 0.14)';
+
 const METHOD_BADGE_SHADOW: Record<ItemRowMethod, string> = {
-  get: '0 8px 13.5px rgba(49, 59, 67, 0.14)',
+  get: NEUTRAL_BADGE_SHADOW,
   put: '0 8px 13.5px rgba(255, 122, 0, 0.48)',
   post: '0 8px 13.5px rgba(54, 185, 137, 0.43)',
   delete: '0 8px 13.5px #F4B0B0',
+  patch: NEUTRAL_BADGE_SHADOW,
 };
 
-// Row hover shadow: 0 4px 9px <tint>, per method.
+// Row hover shadow: 0 4px 9px <tint>, per method. Every master mixes its tint at
+// 18%, so PATCH — which has no master — derives its own from the accent the same way.
 const METHOD_ROW_HOVER_SHADOW: Record<ItemRowMethod, string> = {
   get: '0 4px 9px rgba(30, 185, 255, 0.18)',
   put: '0 4px 9px rgba(221, 168, 55, 0.18)',
   post: '0 4px 9px rgba(75, 157, 71, 0.18)',
   delete: '0 4px 9px rgba(199, 44, 44, 0.18)',
+  patch: `0 4px 9px ${alpha(palette.patchMethod.main, 0.18)}`,
 };
 
-const GREY_BADGE_SHADOW: string = '0 8px 13.5px rgba(49, 59, 67, 0.14)';
 const GREY_ROW_HOVER_SHADOW: string = '0 4px 9px rgba(106, 106, 106, 0.18)';
 
 // The full colour recipe a row renders from. `muted` swaps the whole recipe to
@@ -64,18 +73,21 @@ export interface RowRecipe {
 
 // Muted/grey recipe (Figma GREY row): brand-gray border, white badge pill with
 // Font/300 ink, Font/300 path over Font/400 description; hover darkens the badge
-// ink and path to #1C2022 while the description and border hold.
+// ink and path to #1C2022 while the description and border hold. The chevron is the
+// one part the grey status does NOT recolour — the website ships one dark arrow
+// asset (#1B2327) for every row, deprecated included, and brand-gray on the muted
+// tint would resolve to 1.14:1 (WCAG 1.4.11 wants 3:1 for a meaningful glyph).
 const GREY_RECIPE: RowRecipe = {
   accent: palette.brandGray.main,
   accentHover: palette.brandGray.main,
   tint: palette.backgroundGrey200.main,
   badgeInk: palette.grey300.main,
   badgeInkHover: palette.mutedInkHover.main,
-  badgeShadow: GREY_BADGE_SHADOW,
+  badgeShadow: NEUTRAL_BADGE_SHADOW,
   pathInk: palette.grey300.main,
   pathInkHover: palette.mutedInkHover.main,
   descInk: palette.grey400.main,
-  chevronInk: palette.brandGray.main,
+  chevronInk: palette.darkSecondary.main,
   rowHoverShadow: GREY_ROW_HOVER_SHADOW,
 };
 

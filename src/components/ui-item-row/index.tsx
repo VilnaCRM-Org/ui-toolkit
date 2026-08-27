@@ -2,9 +2,9 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
+import { rowContainerSx } from './container-sx';
 import { resolveRecipe } from './recipe';
 import { RowContent } from './row-content';
-import { rowContainerSx } from './styles';
 import type { UiItemRowProps } from './types';
 import { useItemRow, type ItemRowModel } from './use-item-row';
 

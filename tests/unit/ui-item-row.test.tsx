@@ -3,8 +3,9 @@ import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import { UiItemRow } from '../../src/components';
+import { rowContainerSx } from '../../src/components/ui-item-row/container-sx';
 import { resolveRecipe, type RowRecipe } from '../../src/components/ui-item-row/recipe';
-import { iconGroupSx, rowContainerSx } from '../../src/components/ui-item-row/styles';
+import { iconGroupSx } from '../../src/components/ui-item-row/styles';
 import { useItemRow, type ItemRowModel } from '../../src/components/ui-item-row/use-item-row';
 
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -372,6 +373,21 @@ describe('resolveRecipe — per-method colour maps (exact, mutation-killing)', (
     });
   });
 
+  it('maps PATCH to the purple accent recipe', () => {
+    const r: RowRecipe = resolveRecipe('patch', false);
+    expect(r).toMatchObject({
+      accent: '#9B59B6',
+      accentHover: '#7A4092',
+      tint: 'rgba(155, 89, 182, 0.1)',
+      badgeInk: '#9B59B6',
+      badgeInkHover: '#7A4092',
+      // No Figma master exists for PATCH: the badge takes the neutral tint and the
+      // row shadow is derived from the accent at the shared 18%.
+      badgeShadow: '0 8px 13.5px rgba(49, 59, 67, 0.14)',
+      rowHoverShadow: '0 4px 9px rgba(155, 89, 182, 0.18)',
+    });
+  });
+
   it('swaps the whole recipe to grey when muted, regardless of method', () => {
     const r: RowRecipe = resolveRecipe('get', true);
     expect(r).toEqual({
@@ -384,7 +400,9 @@ describe('resolveRecipe — per-method colour maps (exact, mutation-killing)', (
       pathInk: '#969B9D',
       pathInkHover: '#1C2022',
       descInk: '#D0D4D8',
-      chevronInk: '#E1E7EA',
+      // The chevron holds the dark website arrow ink even while muted — brand-gray
+      // on the #f4f5f6 muted tint resolves to 1.14:1.
+      chevronInk: '#1B2327',
       rowHoverShadow: '0 4px 9px rgba(106, 106, 106, 0.18)',
     });
   });
@@ -421,7 +439,7 @@ describe('rowContainerSx — layout / interactive / expanded assembly', () => {
       boxShadow: '0 8px 13.5px rgba(49, 59, 67, 0.14)',
       // On mobile the transparent badge trades box-shadow (a smudge behind the
       // glyphs) for a glyph-hugging drop-shadow filter derived from the same value.
-      '@media (max-width: 480px)': {
+      '@media (max-width: 640px)': {
         boxShadow: 'none',
         filter: 'drop-shadow(0 8px 13.5px rgba(49, 59, 67, 0.14))',
       },
@@ -429,6 +447,23 @@ describe('rowContainerSx — layout / interactive / expanded assembly', () => {
     expect(base['& .ui-item-row__path']).toEqual({ color: '#1A1C1E' });
     expect(base['& .ui-item-row__description']).toEqual({ color: '#404142' });
     expect(base['& .ui-item-row__chevron']).toEqual({ color: '#1B2327' });
+  });
+
+  it('follows the website breakpoint tiers for the right inset and the row gap', () => {
+    const base: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: false,
+      expanded: false,
+      sx: undefined,
+    });
+    // `for-large-screens` (<=1024px) widens the right inset to 24px; `for-small-screens`
+    // (<=640px) then tightens the whole box and drops the badge->text gap to 12px.
+    expect(base['@media (max-width: 1024px)']).toEqual({ paddingRight: '1.5rem' });
+    expect(base['@media (max-width: 640px)']).toEqual({
+      gap: '0.75rem',
+      paddingLeft: '0.625rem',
+      paddingRight: '1rem',
+    });
   });
 
   it('omits the interactive block for a static row', () => {

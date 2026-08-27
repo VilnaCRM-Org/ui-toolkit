@@ -1,20 +1,22 @@
-// Layout styling for UiItemRow. One DOM tree serves both breakpoints — every rule
-// below carries its mobile override inline under MOBILE_MAX, so the layout switch
-// is CSS-only and the reading order never changes. The per-method colours arrive
-// pre-resolved as a `RowRecipe` (see `recipe.ts`); this module only positions the
-// pieces and threads the recipe onto the container.
+// Element layout for UiItemRow. One DOM tree serves every breakpoint — each rule
+// below carries its tablet/mobile overrides inline under TABLET_MAX/MOBILE_MAX, so
+// the layout switch is CSS-only and the reading order never changes. The colour half
+// (the recipe-driven container `sx`) lives in `container-sx.ts`, so each module stays
+// within the maintainability budget.
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
 
-import { crmBreakpointValues } from '../ui-breakpoints';
-
-import type { RowRecipe } from './recipe';
+import { websiteBreakpointValues } from '../ui-breakpoints';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
-// Mobile breakpoint from the CRM scale (480px), matching the calendar control.
-const MOBILE_MAX: string = `@media (max-width: ${crmBreakpointValues.sm}px)`;
+// The row mirrors the website's swagger operation block, so it uses the WEBSITE
+// breakpoint scale, not the CRM one: `for-small-screens` is max-width 640px and
+// `for-large-screens` max-width 1024px. Declared (and applied) tablet-first so the
+// narrower mobile rule always wins where the two overlap.
+const TABLET_MAX: string = `@media (max-width: ${websiteBreakpointValues.lg}px)`;
+export const MOBILE_MAX: string = `@media (max-width: ${websiteBreakpointValues.sm}px)`;
 
 // Stable class hooks so the container owns every colour/hover/expanded rule via
 // descendant selectors, keeping the child element styles static and recipe-free.
@@ -27,10 +29,11 @@ export const CHEVRON_CLASS: string = 'ui-item-row__chevron';
 
 // The container box: 52px tall, 8px radius, 1px accent border, tint fill, overflow
 // clipped. Badge is inset 4px inside the border on desktop. The right icon sits
-// 19px from the outer edge (18px padding + 1px border). On mobile the padded box
-// tightens (10px left / 16px right, +1px border) and the 16px container gap carries
-// the badge→path separation the mobile badge's dropped side pads used to supply.
-const CONTAINER_BASE: object = {
+// 19px from the outer edge (18px padding + 1px border); at or below 1024px the
+// website widens that right inset to 24px. On mobile the padded box tightens (10px
+// left / 16px right, +1px border) and the 12px container gap carries the badge→path
+// separation the mobile badge's dropped side pads used to supply.
+export const CONTAINER_BASE: object = {
   boxSizing: 'border-box',
   position: 'relative',
   display: 'flex',
@@ -46,8 +49,11 @@ const CONTAINER_BASE: object = {
   overflow: 'hidden',
   textAlign: 'left',
   font: 'inherit',
+  [TABLET_MAX]: {
+    paddingRight: '1.5rem',
+  },
   [MOBILE_MAX]: {
-    gap: '1rem',
+    gap: '0.75rem',
     paddingLeft: '0.625rem',
     paddingRight: '1rem',
   },
@@ -158,82 +164,3 @@ export const chevronWrapSx: SxProps<Theme> = {
   alignItems: 'center',
   transition: 'transform 0.2s ease',
 };
-
-// --- Container recipe assembly ------------------------------------------------
-
-// The mobile badge is transparent, so `box-shadow` would paint a rounded-rectangle
-// smudge behind the glyphs Figma does not have — Figma shadows the text itself.
-// Re-express the recipe's box-shadow as a `drop-shadow` filter, which follows the
-// glyph alpha. Derived mechanically from `recipe.badgeShadow` (no colour table).
-function toDropShadow(shadow: string): string {
-  return `drop-shadow(${shadow})`;
-}
-
-// Border + tint + the child ink/shadow rules driven by the recipe.
-function containerColorSx(recipe: RowRecipe): object {
-  return {
-    borderColor: recipe.accent,
-    backgroundColor: recipe.tint,
-    [`& .${BADGE_CLASS}`]: {
-      color: recipe.badgeInk,
-      boxShadow: recipe.badgeShadow,
-      [MOBILE_MAX]: { boxShadow: 'none', filter: toDropShadow(recipe.badgeShadow) },
-    },
-    [`& .${PATH_CLASS}`]: { color: recipe.pathInk },
-    [`& .${DESC_CLASS}`]: { color: recipe.descInk },
-    [`& .${CHEVRON_CLASS}`]: { color: recipe.chevronInk },
-  };
-}
-
-// Button-only additions: pointer cursor, hover recipe (accent border/ink darken +
-// row shadow), and the inset focus ring (inset so the overflow:hidden radius
-// never clips it — a11y contract §3.5). Focus-visible is declared last so the ring
-// wins over the hover shadow when a row is both hovered and focused.
-function interactiveContainerSx(recipe: RowRecipe): object {
-  return {
-    cursor: 'pointer',
-    appearance: 'none',
-    '&:hover': {
-      borderColor: recipe.accentHover,
-      boxShadow: recipe.rowHoverShadow,
-      [`& .${BADGE_CLASS}`]: { color: recipe.badgeInkHover },
-      [`& .${PATH_CLASS}`]: { color: recipe.pathInkHover },
-    },
-    '&:focus-visible': {
-      outline: 'none',
-      boxShadow: `inset 0 0 0 2px ${palette.darkPrimary.main}`,
-    },
-  };
-}
-
-// Expanded state: chevron flips up and tints to the recipe accent (grey rows keep
-// their brand-gray, since that is their accent).
-function expandedChevronSx(recipe: RowRecipe): object {
-  return {
-    [`& .${CHEVRON_CLASS}`]: { color: recipe.accent, transform: 'rotate(180deg)' },
-  };
-}
-
-export interface RowStyleConfig {
-  recipe: RowRecipe;
-  interactive: boolean;
-  expanded: boolean;
-  sx: SxProps<Theme> | undefined;
-}
-
-// The container `sx`: static layout + recipe colours + (button) hover/focus +
-// (expanded) chevron flip, with the consumer `sx` merged last.
-export function rowContainerSx(config: RowStyleConfig): SxProps<Theme> {
-  const base: object = {
-    ...CONTAINER_BASE,
-    ...containerColorSx(config.recipe),
-    ...(config.interactive ? interactiveContainerSx(config.recipe) : null),
-    // The expanded chevron flip/tint is a disclosure affordance, so it is gated to
-    // wired rows: a static row (no `onToggle`) exposes no `aria-expanded`, so it
-    // must never show the expanded visual either, matching the "wired rows only"
-    // contract in `types.ts`.
-    ...(config.interactive && config.expanded ? expandedChevronSx(config.recipe) : null),
-  };
-  const extra: SxProps<Theme> = config.sx ?? {};
-  return [base, ...(Array.isArray(extra) ? extra : [extra])];
-}

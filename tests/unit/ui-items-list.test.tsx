@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 
 import { UiItemRow, UiItemsList } from '../../src/components';
+import { listSx } from '../../src/components/ui-items-list/styles';
 
 const noop: () => void = () => undefined;
 
@@ -174,5 +175,17 @@ describe('UiItemsList — consumer sx', () => {
     const list: HTMLElement = screen.getByRole('list');
     expect(list).toHaveStyle({ marginTop: '1rem' });
     expect(list).toHaveStyle({ paddingTop: '2rem' });
+  });
+});
+
+describe('UiItemsList — website row-gap tiers', () => {
+  it('widens the row gap through the tablet band and tightens it again on mobile', () => {
+    // Mirrors the website `.opblock` margin-bottom: 8px, 16px through 641-1024px,
+    // back to 8px below 640px.
+    expect(listSx as Record<string, unknown>).toMatchObject({
+      gap: '0.5rem',
+      '@media (max-width: 1024px)': { gap: '1rem' },
+      '@media (max-width: 640px)': { gap: '0.5rem' },
+    });
   });
 });

@@ -96,15 +96,16 @@ export const ROW_GREY_HOVER_SX = {
   '& .ui-item-row__badge': { color: '#1C2022' },
   '& .ui-item-row__path': { color: '#1C2022' },
 } as const;
-// The 480px mobile layout is viewport-media-gated, so a fixed-width tile re-applies
-// it directly: no badge pill (transparent, no side padding), the Inter text column
-// stacks, and the icons shrink to 20px. The mobile badge also swaps its box-shadow
-// for a drop-shadow filter (box-shadow on a transparent box smudges behind the
-// glyphs) — this tile forces the GET recipe shadow, so it re-applies that filter.
+// The 640px mobile layout is viewport-media-gated, so a fixed-width tile re-applies
+// it directly: the 12px badge→text gap, no badge pill (transparent, no side
+// padding), the Inter text column stacks, and the icons shrink to 20px. The mobile
+// badge also swaps its box-shadow for a drop-shadow filter (box-shadow on a
+// transparent box smudges behind the glyphs) — this tile forces the GET recipe
+// shadow, so it re-applies that filter.
 // The text column + icon group carry no class hook, so they are reached by their
 // position (2nd/3rd span child of the container).
 export const ROW_MOBILE_SX = {
-  gap: '1rem',
+  gap: '0.75rem',
   paddingLeft: '0.625rem',
   paddingRight: '1rem',
   '& .ui-item-row__badge': {

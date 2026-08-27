@@ -11,7 +11,7 @@ import type { ItemRowMethod, UiItemRowProps } from './types';
 
 import UiItemRow from './index';
 
-const METHODS: ItemRowMethod[] = ['get', 'put', 'post', 'delete'];
+const METHODS: ItemRowMethod[] = ['get', 'put', 'post', 'delete', 'patch'];
 
 // The row is an always-controlled APG disclosure, so a stateful wrapper owns the
 // `expanded` flag and feeds the next state back through `onToggle`, keeping the
