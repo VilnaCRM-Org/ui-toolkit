@@ -47,13 +47,20 @@ const BARREL_SPECIFIER = String.raw`(?:(?:\.\.\/)+src\/components|@\/components)
 
 // Three ways to reach the barrel, all with the same effect on the module graph:
 // a binding import (`from <barrel>`), a side-effect import (a line that starts
-// with `import` and goes straight to the specifier), and a CommonJS `require`.
-// A side-effect import binds nothing but still loads every component, so leaving
-// it out would let the audits below pass over the very thing they exist to catch.
-// The `import`/`require` arms are anchored to the start of a line so a prose
-// comment naming one of these shapes cannot trip the pattern it documents.
+// with `import` and goes straight to the specifier), and a CommonJS `require`
+// (which eslint leaves enabled for this tree). A side-effect import binds nothing
+// but still loads every component, so leaving it out would let the audits below
+// pass over the very thing they exist to catch.
+//
+// The bare-`import` and `require` arms are anchored to the start of a line, so a
+// prose comment naming either shape cannot trip them. The `from` arm cannot be:
+// Prettier wraps a long import list and leaves `from` on its own continuation
+// line, and anchoring would turn that into a silent miss — far worse than the
+// false positive. So, as before, this file never writes that shape literally.
 const BARREL_IMPORT_PATTERN = new RegExp(
-  String.raw`(?:from\s*|^\s*import\s*|require\(\s*)['"]` + BARREL_SPECIFIER + String.raw`['"]`,
+  String.raw`(?:from\s*|^\s*import\s*|^\s*(?:(?:const|let|var)\s[^'"\n]*)?require\(\s*)['"]` +
+    BARREL_SPECIFIER +
+    String.raw`['"]`,
   'm'
 );
 
@@ -449,6 +456,16 @@ describe('structural-guard exclusion (jest.mutation.config.ts)', () => {
   ])('the audit pattern catches a %s of the barrel', (_label, build) => {
     expect(BARREL_IMPORT_PATTERN.test(build(PUBLIC_BARREL_SPECIFIER))).toBe(true);
     expect(BARREL_IMPORT_PATTERN.test(build(`${PUBLIC_BARREL_SPECIFIER}/ui-button`))).toBe(false);
+  });
+
+  // The anchored arms exist so prose can describe these shapes without a file
+  // that imports nothing being failed by the audits above.
+  it.each([
+    ['line comment', (barrel: string): string => `// import '${barrel}';`],
+    ['line comment naming a require', (barrel: string): string => `// require('${barrel}')`],
+    ['jsdoc continuation', (barrel: string): string => ` * require('${barrel}')`],
+  ])('the audit pattern ignores a %s', (_label, build) => {
+    expect(BARREL_IMPORT_PATTERN.test(build(PUBLIC_BARREL_SPECIFIER))).toBe(false);
   });
 });
 
