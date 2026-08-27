@@ -40,8 +40,11 @@ POLICY="$PROJECT_ROOT/config/metrics-policy.json"
   grep -qE 'METRICS_POLICY_PATH\s*=\s*config/metrics-policy\.json' "$MAKEFILE"
 }
 
-@test "workflow detection condition checks the same config/metrics-policy.json" {
-  grep -q 'config/metrics-policy.json' "$WORKFLOW"
+@test "the workflow reaches the policy through the same make target the Makefile defines" {
+  # The policy path used to be duplicated into a workflow detection condition.
+  # That condition is gone (issue #96), so parity is now asserted through the
+  # single entry point both sides share.
+  grep -qE 'make lint-metrics([[:space:]]|$)' "$WORKFLOW"
 }
 
 @test "committed policy file exists at the path both Makefile and workflow reference" {

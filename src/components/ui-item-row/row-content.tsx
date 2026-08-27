@@ -38,7 +38,7 @@ function Badge({ method }: Readonly<BadgeProps>): React.ReactElement {
 
 interface RowTextProps {
   path: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 // Path over/next-to description. A blank description renders nothing, so the name
@@ -74,7 +74,7 @@ function RowIcons(): React.ReactElement {
 export interface RowContentProps {
   method: ItemRowMethod;
   path: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export function RowContent({

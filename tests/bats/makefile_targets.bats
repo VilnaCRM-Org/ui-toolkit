@@ -36,7 +36,6 @@ ps|docker compose ps|
 logs|docker compose logs --follow|
 new-logs|docker compose logs --tail=0 --follow|
 stop|docker compose stop|
-build-k6-docker|docker build -t k6 -f ./tests/load/Dockerfile .|
 lighthouse-desktop|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.preset=desktop
 lighthouse-mobile|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.formFactor=mobile
 EOF
@@ -91,8 +90,8 @@ EOF
     [ -z "$expected_four" ] || assert_log_contains "$expected_four"
   done <<'EOF'
 test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
-test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --project=chromium --pass-with-no-tests
-test-memory-leak|if [ ! -f tests/memory-leak/runMemlabTests.js ]; then|Skipping memory leak tests because this bootstrap PR does not include the app test files yet.|bun x storybook dev --ci --host 0.0.0.0 -p 3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/runMemlabTests.js
+test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --project=chromium
+test-memory-leak|docker compose build bun|bun x storybook dev --ci --host 0.0.0.0 -p 3000|bun x wait-on --timeout 180000 http://127.0.0.1:3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/run-memlab-tests.js
 EOF
 }
 
@@ -105,6 +104,56 @@ EOF
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose up -d --build storybook'
   assert_log_contains "--volume $MAKEFILE_SANDBOX/tests:/app/tests playwright bun x playwright test ./tests/visual --project=chromium --update-snapshots"
+}
+
+@test "test-memory-leak keeps no bootstrap skip path and names the real runner" {
+  reset_command_log
+  run_make_target test-memory-leak
+  [ "$status" -eq 0 ]
+  assert_log_not_contains 'Skipping memory leak tests'
+  assert_log_not_contains 'runMemlabTests.js'
+  assert_log_contains 'bun ./tests/memory-leak/run-memlab-tests.js'
+}
+
+@test "jest and playwright suites never pass over an empty test discovery" {
+  reset_command_log
+  run_make_target test-unit
+  [ "$status" -eq 0 ]
+  assert_log_not_contains '--passWithNoTests'
+
+  reset_command_log
+  run_make_target test-integration
+  [ "$status" -eq 0 ]
+  assert_log_not_contains '--passWithNoTests'
+
+  reset_command_log
+  run_make_target test-visual
+  [ "$status" -eq 0 ]
+  assert_log_not_contains '--pass-with-no-tests'
+}
+
+@test "lint-next fails closed instead of skipping when there is nothing to lint" {
+  reset_command_log
+  run_make_target lint-next
+  [ "$status" -eq 0 ]
+
+  # The docker stub logs the whole one-line shell body, so the guard can be run
+  # directly against fixture trees the stub itself could never provide.
+  local logged script
+  logged="$(cat "$COMMAND_LOG")"
+  script="${logged#docker compose run --rm --entrypoint sh bun -lc }"
+  [ "$script" != "$logged" ]
+
+  mkdir -p "$BATS_TEST_TMPDIR/no-src"
+  run bash -c 'cd "$1" && shift && sh -c "$1"' _ "$BATS_TEST_TMPDIR/no-src" "$script"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'Expected lint directory src is missing'
+
+  mkdir -p "$BATS_TEST_TMPDIR/empty/src" "$BATS_TEST_TMPDIR/empty/scripts" \
+    "$BATS_TEST_TMPDIR/empty/tests"
+  run bash -c 'cd "$1" && shift && sh -c "$1"' _ "$BATS_TEST_TMPDIR/empty" "$script"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'refusing to report a vacuous pass'
 }
 
 @test "storybook-backed playwright targets honor DOCKER_COMPOSE overrides" {
@@ -122,44 +171,45 @@ test-visual|docker compose -f docker-compose.override.yml build playwright
 EOF
 }
 
-@test "load-tests builds the k6 image and runs the homepage scenario" {
+@test "load-tests reports the deliberately omitted load tier instead of building a phantom image" {
+  reset_command_log
   run_make_target load-tests
   [ "$status" -eq 0 ]
-  assert_log_contains 'docker build -t k6 -f ./tests/load/Dockerfile .'
-  assert_log_contains 'docker run -v ./tests/load:/loadTests --network ui-toolkit_default --rm k6 run --summary-trend-stats=avg,min,med,max,p(95),p(99)'
-  assert_log_contains '--out web-dashboard=period=1s&export=/loadTests/results/homepage.html /loadTests/homepage.js'
+  assert_output_contains 'Load tests are deliberately not implemented'
+  assert_output_contains 'tests/load/README.md'
+  assert_log_not_contains 'docker build -t k6'
 }
 
 @test "test-unit prefers docker compose exec when the bun service is running" {
   run_make_target_with_env test-unit FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose ps -q bun'
-  assert_log_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests'
-  assert_log_not_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests'
+  assert_log_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --verbose'
+  assert_log_not_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --verbose'
 }
 
 @test "test-unit falls back to docker compose run when the bun service is not running" {
   run_make_target test-unit
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose ps -q bun'
-  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests'
-  assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --verbose --passWithNoTests'
+  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --verbose'
+  assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --verbose'
 }
 
 @test "test-integration prefers docker compose exec when the bun service is running" {
   run_make_target_with_env test-integration FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose ps -q bun'
-  assert_log_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
-  assert_log_not_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
+  assert_log_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose'
+  assert_log_not_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose'
 }
 
 @test "test-integration falls back to docker compose run when the bun service is not running" {
   run_make_target test-integration
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose ps -q bun'
-  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
-  assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose --passWithNoTests'
+  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose'
+  assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose'
 }
 
 @test "copy-coverage fails clearly when the bun service is not running" {
@@ -182,6 +232,48 @@ EOF
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose exec -T bun test -d /app/coverage'
   assert_log_contains 'docker compose cp bun:/app/coverage ./coverage'
+}
+
+@test "package fails clearly when the bun service is not running" {
+  reset_command_log
+  run_make_target package
+  [ "$status" -ne 0 ]
+  assert_output_contains "bun service is not running; run 'make start-bun' first"
+  assert_log_contains 'docker compose ps -q bun'
+  assert_log_not_contains 'npm pack'
+}
+
+@test "package builds, packs, verifies and copies the tarball out of the bun container" {
+  reset_command_log
+  run_make_target_with_env package FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose exec -T bun sh -lc rm -rf dist build && mkdir -p dist'
+  assert_log_contains 'docker compose exec -T bun node ./build.config.mjs'
+  assert_log_contains 'docker compose exec -T bun npm pack --pack-destination dist'
+  assert_log_contains 'docker compose exec -T bun sh scripts/ci/verify-package-tarball.sh dist'
+  assert_log_contains 'docker compose cp bun:/app/dist ./dist'
+  assert_log_not_contains 'docker compose run --rm'
+}
+
+@test "package stops at the first failing step instead of shipping a stale tarball" {
+  reset_command_log
+  run_make_target_with_env package \
+    FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id \
+    FAKE_DOCKER_FAILING_COMMAND='node ./build.config.mjs'
+  [ "$status" -ne 0 ]
+  assert_log_not_contains 'npm pack'
+  assert_log_not_contains 'docker compose cp bun:/app/dist ./dist'
+}
+
+@test "package does not attach an unverified tarball when verification fails" {
+  reset_command_log
+  run_make_target_with_env package \
+    FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id \
+    FAKE_DOCKER_FAILING_COMMAND='verify-package-tarball.sh'
+  [ "$status" -ne 0 ]
+  assert_log_contains 'docker compose exec -T bun node ./build.config.mjs'
+  assert_log_contains 'docker compose exec -T bun npm pack --pack-destination dist'
+  assert_log_not_contains 'docker compose cp bun:/app/dist ./dist'
 }
 
 @test "start-bun builds and starts only the bun service" {

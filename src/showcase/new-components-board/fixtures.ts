@@ -14,7 +14,9 @@ export const CITIES: Option[] = [
   { label: 'Одеса', value: 'odesa' },
   { label: 'Харків', value: 'kharkiv' },
 ];
-export const ROLES: Option[] = [
+// Tuple-typed so the fixed picks below stay definite `Option`s under
+// `noUncheckedIndexedAccess`.
+export const ROLES: [Option, Option, Option, Option] = [
   { label: 'UX designer', value: 'ux' },
   { label: 'Розробник', value: 'dev' },
   { label: 'Дизайнер', value: 'design' },

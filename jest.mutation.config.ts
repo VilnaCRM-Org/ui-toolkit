@@ -9,11 +9,11 @@ import baseConfig from './jest.config';
 //
 // Coverage collection and the 100% gate are disabled here: they are irrelevant
 // to mutation testing, and the gate would error because integration runs are
-// not part of the coverage contract.
+// not part of the coverage contract. The inherited threshold is deleted rather
+// than overridden with `undefined`, which `exactOptionalPropertyTypes` rejects.
 const config: Config = {
   ...baseConfig,
   collectCoverage: false,
-  coverageThreshold: undefined,
   testMatch: [
     '<rootDir>/tests/unit/**/*.test.ts',
     '<rootDir>/tests/unit/**/*.test.tsx',
@@ -21,5 +21,7 @@ const config: Config = {
     '<rootDir>/tests/integration/**/*.integration.test.{ts,tsx}',
   ],
 };
+
+delete config.coverageThreshold;
 
 export default config;

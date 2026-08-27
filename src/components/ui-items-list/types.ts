@@ -12,11 +12,11 @@ import type { ReactNode } from 'react';
  */
 export interface UiItemsListProps {
   /** The `UiItemRow` elements to stack; each is wrapped in its own `<li>`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /**
    * Optional accessible name for the list. Not a landmark, so there is no default
    * — omit it unless the surrounding context needs the list named.
    */
-  'aria-label'?: string;
-  sx?: SxProps<Theme>;
+  'aria-label'?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

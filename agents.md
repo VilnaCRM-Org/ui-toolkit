@@ -57,8 +57,9 @@ component must also be recorded per `specs/planning-artifacts/architecture.md`.
 
 Add a specialized suite when the change touches its concern: `make test-mutation` (test
 strength, Stryker), `make test-bats` (Makefile and CI shell flows), `make test-memory-leak`
-(leaks), `make load-tests` (traffic, K6), and `make lighthouse-desktop` /
-`make lighthouse-mobile` (performance, accessibility, best practices).
+(leaks), and `make lighthouse-desktop` / `make lighthouse-mobile` (performance, accessibility,
+best practices). `make load-tests` reports the deliberately omitted load tier — a component
+library exposes no runtime endpoint to load-test; see `tests/load/README.md`.
 
 `make test-mutation` runs the full, gated Stryker suite locally. In CI it is sharded across a
 parallel matrix (`make test-mutation-shard`) and a final job merges the per-shard reports and
@@ -122,7 +123,7 @@ make test-unit             # Jest unit suite (jsdom)
 make test-integration      # Jest composition suite (for cross-component changes)
 make test-e2e              # Storybook-driven behavior (for behavior changes)
 make test-visual           # Visual regression (for UI or styling changes)
-make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
+make lint                  # Full gate: ESLint, TypeScript, markdownlint, format, CI paths
 ```
 
 Run only the suites the change affects, but never skip a suite that does apply. When you want

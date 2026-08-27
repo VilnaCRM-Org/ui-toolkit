@@ -27,9 +27,9 @@ export interface RangeState extends RangeFlags {
 /** The two range endpoints a cell is measured against. */
 export interface RangeBounds {
   /** The range's start endpoint (earliest selected), or undefined when empty. */
-  rangeStartISO?: string;
+  rangeStartISO?: string | undefined;
   /** The range's end endpoint (latest selected), or undefined for a pending range. */
-  rangeEndISO?: string;
+  rangeEndISO?: string | undefined;
 }
 
 // True when `iso` sits strictly between the two range endpoints (the in-range band).

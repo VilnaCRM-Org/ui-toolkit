@@ -30,8 +30,8 @@ const fieldLabelSx = {
 export interface FieldLabelProps {
   htmlFor: string;
   children: React.ReactNode;
-  required?: boolean;
-  error?: boolean;
+  required?: boolean | undefined;
+  error?: boolean | undefined;
 }
 
 export function FieldLabel({

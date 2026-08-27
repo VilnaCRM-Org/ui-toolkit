@@ -5,7 +5,9 @@ import React from 'react';
 import { UiMultiSelect, UiLink } from '../../src/components';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
 
-const ROLES: UiMultiSelectOption[] = [
+// Tuple-typed so indexing a fixed entry stays a definite option under
+// `noUncheckedIndexedAccess`.
+const ROLES: [UiMultiSelectOption, UiMultiSelectOption, UiMultiSelectOption] = [
   { label: 'Designer', value: 'design' },
   { label: 'Developer', value: 'dev' },
   { label: 'Manager', value: 'manager' },

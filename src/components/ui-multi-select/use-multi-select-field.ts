@@ -16,7 +16,7 @@ import { useMultiSelectGhost, type MultiSelectGhost } from './use-multi-select-g
 
 /** Listbox slot props: named from the field, and multi-selectable (MUI omits this). */
 export interface MultiListboxSlotProps {
-  listbox: { 'aria-label'?: string; 'aria-multiselectable': true };
+  listbox: { 'aria-label'?: string | undefined; 'aria-multiselectable': true };
 }
 
 export interface MultiSelectField {

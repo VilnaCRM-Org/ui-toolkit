@@ -38,14 +38,14 @@ describe('UiItemsList — semantic list structure', () => {
 
     const items: HTMLElement[] = screen.getAllByRole('listitem');
     expect(
-      within(items[0]).getByRole('button', { name: 'GET /pet/{petID} Reads a pet' })
+      within(items[0]!).getByRole('button', { name: 'GET /pet/{petID} Reads a pet' })
     ).toBeInTheDocument();
     expect(
-      within(items[1]).getByRole('button', { name: 'PUT /pet Update existing pet' })
+      within(items[1]!).getByRole('button', { name: 'PUT /pet Update existing pet' })
     ).toBeInTheDocument();
     // The unwired third row is static content inside its own list item.
-    expect(within(items[2]).getByText('/put/{petID}')).toBeInTheDocument();
-    expect(within(items[2]).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(items[2]!).getByText('/put/{petID}')).toBeInTheDocument();
+    expect(within(items[2]!).queryByRole('button')).not.toBeInTheDocument();
   });
 
   it('renders each list item as a real <li>', () => {

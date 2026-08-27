@@ -60,8 +60,8 @@ function siblingsStart(config: RangeConfig): number {
 
 function siblingsEnd(config: RangeConfig): number {
   const { page, count, siblingCount, boundaryCount } = config;
-  const ends: number[] = endPages(config);
-  const cap: number = ends.length > 0 ? ends[0] - 2 : count - 1;
+  const [firstEnd] = endPages(config);
+  const cap: number = firstEnd == null ? count - 1 : firstEnd - 2;
   return Math.min(Math.max(page + siblingCount, boundaryCount + siblingCount * 2 + 2), cap);
 }
 

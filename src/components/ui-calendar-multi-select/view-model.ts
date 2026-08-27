@@ -1,4 +1,9 @@
-import { buildMonthMatrix, formatDayLabel, type CalendarCell } from './calendar-month';
+import {
+  buildMonthMatrix,
+  formatDayLabel,
+  type CalendarCell,
+  type CalendarWeek,
+} from './calendar-month';
 import { rangeStateOf, roleSuffix, type BandSide, type RangeState } from './cell-range';
 import { formatISO } from './date-utils';
 
@@ -33,16 +38,22 @@ export interface PaddingDescriptor {
 
 export type CellDescriptor = DayDescriptor | PaddingDescriptor;
 
+export interface CellRow {
+  /** Stable React key for the week row: the ISO of its first (Monday) slot. */
+  key: string;
+  cells: CellDescriptor[];
+}
+
 export interface CellRowsParams {
   visibleMonth: Date;
   /** The range's start endpoint (earliest selected), or undefined when empty. */
-  rangeStartISO?: string;
+  rangeStartISO?: string | undefined;
   /** The range's end endpoint (latest selected), or undefined for a pending range. */
-  rangeEndISO?: string;
+  rangeEndISO?: string | undefined;
   focusedISO: string;
   todayISO: string;
-  minISO?: string;
-  maxISO?: string;
+  minISO?: string | undefined;
+  maxISO?: string | undefined;
   /** BCP-47 locale for the day accessible names. */
   locale: string;
 }
@@ -78,8 +89,13 @@ function toDescriptor(cell: CalendarCell, params: CellRowsParams): CellDescripto
   return { kind: 'padding', key: iso, dayNumber: cell.date.getDate() };
 }
 
-export function buildCellRows(params: CellRowsParams): CellDescriptor[][] {
-  return buildMonthMatrix(params.visibleMonth).map(week =>
-    week.map(cell => toDescriptor(cell, params))
-  );
+function toRow(week: CalendarWeek, params: CellRowsParams): CellRow {
+  return {
+    key: formatISO(week.start),
+    cells: week.cells.map(cell => toDescriptor(cell, params)),
+  };
+}
+
+export function buildCellRows(params: CellRowsParams): CellRow[] {
+  return buildMonthMatrix(params.visibleMonth).map(week => toRow(week, params));
 }

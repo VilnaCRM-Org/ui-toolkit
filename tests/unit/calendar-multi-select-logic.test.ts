@@ -15,12 +15,13 @@ import {
 import {
   buildCellRows,
   type CellDescriptor,
+  type CellRow,
   type DayDescriptor,
 } from '../../src/components/ui-calendar-multi-select/view-model';
 
-function dayByIso(rows: CellDescriptor[][], iso: string): DayDescriptor {
+function dayByIso(rows: CellRow[], iso: string): DayDescriptor {
   const match: CellDescriptor | undefined = rows
-    .flat()
+    .flatMap(row => row.cells)
     .find((cell): cell is DayDescriptor => cell.kind === 'day' && cell.iso === iso);
   if (match == null) {
     throw new Error(`no day cell for ${iso}`);
@@ -130,34 +131,45 @@ describe('calendar view-model — buildCellRows', () => {
   };
 
   it('localises the day accessible name from the locale', () => {
-    const rows: CellDescriptor[][] = buildCellRows({ ...base, locale: 'uk-UA' });
+    const rows: CellRow[] = buildCellRows({ ...base, locale: 'uk-UA' });
     // Ukrainian (nominative) month name for July via Intl.
     expect(dayByIso(rows, '2026-07-06').label).toBe('6 липня 2026, in range');
   });
 
   it('sizes the grid to the weeks the month spans, seven days each', () => {
     // July 2026 starts on a Wednesday and has 31 days → 5 weeks, no empty trailing row.
-    const rows: CellDescriptor[][] = buildCellRows(base);
+    const rows: CellRow[] = buildCellRows(base);
     expect(rows).toHaveLength(5);
-    rows.forEach(row => expect(row).toHaveLength(7));
+    rows.forEach(row => expect(row.cells).toHaveLength(7));
   });
 
   it('grows to six weeks when the month overflows a five-week grid', () => {
     // August 2026 starts on a Saturday and has 31 days → 5 + 31 = 36 → 6 weeks.
-    const rows: CellDescriptor[][] = buildCellRows({ ...base, visibleMonth: new Date(2026, 7, 1) });
+    const rows: CellRow[] = buildCellRows({ ...base, visibleMonth: new Date(2026, 7, 1) });
     expect(rows).toHaveLength(6);
   });
 
   it('shows adjacent-month slots as padding carrying the day number and a stable key', () => {
-    const rows: CellDescriptor[][] = buildCellRows(base);
-    const first: CellDescriptor = rows[0][0];
+    const rows: CellRow[] = buildCellRows(base);
+    const first: CellDescriptor = rows[0]!.cells[0]!;
     expect(first.kind).toBe('padding');
     expect(first).toHaveProperty('key', '2026-06-29');
     expect(first).toHaveProperty('dayNumber', 29);
   });
 
+  it('keys each week row by its first slot', () => {
+    const rows: CellRow[] = buildCellRows(base);
+    expect(rows.map(row => row.key)).toEqual([
+      '2026-06-29',
+      '2026-07-06',
+      '2026-07-13',
+      '2026-07-20',
+      '2026-07-27',
+    ]);
+  });
+
   it('flags range endpoints, in-range days, today, and roving days', () => {
-    const rows: CellDescriptor[][] = buildCellRows(base);
+    const rows: CellRow[] = buildCellRows(base);
     expect(dayByIso(rows, '2026-07-05')).toMatchObject({
       selected: true,
       rangeStart: true,
@@ -191,7 +203,7 @@ describe('calendar view-model — buildCellRows', () => {
   });
 
   it('disables days outside the min/max range', () => {
-    const rows: CellDescriptor[][] = buildCellRows({
+    const rows: CellRow[] = buildCellRows({
       ...base,
       minISO: '2026-07-10',
       maxISO: '2026-07-25',

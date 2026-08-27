@@ -10,8 +10,8 @@ import type { UiCalendarMultiSelectProps } from './types';
 export interface CalendarModel {
   today: Date;
   selectedSorted: string[];
-  minISO?: string;
-  maxISO?: string;
+  minISO?: string | undefined;
+  maxISO?: string | undefined;
   visibleMonth: Date;
   setVisibleMonth: (month: Date) => void;
   focusedISO: string;

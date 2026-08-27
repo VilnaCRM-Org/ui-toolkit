@@ -32,18 +32,18 @@ export interface UiPaginationProps {
   /** Total number of pages (`>= 1`; lower or non-finite values normalise to 1). */
   count: number;
   /** Called with the newly selected page number whenever the page changes. */
-  onChange?: (page: number) => void;
+  onChange?: ((page: number) => void) | undefined;
   /** Disables the whole navigator (every page cell and both prev/next links). */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** Number of always-visible pages at the start and end of the range. Defaults to `1`. */
-  boundaryCount?: number;
+  boundaryCount?: number | undefined;
   /** Number of pages shown on each side of the current page. Defaults to `1`. */
-  siblingCount?: number;
+  siblingCount?: number | undefined;
   /** Visible/accessible label for the previous-page link. Defaults to `'Попередня'`. */
-  previousLabel?: string;
+  previousLabel?: string | undefined;
   /** Visible/accessible label for the next-page link. Defaults to `'Наступна'`. */
-  nextLabel?: string;
+  nextLabel?: string | undefined;
   /** Accessible name for the `<nav>` landmark. Defaults to `'Пагінація'`. */
-  'aria-label'?: string;
-  sx?: SxProps<Theme>;
+  'aria-label'?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

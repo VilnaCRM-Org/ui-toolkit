@@ -6,13 +6,13 @@ import type { UiCalendarMultiSelectProps } from './types';
 import { useCalendarActions, type CalendarActions } from './use-calendar-actions';
 import { useCalendarModel, type CalendarModel } from './use-calendar-model';
 import { useRovingFocus, type RovingFocus } from './use-roving-focus';
-import { buildCellRows, type CellDescriptor } from './view-model';
+import { buildCellRows, type CellRow } from './view-model';
 
 export interface CalendarController {
   rovingRef: (node: HTMLElement | null) => void;
   caption: string;
   locale: string;
-  cellRows: CellDescriptor[][];
+  cellRows: CellRow[];
   /** Polite live-region text; non-empty only after button-driven month changes. */
   monthAnnouncement: string;
   onPrevMonth: () => void;
@@ -23,7 +23,7 @@ export interface CalendarController {
 
 // Projects the model's date state onto the view-model's parameter shape. Kept out
 // of `useCalendar` so the hook stays within the per-function complexity budget.
-function monthCellRows(model: CalendarModel, locale: string): CellDescriptor[][] {
+function monthCellRows(model: CalendarModel, locale: string): CellRow[] {
   return buildCellRows({
     visibleMonth: model.visibleMonth,
     rangeStartISO: model.selectedSorted[0],

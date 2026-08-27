@@ -16,15 +16,15 @@ export interface UiFileUploadConstraints {
    * JavaScript because the attribute only filters the OS picker: files arriving
    * by drag-and-drop bypass it entirely.
    */
-  accept?: string;
+  accept?: string | undefined;
   /** Largest accepted size **per file**, in bytes. */
-  maxSizeBytes?: number;
+  maxSizeBytes?: number | undefined;
   /**
    * Allows picking more than one file at a time. Also validated, not just passed
    * to the input: the attribute constrains the OS picker, but a drop can deliver
    * any number of files regardless.
    */
-  multiple?: boolean;
+  multiple?: boolean | undefined;
 }
 
 /**
@@ -47,40 +47,40 @@ export interface UiFileUploadConstraints {
  */
 export interface UiFileUploadInputProps extends UiFileUploadConstraints {
   /** Currently selected files. Omit (or pass `[]`) for "nothing selected". */
-  files?: readonly File[];
+  files?: readonly File[] | undefined;
   /**
    * Called with the files that passed validation. Never called for a rejected
    * selection — `onValidationError` fires instead, so an invalid drop cannot
    * quietly replace a good selection.
    */
-  onFilesChange?: (files: File[]) => void;
+  onFilesChange?: ((files: File[]) => void) | undefined;
   /** Called with the human-readable reason a selection was rejected. */
-  onValidationError?: (message: string) => void;
+  onValidationError?: ((message: string) => void) | undefined;
   /** Async upload lifecycle; drives the status pill and the live region. */
-  status?: UiUploadStatus;
+  status?: UiUploadStatus | undefined;
   /**
    * Completion percentage (0–100) for `status="uploading"`, clamped on render.
    * Omitted values render an empty determinate bar rather than an indeterminate
    * one, so the bar never implies progress the app has not reported.
    */
-  progress?: number;
+  progress?: number | undefined;
   /** Forces the invalid styling; `status="error"` implies it too. */
-  error?: boolean;
+  error?: boolean | undefined;
   /**
    * Constraint hint in the resting state ("PNG or JPG, up to 2 MB") and the
    * failure reason when the upload errors. Linked via `aria-describedby`. A
    * validation error replaces it while the rejected selection stands.
    */
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   /** Visible field label — the preferred accessible name (WCAG 2.4.6 / 3.3.2). */
-  label?: string;
+  label?: string | undefined;
   /** Accessible name used only when there is no visible `label`. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Text shown in the field while nothing is selected. */
-  placeholder?: string;
+  placeholder?: string | undefined;
   /** Text on the pill that opens the picker. */
-  buttonLabel?: string;
-  disabled?: boolean;
+  buttonLabel?: string | undefined;
+  disabled?: boolean | undefined;
   /**
    * Marks the field required for assistive technology via `aria-required`.
    * Native constraint validation is deliberately *not* used: the control is
@@ -89,8 +89,8 @@ export interface UiFileUploadInputProps extends UiFileUploadConstraints {
    * `required` input permanently `:invalid`. Enforcing submission is the
    * consuming form's job, as with the other field controls.
    */
-  required?: boolean;
+  required?: boolean | undefined;
   /** Seeds the input/label/message ids (and can associate an external label). */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

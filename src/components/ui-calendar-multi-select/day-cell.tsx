@@ -9,7 +9,7 @@ export interface DayCellProps {
   /** `false` when the whole calendar is disabled — cells become non-tabbable no-ops. */
   interactive: boolean;
   /** Set only on the roving cell so keyboard navigation can move focus to it. */
-  cellRef?: React.Ref<HTMLElement>;
+  cellRef?: React.Ref<HTMLElement> | undefined;
   onDayClick: (iso: string) => void;
 }
 

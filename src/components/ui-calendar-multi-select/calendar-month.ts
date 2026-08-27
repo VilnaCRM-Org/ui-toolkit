@@ -41,6 +41,13 @@ export interface CalendarCell {
   inCurrentMonth: boolean;
 }
 
+/** One week row of the month matrix. */
+export interface CalendarWeek {
+  /** Local-midnight date of the row's first (Monday) slot — the row's identity. */
+  start: Date;
+  cells: CalendarCell[];
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -61,19 +68,24 @@ const DAYS_IN_WEEK: number = 7;
  * previous month bleeds into the top row and the next month into the bottom (Figma),
  * and arrow-key navigation can cross month boundaries. The row count is exactly the
  * weeks the month spans — `ceil((leading offset + month length) / 7)`, i.e. 4–6 —
- * so no fully-next-month week is ever appended.
+ * so no fully-next-month week is ever appended. Each week carries its own start
+ * date, so callers get a row identity without having to reach into the row's cells.
  */
-export function buildMonthMatrix(anchor: Date): CalendarCell[][] {
+export function buildMonthMatrix(anchor: Date): CalendarWeek[] {
   const first: Date = startOfMonth(anchor);
   const gridStart: Date = addDays(first, -mondayIndex(first));
   const span: number = mondayIndex(first) + daysInMonth(anchor.getFullYear(), anchor.getMonth());
   const weekCount: number = Math.ceil(span / DAYS_IN_WEEK);
-  return Array.from({ length: weekCount }, (_unusedWeek, week) =>
-    Array.from({ length: DAYS_IN_WEEK }, (_unusedDay, weekday) => {
-      const date: Date = addDays(gridStart, week * DAYS_IN_WEEK + weekday);
-      return { date, inCurrentMonth: isSameMonth(date, anchor) };
-    })
-  );
+  return Array.from({ length: weekCount }, (_unusedWeek, week) => {
+    const start: Date = addDays(gridStart, week * DAYS_IN_WEEK);
+    return {
+      start,
+      cells: Array.from({ length: DAYS_IN_WEEK }, (_unusedDay, weekday) => {
+        const date: Date = addDays(start, weekday);
+        return { date, inCurrentMonth: isSameMonth(date, anchor) };
+      }),
+    };
+  });
 }
 
 /** Accessible name for a day cell, e.g. `15 July 2026` (day-first, localised month). */

@@ -398,11 +398,22 @@ function layersOf(config: Parameters<typeof rowContainerSx>[0]): SxLayers {
   return rowContainerSx(config) as SxLayers;
 }
 
+// `rowContainerSx` always emits the base layer first, so a dedicated accessor keeps
+// the assertions below free of per-call indexed-access narrowing.
+function baseLayerOf(config: Parameters<typeof rowContainerSx>[0]): Record<string, unknown> {
+  return layersOf(config)[0] as Record<string, unknown>;
+}
+
 describe('rowContainerSx — layout / interactive / expanded assembly', () => {
   const recipe: RowRecipe = resolveRecipe('get', false);
 
   it('bakes the recipe border + tint and the child ink/shadow rules', () => {
-    const [base] = layersOf({ recipe, interactive: false, expanded: false, sx: undefined });
+    const base: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: false,
+      expanded: false,
+      sx: undefined,
+    });
     expect(base.borderColor).toBe('#1EAEFF');
     expect(base.backgroundColor).toBe('rgba(30, 174, 255, 0.1)');
     expect(base['& .ui-item-row__badge']).toEqual({
@@ -421,14 +432,24 @@ describe('rowContainerSx — layout / interactive / expanded assembly', () => {
   });
 
   it('omits the interactive block for a static row', () => {
-    const [base] = layersOf({ recipe, interactive: false, expanded: false, sx: undefined });
+    const base: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: false,
+      expanded: false,
+      sx: undefined,
+    });
     expect(base.cursor).toBeUndefined();
     expect(base['&:hover']).toBeUndefined();
     expect(base['&:focus-visible']).toBeUndefined();
   });
 
   it('adds pointer cursor, the hover recipe and the inset focus ring for a button', () => {
-    const [base] = layersOf({ recipe, interactive: true, expanded: false, sx: undefined });
+    const base: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: true,
+      expanded: false,
+      sx: undefined,
+    });
     expect(base.cursor).toBe('pointer');
     expect(base['&:hover']).toEqual({
       borderColor: '#0091E2',
@@ -443,10 +464,20 @@ describe('rowContainerSx — layout / interactive / expanded assembly', () => {
   });
 
   it('flips + accent-tints the chevron only when expanded', () => {
-    const [collapsed] = layersOf({ recipe, interactive: true, expanded: false, sx: undefined });
+    const collapsed: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: true,
+      expanded: false,
+      sx: undefined,
+    });
     expect(collapsed['& .ui-item-row__chevron']).toEqual({ color: '#1B2327' });
 
-    const [expanded] = layersOf({ recipe, interactive: true, expanded: true, sx: undefined });
+    const expanded: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: true,
+      expanded: true,
+      sx: undefined,
+    });
     expect(expanded['& .ui-item-row__chevron']).toEqual({
       color: '#1EAEFF',
       transform: 'rotate(180deg)',
@@ -456,7 +487,12 @@ describe('rowContainerSx — layout / interactive / expanded assembly', () => {
   it('never flips the chevron on a static (unwired) row even when expanded', () => {
     // The expanded flip is a disclosure affordance; a static row exposes no
     // `aria-expanded`, so it must not show the expanded visual either.
-    const [base] = layersOf({ recipe, interactive: false, expanded: true, sx: undefined });
+    const base: Record<string, unknown> = baseLayerOf({
+      recipe,
+      interactive: false,
+      expanded: true,
+      sx: undefined,
+    });
     expect(base['& .ui-item-row__chevron']).toEqual({ color: '#1B2327' });
   });
 

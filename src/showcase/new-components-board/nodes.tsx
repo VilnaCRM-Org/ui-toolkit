@@ -52,9 +52,9 @@ export function itemRowNode(opts: {
   method: ItemRowMethod;
   path: string;
   description: string;
-  muted?: boolean;
-  expanded?: boolean;
-  sx?: SxProps<Theme>;
+  muted?: boolean | undefined;
+  expanded?: boolean | undefined;
+  sx?: SxProps<Theme> | undefined;
 }): React.ReactElement {
   return (
     <UiItemRow

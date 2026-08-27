@@ -3,7 +3,7 @@ import type React from 'react';
 import { DEFAULT_LOCALE, formatDayLabel, formatMonthCaption, isSameMonth } from './calendar-month';
 import { addMonths, addMonthsKeepDay, formatISO, parseISO, startOfMonth } from './date-utils';
 import { SELECT_KEYS, nextFocusedDate } from './keyboard';
-import { applyRangeEndpoint } from './selection';
+import { applyRangeEndpoint, type RangeSelection } from './selection';
 import type { UiCalendarMultiSelectProps } from './types';
 import type { CalendarModel } from './use-calendar-model';
 import type { RovingFocus } from './use-roving-focus';
@@ -26,7 +26,7 @@ function canSelectDay(iso: string, model: CalendarModel): boolean {
 // Polite live-region text for the two-step range protocol (WCAG 4.1.3): a pending
 // start prompts for the end; a completed range confirms both endpoints. `next`
 // always carries one or two endpoints (never empty) as it comes from the reducer.
-function rangeAnnouncement(next: string[], locale: string): string {
+function rangeAnnouncement(next: RangeSelection, locale: string): string {
   const startLabel: string = formatDayLabel(parseISO(next[0]), locale);
   if (next.length === 1) {
     return `Start date ${startLabel} selected, choose an end date`;
@@ -40,7 +40,7 @@ export function selectDay(ctx: ActionContext, iso: string): void {
   if (onChange == null) {
     return; // read-only calendar: value cannot change, so announce nothing
   }
-  const next: string[] = applyRangeEndpoint(ctx.model.selectedSorted, iso);
+  const next: RangeSelection = applyRangeEndpoint(ctx.model.selectedSorted, iso);
   onChange(next);
   ctx.model.setAnnouncement(rangeAnnouncement(next, ctx.props.locale ?? DEFAULT_LOCALE));
 }

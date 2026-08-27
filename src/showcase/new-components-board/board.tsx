@@ -13,7 +13,7 @@ function StateItem({
 }: Readonly<{
   label: string;
   width: number;
-  tall?: boolean;
+  tall?: boolean | undefined;
   children: React.ReactNode;
 }>): React.ReactElement {
   const sizing = { width: `${width}px`, maxWidth: '100%', boxSizing: 'border-box' } as const;

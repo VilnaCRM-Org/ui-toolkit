@@ -253,7 +253,6 @@ describe('UiFileUploadInput — selection', () => {
 
 describe('UiFileUploadInput — validation', () => {
   it('rejects a file whose type is not accepted and explains why', async () => {
-    const user: UserEvent = userEvent.setup();
     const onFilesChange: jest.Mock = jest.fn();
     const onValidationError: jest.Mock = jest.fn();
     renderField({ accept: ACCEPT, onFilesChange, onValidationError });
@@ -269,7 +268,6 @@ describe('UiFileUploadInput — validation', () => {
   });
 
   it('rejects a file over the size limit and quotes the limit', async () => {
-    const user: UserEvent = userEvent.setup();
     const onFilesChange: jest.Mock = jest.fn();
     renderField({ maxSizeBytes: 10, onFilesChange });
 
@@ -280,7 +278,6 @@ describe('UiFileUploadInput — validation', () => {
   });
 
   it('replaces the helper text with the rejection reason, then restores it', async () => {
-    const user: UserEvent = userEvent.setup();
     renderField({ accept: ACCEPT, helperText: HINT });
 
     expect(screen.getByText(HINT)).toBeInTheDocument();
@@ -555,7 +552,6 @@ describe('UiFileUploadInput — assistive-technology announcements', () => {
   });
 
   it('announces the rejection reason instead of a selection that did not happen', async () => {
-    const user: UserEvent = userEvent.setup();
     renderField({ accept: ACCEPT });
 
     pickFiles([makeFile('notes.pdf', 'application/pdf')]);

@@ -17,7 +17,7 @@ module.exports = {
       // emit `React.createElement` against the import binding Babel already
       // renamed — which otherwise throws "React is not defined" at runtime.
       presets: [
-        ['@babel/preset-typescript', { allowDeclareFields: true, onlyRemoveTypeImports: true }],
+        ['@babel/preset-typescript', { onlyRemoveTypeImports: true }],
         ['@babel/preset-react', { runtime: 'automatic' }],
       ],
     },

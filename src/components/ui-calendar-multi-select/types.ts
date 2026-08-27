@@ -23,28 +23,28 @@ import type React from 'react';
  */
 export interface UiCalendarMultiSelectProps {
   /** Controlled range endpoints as ISO `YYYY-MM-DD` strings: `[]`, `[start]` or `[start, end]`. */
-  value?: string[];
+  value?: string[] | undefined;
   /** Called with the next range endpoints whenever a day sets the start or the end. */
-  onChange?: (value: string[]) => void;
+  onChange?: ((value: string[]) => void) | undefined;
   /**
    * Month shown when the calendar first renders, as `YYYY-MM-DD` (any day in the
    * target month) — uncontrolled. Defaults to the first selected date's month,
    * or the current month when there is no selection.
    */
-  defaultMonth?: string;
+  defaultMonth?: string | undefined;
   /** Earliest selectable day (inclusive), `YYYY-MM-DD`. Earlier days are disabled. */
-  minDate?: string;
+  minDate?: string | undefined;
   /** Latest selectable day (inclusive), `YYYY-MM-DD`. Later days are disabled. */
-  maxDate?: string;
+  maxDate?: string | undefined;
   /** Disables the whole calendar (navigation and every day). */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /**
    * Puts the control in the error state: an error border, and — when `helperText`
    * is given — a `role="alert"` announcement plus `aria-describedby` wiring.
    * Suppressed while `disabled`. (`aria-invalid` is intentionally not used: ARIA
    * does not support it on `role="grid"`.)
    */
-  error?: boolean;
+  error?: boolean | undefined;
   /**
    * Marks the control required for assistive technology. A visible asterisk (for
    * sighted users) plus a visually-hidden " required" folded into the group's
@@ -52,28 +52,28 @@ export interface UiCalendarMultiSelectProps {
    * Native `<form>` validation is a consumer concern (the control is controlled
    * via `value`/`onChange`).
    */
-  required?: boolean;
-  size?: 'small' | 'medium';
-  sx?: SxProps<Theme>;
+  required?: boolean | undefined;
+  size?: 'small' | 'medium' | undefined;
+  sx?: SxProps<Theme> | undefined;
   /** Visible label — the preferred accessible name (WCAG 2.4.6 / 3.3.2). */
-  label?: string;
+  label?: string | undefined;
   /** Accessible name used only when there is no visible `label`. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /**
    * Description — typically the reason the selection is invalid. Rendered in a
    * `FormHelperText` and linked to the grid via `aria-describedby`, so screen
    * readers announce *why* the control is in error alongside `aria-invalid`.
    */
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   /**
    * Seeds the internal element ids (label/caption/helper). It does NOT name the
    * group — a native `<label for>` cannot target a `role="group"`; pass `label`
    * or `aria-label` for the accessible name.
    */
-  id?: string;
+  id?: string | undefined;
   /**
    * BCP-47 locale for the month caption, weekday headers and day accessible
    * names (e.g. `uk-UA`). Defaults to `en-US`. The week always starts on Monday.
    */
-  locale?: string;
+  locale?: string | undefined;
 }

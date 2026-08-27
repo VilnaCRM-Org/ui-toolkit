@@ -11,7 +11,14 @@ import type { UiMultiSelectOption } from './types';
 
 import UiMultiSelect from './index';
 
-const options: UiMultiSelectOption[] = [
+// Tuple-typed so indexing a fixed entry (the preselected chips below) stays a
+// definite `UiMultiSelectOption` under `noUncheckedIndexedAccess`.
+const options: [
+  UiMultiSelectOption,
+  UiMultiSelectOption,
+  UiMultiSelectOption,
+  UiMultiSelectOption,
+] = [
   { label: 'UX designer', value: 'ux' },
   { label: 'Розробник', value: 'dev' },
   { label: 'Дизайнер', value: 'design' },

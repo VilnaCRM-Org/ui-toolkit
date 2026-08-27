@@ -28,6 +28,6 @@ describe('createFieldRenderInput — plain field (no overlay, no input handlers)
     await user.click(combobox);
     const renderedOptions: HTMLElement[] = screen.getAllByRole('option');
     await user.keyboard('{ArrowDown}');
-    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0].id);
+    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0]!.id);
   });
 });

@@ -31,24 +31,24 @@ export interface UiItemRowProps {
   /** Endpoint path shown after the badge (e.g. `/pet/{petID}`). */
   path: string;
   /** Optional short description shown after the path. */
-  description?: string;
+  description?: string | undefined;
   /**
    * Muted/inactive status. Rendered with the grey recipe. On a wired row this is
    * the repo `aria-disabled` boundary pattern: still a focusable `<button>`, but
    * `aria-disabled="true"` and `onToggle` is a no-op (never fired while muted).
    */
-  muted?: boolean;
+  muted?: boolean | undefined;
   /**
    * Disclosure state (wired rows only). Always controlled; defaults to `false`.
    * Drives `aria-expanded` and the chevron flip/accent tint.
    */
-  expanded?: boolean;
+  expanded?: boolean | undefined;
   /** Called on activation of a wired, non-muted row. Presence makes the row a button. */
-  onToggle?: () => void;
+  onToggle?: (() => void) | undefined;
   /**
    * `id` of the panel this row controls. Surfaced as `aria-controls` ONLY while
    * expanded (so a collapsed/unmounted panel leaves no dangling idref).
    */
-  panelId?: string;
-  sx?: SxProps<Theme>;
+  panelId?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

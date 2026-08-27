@@ -207,7 +207,7 @@ describe('UiSearchInput — typeahead suggestions', () => {
 
     expect(combobox).toHaveAttribute('aria-expanded', 'true');
     const renderedOptions: HTMLElement[] = screen.getAllByRole('option');
-    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0].id);
+    expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0]!.id);
     expect(combobox).toHaveFocus();
   });
 
@@ -302,8 +302,8 @@ describe('UiSearchInput — suggestion highlighting', () => {
       await screen.findByRole('option', { name: 'Top performers' })
     ).querySelectorAll('span');
     expect(runs).toHaveLength(2);
-    expect(runs[0].textContent).toBe('Top perf');
-    expect(runs[1].textContent).toBe('ormers');
+    expect(runs[0]!.textContent).toBe('Top perf');
+    expect(runs[1]!.textContent).toBe('ormers');
     /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
   });
 
@@ -315,8 +315,8 @@ describe('UiSearchInput — suggestion highlighting', () => {
     const runs: NodeListOf<HTMLSpanElement> = (
       await screen.findByRole('option', { name: 'Top sales this month' })
     ).querySelectorAll('span');
-    expect(runs[0].textContent).toBe('Top sales this month');
-    expect(runs[1].textContent).toBe('');
+    expect(runs[0]!.textContent).toBe('Top sales this month');
+    expect(runs[1]!.textContent).toBe('');
     /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
   });
 
@@ -326,8 +326,8 @@ describe('UiSearchInput — suggestion highlighting', () => {
     const runs: NodeListOf<HTMLSpanElement> = screen
       .getByRole('option', { name: 'Top performers' })
       .querySelectorAll('span');
-    expect(runs[0].textContent).toBe('Top performers');
-    expect(runs[1].textContent).toBe('');
+    expect(runs[0]!.textContent).toBe('Top performers');
+    expect(runs[1]!.textContent).toBe('');
     /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
   });
 });

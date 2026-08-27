@@ -20,20 +20,31 @@ export function sanitizeSelection(value: string[] | undefined): string[] {
     return valid;
   }
   // More than two endpoints is not a valid range — keep the earliest and latest.
-  return [valid[0], valid[valid.length - 1]];
+  // Sliced rather than indexed so the pair stays a `string[]` under
+  // `noUncheckedIndexedAccess` without an assertion.
+  return [...valid.slice(0, 1), ...valid.slice(-1)];
 }
+
+/**
+ * A range selection as produced by `applyRangeEndpoint`: a lone pending endpoint,
+ * or a complete sorted pair. Typed as a tuple union so consumers can read both
+ * endpoints without widening them to `string | undefined`.
+ */
+export type RangeSelection = [string] | [string, string];
 
 /**
  * Applies a click at `iso` to the range endpoints. With none — or a complete range
  * — it begins a fresh range at `iso`; with one endpoint pending it completes the
  * range (sorted); re-clicking the pending endpoint keeps it as the sole endpoint.
  */
-export function applyRangeEndpoint(current: string[], iso: string): string[] {
+export function applyRangeEndpoint(current: string[], iso: string): RangeSelection {
   if (current.length !== 1) {
     return [iso];
   }
   if (current[0] === iso) {
     return [iso];
   }
-  return [current[0], iso].sort(compareISO);
+  // `current` holds exactly one pending endpoint here, so appending `iso` always
+  // yields the completed pair — the assertion states that contract for the tuple.
+  return [...current, iso].sort(compareISO) as [string, string];
 }

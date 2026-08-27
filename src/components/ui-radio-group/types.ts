@@ -47,20 +47,20 @@ export interface UiRadioGroupProps {
    * Disables the whole group (single options can also be disabled via
    * `UiRadioOption.disabled`).
    */
-  disabled?: boolean;
-  error?: boolean;
+  disabled?: boolean | undefined;
+  error?: boolean | undefined;
   /**
    * Marks the group required for assistive technology and native validation via
    * the `required` attribute on the radios (an unselected required group reports
    * `:invalid`; selecting any option satisfies it). MUI renders the native
    * required asterisk on the group label; no extra visual treatment is added.
    */
-  required?: boolean;
+  required?: boolean | undefined;
   /** Lays the options out in a row instead of the default column. */
   row?: boolean;
   sx?: SxProps<Theme>;
   /** Visible group label — the preferred accessible name (WCAG 2.4.6 / 3.3.2). */
-  label?: string;
+  label?: string | undefined;
   /** Accessible name used only when there is no visible `label`. */
   'aria-label'?: string;
   /**
