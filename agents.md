@@ -69,9 +69,11 @@ mutated module, so a component-behaviour test must deep-import the component und
 than the public barrel `'../../src/components'`, or it stays "related" to every mutant and the
 gate slows back down. Exception: structural guard suites whose subject IS the public surface
 (`components-index`, `ui-core-contract`) may import the barrel, and are excluded from the
-mutation tier for exactly that reason. Every workflow cancels superseded runs via `concurrency`,
-so a new push aborts the previous one. See CONTRIBUTING.md ("CI speed and the mutation-testing
-gate") for the full flow.
+mutation tier for exactly that reason. Every CI workflow cancels superseded runs via
+`concurrency`, so a new push aborts the previous one — the exceptions are the release publishers
+(`autorelease`, `autoprerelease`) and `scorecard`, which set `cancel-in-progress: false` so a run
+that may already have tagged, published or uploaded is never killed half-way. See CONTRIBUTING.md
+("CI speed and the mutation-testing gate") for the full flow.
 
 ### Step 2 — Cover Every Applicable Scenario Class
 

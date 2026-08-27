@@ -197,6 +197,18 @@ function allSuiteFiles(): string[] {
   return walkRelative('tests').filter(file => /\.(test\.tsx?|spec\.js)$/.test(file));
 }
 
+// Source modules matter as much as suites. A component that reaches for the
+// public barrel puts every component into the module graph of every suite that
+// renders it, so those suites become "related" to every mutated file again —
+// the same defeat as a barrel-importing test, one edge further away. Stories are
+// Storybook entry points that no jest suite imports, so they cannot pull the
+// barrel into a mutant run; `src/index.ts` re-exports it through a relative
+// `./components` specifier the pattern deliberately does not match, and nothing
+// under tests/ imports the package entry either.
+function allSourceModules(): string[] {
+  return walkRelative('src').filter(file => /\.tsx?$/.test(file) && !file.endsWith('.stories.tsx'));
+}
+
 function importsPublicBarrel(relPath: string): boolean {
   return BARREL_IMPORT_PATTERN.test(readFileSync(join(REPO_ROOT, relPath), 'utf8'));
 }
@@ -408,6 +420,10 @@ describe('structural-guard exclusion (jest.mutation.config.ts)', () => {
   it('no other suite under tests/ imports the public barrel', () => {
     const barrelImporters = allSuiteFiles().filter(importsPublicBarrel).sort();
     expect(barrelImporters).toEqual([...STRUCTURAL_GUARD_FILES].sort());
+  });
+
+  it('no source module imports the public barrel', () => {
+    expect(allSourceModules().filter(importsPublicBarrel)).toEqual([]);
   });
 });
 
