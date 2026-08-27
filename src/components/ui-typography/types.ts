@@ -2,7 +2,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { ElementType, HTMLAttributes, ReactNode } from 'react';
 
 export interface UiTypographyProps extends HTMLAttributes<HTMLElement> {
-  sx?: SxProps<Theme>;
+  sx?: SxProps<Theme> | undefined;
   variant?:
     | 'h1'
     | 'h2'

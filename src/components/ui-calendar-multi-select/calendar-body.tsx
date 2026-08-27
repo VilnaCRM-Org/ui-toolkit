@@ -20,10 +20,6 @@ interface CellContext {
   onDayClick: (iso: string) => void;
 }
 
-function cellKey(cell: CellDescriptor): string {
-  return cell.kind === 'padding' ? cell.key : cell.iso;
-}
-
 function renderCell(cell: CellDescriptor, ctx: CellContext): React.ReactElement {
   if (cell.kind === 'padding') {
     return <PaddingCell key={cell.key} size={ctx.size} />;
@@ -51,8 +47,8 @@ function CalendarBody({ field, calendar }: Readonly<CalendarBodyProps>): React.R
   return (
     <Box component="tbody" role="rowgroup">
       {calendar.cellRows.map(row => (
-        <Box component="tr" role="row" key={cellKey(row[0])}>
-          {row.map(cell => renderCell(cell, ctx))}
+        <Box component="tr" role="row" key={row.key}>
+          {row.cells.map(cell => renderCell(cell, ctx))}
         </Box>
       ))}
     </Box>

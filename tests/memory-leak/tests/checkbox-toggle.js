@@ -1,3 +1,4 @@
+const { waitForSelector } = require('../utils/page-probe');
 const ScenarioBuilder = require('../utils/scenario-builder');
 
 const scenarioBuilder = new ScenarioBuilder();
@@ -15,7 +16,7 @@ const delay = ms =>
 // fires change listeners; `back` returns it to unchecked. Retained detached icon
 // nodes between action and back would indicate a leak.
 async function action(page) {
-  await page.waitForSelector(checkboxSelector);
+  await waitForSelector(page, checkboxSelector);
   await Array.from({ length: toggleCount }).reduce(
     previous =>
       previous.then(async () => {

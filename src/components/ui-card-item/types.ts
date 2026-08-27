@@ -22,14 +22,14 @@ export interface UiCardItemProps {
    * consumer's document outline. Visual size is controlled by `variant`, not
    * this prop. Defaults to `h6` for small cards and `h5` for large cards.
    */
-  headingComponent?: HeadingLevel;
+  headingComponent?: HeadingLevel | undefined;
 }
 
 export interface CardContentProps {
   item: CardItem;
   isSmallCard: boolean;
   /** See {@link UiCardItemProps.headingComponent}. */
-  headingComponent?: HeadingLevel;
+  headingComponent?: HeadingLevel | undefined;
 }
 
 export interface ImageList {

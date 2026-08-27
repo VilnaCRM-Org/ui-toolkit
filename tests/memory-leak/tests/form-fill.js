@@ -1,3 +1,4 @@
+const { waitForSelector } = require('../utils/page-probe');
 const ScenarioBuilder = require('../utils/scenario-builder');
 
 const scenarioBuilder = new ScenarioBuilder();
@@ -8,7 +9,7 @@ const emailInputSelector = 'input[type="email"]';
 // state + change listeners; clearing should release them. Leaked field
 // subscriptions would surface as retained objects between action and back.
 async function action(page) {
-  await page.waitForSelector(emailInputSelector, { visible: true });
+  await waitForSelector(page, emailInputSelector, { visible: true });
   await page.click(emailInputSelector);
   await page.type(emailInputSelector, 'leak-check@example.com');
 }

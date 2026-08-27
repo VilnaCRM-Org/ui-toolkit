@@ -9,7 +9,9 @@ import baseConfig from './jest.config';
 //
 // Coverage collection and the 100% gate are disabled here: they are irrelevant
 // to mutation testing, and the gate would error because integration runs are
-// not part of the coverage contract.
+// not part of the coverage contract. The inherited threshold is deleted rather
+// than overridden with `undefined`, which `exactOptionalPropertyTypes` rejects.
+//
 // The structural guards below assert on the PUBLIC BARREL — export names, the
 // registry documents, the on-disk board layout — so they import
 // `src/components/index.ts` and, through it, every component in the toolkit.
@@ -34,7 +36,6 @@ const STRUCTURAL_GUARDS = [
 const config: Config = {
   ...baseConfig,
   collectCoverage: false,
-  coverageThreshold: undefined,
   testMatch: [
     '<rootDir>/tests/unit/**/*.test.ts',
     '<rootDir>/tests/unit/**/*.test.tsx',
@@ -48,5 +49,7 @@ const config: Config = {
     ...STRUCTURAL_GUARDS,
   ],
 };
+
+delete config.coverageThreshold;
 
 export default config;

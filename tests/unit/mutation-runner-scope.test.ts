@@ -249,7 +249,8 @@ function roundRobinHeaviestWeight(
 ): number {
   const weights = new Array<number>(total).fill(0);
   files.forEach((file, index) => {
-    weights[index % total] += sizes.get(file) ?? 0;
+    const slot = index % total;
+    weights[slot] = (weights[slot] ?? 0) + (sizes.get(file) ?? 0);
   });
   return Math.max(...weights);
 }
@@ -265,7 +266,8 @@ function extractShardTotals(workflowText: string): number[] {
 
 function extractMatrixIndices(workflowText: string): number[] {
   const match = /index:\s*\[([^\]]*)\]/.exec(workflowText);
-  return match ? match[1].split(',').map(Number) : [];
+  // Group 1 is non-optional in the pattern, so a match always carries it.
+  return match ? (match[1] as string).split(',').map(Number) : [];
 }
 
 let probe: ProbeResult;

@@ -12,7 +12,9 @@ import mockConsoleWarn from './utils/mock-console-warn';
 // for the whole file and assert on the spy in the dedicated block.
 const warn = mockConsoleWarn();
 
-const options: UiMultiSelectOption[] = [
+// Tuple-typed so the per-index reads below stay definite `UiMultiSelectOption`s
+// under `noUncheckedIndexedAccess`.
+const options: [UiMultiSelectOption, UiMultiSelectOption, UiMultiSelectOption] = [
   { label: 'Kyiv', value: 'kyiv' },
   { label: 'Lviv', value: 'lviv' },
   { label: 'Odesa', value: 'odesa' },

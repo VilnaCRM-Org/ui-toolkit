@@ -46,8 +46,19 @@ WORKFLOW="$PROJECT_ROOT/.github/workflows/rust-code-analysis.yml"
 
 # ---- checkout step -----------------------------------------------------------
 
-@test "workflow pins actions/checkout to the repo-standard immutable SHA" {
-  grep -qE 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' "$WORKFLOW"
+@test "workflow pins actions/checkout to an immutable SHA with a version comment" {
+  grep -qE 'actions/checkout@[0-9a-f]{40} # v[0-9]+\.[0-9]+\.[0-9]+' "$WORKFLOW"
+}
+
+# Rejects every reference that is not a 40-character commit SHA carrying a
+# version comment, rather than denying a list of known-mutable refs: a ref such
+# as `@release` is just as retargetable as `@v4`.
+@test "workflow pins every action to a SHA, never a mutable ref" {
+  local reference
+  while IFS= read -r reference; do
+    [ -n "$reference" ] || continue
+    printf '%s\n' "$reference" | grep -qE '@[0-9a-f]{40} # v[0-9]+\.[0-9]+\.[0-9]+$'
+  done < <(grep -oE 'uses: .*$' "$WORKFLOW")
 }
 
 @test "checkout step sets persist-credentials: false" {
@@ -68,34 +79,30 @@ WORKFLOW="$PROJECT_ROOT/.github/workflows/rust-code-analysis.yml"
   [ "$status" -ne 0 ]
 }
 
-# ---- file detection step -----------------------------------------------------
-
-@test "workflow has a 'Detect runtime project files' step" {
-  grep -qi 'Detect runtime project files' "$WORKFLOW"
-}
-
-@test "detection step checks for config/metrics-policy.json" {
-  grep -q 'config/metrics-policy.json' "$WORKFLOW"
-}
-
-@test "detection step writes a flag to GITHUB_OUTPUT" {
-  grep -q 'GITHUB_OUTPUT' "$WORKFLOW"
-}
-
 # ---- lint-metrics step -------------------------------------------------------
 
 @test "workflow runs make lint-metrics" {
   grep -q 'make lint-metrics' "$WORKFLOW"
 }
 
-@test "make lint-metrics step is gated on the detection flag" {
-  grep -B 3 'make lint-metrics' "$WORKFLOW" | grep -q "steps\\.project\\.outputs\\.present"
+# ---- fail-closed contract (issue #96) ----------------------------------------
+#
+# The metrics gate used to be wrapped in a "bootstrap PR" detection step that
+# turned any missing input into a permanently green skip. The gate now runs
+# unconditionally: a missing input has to make the job red.
+
+@test "the metrics gate runs unconditionally, with no step condition at all" {
+  # Not just the removed `present` flag: any step-level `if:` can restore a
+  # green skip, so the workflow must carry none. Scoped to step indentation
+  # (six spaces or deeper) — a job-level condition gates the whole job, which
+  # shows up as a skipped check rather than as a gate that passed empty.
+  run grep -nE '^[[:space:]]{6,}if:' "$WORKFLOW"
+  [ "$status" -ne 0 ]
 }
 
-# ---- skip / bootstrap guard --------------------------------------------------
-
-@test "workflow has a skip step for bootstrap PRs" {
-  grep -qi 'skip\|Skipping' "$WORKFLOW"
+@test "workflow keeps no bootstrap skip branch" {
+  run grep -nE 'present=(true|false)|Skipping ' "$WORKFLOW"
+  [ "$status" -ne 0 ]
 }
 
 # ---- no manual docker lifecycle ----------------------------------------------

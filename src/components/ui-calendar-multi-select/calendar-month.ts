@@ -35,6 +35,13 @@ export interface CalendarCell {
   inCurrentMonth: boolean;
 }
 
+/** One week row of the month matrix. */
+export interface CalendarWeek {
+  /** Local-midnight date of the row's first (Monday) slot — the row's identity. */
+  start: Date;
+  cells: CalendarCell[];
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -50,24 +57,31 @@ export function isSameMonth(a: Date, b: Date): boolean {
 const WEEKS_IN_GRID: number = 6;
 const DAYS_IN_WEEK: number = 7;
 
+/** The seven day slots of the week beginning at `start`. */
+function buildWeek(start: Date, anchor: Date): CalendarWeek {
+  const cells: CalendarCell[] = [];
+  for (let weekday: number = 0; weekday < DAYS_IN_WEEK; weekday += 1) {
+    const date: Date = addDays(start, weekday);
+    cells.push({ date, inCurrentMonth: isSameMonth(date, anchor) });
+  }
+  return { start, cells };
+}
+
 /**
  * Builds a fixed 6×7 matrix of days for the month containing `anchor`. Leading
  * and trailing slots are filled with the adjacent months' days (flagged
  * `inCurrentMonth: false`) so arrow-key navigation can cross month boundaries.
- * The height is always six weeks so the grid never reflows between months.
+ * The height is always six weeks so the grid never reflows between months. Each
+ * week carries its own start date, so callers get a row identity without having
+ * to reach into the row's cells.
  */
-export function buildMonthMatrix(anchor: Date): CalendarCell[][] {
+export function buildMonthMatrix(anchor: Date): CalendarWeek[] {
   const first: Date = startOfMonth(anchor);
   const gridStart: Date = addDays(first, -mondayIndex(first));
-  const weeks: CalendarCell[][] = [];
+  const weeks: CalendarWeek[] = [];
 
   for (let week: number = 0; week < WEEKS_IN_GRID; week += 1) {
-    const row: CalendarCell[] = [];
-    for (let weekday: number = 0; weekday < DAYS_IN_WEEK; weekday += 1) {
-      const date: Date = addDays(gridStart, week * DAYS_IN_WEEK + weekday);
-      row.push({ date, inCurrentMonth: isSameMonth(date, anchor) });
-    }
-    weeks.push(row);
+    weeks.push(buildWeek(addDays(gridStart, week * DAYS_IN_WEEK), anchor));
   }
 
   return weeks;

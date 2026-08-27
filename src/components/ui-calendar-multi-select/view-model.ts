@@ -1,4 +1,9 @@
-import { buildMonthMatrix, formatDayLabel, type CalendarCell } from './calendar-month';
+import {
+  buildMonthMatrix,
+  formatDayLabel,
+  type CalendarCell,
+  type CalendarWeek,
+} from './calendar-month';
 import { formatISO } from './date-utils';
 
 // Turns a month matrix + selection/focus/range state into a ready-to-render grid
@@ -27,13 +32,19 @@ export interface PaddingDescriptor {
 
 export type CellDescriptor = DayDescriptor | PaddingDescriptor;
 
+export interface CellRow {
+  /** Stable React key for the week row: the ISO of its first (Monday) slot. */
+  key: string;
+  cells: CellDescriptor[];
+}
+
 export interface CellRowsParams {
   visibleMonth: Date;
   selected: ReadonlySet<string>;
   focusedISO: string;
   todayISO: string;
-  minISO?: string;
-  maxISO?: string;
+  minISO?: string | undefined;
+  maxISO?: string | undefined;
 }
 
 function isOutOfRange(
@@ -62,8 +73,13 @@ function toDescriptor(cell: CalendarCell, params: CellRowsParams): CellDescripto
   };
 }
 
-export function buildCellRows(params: CellRowsParams): CellDescriptor[][] {
-  return buildMonthMatrix(params.visibleMonth).map(week =>
-    week.map(cell => toDescriptor(cell, params))
-  );
+function toRow(week: CalendarWeek, params: CellRowsParams): CellRow {
+  return {
+    key: formatISO(week.start),
+    cells: week.cells.map(cell => toDescriptor(cell, params)),
+  };
+}
+
+export function buildCellRows(params: CellRowsParams): CellRow[] {
+  return buildMonthMatrix(params.visibleMonth).map(week => toRow(week, params));
 }

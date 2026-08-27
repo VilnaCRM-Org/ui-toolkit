@@ -4,6 +4,8 @@ on:
     branches:
       - main
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -11,54 +13,40 @@ concurrency:
 jobs:
   static:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Detect runtime project files
-        id: project
-        run: |
-          if [[ -f package.json && -f bun.lock ]]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip static checks
-        if: steps.project.outputs.present != 'true'
-        run: echo "Skipping static checks because this bootstrap PR does not include the project runtime files yet."
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Start docker test environment
-        if: steps.project.outputs.present == 'true'
         run: make start-bun
 
       - name: Run ESLint
-        if: steps.project.outputs.present == 'true'
         run: make lint-next
 
       - name: Run tsc linter
-        if: steps.project.outputs.present == 'true'
         run: make lint-tsc
 
       - name: Run markdown linter
-        if: steps.project.outputs.present == 'true'
         run: make lint-md
 
       - name: Run code formatter
-        if: steps.project.outputs.present == 'true'
         run: make format-check
 
       - name: Run dependency range linter
-        if: steps.project.outputs.present == 'true'
         run: make lint-dep-ranges
 
       - name: Enforce test directory structure
-        if: steps.project.outputs.present == 'true'
         run: make lint-test-structure
 
+      - name: Verify referenced Makefile and workflow paths exist
+        run: make lint-ci-paths
+
       - name: Stop docker test environment
-        if: always() && steps.project.outputs.present == 'true'
+        if: always()
         run: make down
