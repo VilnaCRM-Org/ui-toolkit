@@ -32,10 +32,18 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Scratch files go to the runner temp dir, not the workspace: this job
+          # takes no checkout, and a repo-root `release.json` would read to the
+          # referenced-path guard (scripts/ci/check-referenced-paths.ts) as a
+          # committed file that is missing.
+          tags="$RUNNER_TEMP/tags.txt"
+          release="$RUNNER_TEMP/release.json"
+          apiError="$RUNNER_TEMP/api-error.txt"
+
           # The tags API orders by commit date, not by version, hence sort -V.
           # Only stable vX.Y.Z tags count; autorelease.yml never tags prereleases.
-          gh api --paginate "repos/$REPO/tags" --jq '.[].name' > tags.txt
-          tag="$(grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' tags.txt | sort -V | tail -n 1 || true)"
+          gh api --paginate "repos/$REPO/tags" --jq '.[].name' > "$tags"
+          tag="$(grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' "$tags" | sort -V | tail -n 1 || true)"
 
           if [[ -z "$tag" ]]; then
             echo "::notice::No v-prefixed release tag exists yet, so there is nothing" \
@@ -44,15 +52,15 @@ jobs:
           fi
 
           status=0
-          gh api "repos/$REPO/releases/tags/$tag" > release.json 2> api-error.txt \
+          gh api "repos/$REPO/releases/tags/$tag" > "$release" 2> "$apiError" \
             || status=$?
           if [[ "$status" -ne 0 ]]; then
-            if grep -q 'HTTP 404' api-error.txt; then
+            if grep -q 'HTTP 404' "$apiError"; then
               echo "::error::Tag $tag has no GitHub release. The release pipeline is" \
                 "broken: the Create Release step in $WORKFLOW never ran for this tag." \
                 "Check the newest run of that workflow on main."
             else
-              cat api-error.txt
+              cat "$apiError"
               echo "::error::Could not read the release for tag $tag, so release" \
                 "health is unverified. Re-run this workflow once the API call works."
             fi
@@ -63,7 +71,7 @@ jobs:
           # (stale, misnamed, or manually attached) must not satisfy this check.
           expected="vilnacrm-ui-toolkit-${tag#v}.tgz"
           if ! jq -e --arg name "$expected" \
-            '.assets[] | select(.name == $name)' release.json > /dev/null; then
+            '.assets[] | select(.name == $name)' "$release" > /dev/null; then
             echo "::error::Release $tag does not carry $expected, so consumers" \
               "cannot install it. The packaging steps in $WORKFLOW (make package," \
               "then the files: dist/*.tgz upload) did not attach that tarball."
@@ -81,26 +89,30 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Same reasoning as the previous step: scratch lives in the runner temp dir.
+          runsJson="$RUNNER_TEMP/runs.json"
+          apiError="$RUNNER_TEMP/api-error.txt"
+
           runs="repos/$REPO/actions/workflows/autorelease.yml/runs"
           status=0
-          gh api "$runs?branch=main&status=completed&per_page=1" > runs.json \
-            2> api-error.txt || status=$?
+          gh api "$runs?branch=main&status=completed&per_page=1" > "$runsJson" \
+            2> "$apiError" || status=$?
           if [[ "$status" -ne 0 ]]; then
             # Only the expected pre-registration state may pass silently; any
             # other API failure would otherwise mask a broken release pipeline.
-            if grep -q 'HTTP 404' api-error.txt; then
+            if grep -q 'HTTP 404' "$apiError"; then
               echo "::notice::$WORKFLOW is not registered on main yet, so its" \
                 "health was not checked. This is the expected bootstrap state."
               exit 0
             fi
-            cat api-error.txt
+            cat "$apiError"
             echo "::error::Could not read runs for $WORKFLOW, so release-pipeline" \
               "health is unverified. Re-run this workflow once the API call works."
             exit 1
           fi
 
-          conclusion="$(jq -r '.workflow_runs[0].conclusion // "none"' runs.json)"
-          url="$(jq -r '.workflow_runs[0].html_url // ""' runs.json)"
+          conclusion="$(jq -r '.workflow_runs[0].conclusion // "none"' "$runsJson")"
+          url="$(jq -r '.workflow_runs[0].html_url // ""' "$runsJson")"
 
           if [[ "$conclusion" == "none" ]]; then
             echo "::notice::$WORKFLOW has no completed run on main yet."
