@@ -17,7 +17,8 @@ Deliver the first two Epic 3 data-presentation primitives:
   and mobile share one DOM tree (CSS-only layout switch).
 - `UiItemsList` (`src/components/ui-items-list`) — a pure composition wrapper
   that stacks `UiItemRow` children as a semantic `<ul role="list">`, one `<li>`
-  per row, 8px apart, with no chrome of its own.
+  per row, on the website's row-gap tiers (8px, widening to 16px through the
+  641–1024px band), with no chrome of its own.
 
 The **expandable panel content itself is out of scope for 3.1** — the row only
 exposes the disclosure contract (`expanded`/`onToggle`/`panelId`) and the list
@@ -30,16 +31,16 @@ Epic 3 is the first epic on `main` after Epic 2; this work is on
 
 ### `UiItemRow`
 
-| Prop          | Type                                   | Notes                                                                                    |
-| ------------- | -------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `method`      | `'get' \| 'put' \| 'post' \| 'delete'` | Selects the badge label and the whole colour recipe. The only variant axis.              |
-| `path`        | `string`                               | Endpoint path shown after the badge.                                                     |
-| `description` | `string?`                              | Optional short description shown after the path.                                         |
-| `muted`       | `boolean?`                             | Muted/inactive status — grey recipe + `aria-disabled` boundary pattern.                  |
-| `expanded`    | `boolean?`                             | Disclosure state (wired rows only). Always controlled; defaults to `false`.              |
-| `onToggle`    | `(() => void)?`                        | Optional — its presence makes the row a button; called on activation of a non-muted row. |
-| `panelId`     | `string?`                              | Surfaced as `aria-controls` **only while expanded**.                                     |
-| `sx`          | `SxProps<Theme>?`                      | Applied to the row root.                                                                 |
+| Prop          | Type                                              | Notes                                                                                    |
+| ------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `method`      | `'get' \| 'put' \| 'post' \| 'delete' \| 'patch'` | Selects the badge label and the whole colour recipe. The only variant axis.              |
+| `path`        | `string`                                          | Endpoint path shown after the badge.                                                     |
+| `description` | `string?`                                         | Optional short description shown after the path.                                         |
+| `muted`       | `boolean?`                                        | Muted/inactive status — grey recipe + `aria-disabled` boundary pattern.                  |
+| `expanded`    | `boolean?`                                        | Disclosure state (wired rows only). Always controlled; defaults to `false`.              |
+| `onToggle`    | `(() => void)?`                                   | Optional — its presence makes the row a button; called on activation of a non-muted row. |
+| `panelId`     | `string?`                                         | Surfaced as `aria-controls` **only while expanded**.                                     |
+| `sx`          | `SxProps<Theme>?`                                 | Applied to the row root.                                                                 |
 
 ### `UiItemsList`
 
@@ -58,18 +59,18 @@ so the row is composed 1:1 from the Figma "atom switcher" REST-endpoint masters
 on the "Docs Rest API" screens, with interaction from the WAI-ARIA APG
 **disclosure** pattern on `crm`'s canonical MUI primitives:
 
-| Element          | Figma node(s)                                                                                  | Applied                                                                                                                         |
-| ---------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Row masters      | GET `439:19720`, GREY/muted `439:19721`, PUT `439:19722`, POST `439:19723`, DELETE `439:19724` | 52px row, `8px` radius, `1px` accent border over an accent-at-10% (`alpha()`) tint                                              |
-| Method badge     | (per master)                                                                                   | White pill, Golos DemiBold 16/26, per-method accent ink, `0 8px 13.5px` per-method drop shadow                                  |
-| Path             | (per master)                                                                                   | Golos DemiBold 18 `#1A1C1E` (`darkPrimary`)                                                                                     |
-| Description      | (per master)                                                                                   | Golos Medium 15/18 `#404142` (`grey200`)                                                                                        |
-| Trailing chevron | (per master)                                                                                   | `#1B2327` (`darkSecondary`); `#E1E7EA` (`brandGray`) on grey rows                                                               |
-| Open padlock     | (per master)                                                                                   | `#57595B` (`grey250`) — the only lock glyph in the whole file, identical on every use; decorative                               |
-| Hover masters    | `439:19772`–`439:19776`, grey hover `439:19773`                                                | Accent border/badge ink darkens + a per-method `0 4px 9px` row shadow                                                           |
-| Expanded header  | `192:8298`                                                                                     | Chevron flips up and tints to the method accent                                                                                 |
-| Mobile master    | `205:7840`                                                                                     | `≤480px` two-line layout, Golos→Inter (path 16/18, desc 12/18), 20px icons, badge shadow re-expressed as a `drop-shadow` filter |
-| List usage       | "Frame 152" `187:7990`                                                                         | Rows on a 60px pitch (52px row + 8px gap) → the list's `8px` gap                                                                |
+| Element          | Figma node(s)                                                                                  | Applied                                                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Row masters      | GET `439:19720`, GREY/muted `439:19721`, PUT `439:19722`, POST `439:19723`, DELETE `439:19724` | 52px row, `8px` radius, `1px` accent border over an accent-at-10% (`alpha()`) tint                                               |
+| Method badge     | (per master)                                                                                   | White pill, Golos DemiBold 16/26, per-method accent ink, `0 8px 13.5px` per-method drop shadow                                   |
+| Path             | (per master)                                                                                   | Golos DemiBold 18 `#1A1C1E` (`darkPrimary`)                                                                                      |
+| Description      | (per master)                                                                                   | Golos Medium 15/18 `#404142` (`grey200`)                                                                                         |
+| Trailing chevron | (per master)                                                                                   | `#1B2327` (`darkSecondary`) on **every** row, muted included — see the muted-chevron note below                                  |
+| Open padlock     | (per master)                                                                                   | `#57595B` (`grey250`) — the only lock glyph in the whole file, identical on every use; decorative                                |
+| Hover masters    | `439:19772`–`439:19776`, grey hover `439:19773`                                                | Accent border/badge ink darkens + a per-method `0 4px 9px` row shadow                                                            |
+| Expanded header  | `192:8298`                                                                                     | Chevron flips up and tints to the method accent                                                                                  |
+| Mobile master    | `205:7840`                                                                                     | `≤640px` two-line layout, Golos→Inter (path 16/18, desc 12/18), 20px icons, 12px badge→text gap, badge shadow as a `drop-shadow` |
+| List usage       | "Frame 152" `187:7990`                                                                         | Rows on a 60px pitch (52px row + 8px gap) → the list's `8px` base gap                                                            |
 
 **No new base palette** — path/description/chevron/padlock inks and the muted
 recipe all resolve to existing `ui-color-theme` tokens, and the border/badge/row
@@ -80,6 +81,45 @@ set** the Figma hover masters introduce, added to `ui-color-theme`:
 (`deleteMethodHover` is the Figma hover master `439:19776` taken literally —
 the one accent that BRIGHTENS on hover; the owner ruled on 2026-08-26 to match
 the design over the earlier darken-for-consistency `#C72C2C` substitute.)
+
+### Website parity (the swagger operation block is the reference implementation)
+
+The Figma "atom switcher" board is the visual master, but the shipped surface this
+row reproduces is the website's swagger operation block
+(`src/features/swagger/components/api-documentation/operation-block`). Three things
+the board does not cover are taken from there instead:
+
+- **PATCH is a fifth method.** The website's method table
+  (`$methodColors`) carries `post`/`put`/`get`/`delete`/`patch`, with
+  `$patchColorTheme: #9b59b6` looped through the same `@each` as the rest, so
+  `ItemRowMethod` includes `'patch'` and `patchMethod #9B59B6` joins the palette.
+  Neither source defines a PATCH **hover** — the website's method table has no
+  hover state at all and the Figma board predates PATCH — so `patchMethodHover
+#7A4092` applies the transform the three darkening masters share (hue and
+  saturation held, lightness −12pp: the mean of `#1EAEFF→#0091E2`,
+  `#FFC01E→#DD9F00` and `#38B386→#00AE70`). It is the one derived colour here and
+  should be replaced with a literal once a PATCH hover master exists.
+  The badge shadow reuses the neutral tint GET and the muted recipe already share;
+  the row hover shadow derives from the accent at the shared 18%.
+- **The muted chevron keeps the dark ink.** The website ships a single
+  `arrow-down-dark.svg` (`#1B2327`) and its `.opblock-deprecated` block never
+  recolours it. Brand-gray (`#E1E7EA`) on the `#F4F5F6` muted tint resolves to
+  **1.14:1**, so the muted chevron was effectively invisible; `#1B2327` on the same
+  tint is 14.62:1. (The **expanded** chevron still tints to the row's accent, per
+  the Figma expanded master — on a muted row that remains brand-gray.)
+- **Breakpoints come from the website scale, not the CRM one.** The website's
+  `for-small-screens` is `max-width: 640px` and `for-large-screens`
+  `max-width: 1024px`, so `MOBILE_MAX`/`TABLET_MAX` read `websiteBreakpointValues`.
+  With the right scale in place the tiers the CRM 480px constant had hidden apply
+  too: the `24px` right inset through `for-large-screens`
+  (`.opblock-summary { @include for-large-screens { padding-right: 1.5rem } }`),
+  the `12px` badge→text gap on mobile (`.opblock-summary-control` gap `1rem`→
+  `0.75rem`) and the list's `16px` row gap through the 641–1024px band
+  (`.opblock` margin-bottom `0.5rem`→`1rem`→`0.5rem`).
+
+The open padlock stays decorative and always rendered, unlike the website (which
+shows it only on secured endpoints): that is the documented Story 3.1 scope call in
+`types.ts`, not an oversight.
 
 ### `UiItemRow` behaviour
 
