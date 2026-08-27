@@ -22,6 +22,66 @@ const options: [UiMultiSelectOption, UiMultiSelectOption, UiMultiSelectOption] =
 
 const noop: (value: UiMultiSelectOption[]) => void = () => undefined;
 
+// Figma "Multiselect": the empty field's stroke is grey400 #D0D4D8 (from the theme);
+// once chips fill it the stroke darkens to grey300 #969B9D (FILLED_STROKE_SX).
+const EMPTY_STROKE: string = '#D0D4D8';
+const FILLED_STROKE: string = '#969B9D';
+
+function isStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return typeof (rule as CSSStyleRule).selectorText === 'string';
+}
+
+// Emotion emits class-only selectors, so counting the compound parts of a selector
+// ranks the emitted rules the way the browser cascade does.
+function selectorWeight(selectorText: string): number {
+  return (selectorText.match(/[.:[#]/g) ?? []).length;
+}
+
+// MUI ships vendor pseudo-element rules (`::-moz-focus-inner`) that jsdom's
+// selector engine refuses to parse; they can never paint a border, so skip them.
+function matchesSafely(element: Element, selectorText: string): boolean {
+  try {
+    return element.matches(selectorText);
+  } catch {
+    return false;
+  }
+}
+
+// jsdom applies matching rules in document order and ignores specificity, so
+// `getComputedStyle` reports the base stroke even when the filled override wins.
+// Resolve it the browser way: the most specific matching rule paints the border.
+function paintedStroke(outline: Element): string {
+  let stroke: string = '';
+  let weight: number = -1;
+  for (const sheet of Array.from(document.styleSheets)) {
+    for (const rule of Array.from(sheet.cssRules)) {
+      if (!isStyleRule(rule)) continue;
+      const color: string = rule.style.getPropertyValue('border-color');
+      const rank: number = selectorWeight(rule.selectorText);
+      if (color === '' || rank < weight) continue;
+      if (!matchesSafely(outline, rule.selectorText)) continue;
+      stroke = color;
+      weight = rank;
+    }
+  }
+  return stroke;
+}
+
+// The colour of the border the user actually sees around the rendered field.
+function fieldStrokeColor(): string {
+  const combobox: HTMLElement = screen.getByRole('combobox');
+  // eslint-disable-next-line testing-library/no-node-access -- root wrapper, no semantic query
+  const root: HTMLElement | null = combobox.closest('.MuiAutocomplete-root');
+  // eslint-disable-next-line testing-library/no-node-access -- the outline is a bare fieldset
+  const outline: Element | null | undefined = root?.querySelector(
+    '.MuiOutlinedInput-notchedOutline'
+  );
+  if (outline === null || outline === undefined) {
+    throw new Error('the multi-select rendered without an outlined border');
+  }
+  return paintedStroke(outline);
+}
+
 describe('UiMultiSelect — filled-field stroke merge', () => {
   it('merges a consumer sx object while chips fill the field', () => {
     render(
@@ -57,6 +117,38 @@ describe('UiMultiSelect — filled-field stroke merge', () => {
     // eslint-disable-next-line testing-library/no-node-access -- root wrapper, no semantic query
     const root: HTMLElement | null = combobox.closest('.MuiAutocomplete-root');
     expect(root).toHaveStyle({ marginTop: '4px' });
+  });
+
+  it('paints the field with the darker filled stroke once a chip fills it', () => {
+    render(
+      <UiMultiSelect options={options} value={[options[0]]} aria-label="Cities" onChange={noop} />
+    );
+    expect(fieldStrokeColor()).toBe(FILLED_STROKE);
+  });
+
+  it('leaves an empty field on the lighter resting stroke', () => {
+    render(<UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} />);
+    expect(fieldStrokeColor()).toBe(EMPTY_STROKE);
+  });
+
+  it('leaves an omitted value on the lighter resting stroke', () => {
+    render(<UiMultiSelect options={options} aria-label="Cities" onChange={noop} />);
+    expect(fieldStrokeColor()).toBe(EMPTY_STROKE);
+  });
+
+  it('darkens the stroke only when the selection becomes non-empty', () => {
+    const { rerender } = render(
+      <UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} />
+    );
+    expect(fieldStrokeColor()).toBe(EMPTY_STROKE);
+
+    rerender(
+      <UiMultiSelect options={options} value={[options[0]]} aria-label="Cities" onChange={noop} />
+    );
+    expect(fieldStrokeColor()).toBe(FILLED_STROKE);
+
+    rerender(<UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} />);
+    expect(fieldStrokeColor()).toBe(EMPTY_STROKE);
   });
 });
 

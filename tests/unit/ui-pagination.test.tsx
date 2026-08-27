@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
@@ -246,6 +246,38 @@ describe('UiPagination — keyboard activation', () => {
   });
 });
 
+// The two chevron leaf paths (Figma nodes 439:19467+): the previous link draws
+// the left glyph, the next link the right one.
+const LEFT_CHEVRON_PATH: string = 'M12.5 5L7.5 10L12.5 15';
+const RIGHT_CHEVRON_PATH: string = 'M7.5 5L12.5 10L7.5 15';
+
+function pathOf(glyph: SVGElement): string | null {
+  return glyph.querySelector('path')?.getAttribute('d') ?? null;
+}
+
+// The `d` of every chevron a single nav link owns, in DOM order. The glyphs are
+// decorative (aria-hidden, no role), so the DOM is the only way to reach them.
+function chevronPathsIn(link: HTMLElement): (string | null)[] {
+  // eslint-disable-next-line testing-library/no-node-access -- decorative glyphs, no role
+  const glyphs: NodeListOf<SVGElement> = link.querySelectorAll<SVGElement>('svg');
+  return Array.from(glyphs).map(pathOf);
+}
+
+// The link's own children, named by tag, in DOM order.
+function childTagsOf(link: HTMLElement): string[] {
+  return Array.from(link.children).map((child: Element) => child.tagName.toLowerCase());
+}
+
+// Whether the link's first chevron sits before its label span in document order.
+function chevronPrecedesLabel(link: HTMLElement, label: string): boolean {
+  // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+  const glyph: SVGElement | null = link.querySelector<SVGElement>('svg');
+  if (glyph === null) return false;
+  const span: HTMLElement = within(link).getByText(label);
+  const relation: number = glyph.compareDocumentPosition(span);
+  return (relation & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+}
+
 describe('UiPagination — chevron glyphs', () => {
   it('renders left and right chevrons, decorative and hidden from assistive tech', () => {
     render(<UiPagination value={2} count={5} onChange={noop} />);
@@ -266,6 +298,27 @@ describe('UiPagination — chevron glyphs', () => {
     );
     expect(ds).toEqual(['M12.5 5L7.5 10L12.5 15', 'M7.5 5L12.5 10L7.5 15']);
     paths.forEach((path: SVGPathElement) => expect(path).toHaveAttribute('stroke-width', '1.67'));
+  });
+
+  it('leads the previous link with exactly one left-pointing chevron', () => {
+    render(<UiPagination value={2} count={5} onChange={noop} />);
+    const previous: HTMLElement = screen.getByRole('button', { name: 'Попередня' });
+
+    // One glyph only, drawn from the left path: the right glyph must not leak
+    // onto this link, and the left one must not go missing.
+    expect(chevronPathsIn(previous)).toEqual([LEFT_CHEVRON_PATH]);
+    // ...and it leads the label instead of trailing it.
+    expect(childTagsOf(previous)).toEqual(['svg', 'span']);
+    expect(chevronPrecedesLabel(previous, 'Попередня')).toBe(true);
+  });
+
+  it('trails the next link with exactly one right-pointing chevron', () => {
+    render(<UiPagination value={2} count={5} onChange={noop} />);
+    const next: HTMLElement = screen.getByRole('button', { name: 'Наступна' });
+
+    expect(chevronPathsIn(next)).toEqual([RIGHT_CHEVRON_PATH]);
+    expect(childTagsOf(next)).toEqual(['span', 'svg']);
+    expect(chevronPrecedesLabel(next, 'Наступна')).toBe(false);
   });
 });
 
