@@ -42,11 +42,24 @@ const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7];
 // trailing slash — every variant resolves to the same barrel module. The
 // `@/` alias counts too: jest.config.ts's moduleNameMapper maps `^@/(.*)$`
 // to `<rootDir>/src/$1`, so an `@/components` specifier resolves to the same
-// public barrel and would otherwise bypass this guard undetected. (Written
-// here as `@/components`, not `from '...'`, so this comment doesn't trip the
-// pattern it documents.)
-const BARREL_IMPORT_PATTERN =
-  /from ['"](?:(?:\.\.\/)+src\/components|@\/components)(?:\/index)?\/?['"]/;
+// public barrel and would otherwise bypass this guard undetected.
+const BARREL_SPECIFIER = String.raw`(?:(?:\.\.\/)+src\/components|@\/components)(?:\/index)?\/?`;
+
+// Three ways to reach the barrel, all with the same effect on the module graph:
+// a binding import (`from <barrel>`), a side-effect import (a line that starts
+// with `import` and goes straight to the specifier), and a CommonJS `require`.
+// A side-effect import binds nothing but still loads every component, so leaving
+// it out would let the audits below pass over the very thing they exist to catch.
+// The `import`/`require` arms are anchored to the start of a line so a prose
+// comment naming one of these shapes cannot trip the pattern it documents.
+const BARREL_IMPORT_PATTERN = new RegExp(
+  String.raw`(?:from\s*|^\s*import\s*|require\(\s*)['"]` + BARREL_SPECIFIER + String.raw`['"]`,
+  'm'
+);
+
+// Deliberately assembled, never written as a literal specifier next to an
+// import keyword, so this file stays out of its own audit.
+const PUBLIC_BARREL_SPECIFIER = `@/${'components'}`;
 
 interface StrykerJestOptions {
   configFile: string;
@@ -424,6 +437,18 @@ describe('structural-guard exclusion (jest.mutation.config.ts)', () => {
 
   it('no source module imports the public barrel', () => {
     expect(allSourceModules().filter(importsPublicBarrel)).toEqual([]);
+  });
+
+  // The audits are only as good as the pattern behind them. Built from a
+  // variable rather than written inline so these fixtures cannot make this very
+  // file look like a barrel importer to the two audits above.
+  it.each([
+    ['binding import', (barrel: string): string => `import { UiButton } from '${barrel}';`],
+    ['side-effect import', (barrel: string): string => `import '${barrel}';`],
+    ['require', (barrel: string): string => `const c = require('${barrel}');`],
+  ])('the audit pattern catches a %s of the barrel', (_label, build) => {
+    expect(BARREL_IMPORT_PATTERN.test(build(PUBLIC_BARREL_SPECIFIER))).toBe(true);
+    expect(BARREL_IMPORT_PATTERN.test(build(`${PUBLIC_BARREL_SPECIFIER}/ui-button`))).toBe(false);
   });
 });
 
