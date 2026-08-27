@@ -62,10 +62,18 @@ best practices). `make load-tests` reports the deliberately omitted load tier �
 library exposes no runtime endpoint to load-test; see `tests/load/README.md`.
 
 `make test-mutation` runs the full, gated Stryker suite locally. In CI it is sharded across a
-parallel matrix (`make test-mutation-shard`) and a final job merges the per-shard reports and
-re-enforces the same `break` threshold (`make merge-mutation-reports`) — same gate, much faster.
-Every workflow cancels superseded runs via `concurrency`, so a new push aborts the previous one.
-See CONTRIBUTING.md ("CI speed and the mutation-testing gate") for the full flow.
+parallel matrix (`make test-mutation-shard`), bin-packed by file size, and a final job merges the
+per-shard reports and re-enforces the same `break` threshold (`make merge-mutation-reports`) —
+same gate, much faster. Each mutant's Jest run is scoped to the suites that actually reach the
+mutated module, so a component-behaviour test must deep-import the component under test rather
+than the public barrel `'../../src/components'`, or it stays "related" to every mutant and the
+gate slows back down. Exception: structural guard suites whose subject IS the public surface
+(`components-index`, `ui-core-contract`) may import the barrel, and are excluded from the
+mutation tier for exactly that reason. Every CI workflow cancels superseded runs via
+`concurrency`, so a new push aborts the previous one — the exceptions are the release publishers
+(`autorelease`, `autoprerelease`) and `scorecard`, which set `cancel-in-progress: false` so a run
+that may already have tagged, published or uploaded is never killed half-way. See CONTRIBUTING.md
+("CI speed and the mutation-testing gate") for the full flow.
 
 ### Step 2 — Cover Every Applicable Scenario Class
 

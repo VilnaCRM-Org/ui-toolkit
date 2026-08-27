@@ -1,7 +1,9 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { UiMultiSelect, UiRadioGroup, UiSelectWithSearch } from '@/components';
+import UiMultiSelect from '@/components/ui-multi-select';
+import UiRadioGroup from '@/components/ui-radio-group';
+import UiSelectWithSearch from '@/components/ui-select-with-search';
 
 import { CITIES, CONTACT, ROLES, type Option } from './fixtures';
 import { MS_CHIP_HOVER_SX, SELECT_HOVER_SX } from './styles';

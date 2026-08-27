@@ -32,6 +32,7 @@
         "@stryker-mutator/core": "^10.0.0",
         "@stryker-mutator/jest-runner": "^10.0.0",
         "@stryker-mutator/typescript": "^4.0.0",
+        "@stryker-mutator/typescript-checker": "^10.0.0",
         "@testing-library/jest-dom": "^7.0.0",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
@@ -726,6 +727,8 @@
     "@stryker-mutator/jest-runner": ["@stryker-mutator/jest-runner@10.0.0", "", { "dependencies": { "@stryker-mutator/api": "10.0.0", "@stryker-mutator/util": "10.0.0", "semver": "~7.8.0", "tslib": "~2.8.0" }, "peerDependencies": { "@stryker-mutator/core": "10.0.0" } }, "sha512-WgUU/rk9qL+LXuOYZmNYJDu4JaQ6GIl5/xUkUEyYBvZa2eBVZypHa5rxzFTKiZXq3mqxEkgZ5xYXXzXPI8E51Q=="],
 
     "@stryker-mutator/typescript": ["@stryker-mutator/typescript@4.0.0", "", {}, "sha512-dTm8lyDP5HPSOd14ErXXAn6wY6QZMS6UbXPmexesZJeevNZUxRCHZqoTIJIY1a6WBbI2tKJzKuVjXih83jAXBQ=="],
+
+    "@stryker-mutator/typescript-checker": ["@stryker-mutator/typescript-checker@10.0.0", "", { "dependencies": { "@stryker-mutator/api": "10.0.0", "@stryker-mutator/util": "10.0.0", "semver": "~7.8.0" }, "peerDependencies": { "@stryker-mutator/core": "10.0.0", "typescript": ">=3.6" } }, "sha512-GLvC0LVd8RJ5SxR3eFcgb7DFKmw07DYtPXs942z6Qh7l6p7YBnFyd7lPw7nvA9UKEYDd22embrFmLlyC1XJjXw=="],
 
     "@stryker-mutator/util": ["@stryker-mutator/util@10.0.0", "", {}, "sha512-LzOpHiJaCp2ABQgnPMlrQQcsK43bd5Vo/2FGL78aN62yDoeRQ+4j3tzeuXxK5OAHdC3fUz6TDoy4IsoAuLAd3w=="],
 
@@ -3068,6 +3071,8 @@
     "@stryker-mutator/instrumenter/semver": ["semver@7.8.5", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA=="],
 
     "@stryker-mutator/jest-runner/semver": ["semver@7.8.5", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA=="],
+
+    "@stryker-mutator/typescript-checker/semver": ["semver@7.8.5", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA=="],
 
     "@testing-library/dom/aria-query": ["aria-query@5.3.0", "", { "dependencies": { "dequal": "^2.0.3" } }, "sha512-b0P0sZPKtyu8HkeRAfCq0IfURZK+SuwMjY1UXGBU27wpAiTwQAIlq56IbIO+ytk/JjS1fMR14ee5WBBfKi5J6A=="],
 

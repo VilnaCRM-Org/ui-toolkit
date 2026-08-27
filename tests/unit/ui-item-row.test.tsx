@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiItemRow } from '../../src/components';
+import UiItemRow from '../../src/components/ui-item-row';
 import { rowContainerSx } from '../../src/components/ui-item-row/container-sx';
 import { resolveRecipe, type RowRecipe } from '../../src/components/ui-item-row/recipe';
 import { iconGroupSx } from '../../src/components/ui-item-row/styles';

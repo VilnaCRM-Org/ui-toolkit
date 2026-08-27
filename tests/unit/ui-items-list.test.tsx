@@ -1,7 +1,8 @@
 import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 
-import { UiItemRow, UiItemsList } from '../../src/components';
+import UiItemRow from '../../src/components/ui-item-row';
+import UiItemsList from '../../src/components/ui-items-list';
 import { listSx } from '../../src/components/ui-items-list/styles';
 
 const noop: () => void = () => undefined;

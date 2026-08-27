@@ -2,7 +2,7 @@ import { SxProps, Theme } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiImage } from '../../src/components';
+import UiImage from '../../src/components/ui-image';
 
 import { testImg, testText } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';

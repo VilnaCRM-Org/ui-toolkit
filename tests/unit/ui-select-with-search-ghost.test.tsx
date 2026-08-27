@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiSelectWithSearch } from '../../src/components';
+import UiSelectWithSearch from '../../src/components/ui-select-with-search';
 import type { UiSelectWithSearchOption } from '../../src/components/ui-select-with-search/types';
 
 const CITIES: UiSelectWithSearchOption[] = [

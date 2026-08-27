@@ -2,8 +2,9 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { UiItemRow, UiSearchInput } from '@/components';
+import UiItemRow from '@/components/ui-item-row';
 import type { ItemRowMethod } from '@/components/ui-item-row/types';
+import UiSearchInput from '@/components/ui-search-input';
 
 import { SUGGESTIONS } from './fixtures';
 import {

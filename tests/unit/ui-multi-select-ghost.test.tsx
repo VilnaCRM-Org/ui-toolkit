@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiMultiSelect, UiLink } from '../../src/components';
+import UiLink from '../../src/components/ui-link';
+import UiMultiSelect from '../../src/components/ui-multi-select';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
 
 // Tuple-typed so indexing a fixed entry stays a definite option under

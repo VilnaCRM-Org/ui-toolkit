@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiPagination } from '../../src/components';
+import UiPagination from '../../src/components/ui-pagination';
 import {
   usePaginationModel,
   type PaginationModel,

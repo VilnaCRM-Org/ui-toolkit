@@ -1,7 +1,9 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { UiCalendarMultiSelect, UiFileUploadInput, UiPagination } from '@/components';
+import UiCalendarMultiSelect from '@/components/ui-calendar-multi-select';
+import UiFileUploadInput from '@/components/ui-file-upload-input';
+import UiPagination from '@/components/ui-pagination';
 
 import { CAL_MONTH } from './fixtures';
 import { CAL_HOVER_SX, PAGINATION_HOVER_SX, UPLOAD_HOVER_SX } from './styles';

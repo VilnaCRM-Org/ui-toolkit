@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiRadioGroup, UiLink } from '../../src/components';
+import UiLink from '../../src/components/ui-link';
+import UiRadioGroup from '../../src/components/ui-radio-group';
 import type { UiRadioOption } from '../../src/components/ui-radio-group/types';
 
 import mockConsoleWarn from './utils/mock-console-warn';

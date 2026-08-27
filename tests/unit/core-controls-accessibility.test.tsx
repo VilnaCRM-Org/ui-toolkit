@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiButton, UiCheckbox, UiInput, UiLink } from '../../src/components';
+import UiButton from '../../src/components/ui-button';
+import UiCheckbox from '../../src/components/ui-checkbox';
+import UiInput from '../../src/components/ui-input';
+import UiLink from '../../src/components/ui-link';
 
 import { testText } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';
