@@ -3,7 +3,7 @@ import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { UiForm } from '../../src/components';
+import UiForm from '../../src/components/ui-form';
 
 type FormValues = {
   email: string;

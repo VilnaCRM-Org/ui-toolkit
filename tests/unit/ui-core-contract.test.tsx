@@ -1,6 +1,4 @@
 import type { Theme, SxProps } from '@mui/material';
-import { render, screen } from '@testing-library/react';
-import React from 'react';
 
 import { UiButton, UiCheckbox, UiInput, UiLink } from '../../src/components';
 import type { UiButtonProps } from '../../src/components/ui-button/types';
@@ -8,11 +6,11 @@ import type { UiCheckboxProps } from '../../src/components/ui-checkbox/types';
 import type { UiInputProps } from '../../src/components/ui-input/types';
 import type { UiLinkProps } from '../../src/components/ui-link/types';
 
-import mockConsoleWarn from './utils/mock-console-warn';
-
-// These contract specs render minimal controls; silence UiInput's dev-only
-// accessible-name guidance so it does not clutter the output.
-mockConsoleWarn();
+// This suite asserts the PUBLIC BARREL's export surface and the compile-time
+// `sx` prop contracts only. It deliberately renders nothing, which is what
+// makes it safe to exclude from the mutation tier (see jest.mutation.config.ts).
+// A test that renders belongs in the component's own deep-import suite
+// instead, or it gets reloaded for every mutant.
 
 const sharedSxFn: (theme: Theme) => { color: string } = (theme: Theme): { color: string } => ({
   color: theme.palette.primary.main,
@@ -59,18 +57,5 @@ describe('Ui core contract', () => {
       size: 'small',
       variant: 'filled',
     });
-  });
-
-  it('forwards size and variant to UiInput', () => {
-    render(<UiInput size="small" variant="filled" />);
-
-    const input: HTMLElement = screen.getByRole('textbox');
-    // The filled variant class lands on the input element itself.
-    expect(input).toHaveClass('MuiFilledInput-input');
-    // The filled-root and small-size classes live on the MUI wrapper element.
-    // eslint-disable-next-line testing-library/no-node-access -- wrapper class, no semantic query
-    const inputRoot: HTMLElement | null = input.closest('.MuiInputBase-root');
-    expect(inputRoot).toHaveClass('MuiFilledInput-root');
-    expect(inputRoot).toHaveClass('MuiInputBase-sizeSmall');
   });
 });

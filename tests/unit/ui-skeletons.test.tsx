@@ -2,20 +2,18 @@ import { ThemeProvider } from '@mui/material/styles';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import {
-  UiSkeletonBlock,
-  UiSkeletonButton,
-  UiSkeletonInput,
-  UiSkeletonText,
-} from '../../src/components';
 import websiteColorTheme from '../../src/components/ui-color-theme';
+import UiSkeletonBlock from '../../src/components/ui-skeleton-block';
 import getBlockSkeletonStyles from '../../src/components/ui-skeleton-block/styles';
+import UiSkeletonButton from '../../src/components/ui-skeleton-button';
 import skeletonButtonStyles from '../../src/components/ui-skeleton-button/styles';
+import UiSkeletonInput from '../../src/components/ui-skeleton-input';
 import skeletonInputStyles, {
   BASE_INPUT_HEIGHT,
   MD_INPUT_HEIGHT,
   XL_INPUT_HEIGHT,
 } from '../../src/components/ui-skeleton-input/styles';
+import UiSkeletonText from '../../src/components/ui-skeleton-text';
 import getTextSkeletonStyles from '../../src/components/ui-skeleton-text/styles';
 import {
   baseSkeletonStyle,

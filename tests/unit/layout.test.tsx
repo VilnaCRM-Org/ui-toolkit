@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { Layout } from '../../src/components';
+import Layout from '../../src/components/layout';
 
 // `<title>` and `<meta name="description">` live in document.head, which
 // Testing Library's body-scoped `screen` queries cannot reach and for which no

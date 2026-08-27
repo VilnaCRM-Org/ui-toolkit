@@ -2,14 +2,12 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
-import {
-  Layout,
-  UiButton,
-  UiContainer,
-  UiFooter,
-  UiToolbar,
-  UiTypography,
-} from '../../../src/components';
+import Layout from '../../../src/components/layout';
+import UiButton from '../../../src/components/ui-button';
+import UiContainer from '../../../src/components/ui-container';
+import UiFooter from '../../../src/components/ui-footer';
+import UiToolbar from '../../../src/components/ui-toolbar';
+import UiTypography from '../../../src/components/ui-typography';
 
 // Resolved English strings from i18n/localization.json (i18n is initialised
 // globally in jest.setup, so the real children translate their keys).

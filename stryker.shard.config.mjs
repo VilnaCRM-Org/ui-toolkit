@@ -1,32 +1,29 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import base from './stryker.config.mjs';
+import { shardMutateFiles } from './scripts/ci/mutation-scope.mjs';
 
 // CI runs mutation testing as MUTATION_SHARD_TOTAL parallel shards; this config
 // mutates only shard MUTATION_SHARD_INDEX's deterministic slice of the file set.
 const total = Math.max(1, Number.parseInt(process.env.MUTATION_SHARD_TOTAL ?? '1', 10) || 1);
 const index = Math.max(0, Number.parseInt(process.env.MUTATION_SHARD_INDEX ?? '0', 10) || 0);
 
-// Walk the same source the base `mutate` selects (src/components/**/*.tsx, minus
-// stories) so a shard can never mutate a different set than an unsharded run.
-function collectTsxFiles(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) return collectTsxFiles(full);
-    if (entry.name.endsWith('.tsx') && !entry.name.endsWith('.stories.tsx')) return [full];
-    return [];
-  });
+// A shard beyond the declared total would silently run a subset that no other
+// shard covers, or duplicate another shard's slice — either way the merge in
+// scripts/ci/merge-mutation-reports.ts would union an incomplete or skewed set
+// without any signal that the CI matrix and this config had drifted apart.
+if (index >= total) {
+  throw new Error(
+    `MUTATION_SHARD_INDEX (${index}) must be less than MUTATION_SHARD_TOTAL (${total}).`
+  );
 }
 
-// Round-robin assignment keeps shards disjoint and balanced. Sharding by file is
-// mutation-score-preserving: each mutant runs against the full suite regardless
-// of which shard owns its file, so the union of disjoint shards equals one full
-// run. scripts/ci/merge-mutation-reports.ts re-enforces the real break gate over
+// Byte-weighted longest-processing-time bin packing (see mutation-scope.mjs);
+// sharding by file is mutation-score-preserving regardless of how the split is
+// balanced: a mutant's related-test set is derived from the mutated file, so
+// it is identical no matter which shard owns that file, and the union of
+// disjoint shards equals one full run.
+// scripts/ci/merge-mutation-reports.ts re-enforces the real break gate over
 // that union.
-const sliced = collectTsxFiles('src/components')
-  .sort()
-  .filter((_, i) => i % total === index % total);
+const sliced = shardMutateFiles(total, index);
 
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 const config = {

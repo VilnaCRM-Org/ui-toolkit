@@ -17,6 +17,11 @@ module.exports = {
       // emit `React.createElement` against the import binding Babel already
       // renamed — which otherwise throws "React is not defined" at runtime.
       presets: [
+        // No `allowDeclareFields`: Babel 8 removed the option and always enables
+        // the behaviour, and rejecting it is a hard error. Stryker 10's
+        // instrumenter pins the whole @babel/* stack to ~8.0.0, so the Jest
+        // transform pipeline resolves preset-typescript 8 whether or not this
+        // file is ready for it.
         ['@babel/preset-typescript', { onlyRemoveTypeImports: true }],
         ['@babel/preset-react', { runtime: 'automatic' }],
       ],

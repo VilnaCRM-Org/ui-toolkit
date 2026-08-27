@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { AuthSkeleton } from '../../src/components';
+import AuthSkeleton from '../../src/components/auth-skeleton';
 import authSkeletonStyles from '../../src/components/auth-skeleton/styles';
 
 // The skeleton primitives render as MUI Box divs (role="generic") identified
