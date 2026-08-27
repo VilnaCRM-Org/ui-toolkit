@@ -52,13 +52,20 @@ const BARREL_SPECIFIER = String.raw`(?:(?:\.\.\/)+src\/components|@\/components)
 // but still loads every component, so leaving it out would let the audits below
 // pass over the very thing they exist to catch.
 //
-// The bare-`import` and `require` arms are anchored to the start of a line, so a
-// prose comment naming either shape cannot trip them. The `from` arm cannot be:
+// The bare-`import` and `require` arms are line-scoped, so a prose comment naming
+// either shape cannot trip them. `require` accepts ANY non-comment prefix rather
+// than a list of binding keywords — `const x =`, `module.exports =`, `exports.x =`
+// and a bare call all load the barrel identically, and enumerating the forms just
+// invites the next one to slip through. The `from` arm cannot be line-scoped:
 // Prettier wraps a long import list and leaves `from` on its own continuation
 // line, and anchoring would turn that into a silent miss — far worse than the
 // false positive. So, as before, this file never writes that shape literally.
+const NOT_A_COMMENT_LINE = String.raw`^(?!\s*(?:\/\/|\*|\/\*))[^'"\n]*`;
+
 const BARREL_IMPORT_PATTERN = new RegExp(
-  String.raw`(?:from\s*|^\s*import\s*|^\s*(?:(?:const|let|var)\s[^'"\n]*)?require\(\s*)['"]` +
+  String.raw`(?:from\s*|^\s*import\s*|` +
+    NOT_A_COMMENT_LINE +
+    String.raw`require\(\s*)['"]` +
     BARREL_SPECIFIER +
     String.raw`['"]`,
   'm'
@@ -453,6 +460,12 @@ describe('structural-guard exclusion (jest.mutation.config.ts)', () => {
     ['binding import', (barrel: string): string => `import { UiButton } from '${barrel}';`],
     ['side-effect import', (barrel: string): string => `import '${barrel}';`],
     ['require', (barrel: string): string => `const c = require('${barrel}');`],
+    ['bare require', (barrel: string): string => `require('${barrel}');`],
+    [
+      'module.exports re-export',
+      (barrel: string): string => `module.exports = require('${barrel}');`,
+    ],
+    ['named CommonJS re-export', (barrel: string): string => `exports.ui = require('${barrel}');`],
   ])('the audit pattern catches a %s of the barrel', (_label, build) => {
     expect(BARREL_IMPORT_PATTERN.test(build(PUBLIC_BARREL_SPECIFIER))).toBe(true);
     expect(BARREL_IMPORT_PATTERN.test(build(`${PUBLIC_BARREL_SPECIFIER}/ui-button`))).toBe(false);
