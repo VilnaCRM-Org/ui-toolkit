@@ -76,9 +76,12 @@ interface StrokeRule {
   classes: number;
 }
 
-// A descendant chain of bare class selectors: the only shape whose specificity a plain
-// class count describes faithfully.
-const CLASS_ONLY_SELECTOR: RegExp = /^\.[\w-]+(?:\s*[>+~]?\s*\.[\w-]+)*$/;
+// One compound of bare class selectors, e.g. `.a` or `.a.b`. Combinators are split off
+// before this is applied: a single pattern spanning the whole chain would need `\s*` on
+// both sides of an optional combinator, which backtracks exponentially (CodeQL js/redos).
+const CLASS_COMPOUND: RegExp = /^(?:\.[\w-]+)+$/;
+// Whitespace, child and sibling combinators — the joins between compounds.
+const COMBINATORS: RegExp = /[\s>+~]+/;
 // Every property that can carry a border colour. Only `border-color` is readable here, so
 // the rest have to be rejected on sight rather than skipped.
 const BORDER_COLOUR_PROPERTY: RegExp = /^border(-(top|right|bottom|left))?(-color)?$/;
@@ -115,9 +118,19 @@ function isOneColour(color: string): boolean {
   return !color.replace(/\([^()]*\)/g, '').includes(' ');
 }
 
+// A descendant chain of bare class compounds: the only shape whose specificity a plain
+// class count describes faithfully. Anything else — an id, an element, a pseudo-class or
+// pseudo-element, an attribute test, a selector list — fails here.
+function isClassChain(selectorText: string): boolean {
+  return selectorText
+    .trim()
+    .split(COMBINATORS)
+    .every(compound => CLASS_COMPOUND.test(compound));
+}
+
 // Reject any candidate the "most classes wins, all four sides alike" model misreads.
 function assertModelled(rule: CSSStyleRule, color: string): void {
-  if (!CLASS_ONLY_SELECTOR.test(rule.selectorText)) {
+  if (!isClassChain(rule.selectorText)) {
     throw new Error(`stroke selector "${rule.selectorText}" is not a plain class chain`);
   }
   if (rule.style.getPropertyPriority('border-color') !== '') {
