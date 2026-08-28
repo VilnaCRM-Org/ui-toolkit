@@ -3,6 +3,7 @@
 // accessibility-visuals PR (see Story 1.3), consistent with the other Epic 2
 // controls. The sr-only helper for the live region is shared via field-controls.
 import type { SxProps, Theme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 import colorTheme from '@/components/ui-color-theme';
 
@@ -19,7 +20,7 @@ const palette: Theme['palette'] = colorTheme.palette;
 export const chipSx: SxProps<Theme> = {
   height: 'auto',
   borderRadius: '0.5rem',
-  backgroundColor: 'rgba(30, 174, 255, 0.1)',
+  backgroundColor: alpha(palette.primary.main, 0.1),
   // Transparent 1px border at rest reserves the space so the hover border adds no
   // layout shift; it colours in on hover.
   border: '1px solid transparent',

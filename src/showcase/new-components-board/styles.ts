@@ -29,8 +29,10 @@ export const SEARCH_TABLET_SX = {
 export const SEARCH_ACTIVE_SX = {
   '& .MuiInputAdornment-positionStart': { color: '#1EAEFF' },
 } as const;
-// The paper's field-width collapse and 8px gap are media-gated (mobile), so a forced-
-// mobile open tile re-zeros the min-width and re-applies the gap.
+// The paper's field-width collapse and 6px visible gap are media-gated (mobile), so a
+// forced-mobile open tile re-zeros the min-width and re-applies the gap. Figma's mobile
+// layout gap is 8px; the card's 2px stroke is drawn outward there and inward here, so
+// the margin carries 6px — the same 2px correction the tablet tile above applies.
 export const SEARCH_MOBILE_PAPER_SX = {
   '& .MuiAutocomplete-paper': { minWidth: 0, marginTop: '0.375rem' },
 } as const;
