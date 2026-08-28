@@ -27,6 +27,17 @@ export const containedStyles: Interpolation<{ theme: Theme }> = {
     backgroundColor: colorTheme.palette.brandGray.main,
     color: colorTheme.palette.white.main,
   },
+  // CRM parity: while `loading`, the disabled-state white label must not paint
+  // over the centered spinner — the doubled selector outweighs the rule above.
+  '&&.Mui-disabled.MuiButton-loading': {
+    color: 'transparent',
+  },
+  // The loading spinner honours reduced motion (the kit-wide guard CRM ships).
+  '@media (prefers-reduced-motion: reduce)': {
+    '& .MuiCircularProgress-svg': {
+      animation: 'none',
+    },
+  },
 };
 
 export const outlinedStyles: Interpolation<{ theme: Theme }> = {

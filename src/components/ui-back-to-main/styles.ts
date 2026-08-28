@@ -2,63 +2,74 @@ import { SxProps } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 
 import breakpointsTheme from '../ui-breakpoints';
+import colorTheme from '../ui-color-theme';
+
+const palette: Theme['palette'] = colorTheme.palette;
 
 const lgUp: string = `@media (min-width:${breakpointsTheme.breakpoints.values.lg}px)`;
 
-const buildSection: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
-  paddingTop: theme.spacing(2),
-  paddingBottom: theme.spacing(2),
-  backgroundColor: theme.palette.background.default,
+// CRM parity (crm `ui-back-to-main` + `styles/colors.ts`): a white band with the
+// link inked in CRM's `grey[50]`, which CRM maps to #969B9D — the kit `grey300`
+// token. The values resolve from the kit's OWN tokens (not the host theme's
+// `grey[50]`/`background.default`), so a host without those entries can no longer
+// collapse the link into an invisible near-white-on-white render.
+const section: SxProps<Theme> = {
+  paddingTop: '1rem',
+  paddingBottom: '1rem',
+  backgroundColor: palette.white.main,
   [lgUp]: {
     paddingTop: '1.25rem',
     paddingBottom: '1.25rem',
   },
-});
+};
 
-const buildBackButton: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
+// The focus ring is `darkPrimary`, not the CRM brand-blue: #1EAEFF on the white
+// band measures 2.46:1 (< the 3:1 SC 1.4.11 floor) and the ring is the sole
+// focus cue on a transparent button (accessibility review amendment, 2026-08-26).
+const backButton: SxProps<Theme> = {
   padding: 0,
+  color: palette.grey300.main,
   '&:hover': {
     backgroundColor: 'transparent',
   },
   '&:focus-visible': {
     backgroundColor: 'transparent',
-    outline: theme.palette.primary.main
-      ? `2px solid ${theme.palette.primary.main}`
-      : '2px solid #1976d2',
+    outline: `2px solid ${palette.darkPrimary.main}`,
     outlineOffset: '2px',
   },
-});
+};
 
-const buildIcon: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
+const icon: SxProps<Theme> = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  color: theme.palette.grey[50],
+  color: palette.grey300.main,
   width: '24px',
   height: '24px',
-});
+};
 
-const buildBackText: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
-  marginLeft: theme.spacing(1),
-  fontFamily: theme.typography.fontFamily,
+// Label ink is the design-source #969B9D (2.81:1 on white) — covered by the same
+// Story 1.3 accessibility-visuals deferral as the item-row muted state and the
+// action-icon-bar glyphs; remediate together in that sweep.
+const backText: SxProps<Theme> = {
+  marginLeft: '0.5rem',
+  fontFamily: 'Golos Text',
   fontWeight: 500,
-  fontSize: theme.typography.pxToRem(15),
-  lineHeight: theme.typography.pxToRem(18),
+  fontSize: '0.9375rem',
+  lineHeight: '1.125rem',
   textTransform: 'none',
-  color: theme.palette.grey[50],
+  color: palette.grey300.main,
   [lgUp]: {
     lineHeight: '1.125rem',
     letterSpacing: 0,
   },
-});
+};
 
-const getBackToMainStyles: (theme: Theme) => Record<string, SxProps<Theme>> = (
-  theme: Theme
-): Record<string, SxProps<Theme>> => ({
-  section: buildSection(theme),
-  backButton: buildBackButton(theme),
-  icon: buildIcon(theme),
-  backText: buildBackText(theme),
-});
+const backToMainStyles: Record<string, SxProps<Theme>> = {
+  section,
+  backButton,
+  icon,
+  backText,
+};
 
-export default getBackToMainStyles;
+export default backToMainStyles;

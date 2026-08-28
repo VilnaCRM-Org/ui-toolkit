@@ -1,4 +1,3 @@
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -21,9 +20,9 @@ describe('UiBackToMain', () => {
   });
 
   it('renders a custom icon when provided', () => {
-    render(<UiBackToMain icon={<span data-testid="custom-back-icon">icon</span>} />);
+    render(<UiBackToMain icon={<span>icon glyph</span>} />);
 
-    expect(screen.getByTestId('custom-back-icon')).toBeInTheDocument();
+    expect(screen.getByText('icon glyph')).toBeInTheDocument();
   });
 
   it('derives the accessible name from visible text when label is a non-string node', () => {
@@ -34,57 +33,46 @@ describe('UiBackToMain', () => {
     expect(link).not.toHaveAttribute('aria-label');
   });
 
-  it('renders within a parent theme whose primary colour resolves', () => {
-    const themed: ReturnType<typeof createTheme> = createTheme({
-      palette: { primary: { main: '#1EAEFF' } },
-    });
+  it('keeps a custom icon outside the accessible name (decorative icon box)', () => {
+    render(<UiBackToMain icon={<span>noisy glyph</span>} />);
 
-    render(
-      <ThemeProvider theme={themed}>
-        <UiBackToMain />
-      </ThemeProvider>
-    );
-
-    expect(screen.getByRole('link', { name: 'Back to main' })).toBeInTheDocument();
-  });
-
-  it('falls back to the default outline when the theme primary colour is empty', () => {
-    // createTheme rejects an empty `main` during palette augmentation, so build a
-    // valid theme then blank out primary.main to exercise the falsy ternary branch
-    // in buildBackButton (the hard-coded '#1976d2' outline fallback).
-    const themed: ReturnType<typeof createTheme> = createTheme();
-    themed.palette.primary.main = '';
-
-    render(
-      <ThemeProvider theme={themed}>
-        <UiBackToMain />
-      </ThemeProvider>
-    );
-
+    // The icon box is aria-hidden, so consumer glyph content never pollutes the name.
     expect(screen.getByRole('link', { name: 'Back to main' })).toBeInTheDocument();
   });
 });
 
 describe('UiBackToMain default icon', () => {
-  it('renders the default back arrow when no icon prop is supplied', (): void => {
+  it('renders the CRM chevron SVG when no icon prop is supplied', (): void => {
     render(<UiBackToMain />);
 
-    const arrow: HTMLElement = screen.getByText('←');
-    expect(arrow.tagName).toBe('SPAN');
-    expect(arrow).toHaveAttribute('aria-hidden', 'true');
+    const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
+    // eslint-disable-next-line testing-library/no-node-access
+    const chevron: SVGElement | null = link.querySelector('svg');
+    expect(chevron).not.toBeNull();
+    // The CRM back-arrow export geometry: an 8x14 chevron at stroke 2, round caps.
+    expect(chevron).toHaveAttribute('viewBox', '0 0 8 14');
+    // eslint-disable-next-line testing-library/no-node-access
+    const path: SVGElement | null = (chevron as SVGElement).querySelector('path');
+    expect(path).toHaveAttribute('d', 'M7 13L1 7L7 1');
+    expect(path).toHaveAttribute('stroke', 'currentColor');
+    expect(path).toHaveAttribute('stroke-width', '2');
   });
 
-  it('applies the default icon inline typography styles', (): void => {
+  it('marks the default chevron decorative for assistive tech', (): void => {
     render(<UiBackToMain />);
 
-    const arrow: HTMLElement = screen.getByText('←');
-    expect(arrow).toHaveStyle({ fontSize: '1rem' });
-    expect(arrow).toHaveStyle({ lineHeight: '1' });
+    const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
+    // eslint-disable-next-line testing-library/no-node-access
+    const chevron: SVGElement | null = link.querySelector('svg');
+    expect(chevron).toHaveAttribute('aria-hidden', 'true');
+    expect(chevron).toHaveAttribute('focusable', 'false');
   });
 
-  it('omits the default arrow when a custom icon replaces it', (): void => {
+  it('omits the default chevron when a custom icon replaces it', (): void => {
     render(<UiBackToMain icon={<span>home</span>} />);
 
-    expect(screen.queryByText('←')).not.toBeInTheDocument();
+    const link: HTMLElement = screen.getByRole('link', { name: 'Back to main' });
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(link.querySelector('svg')).toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
 import React, { ReactNode } from 'react';
 import {
   DefaultValues,
@@ -13,8 +13,11 @@ import UiButton from '../ui-button';
 import UiTypography from '../ui-typography';
 
 import FormProviderBridge from './form-provider-bridge';
+import LiveStatus from './live-status';
 import styles from './styles';
 import buildSubmitHandler from './submit-handler';
+import SubmitSpinner from './submit-spinner';
+import useFocusOnMount from './use-focus-on-mount';
 
 export interface UiFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
@@ -24,6 +27,10 @@ export interface UiFormProps<T extends FieldValues> {
   isSubmitting?: boolean | undefined;
   error?: string | null | undefined;
   submitLabel: string;
+  /** Announced through the polite status region while the form submits. */
+  submittingLabel?: string;
+  /** Overrides whether the submitting announcement is made (defaults to `submitting`). */
+  submittingAnnouncement?: boolean;
   title: ReactNode;
   subtitle?: ReactNode;
   showTitle?: boolean;
@@ -71,15 +78,22 @@ type FormBodyProps<T extends FieldValues> = {
   view: FormViewProps<T>;
 };
 
+// CRM parity: a submit failure moves focus to the alert banner so the error is
+// both announced and brought into view (the focus ring is the error-token
+// outline from `styles.errorBannerFocus`).
 function ErrorBanner({ error }: { error?: string | null }): React.ReactElement | null {
+  const focusOnAppear: (node: HTMLDivElement | null) => void = useFocusOnMount<HTMLDivElement>();
+
   if (!error) {
     return null;
   }
 
   return (
-    <UiTypography role="alert" aria-live="polite" sx={{ color: 'red', marginBottom: '1rem' }}>
-      {error}
-    </UiTypography>
+    <Box ref={focusOnAppear} tabIndex={-1} sx={styles.errorBannerFocus}>
+      <UiTypography role="alert" sx={{ color: 'red', marginBottom: '1rem' }}>
+        {error}
+      </UiTypography>
+    </Box>
   );
 }
 
@@ -108,23 +122,26 @@ function FormHeader({
   );
 }
 
+// CRM parity: the spinner renders INSIDE the button through the MUI `loading`
+// slot (which also handles the non-interactive submitting semantics); the old
+// external size-70 loader below the form is gone.
 function SubmitControls({
   submitting,
   isSubmitDisabled,
   submitLabel,
 }: SubmitControlsProps): React.ReactElement {
   return (
-    <>
-      <UiButton
-        type="submit"
-        disabled={submitting || isSubmitDisabled}
-        variant="contained"
-        sx={styles.submitButton}
-      >
-        {submitLabel}
-      </UiButton>
-      {submitting ? <CircularProgress color="primary" size={70} sx={styles.loader} /> : null}
-    </>
+    <UiButton
+      type="submit"
+      loading={submitting}
+      loadingPosition="center"
+      loadingIndicator={<SubmitSpinner />}
+      disabled={isSubmitDisabled}
+      variant="contained"
+      sx={styles.submitButton}
+    >
+      {submitLabel}
+    </UiButton>
   );
 }
 
@@ -143,10 +160,13 @@ function FormBody<T extends FieldValues>({
     showSubtitle = true,
     isSubmitDisabled = false,
     submitLabel,
+    submittingLabel = 'Submitting…',
+    submittingAnnouncement,
   } = view;
+  const announceSubmitting: boolean = submittingAnnouncement ?? submitting;
 
   return (
-    <form noValidate onSubmit={methods.handleSubmit(handleSubmit)}>
+    <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
       <ErrorBanner error={error} />
       <FormHeader
         title={title}
@@ -160,6 +180,7 @@ function FormBody<T extends FieldValues>({
         isSubmitDisabled={isSubmitDisabled}
         submitLabel={submitLabel}
       />
+      <LiveStatus message={announceSubmitting ? submittingLabel : ''} />
     </form>
   );
 }

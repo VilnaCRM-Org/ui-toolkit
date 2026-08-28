@@ -1,6 +1,16 @@
 import breakpointsTheme from '../ui-breakpoints';
+import colorTheme from '../ui-color-theme';
 
 export default {
+  // CRM parity: the error banner takes programmatic focus on mount; the ring is
+  // the error token so the failure cue and the focus cue read as one.
+  errorBannerFocus: {
+    outline: 'none',
+    '&:focus-visible': {
+      outline: `2px solid ${colorTheme.palette.error.main}`,
+      outlineOffset: '2px',
+    },
+  },
   formTitle: {
     fontSize: '1.375rem',
     fontFamily: 'Golos',
@@ -75,9 +85,5 @@ export default {
       fontSize: '1.125rem',
       lineHeight: 1,
     },
-  },
-  loader: {
-    display: 'block',
-    margin: '1rem auto 0',
   },
 };
