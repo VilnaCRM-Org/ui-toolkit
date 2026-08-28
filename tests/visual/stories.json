@@ -1,5 +1,10 @@
 [
   {
+    "id": "showcase-new-components-figma-parity--figma-parity",
+    "title": "Showcase/New Components (Figma parity)",
+    "name": "Figma Parity"
+  },
+  {
     "id": "uicomponents-authskeleton--animated",
     "title": "UiComponents/AuthSkeleton",
     "name": "Animated"
@@ -105,6 +110,16 @@
     "name": "Render Prop Fallback"
   },
   {
+    "id": "uicomponents-uifileuploadinput--file-upload-input",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "File Upload Input"
+  },
+  {
+    "id": "uicomponents-uifileuploadinput--upload-error",
+    "title": "UiComponents/UiFileUploadInput",
+    "name": "Upload Error"
+  },
+  {
     "id": "uicomponents-uifooter--footer",
     "title": "UiComponents/UiFooter",
     "name": "Footer"
@@ -140,6 +155,46 @@
     "name": "Input"
   },
   {
+    "id": "uicomponents-uiitemrow--delete-method",
+    "title": "UiComponents/UiItemRow",
+    "name": "Delete Method"
+  },
+  {
+    "id": "uicomponents-uiitemrow--expanded",
+    "title": "UiComponents/UiItemRow",
+    "name": "Expanded"
+  },
+  {
+    "id": "uicomponents-uiitemrow--item-row",
+    "title": "UiComponents/UiItemRow",
+    "name": "Item Row"
+  },
+  {
+    "id": "uicomponents-uiitemrow--muted",
+    "title": "UiComponents/UiItemRow",
+    "name": "Muted"
+  },
+  {
+    "id": "uicomponents-uiitemrow--post-method",
+    "title": "UiComponents/UiItemRow",
+    "name": "Post Method"
+  },
+  {
+    "id": "uicomponents-uiitemrow--put-method",
+    "title": "UiComponents/UiItemRow",
+    "name": "Put Method"
+  },
+  {
+    "id": "uicomponents-uiitemrow--static",
+    "title": "UiComponents/UiItemRow",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uiitemslist--items-list",
+    "title": "UiComponents/UiItemsList",
+    "name": "Items List"
+  },
+  {
     "id": "uicomponents-uilink--link",
     "title": "UiComponents/UiLink",
     "name": "Link"
@@ -148,6 +203,31 @@
     "id": "uicomponents-uimultiselect--multi-select",
     "title": "UiComponents/UiMultiSelect",
     "name": "Multi Select"
+  },
+  {
+    "id": "uicomponents-uipagination--disabled",
+    "title": "UiComponents/UiPagination",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uipagination--first-page",
+    "title": "UiComponents/UiPagination",
+    "name": "First Page"
+  },
+  {
+    "id": "uicomponents-uipagination--last-page",
+    "title": "UiComponents/UiPagination",
+    "name": "Last Page"
+  },
+  {
+    "id": "uicomponents-uipagination--many-pages-with-ellipsis",
+    "title": "UiComponents/UiPagination",
+    "name": "Many Pages With Ellipsis"
+  },
+  {
+    "id": "uicomponents-uipagination--pagination",
+    "title": "UiComponents/UiPagination",
+    "name": "Pagination"
   },
   {
     "id": "uicomponents-uiradiogroup--radio-group",

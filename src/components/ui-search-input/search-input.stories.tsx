@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { t } from 'i18next';
 
 import {
   booleanControlArgType,
@@ -8,7 +7,7 @@ import {
 
 import UiSearchInput from './index';
 
-const suggestions: string[] = ['Top performers', 'Top sales this month', 'Top sales this year'];
+const suggestions: string[] = ['Топ продажники', 'Топ продажі за місяць', 'Топ продажі за рік'];
 
 const meta: Meta<typeof UiSearchInput> = {
   title: 'UiComponents/UiSearchInput',
@@ -18,7 +17,6 @@ const meta: Meta<typeof UiSearchInput> = {
     placeholder: textControlArgType('Placeholder text for the search field'),
     value: textControlArgType('Controlled search text'),
     disabled: booleanControlArgType('Whether the search field is disabled'),
-    error: booleanControlArgType('Whether the search field is in error state'),
   },
 };
 
@@ -28,9 +26,8 @@ type Story = StoryObj<typeof UiSearchInput>;
 
 export const SearchInput: Story = {
   args: {
-    placeholder: t('Search'),
-    'aria-label': t('Search'),
+    placeholder: 'Щось шукаєте?',
+    'aria-label': 'Пошук',
     options: suggestions,
-    error: false,
   },
 };

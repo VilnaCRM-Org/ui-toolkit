@@ -51,12 +51,12 @@ development_status:
   2-2-multi-select-interaction-workflow: in-progress
   2-3-calendar-multi-select-variant: in-progress
   2-4-radio-group-input-workflow: in-progress
-  2-4a-file-upload-input-workflows: backlog
-  2-5-pagination-workflow-component-delivery: backlog
+  2-4a-file-upload-input-workflows: review
+  2-5-pagination-workflow-component-delivery: review
   2-6-epic-2-quality-gate-closure: backlog
   epic-2-retrospective: optional
-  epic-3: backlog
-  3-1-item-row-and-list-data-presentation: backlog
+  epic-3: in-progress
+  3-1-item-row-and-list-data-presentation: review
   3-2-task-card-workflow: backlog
   3-3-profile-select-card-workflow: backlog
   3-4-integration-card-workflow: backlog

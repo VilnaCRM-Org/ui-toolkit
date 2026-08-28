@@ -20,6 +20,27 @@ const options: UiRadioOption[] = [
 
 const noop: (value: string) => void = () => undefined;
 
+// `error` is not only an aria flag: it repaints the radio glyph. `renderRadio`
+// picks `radioStyles.radioError` over `radioStyles.radio`, which swaps the 1px
+// stroke of the `.ui-radio-dot` span from the neutral grey400 token to the error
+// token. These are the two Figma stroke colours for the unselected dot.
+const DOT_STROKE_NEUTRAL: string = '#D0D4D8';
+const DOT_STROKE_ERROR: string = '#DC3939';
+
+// The dot is the visual glyph rendered inside the radio's button root; the input
+// itself carries no colour, so the stroke has to be read off the span.
+function radioDot(optionLabel: string): HTMLElement {
+  const radio: HTMLElement = screen.getByRole('radio', { name: optionLabel });
+  /* eslint-disable testing-library/no-node-access */
+  const control: Element | null = radio.closest('.MuiButtonBase-root');
+  const dot: Element | null | undefined = control?.querySelector('.ui-radio-dot');
+  /* eslint-enable testing-library/no-node-access */
+  if (!(dot instanceof HTMLElement)) {
+    throw new Error(`No radio dot rendered for option "${optionLabel}"`);
+  }
+  return dot;
+}
+
 // Thin stateful wrapper for the controlled round-trip / keyboard tests: the group
 // is always controlled, so a real consumer feeds the next value back via onChange.
 function ControlledGroup(): React.ReactElement {
@@ -84,6 +105,20 @@ describe('UiRadioGroup — selection', () => {
   it('stays controlled when nothing is selected (empty, not uncontrolled)', () => {
     render(<UiRadioGroup options={options} value="" aria-label="Contact" onChange={noop} />);
     screen.getAllByRole('radio').forEach((radio: HTMLElement) => expect(radio).not.toBeChecked());
+  });
+
+  // A nullish `value` is documented to coerce to `''`, so a group that offers an
+  // explicitly empty-valued option ("no preference") shows that option selected
+  // when no `value` is supplied — the coercion target is observable, not just its
+  // "nothing is selected" side effect.
+  it('selects the empty-valued option when value is omitted', () => {
+    const withNoPreference: UiRadioOption[] = [{ label: 'No preference', value: '' }, ...options];
+    render(<UiRadioGroup options={withNoPreference} aria-label="Contact" onChange={noop} />);
+
+    expect(screen.getByRole('radio', { name: 'No preference' })).toBeChecked();
+    options.forEach((option: UiRadioOption) =>
+      expect(screen.getByRole('radio', { name: option.label })).not.toBeChecked()
+    );
   });
 
   it('moves the selection when the controlled value changes', () => {
@@ -238,6 +273,32 @@ describe('UiRadioGroup — error, helper and required semantics', () => {
 
     rerender(<UiRadioGroup options={options} label="Contact" onChange={noop} />);
     screen.getAllByRole('radio').forEach((radio: HTMLElement) => expect(radio).not.toBeRequired());
+  });
+
+  it('strokes every radio dot with the error colour when the group is in error', () => {
+    render(
+      <UiRadioGroup
+        options={options}
+        aria-label="Contact"
+        error
+        helperText="Pick one"
+        onChange={noop}
+      />
+    );
+
+    options.forEach((option: UiRadioOption) =>
+      expect(radioDot(option.label)).toHaveStyle({ borderColor: DOT_STROKE_ERROR })
+    );
+  });
+
+  it('keeps the neutral radio stroke when error is unset or explicitly false', () => {
+    const { rerender } = render(
+      <UiRadioGroup options={options} aria-label="Contact" onChange={noop} />
+    );
+    expect(radioDot('Email')).toHaveStyle({ borderColor: DOT_STROKE_NEUTRAL });
+
+    rerender(<UiRadioGroup options={options} aria-label="Contact" error={false} onChange={noop} />);
+    expect(radioDot('Email')).toHaveStyle({ borderColor: DOT_STROKE_NEUTRAL });
   });
 });
 

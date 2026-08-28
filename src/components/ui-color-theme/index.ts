@@ -55,6 +55,42 @@ export const sharedPalette = {
   containedButtonHover: {
     main: '#00A3FF',
   },
+  // PATCH has no semantic slot in the shared palette (the other four verbs reuse
+  // primary/secondary/success/error), so it carries its own accent: the website's
+  // `$patchColorTheme` from the swagger method table.
+  patchMethod: {
+    main: '#9B59B6',
+  },
+  // REST-method hover accents for the item row (border + badge text shift on
+  // hover; the rest accents reuse primary/secondary/success/error).
+  getMethodHover: {
+    main: '#0091E2',
+  },
+  putMethodHover: {
+    main: '#DD9F00',
+  },
+  postMethodHover: {
+    main: '#00AE70',
+  },
+  // The one hover accent BRIGHTER than its base (`error #DC3939`): the Figma
+  // DELETE hover master (439:19776) paints #FF2F2F, kept literally by owner
+  // ruling (2026-08-26) over the earlier darken-for-consistency substitute.
+  deleteMethodHover: {
+    main: '#FF2F2F',
+  },
+  // PATCH is the one verb neither Figma nor the website gives a hover master for:
+  // the website's method table has no hover state at all, and the Figma "atom
+  // switcher" board predates PATCH. Derived instead by the transform the three
+  // darkening masters share — hue and saturation held, lightness -12pp (the mean of
+  // #1EAEFF→#0091E2, #FFC01E→#DD9F00 and #38B386→#00AE70). Replace it with a literal
+  // the day a PATCH hover master lands in Figma.
+  patchMethodHover: {
+    main: '#7A4092',
+  },
+  // Muted (grey) item row: badge text + path darken to this ink on hover.
+  mutedInkHover: {
+    main: '#1C2022',
+  },
   containedButtonActive: {
     main: '#0399ED',
   },

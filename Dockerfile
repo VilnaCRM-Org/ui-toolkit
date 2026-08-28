@@ -5,9 +5,14 @@ ARG INSTALL_CHROMIUM=false
 
 SHELL ["/bin/sh", "-lc"]
 
+# Alpine's nodejs links against the system ICU, whose data ships split: the
+# default icu-data-en carries English only, so every other locale silently
+# resolves back to English and the calendar's `locale` prop looks like a no-op.
+# icu-data-full replaces it and keeps the localisation tests meaningful.
 RUN apk add --no-cache \
       bash=5.2.37-r0 \
       g++=14.2.0-r6 \
+      icu-data-full=76.1-r1 \
       jq=1.8.1-r0 \
       make=4.4.1-r3 \
       nodejs=22.23.2-r0 \

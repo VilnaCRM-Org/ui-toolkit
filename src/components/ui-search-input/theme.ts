@@ -1,20 +1,139 @@
 import { Theme, createTheme } from '@mui/material';
 
 import { outlinedFieldTheme } from '../field-controls';
+import { crmBreakpointValues } from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
-// Figma "Search": the shared outlined-field theme plus the leading magnifier
-// (grey at rest, brand-blue on focus) and the `#969B9D` placeholder.
+// The Figma "Search" comes in three responsive sizes: desktop (node 439:19479) is a
+// 477px / 48px box with a 20px magnifier and Inter Medium 14/18; the tablet size
+// (node 439:19497, ≤md) is narrower at 360px but taller at 52px with a 24px icon and
+// 16px text; the mobile size (node 439:19515, ≤sm) is a 355px / 48px box with a 20px
+// magnifier. Breakpoints come from the CRM scale (md 768, sm 480), not hardcoded.
+const TABLET_MAX: string = `@media (max-width: ${crmBreakpointValues.md}px)`;
+const MOBILE_MAX: string = `@media (max-width: ${crmBreakpointValues.sm}px)`;
+
 const theme: Theme = createTheme(outlinedFieldTheme, {
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
+          // Typed value: Inter Medium 14/18 (16 on tablet), Font/100 ink — not Roboto.
+          fontFamily: 'Inter',
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          lineHeight: '1.125rem',
+          color: colorTheme.palette.darkPrimary.main,
+          [TABLET_MAX]: { fontSize: '1rem' },
+          [MOBILE_MAX]: { fontSize: '0.875rem' },
           '& .MuiInputAdornment-positionStart': {
             color: colorTheme.palette.grey300.main,
+            marginRight: '0.625rem',
           },
-          '&.Mui-focused .MuiInputAdornment-positionStart': {
+          // The magnifier grows to 24px on tablet, back to 20px on mobile/desktop.
+          '& .MuiInputAdornment-positionStart svg': {
+            [TABLET_MAX]: { width: '1.5rem', height: '1.5rem' },
+            [MOBILE_MAX]: { width: '1.25rem', height: '1.25rem' },
+          },
+          // Figma tints the magnifier brand-blue on hover and focus — but NOT when
+          // disabled (a disabled field must not react to hover).
+          '&:hover:not(.Mui-disabled) .MuiInputAdornment-positionStart': {
             color: colorTheme.palette.primary.main,
+          },
+          '&.Mui-focused:not(.Mui-disabled) .MuiInputAdornment-positionStart': {
+            color: colorTheme.palette.primary.main,
+          },
+          // A disabled field keeps its magnifier greyed even under the pointer.
+          '&.Mui-disabled .MuiInputAdornment-positionStart': {
+            color: colorTheme.palette.grey300.main,
+          },
+          // Figma "Search" hover keeps the resting #D0D4D8 stroke and adds a soft
+          // drop shadow (only search does this — not select/multi-select).
+          '&:hover:not(.Mui-focused):not(.Mui-disabled)': {
+            boxShadow: '0px 4px 9px 0px rgba(74, 78, 95, 0.1)',
+          },
+          // Figma leaves the field stroke unchanged when the search is focused/
+          // active, so pin focus back to the resting grey400 stroke — overriding the
+          // shared field-controls focus darkening (the brand-blue caret + magnifier
+          // remain the focus accents Figma does draw).
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            border: `1px solid ${colorTheme.palette.grey400.main}`,
+          },
+        },
+        input: {
+          '&::placeholder': {
+            fontWeight: 500,
+          },
+        },
+      },
+    },
+    // The Autocomplete input root owns the field height: a fixed 48px box (Figma)
+    // with a 13px horizontal inset; the flex row centres the 20px magnifier and the
+    // input vertically. Zeroing the Autocomplete input padding keeps the text on the
+    // 13px+20px+10px baseline instead of MUI's default 7.5px inset.
+    MuiAutocomplete: {
+      styleOverrides: {
+        // Figma sizes the field per breakpoint: 477px desktop, 360px tablet, 355px
+        // mobile (nodes 439:19479 / 19497 / 19515).
+        root: {
+          maxWidth: '29.8125rem',
+          [TABLET_MAX]: { maxWidth: '22.5rem' },
+          [MOBILE_MAX]: { maxWidth: '22.1875rem' },
+        },
+        inputRoot: {
+          height: '3rem',
+          minHeight: '3rem',
+          // Tablet grows the field to 52px; mobile returns to the 48px desktop size.
+          [TABLET_MAX]: { height: '3.25rem', minHeight: '3.25rem' },
+          [MOBILE_MAX]: { height: '3rem', minHeight: '3rem' },
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft: '0.8125rem',
+          paddingRight: '0.8125rem',
+        },
+        input: {
+          padding: 0,
+          minWidth: 0,
+          // MUI pads the first Autocomplete input `padding-left: 6px` at a higher
+          // specificity than the bare `padding: 0`, offsetting the placeholder ~5px
+          // past the Figma text baseline (the 10px gap after the 20px magnifier box).
+          // Re-zero it at matching specificity so the text sits flush to that gap.
+          '&:first-of-type': { paddingLeft: 0 },
+        },
+        // Open suggestions (Figma "Search" active): a detached card with a 2px
+        // Brand-gray stroke, 12px radius and the soft landing shadow. Figma's auto-
+        // layout gap is 4/9/8px per breakpoint, but its 2px card stroke is drawn
+        // OUTWARD, so the visible field→card gap renders 2px tighter (measured 2px
+        // desktop); our CSS stroke sits inside the box, so the margin carries the
+        // visible gap directly — 2px desktop, 7px tablet, 6px mobile. The list is a
+        // fixed 473px — wider than the 360px tablet field — collapsing to the field
+        // width on mobile.
+        paper: {
+          borderRadius: '0.75rem',
+          border: `2px solid ${colorTheme.palette.brandGray.main}`,
+          boxShadow: '0px 8px 13.5px 0px rgba(49, 59, 67, 0.14)',
+          minWidth: '29.5625rem',
+          marginTop: '0.125rem',
+          [TABLET_MAX]: { marginTop: '0.4375rem' },
+          [MOBILE_MAX]: { marginTop: '0.375rem', minWidth: 0 },
+        },
+        // Rows follow the field's responsive type: 52px / Inter Medium 14px / 19px
+        // inset on desktop, growing to 62px / 16px / 22px on tablet; the active row
+        // takes the faint Figma "Grey bg" (#FBFBFB) wash. Targeted through the listbox
+        // so it out-specifies MUI's built-in `.MuiAutocomplete-option` rule.
+        listbox: {
+          padding: 0,
+          '& .MuiAutocomplete-option': {
+            minHeight: '3.25rem',
+            paddingLeft: '1.1875rem',
+            fontFamily: 'Inter',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            color: colorTheme.palette.darkPrimary.main,
+            [TABLET_MAX]: { minHeight: '3.875rem', fontSize: '1rem', paddingLeft: '1.375rem' },
+            [MOBILE_MAX]: { minHeight: '3.25rem', fontSize: '0.875rem', paddingLeft: '1.1875rem' },
+            '&.Mui-focused': {
+              backgroundColor: colorTheme.palette.backgroundGrey100.main,
+            },
           },
         },
       },

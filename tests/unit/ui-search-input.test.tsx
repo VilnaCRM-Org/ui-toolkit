@@ -62,6 +62,18 @@ describe('UiSearchInput — rendering and accessible name', () => {
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
+  it('merges a consumer array sx onto the field wrapper, not the inner input', () => {
+    render(<UiSearchInput aria-label="Search" sx={[{ marginTop: '11px' }]} />);
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    // The consumer sx lands on the wrapping flex-column Box (parent of the Autocomplete
+    // root) so the label + field move together; assert the merged sx reaches the DOM.
+    /* eslint-disable testing-library/no-node-access -- wrapper Box, no semantic query */
+    const wrapper: HTMLElement | null | undefined =
+      combobox.closest('.MuiAutocomplete-root')?.parentElement;
+    /* eslint-enable testing-library/no-node-access */
+    expect(wrapper).toHaveStyle({ marginTop: '11px' });
+  });
+
   it('names the combobox from the aria-label prop', () => {
     render(<UiSearchInput aria-label="Search customers" />);
     expect(screen.getByRole('combobox', { name: 'Search customers' })).toBeInTheDocument();
@@ -271,5 +283,52 @@ describe('UiSearchInput — accessibility guidance', () => {
 
     rerender(<UiSearchInput />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+
+  it('force-opens the suggestions dropdown inline (demo props)', () => {
+    render(
+      <UiSearchInput aria-label="Search" options={suggestions} value="Top" open disablePortal />
+    );
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+});
+
+describe('UiSearchInput — suggestion highlighting', () => {
+  it('splits a matching suggestion into a dark typed prefix and a grey completion', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSearch options={suggestions} />);
+    await user.type(screen.getByRole('combobox'), 'Top perf');
+    /* eslint-disable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
+    const runs: NodeListOf<HTMLSpanElement> = (
+      await screen.findByRole('option', { name: 'Top performers' })
+    ).querySelectorAll('span');
+    expect(runs).toHaveLength(2);
+    expect(runs[0]!.textContent).toBe('Top perf');
+    expect(runs[1]!.textContent).toBe('ormers');
+    /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
+  });
+
+  it('renders a non-prefix match fully in the dark run', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(<ControlledSearch options={suggestions} />);
+    await user.type(screen.getByRole('combobox'), 'sales');
+    /* eslint-disable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
+    const runs: NodeListOf<HTMLSpanElement> = (
+      await screen.findByRole('option', { name: 'Top sales this month' })
+    ).querySelectorAll('span');
+    expect(runs[0]!.textContent).toBe('Top sales this month');
+    expect(runs[1]!.textContent).toBe('');
+    /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
+  });
+
+  it('renders a suggestion fully dark before anything is typed', () => {
+    render(<UiSearchInput aria-label="Search" options={suggestions} value="" open disablePortal />);
+    /* eslint-disable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
+    const runs: NodeListOf<HTMLSpanElement> = screen
+      .getByRole('option', { name: 'Top performers' })
+      .querySelectorAll('span');
+    expect(runs[0]!.textContent).toBe('Top performers');
+    expect(runs[1]!.textContent).toBe('');
+    /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
   });
 });

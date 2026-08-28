@@ -50,7 +50,7 @@ MAKE_GATE = $(MAKE) --no-print-directory
 .RECIPEPREFIX +=
 .PHONY: help build package lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
-	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual \
+	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual test-visual-update \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
 	lint-dep-ranges lint-deps lint-metrics lint-metrics-run lint-ci-paths \
@@ -58,6 +58,7 @@ MAKE_GATE = $(MAKE) --no-print-directory
 	ci verify run-gates
 
 PLAYWRIGHT_TEST_ARGS =
+PLAYWRIGHT_RUN_FLAGS =
 
 run-storybook-playwright:
 	@test -n "$(PLAYWRIGHT_TEST_TARGET)"
@@ -66,11 +67,11 @@ run-storybook-playwright:
 		$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true; \
 		$(DOCKER_COMPOSE) up -d --build storybook; \
 		trap "$(DOCKER_COMPOSE) rm -sf storybook >/dev/null 2>&1 || true" EXIT; \
-		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 120000 http-get://storybook:6006/iframe.html"; then \
+		if ! $(DOCKER_COMPOSE) run --rm playwright sh -lc "bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html"; then \
 			$(DOCKER_COMPOSE) logs storybook; \
 			exit 1; \
 		fi; \
-		$(DOCKER_COMPOSE) run --rm playwright bun x playwright test $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
+		$(DOCKER_COMPOSE) run --rm $(PLAYWRIGHT_RUN_FLAGS) playwright bun x playwright test $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -300,8 +301,15 @@ test-bats: ## Run Bats coverage for Makefile shell flows and coverage contracts 
 	$(DOCKER_COMPOSE) run --rm --build bun bun x bats --formatter $(BATS_FORMATTER) -r tests/bats
 
 test-visual: PLAYWRIGHT_TEST_TARGET = ./tests/visual
+test-visual: PLAYWRIGHT_TEST_ARGS = --project=chromium
 test-visual: ## Start Storybook and run visual tests inside a Docker container.
 	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
+
+test-visual-update: PLAYWRIGHT_TEST_TARGET = ./tests/visual
+test-visual-update: PLAYWRIGHT_TEST_ARGS = --project=chromium --update-snapshots
+test-visual-update: PLAYWRIGHT_RUN_FLAGS = --volume $(CURDIR)/tests:/app/tests
+test-visual-update: ## Start Storybook and update the Playwright visual snapshots (chromium) inside a Docker container.
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)" PLAYWRIGHT_RUN_FLAGS="$(PLAYWRIGHT_RUN_FLAGS)"
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build

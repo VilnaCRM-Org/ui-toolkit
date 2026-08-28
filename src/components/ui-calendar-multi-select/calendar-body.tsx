@@ -3,7 +3,8 @@ import React from 'react';
 
 import DayCell from './day-cell';
 import PaddingCell from './padding-cell';
-import type { CalendarSize } from './styles';
+import rowBandBackground from './range-band';
+import { dayRowSx, rowGroupSx } from './styles';
 import type { CalendarController } from './use-calendar';
 import type { CalendarField } from './use-calendar-field';
 import type { CellDescriptor } from './view-model';
@@ -14,7 +15,6 @@ export interface CalendarBodyProps {
 }
 
 interface CellContext {
-  size: CalendarSize;
   interactive: boolean;
   rovingRef: (node: HTMLElement | null) => void;
   onDayClick: (iso: string) => void;
@@ -22,13 +22,12 @@ interface CellContext {
 
 function renderCell(cell: CellDescriptor, ctx: CellContext): React.ReactElement {
   if (cell.kind === 'padding') {
-    return <PaddingCell key={cell.key} size={ctx.size} />;
+    return <PaddingCell key={cell.key} dayNumber={cell.dayNumber} />;
   }
   return (
     <DayCell
       key={cell.iso}
       day={cell}
-      size={ctx.size}
       interactive={ctx.interactive}
       cellRef={cell.roving ? ctx.rovingRef : undefined}
       onDayClick={ctx.onDayClick}
@@ -36,18 +35,17 @@ function renderCell(cell: CellDescriptor, ctx: CellContext): React.ReactElement 
   );
 }
 
-// The six week rows of the month grid.
+// The six week rows of the month grid, each carrying its slice of the range band.
 function CalendarBody({ field, calendar }: Readonly<CalendarBodyProps>): React.ReactElement {
   const ctx: CellContext = {
-    size: field.size,
     interactive: !field.disabled,
     rovingRef: calendar.rovingRef,
     onDayClick: calendar.onDayClick,
   };
   return (
-    <Box component="tbody" role="rowgroup">
+    <Box role="rowgroup" sx={rowGroupSx}>
       {calendar.cellRows.map(row => (
-        <Box component="tr" role="row" key={row.key}>
+        <Box role="row" key={row.key} sx={dayRowSx(rowBandBackground(row.cells))}>
           {row.cells.map(cell => renderCell(cell, ctx))}
         </Box>
       ))}

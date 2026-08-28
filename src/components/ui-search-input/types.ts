@@ -17,33 +17,37 @@ import type React from 'react';
  */
 export interface UiSearchInputProps {
   /** Controlled search text. */
-  value?: string;
+  value?: string | undefined;
   /** Called with the search text on every change — typing or picking a suggestion. */
-  onChange?: (value: string) => void;
+  onChange?: ((value: string) => void) | undefined;
   /** Optional typeahead suggestions. Omit for a plain search box. */
   options?: string[] | undefined;
   disabled?: boolean | undefined;
-  error?: boolean;
+  error?: boolean | undefined;
   /**
    * Marks the field required for assistive technology via the native `required`
    * attribute. The MUI `TextField` renders the native required asterisk; no
    * extra visual treatment is added by this story.
    */
-  required?: boolean;
-  size?: 'small' | 'medium';
-  sx?: SxProps<Theme>;
+  required?: boolean | undefined;
+  size?: 'small' | 'medium' | undefined;
+  sx?: SxProps<Theme> | undefined;
   /** Visible label — the preferred accessible name (WCAG 2.4.6 / 3.3.2). */
-  label?: string;
+  label?: string | undefined;
   /** Accessible name used only when there is no visible `label`. */
-  'aria-label'?: string;
-  placeholder?: string;
+  'aria-label'?: string | undefined;
+  placeholder?: string | undefined;
   /**
    * Description — typically the reason the field is invalid. Rendered in a
    * `FormHelperText` and linked to the input via `aria-describedby`.
    */
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   /** Associates an external `<label htmlFor>`; also seeds the combobox/listbox ids. */
-  id?: string;
+  id?: string | undefined;
   /** Text shown in the suggestions popup when no option matches. */
-  noOptionsText?: React.ReactNode;
+  noOptionsText?: React.ReactNode | undefined;
+  /** Forces the suggestions dropdown open. For demos/visual states; omit in app use. */
+  open?: boolean | undefined;
+  /** Renders the dropdown inline instead of in a portal. Pairs with `open` for demos. */
+  disablePortal?: boolean | undefined;
 }

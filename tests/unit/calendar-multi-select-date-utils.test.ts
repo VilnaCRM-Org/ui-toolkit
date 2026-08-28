@@ -1,7 +1,6 @@
 import {
-  WEEKDAYS_SHORT,
-  WEEKDAYS_LONG,
-  MONTHS_LONG,
+  weekdaysShort,
+  weekdaysLong,
   isSameDay,
   isSameMonth,
   buildMonthMatrix,
@@ -23,20 +22,19 @@ import {
   mondayIndex,
 } from '../../src/components/ui-calendar-multi-select/date-utils';
 
-describe('calendar date-utils — constants', () => {
-  it('orders weekdays Monday-first', () => {
-    expect(WEEKDAYS_SHORT[0]).toBe('Mon');
-    expect(WEEKDAYS_SHORT[6]).toBe('Sun');
-    expect(WEEKDAYS_LONG[0]).toBe('Monday');
-    expect(WEEKDAYS_LONG[6]).toBe('Sunday');
-    expect(WEEKDAYS_SHORT).toHaveLength(7);
-    expect(WEEKDAYS_LONG).toHaveLength(7);
+describe('calendar date-utils — weekday names', () => {
+  it('orders weekdays Monday-first for the default en-US locale', () => {
+    expect(weekdaysShort('en-US')[0]).toBe('Mon');
+    expect(weekdaysShort('en-US')[6]).toBe('Sun');
+    expect(weekdaysLong('en-US')[0]).toBe('Monday');
+    expect(weekdaysLong('en-US')[6]).toBe('Sunday');
+    expect(weekdaysShort('en-US')).toHaveLength(7);
+    expect(weekdaysLong('en-US')).toHaveLength(7);
   });
 
-  it('lists twelve month names starting at January', () => {
-    expect(MONTHS_LONG).toHaveLength(12);
-    expect(MONTHS_LONG[0]).toBe('January');
-    expect(MONTHS_LONG[11]).toBe('December');
+  it('localises the weekday names for another locale', () => {
+    expect(weekdaysShort('uk-UA')[0]).toBe('Пн');
+    expect(weekdaysLong('uk-UA')[6]).toBe('неділя');
   });
 });
 
@@ -156,8 +154,9 @@ describe('calendar date-utils — buildMonthMatrix', () => {
   const matrix: CalendarWeek[] = buildMonthMatrix(new Date(2026, 6, 1));
   const cells: CalendarCell[] = matrix.flatMap(week => week.cells);
 
-  it('is a fixed six-week by seven-day grid', () => {
-    expect(matrix).toHaveLength(6);
+  it('spans exactly the weeks the month needs, seven days each', () => {
+    // July 2026 starts Wednesday and has 31 days → 5 weeks, no empty trailing row.
+    expect(matrix).toHaveLength(5);
     matrix.forEach(week => expect(week.cells).toHaveLength(7));
   });
 
@@ -176,7 +175,6 @@ describe('calendar date-utils — buildMonthMatrix', () => {
       '2026-07-13',
       '2026-07-20',
       '2026-07-27',
-      '2026-08-03',
     ]);
   });
 
@@ -185,27 +183,33 @@ describe('calendar date-utils — buildMonthMatrix', () => {
     expect(inMonth).toHaveLength(31); // July has 31 days
     expect(formatISO(inMonth[0]!.date)).toBe('2026-07-01');
     expect(formatISO(inMonth[30]!.date)).toBe('2026-07-31');
-    // Trailing pad belongs to the next month.
+    // Trailing pad on the last row belongs to the next month (August).
     const last: CalendarCell = cells[cells.length - 1]!;
     expect(last.inCurrentMonth).toBe(false);
     expect(last.date.getMonth()).toBe(7);
   });
 
-  it('handles a February that fits in a tidy grid', () => {
+  it('trims to five weeks for a February that fits', () => {
+    // February 2026 starts Sunday and has 28 days → 6 + 28 = 34 → 5 weeks.
     const feb: CalendarWeek[] = buildMonthMatrix(new Date(2026, 1, 1));
-    expect(feb).toHaveLength(6);
+    expect(feb).toHaveLength(5);
     expect(feb.flatMap(week => week.cells).filter(cell => cell.inCurrentMonth)).toHaveLength(28);
+  });
+
+  it('grows to six weeks when the month overflows a five-week grid', () => {
+    // August 2026 starts Saturday and has 31 days → 5 + 31 = 36 → 6 weeks.
+    expect(buildMonthMatrix(new Date(2026, 7, 1))).toHaveLength(6);
   });
 });
 
 describe('calendar date-utils — formatting', () => {
   it('formats a day accessible label', () => {
-    expect(formatDayLabel(new Date(2026, 6, 15))).toBe('15 July 2026');
-    expect(formatDayLabel(new Date(2026, 0, 1))).toBe('1 January 2026');
+    expect(formatDayLabel(new Date(2026, 6, 15), 'en-US')).toBe('15 July 2026');
+    expect(formatDayLabel(new Date(2026, 0, 1), 'en-US')).toBe('1 January 2026');
   });
 
   it('formats the month caption', () => {
-    expect(formatMonthCaption(new Date(2026, 6, 1))).toBe('July 2026');
-    expect(formatMonthCaption(new Date(2025, 11, 20))).toBe('December 2025');
+    expect(formatMonthCaption(new Date(2026, 6, 1), 'en-US')).toBe('July 2026');
+    expect(formatMonthCaption(new Date(2025, 11, 20), 'en-US')).toBe('December 2025');
   });
 });
