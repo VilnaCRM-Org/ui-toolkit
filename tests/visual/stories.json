@@ -230,6 +230,26 @@
     "name": "Pagination"
   },
   {
+    "id": "uicomponents-uiprofileselectcard--disabled",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uiprofileselectcard--open",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Open"
+  },
+  {
+    "id": "uicomponents-uiprofileselectcard--profile-select-card",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Profile Select Card"
+  },
+  {
+    "id": "uicomponents-uiprofileselectcard--static",
+    "title": "UiComponents/UiProfileSelectCard",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uiradiogroup--radio-group",
     "title": "UiComponents/UiRadioGroup",
     "name": "Radio Group"
@@ -288,6 +308,31 @@
     "id": "uicomponents-uiskeletontext--small",
     "title": "UiComponents/UiSkeletonText",
     "name": "Small"
+  },
+  {
+    "id": "uicomponents-uitaskcard--disabled",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uitaskcard--long-title",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Long Title"
+  },
+  {
+    "id": "uicomponents-uitaskcard--static",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Static"
+  },
+  {
+    "id": "uicomponents-uitaskcard--task-card",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Task Card"
+  },
+  {
+    "id": "uicomponents-uitaskcard--unassigned",
+    "title": "UiComponents/UiTaskCard",
+    "name": "Unassigned"
   },
   {
     "id": "uicomponents-uitextfieldform--text-field-form",

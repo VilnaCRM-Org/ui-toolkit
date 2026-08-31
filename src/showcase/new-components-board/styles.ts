@@ -139,6 +139,37 @@ export const ROW_MOBILE_SX = {
   '& svg': { width: '1.25rem', height: '1.25rem' },
 } as const;
 
+// Forced task-card hover: the card scopes the whole recipe to its own `:hover`
+// (gated on the aria-disabled boundary), so a static tile re-applies the Figma
+// hover values through the class hooks — title and label ink darken one step and
+// the chip turns white with a brand-gray stroke and its drop shadow.
+export const TASK_CARD_HOVER_SX = {
+  '& .ui-task-card__title': { color: '#1A1C1E' },
+  '& .ui-task-card__label': { color: '#404142' },
+  '& .ui-task-card__chip': {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E1E7EA',
+    boxShadow: '0 4px 2px rgba(174, 181, 186, 0.25)',
+  },
+} as const;
+
+// Forced profile-card hover: the card scopes the recipe to its own `:hover` (gated
+// on the aria-disabled boundary AND on the closed state), so a static tile
+// re-applies the Figma hover values to the trigger button — the stroke darkens one
+// step (grey400 -> grey300) and the card gains the "Landing shadow".
+export const PROFILE_CARD_HOVER_SX = {
+  '& > button': {
+    borderColor: '#969B9D',
+    boxShadow: '0 8px 27px rgba(49, 59, 67, 0.14)',
+  },
+} as const;
+// Forced menu-row hover: the master's open frame captures the middle command under
+// the pointer, so the open tile re-applies the full-bleed fill the component scopes
+// to `:hover`. It is decoration only — never the focus indicator.
+export const PROFILE_MENU_ROW_HOVER_SX = {
+  '& [role="menuitem"]:nth-of-type(2)': { backgroundColor: '#F4F5F6' },
+} as const;
+
 // ---- board layout -----------------------------------------------------------
 
 export const pageSx = {
