@@ -67,7 +67,7 @@ function useTriggerRef(
   forwardedRef: React.ForwardedRef<HTMLButtonElement>
 ): React.RefCallback<HTMLButtonElement> {
   return React.useCallback(
-    (node: HTMLButtonElement | null): void =>
+    (node: HTMLButtonElement | null): (() => void) =>
       assignTriggerNode({ forwarded: forwardedRef, own: refs.trigger, node }),
     [forwardedRef, refs]
   );

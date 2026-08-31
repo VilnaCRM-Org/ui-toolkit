@@ -1379,6 +1379,57 @@ describe('UiProfileSelectCard — focus-return API', () => {
     expect(ref.current?.tagName).toBe('BUTTON');
   });
 
+  // React 19 takes a ref callback's return value as that ref's unmount cleanup.
+  // The component installs its own callback on the button, so React only ever
+  // sees THAT one — a consumer cleanup reaches nothing unless the component hands
+  // it back. Without this the consumer leaks whatever it set up on attach.
+  it("runs a consumer callback ref's own cleanup on unmount", () => {
+    const cleanup: jest.Mock = jest.fn();
+    const seen: (HTMLButtonElement | null)[] = [];
+    const collect: (node: HTMLButtonElement | null) => () => void = (
+      node: HTMLButtonElement | null
+    ): (() => void) => {
+      seen.push(node);
+      return cleanup;
+    };
+    const { unmount } = render(
+      <UiProfileSelectCard
+        ref={collect}
+        name={NAME}
+        avatarSrc={AVATAR}
+        items={ITEMS}
+        onOpenChange={noop}
+      />
+    );
+
+    expect(seen).toEqual([trigger()]);
+    expect(cleanup).not.toHaveBeenCalled();
+
+    unmount();
+
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    // React does not also call a cleanup-returning ref with `null`, so neither
+    // does this component: the consumer gets its cleanup and nothing else.
+    expect(seen).toHaveLength(1);
+  });
+
+  it('clears an object ref on unmount', () => {
+    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
+    const { unmount } = render(
+      <UiProfileSelectCard
+        ref={ref}
+        name={NAME}
+        avatarSrc={AVATAR}
+        items={ITEMS}
+        onOpenChange={noop}
+      />
+    );
+
+    expect(ref.current).not.toBeNull();
+    unmount();
+    expect(ref.current).toBeNull();
+  });
+
   it('forwards a callback ref to the same node', () => {
     const seen: (HTMLButtonElement | null)[] = [];
     const collect: (node: HTMLButtonElement | null) => void = collectorInto(seen);

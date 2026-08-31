@@ -61,27 +61,65 @@ export function isInsideWidget(wrapper: HTMLElement | null, target: EventTarget 
   return wrapper.contains(target);
 }
 
-export interface TriggerNodeAssignment {
+/** The consumer's half of an attach or detach, without the component's own handle. */
+export interface ForwardedRefAssignment {
   /** The consumer's ref, in either of React's two shapes. */
   forwarded: React.ForwardedRef<HTMLButtonElement>;
+  node: HTMLButtonElement | null;
+}
+
+export interface TriggerNodeAssignment extends ForwardedRefAssignment {
   /** The component's own handle, used by every focus move. */
   own: React.RefObject<HTMLButtonElement | null>;
-  node: HTMLButtonElement | null;
+}
+
+/** A React 19 ref-callback cleanup, or nothing when the consumer returned none. */
+export type TriggerRefCleanup = (() => void) | undefined;
+
+// The attach half, for either ref shape. A callback consumer may hand back a
+// React 19 cleanup; anything else it returns is not one and is dropped.
+function applyForwardedRef(assignment: ForwardedRefAssignment): TriggerRefCleanup {
+  const { forwarded, node } = assignment;
+  if (typeof forwarded === 'function') {
+    const returned: unknown = forwarded(node);
+    return typeof returned === 'function' ? (returned as () => void) : undefined;
+  }
+  if (forwarded != null) {
+    forwarded.current = node;
+  }
+  return undefined;
+}
+
+// The detach half. A consumer that gave a cleanup gets exactly that and no
+// `null` call; one that did not still gets the `null` call it expects.
+function releaseForwardedRef(
+  forwarded: React.ForwardedRef<HTMLButtonElement>,
+  cleanup: TriggerRefCleanup
+): void {
+  if (cleanup !== undefined) {
+    cleanup();
+    return;
+  }
+  applyForwardedRef({ forwarded, node: null });
 }
 
 /**
  * Threads the trigger node into the component's own ref AND the consumer's
  * forwarded ref, which lands on the button (never the wrapper) so a consumer can
  * return focus to the card after a dialog closes.
+ *
+ * React 19 takes a ref callback's return value as that ref's unmount cleanup,
+ * and it only ever sees the ONE callback this component installs — so a consumer
+ * callback's own cleanup would be swallowed here. Returning a cleanup that runs
+ * it (after clearing the component's own handle) is what keeps a forwarded ref
+ * behaving exactly as it would on a plain `<button>`.
  */
-export function assignTriggerNode(assignment: TriggerNodeAssignment): void {
+export function assignTriggerNode(assignment: TriggerNodeAssignment): () => void {
   const { forwarded, own, node } = assignment;
   own.current = node;
-  if (typeof forwarded === 'function') {
-    forwarded(node);
-    return;
-  }
-  if (forwarded != null) {
-    forwarded.current = node;
-  }
+  const cleanup: TriggerRefCleanup = applyForwardedRef({ forwarded, node });
+  return (): void => {
+    own.current = null;
+    releaseForwardedRef(forwarded, cleanup);
+  };
 }
