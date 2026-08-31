@@ -29,6 +29,23 @@ function rowSvgs(): SVGElement[] {
   return Array.from(document.querySelectorAll<SVGElement>('svg'));
 }
 
+// A bare `aria-live` container has no implicit role, so role queries alone leave
+// a hole; sweep the attributes too (UiTaskCard a11y contract §9, retro-applied).
+function liveRegionNodes(): Element[] {
+  return Array.from(
+    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
+  );
+}
+
+function expectNoLiveRegion(): void {
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.queryByRole('log')).not.toBeInTheDocument();
+  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
+  expect(liveRegionNodes()).toHaveLength(0);
+}
+
 describe('UiItemRow — wired disclosure semantics', () => {
   it('renders the whole row as one native type="button" named from its content', () => {
     render(<UiItemRow method="get" path={SAMPLE_PATH} description={SAMPLE_DESC} onToggle={noop} />);
@@ -246,19 +263,17 @@ describe('UiItemRow — decorative icons', () => {
 });
 
 describe('UiItemRow — no toggle announcement (live-region prohibition)', () => {
-  it('exposes no status or alert region before or after toggling', async () => {
+  it('exposes no live region of any kind before or after toggling', async () => {
     const user: UserEvent = userEvent.setup();
     const onToggle: jest.Mock = jest.fn();
     const { rerender } = render(<UiItemRow method="get" path="/pet" onToggle={onToggle} />);
 
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expectNoLiveRegion();
 
     await user.click(screen.getByRole('button'));
     rerender(<UiItemRow method="get" path="/pet" expanded onToggle={onToggle} />);
 
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expectNoLiveRegion();
   });
 });
 

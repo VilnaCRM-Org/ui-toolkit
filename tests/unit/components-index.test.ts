@@ -27,6 +27,7 @@ const expectedPublicExports: string[] = [
   'UiLink',
   'UiMultiSelect',
   'UiPagination',
+  'UiProfileSelectCard',
   'UiRadioGroup',
   'UiSearchInput',
   'UiSelectWithSearch',
@@ -34,6 +35,7 @@ const expectedPublicExports: string[] = [
   'UiSkeletonButton',
   'UiSkeletonInput',
   'UiSkeletonText',
+  'UiTaskCard',
   'UiTextFieldForm',
   'UiToolbar',
   'UiTooltip',
@@ -65,5 +67,6 @@ describe('components index', () => {
     expect(publicComponents.UiButton).toBeDefined();
     expect(publicComponents.UiSkeletonBlock).toBeDefined();
     expect(publicComponents.UiTooltip).toBeDefined();
+    expect(publicComponents.UiTaskCard).toBeDefined();
   });
 });

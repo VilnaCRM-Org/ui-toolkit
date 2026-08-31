@@ -36,7 +36,7 @@ const STRUCTURAL_GUARD_FILES: readonly string[] = [
 // value must fail this test rather than silently loosen the merge gate.
 const MUTATION_BREAK_THRESHOLD_FLOOR = 80;
 
-const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7];
+const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7, 8];
 
 // Single- and double-quoted, with or without an explicit `/index` and a
 // trailing slash — every variant resolves to the same barrel module. The
