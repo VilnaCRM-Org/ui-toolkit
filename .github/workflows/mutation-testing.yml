@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     # Regression tripwire: this used to take over two hours per shard before the
     # enableFindRelatedTests fix. A silent return to full-suite reloading should
-    # fail the job, not silently burn runner time.
+    # fail the job, not silently burn runner time. The cap is deliberately NOT
+    # raised as the mutate set grows — shard COUNT is what absorbs that, so the
+    # tripwire keeps measuring the same thing it always did.
     timeout-minutes: 20
     permissions:
       contents: read
@@ -27,9 +29,9 @@ jobs:
         # To change shard count, keep this list and MUTATION_SHARD_TOTAL (here and
         # in the merge job) in lock-step: index must be [0 .. TOTAL-1]. A mismatch
         # fails closed at the merge gate's shard-count/index check, never silently.
-        index: [0, 1, 2, 3, 4, 5]
+        index: [0, 1, 2, 3, 4, 5, 6, 7]
     env:
-      MUTATION_SHARD_TOTAL: '6'
+      MUTATION_SHARD_TOTAL: '8'
       MUTATION_SHARD_INDEX: ${{ matrix.index }}
 
     steps:
@@ -71,7 +73,7 @@ jobs:
     permissions:
       contents: read
     env:
-      MUTATION_SHARD_TOTAL: '6'
+      MUTATION_SHARD_TOTAL: '8'
 
     steps:
       - name: Checkout code
