@@ -153,10 +153,12 @@ geometry (the `UiPagination` no-jitter precedent).
   `disabled` is semantics-only (suppressed hover + `cursor: default`) — sighted
   mouse users see only the absence of hover feedback. Either a Disabled master
   gets added to Figma or this weak visual signal stays accepted; the repo's
-  design-first policy forbids inventing one here. The same holds for the pressed
-  state: the Cards frame draws Rest and Hover and nothing else, so the card
-  declares no `:active` rule and leaves the native button's own press affordance
-  in place rather than inventing a paint the design never specified.
+  design-first policy forbids inventing one here. The pressed state is the same
+  gap: the Cards frame draws Rest and Hover and nothing else, so the card
+  declares no `:active` rule — and because the wired root is a reset button
+  (`appearance: none`, `border: 0`, transparent background) the UA's own pressed
+  rendering is gone too, so a press has NO visual feedback at all. Like
+  `disabled`, that needs a Figma master rather than an invented paint.
 
 ## Design fidelity
 
@@ -196,11 +198,11 @@ surface behind the transparent card.
 
 ## Acceptance-criteria completion
 
-| Source AC (epics.md Story 3.2)                                                                                                      | Status | Evidence                                                                                                                                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **AC1** — key card content and state behaviour consistent with board expectations; clear rest/active/disabled interaction semantics | ✅     | Rest/hover from the two Figma masters, the only states the design draws — no active master exists, so the card adds no `:active` paint of its own and the native button's own press affordance stands; `disabled` via the `aria-disabled` boundary; cards stack flush at the board's 94px divider pitch. |
-| **AC2** — API aligns with shared toolkit contract principles; exceptions documented                                                 | ✅     | Shared-contract table above; every N/A carries its rationale in `types.ts`; `disabled`/`sx` are real contract hits; deviations (no disclosure, no heading, no self-`<li>`) documented.                                                                                                                   |
-| **AC3** — independently usable and testable; no future-story dependency                                                             | ✅     | No dependency on later stories; consumed standalone or under any list/column wrapper; 59-spec unit suite + Storybook stories + showcase board group act as usage examples.                                                                                                                               |
+| Source AC (epics.md Story 3.2)                                                                                                      | Status | Evidence                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AC1** — key card content and state behaviour consistent with board expectations; clear rest/active/disabled interaction semantics | ✅     | Rest/hover from the two Figma masters, the only states the design draws; no active master exists, so no `:active` paint is invented and — the root being a reset button — a press has no visual feedback either, recorded with the disabled-visual escalation; `disabled` via the `aria-disabled` boundary; cards stack flush at the board's 94px divider pitch. |
+| **AC2** — API aligns with shared toolkit contract principles; exceptions documented                                                 | ✅     | Shared-contract table above; every N/A carries its rationale in `types.ts`; `disabled`/`sx` are real contract hits; deviations (no disclosure, no heading, no self-`<li>`) documented.                                                                                                                                                                           |
+| **AC3** — independently usable and testable; no future-story dependency                                                             | ✅     | No dependency on later stories; consumed standalone or under any list/column wrapper; 59-spec unit suite + Storybook stories + showcase board group act as usage examples.                                                                                                                                                                                       |
 
 ## Provenance
 
@@ -258,8 +260,8 @@ conventions. Recorded in `component-provenance.md` under Epic 3.
 - **Task-card list wrapper** — column composition (`<ul>`/`<li>`, headings) is
   the consumer's or a future story's; the card never self-wraps.
 - **Disabled and pressed visual treatment** — no Figma master exists for either
-  (escalation on record); `disabled` ships semantics-only and `:active` is left
-  to the native button.
+  (escalation on record); `disabled` ships semantics-only, and a press shows
+  nothing at all, the reset-button root leaving no native pressed rendering.
 - **Contrast remediation** — the rest-state label ink `#969B9D` (2.81:1) is
   inventoried for the dedicated accessibility-visuals PR per the Story 1.3
   policy (suggested future swap: existing `grey250`); the chip fill/divider are
