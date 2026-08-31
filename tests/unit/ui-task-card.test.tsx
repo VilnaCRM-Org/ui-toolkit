@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiTaskCard } from '../../src/components';
+import UiTaskCard from '../../src/components/ui-task-card';
 import { FOCUS_RING, taskCardSx } from '../../src/components/ui-task-card/styles';
 import type { TaskAssignee } from '../../src/components/ui-task-card/types';
 import { useTaskCard, type TaskCardModel } from '../../src/components/ui-task-card/use-task-card';
@@ -94,7 +94,7 @@ function layersOf(config: Parameters<typeof taskCardSx>[0]): SxLayers {
   return taskCardSx(config) as SxLayers;
 }
 function baseOf(interactive: boolean): Record<string, unknown> {
-  return layersOf({ interactive, sx: undefined })[0];
+  return layersOf({ interactive, sx: undefined })[0] as Record<string, unknown>;
 }
 
 describe('UiTaskCard — wired card semantics', () => {

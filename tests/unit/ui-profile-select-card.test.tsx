@@ -2,8 +2,11 @@ import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiProfileSelectCard } from '../../src/components';
-import { activateMenuItem } from '../../src/components/ui-profile-select-card/menu-actions';
+import UiProfileSelectCard from '../../src/components/ui-profile-select-card';
+import {
+  activateMenuItem,
+  handleMenuKeyDown,
+} from '../../src/components/ui-profile-select-card/menu-actions';
 import {
   focusMenuEnd,
   isInsideWidget,
@@ -54,31 +57,32 @@ const AVATAR: string = '/evgeniya.png';
 const PROFILE: string = 'Профиль';
 const SETTINGS: string = 'Настройки';
 const LOGOUT: string = 'Выйти';
-const ITEMS: ProfileSelectItem[] = [
-  { id: 'profile', label: PROFILE },
-  { id: 'settings', label: SETTINGS },
-  { id: 'logout', label: LOGOUT },
-];
+// Each command is named so the shrunk menus below are composed from the same
+// objects rather than re-read out of `ITEMS` by index.
+const PROFILE_ITEM: ProfileSelectItem = { id: 'profile', label: PROFILE };
+const SETTINGS_ITEM: ProfileSelectItem = { id: 'settings', label: SETTINGS };
+const LOGOUT_ITEM: ProfileSelectItem = { id: 'logout', label: LOGOUT };
+const ITEMS: ProfileSelectItem[] = [PROFILE_ITEM, SETTINGS_ITEM, LOGOUT_ITEM];
 // The same menu with the middle command taken away — the controlled `items`
 // shrink that can strand focus on a row that no longer exists (§4.6, A2).
-const WITHOUT_SETTINGS: ProfileSelectItem[] = [ITEMS[0], ITEMS[2]];
+const WITHOUT_SETTINGS: ProfileSelectItem[] = [PROFILE_ITEM, LOGOUT_ITEM];
 // And with the FIRST command taken away — the row the open-focus effect seats
 // focus on, for the same-gesture decline-and-shrink case (§4.5, A3).
-const WITHOUT_PROFILE: ProfileSelectItem[] = [ITEMS[1], ITEMS[2]];
+const WITHOUT_PROFILE: ProfileSelectItem[] = [SETTINGS_ITEM, LOGOUT_ITEM];
 const OUTSIDE: string = 'outside';
 
 interface CardOverrides {
-  name?: string;
-  avatarSrc?: UiProfileSelectCardProps['avatarSrc'];
-  items?: ProfileSelectItem[];
-  open?: boolean;
-  onOpenChange?: (next: boolean) => void;
-  onSelect?: (itemId: string) => void;
-  disabled?: boolean;
-  id?: string;
-  lang?: string;
-  sx?: UiProfileSelectCardProps['sx'];
-  menuSx?: UiProfileSelectCardProps['menuSx'];
+  name?: string | undefined;
+  avatarSrc?: UiProfileSelectCardProps['avatarSrc'] | undefined;
+  items?: ProfileSelectItem[] | undefined;
+  open?: boolean | undefined;
+  onOpenChange?: ((next: boolean) => void) | undefined;
+  onSelect?: ((itemId: string) => void) | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  lang?: string | undefined;
+  sx?: UiProfileSelectCardProps['sx'] | undefined;
+  menuSx?: UiProfileSelectCardProps['menuSx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). `in` checks
@@ -120,11 +124,11 @@ function neighbourButton(): React.ReactElement {
 }
 
 interface ControlledCardProps {
-  onOpenChange?: (next: boolean) => void;
-  onSelect?: (itemId: string) => void;
-  items?: ProfileSelectItem[];
-  disabled?: boolean;
-  initialOpen?: boolean;
+  onOpenChange?: ((next: boolean) => void) | undefined;
+  onSelect?: ((itemId: string) => void) | undefined;
+  items?: ProfileSelectItem[] | undefined;
+  disabled?: boolean | undefined;
+  initialOpen?: boolean | undefined;
 }
 
 // The consumer half of the ownership split (§3.1/§4): it owns `open` and simply
@@ -281,11 +285,23 @@ function nodesMatching(selector: string): Element[] {
   return Array.from(document.querySelectorAll(selector));
 }
 
+// `noUncheckedIndexedAccess` types every index read as possibly-undefined. A
+// node missing at an index the assertion names is a failed test, not an optional
+// value, so it is resolved once here and thrown on rather than threaded as
+// `| undefined` through every caller.
+function nodeAt<T>(nodes: readonly T[], index: number, what: string): T {
+  const node: T | undefined = nodes[index];
+  if (node === undefined) {
+    throw new Error(`Expected ${what} at index ${index}`);
+  }
+  return node;
+}
+
 // The positioning wrapper carries `lang` and the consumer `sx` but no role at
 // all (§2.1), so it is reached structurally: Testing Library mounts the tree
 // inside one container div, and the wrapper is its first element child.
 function widgetRoot(): Element {
-  return nodesMatching('body > div > div')[0];
+  return nodeAt(nodesMatching('body > div > div'), 0, 'the positioning wrapper');
 }
 
 // Every ARIA/interactivity hook the static branch must not ship (§3.3/§6.2).
@@ -450,7 +466,7 @@ describe('UiProfileSelectCard — static (unwired) card (§3.3/§13.7)', () => {
   it('keeps the identical content tree, including the consumer id', () => {
     render(cardWith({ id: 'static-card' }));
 
-    const root: Element = nodesMatching('#static-card')[0];
+    const root: Element = nodeAt(nodesMatching('#static-card'), 0, 'the static card root');
     expect(root.tagName).toBe('DIV');
     expect(cardImages()).toHaveLength(1);
     expect(nodesMatching('svg')).toHaveLength(1);
@@ -695,14 +711,14 @@ describe('UiProfileSelectCard — menu navigation (§4.3/§13.2)', () => {
     render(cardWith({ open: true, onOpenChange: noop }));
     const rows: HTMLElement[] = menuItems();
 
-    rows[0].blur();
+    nodeAt(rows, 0, 'a menu row').blur();
     expect(document.body).toHaveFocus();
 
     // ArrowDown from "nowhere" resolves to index 0 + 1, ArrowUp to 0 - 1 (wrapped).
     menu().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     expect(rows[1]).toHaveFocus();
 
-    rows[1].blur();
+    nodeAt(rows, 1, 'a menu row').blur();
     menu().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
     expect(rows[2]).toHaveFocus();
   });
@@ -1210,7 +1226,7 @@ describe('UiProfileSelectCard — accessible names and imagery (§5/§13.9)', ()
   it('paints a decorative 32px avatar', () => {
     render(cardWith({ onOpenChange: noop }));
 
-    const img: HTMLImageElement = cardImages()[0];
+    const img: HTMLImageElement = nodeAt(cardImages(), 0, 'the avatar image');
     expect(cardImages()).toHaveLength(1);
     expect(img).toHaveAttribute('src', AVATAR);
     expect(img).toHaveAttribute('alt', '');
@@ -1241,7 +1257,7 @@ describe('UiProfileSelectCard — accessible names and imagery (§5/§13.9)', ()
   it('keeps the chevron out of the accessibility tree and never rotates it', () => {
     const { rerender } = render(cardWith({ onOpenChange: noop }));
 
-    const glyph: Element = nodesMatching('svg')[0];
+    const glyph: Element = nodeAt(nodesMatching('svg'), 0, 'the chevron glyph');
     expect(glyph).toHaveAttribute('aria-hidden', 'true');
     expect(glyph).toHaveAttribute('focusable', 'false');
     expect(nodesMatching('path')[0]).toHaveAttribute('d', 'M5 7.5 10 12.5 15 7.5');
@@ -1425,9 +1441,10 @@ describe('profile-select styles — pure recipes (mutation-killing)', () => {
   it('gates hover on the aria-disabled boundary AND on the open state', () => {
     const base: StyleObject = triggerStyle(true, false);
     const hoverKeys: string[] = Object.keys(base).filter((key: string) => key.includes(':hover'));
+    const hoverKey: string = '&:hover:not([aria-disabled="true"]):not([aria-expanded="true"])';
 
-    expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"]):not([aria-expanded="true"])']);
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(hoverKeys).toEqual([hoverKey]);
+    expect(base[hoverKey]).toEqual({
       borderColor: '#969B9D',
       boxShadow: '0 8px 27px rgba(49, 59, 67, 0.14)',
     });
@@ -1511,7 +1528,7 @@ describe('profile-select styles — pure recipes (mutation-killing)', () => {
   });
 
   it('hangs the menu 11px below the trigger with a real border', () => {
-    const base: StyleObject = menuLayers(undefined)[0];
+    const base: StyleObject = menuLayers(undefined)[0] as StyleObject;
 
     expect(base.position).toBe('absolute');
     expect(base.top).toBe('calc(100% + 0.6875rem)');
@@ -1560,6 +1577,41 @@ describe('menu helpers — defensive branches', () => {
 
     expect(onSelect).toHaveBeenCalledWith('logout');
     expect(requestOpen).toHaveBeenCalledWith(false);
+    expect(refs.skipRescue.current).toBe(true);
+    expect(document.body).toHaveFocus();
+  });
+
+  // §4.3's Escape sequence has the same shape as §4.4's: it flags the rescue off
+  // and focuses the trigger BEFORE requesting the close, and the ref is null in
+  // exactly the same detach window. The close must still be requested when there
+  // is no trigger node left to focus.
+  it('closes on Escape in order even with no trigger node to focus', () => {
+    const refs: MenuFocusRefs = bareRefs();
+    // Sampled INSIDE the close request, not after it: asserting the flag once the
+    // handler has returned cannot tell "flagged, then closed" from "closed, then
+    // flagged", and the §4.3 order is the whole point of the sequence — a consumer
+    // that unmounts the menu synchronously on this call would arm the §4.6 rescue
+    // against a close that has already put focus where it belongs.
+    const skipRescueWhenClosed: (boolean | null)[] = [];
+    const requestOpen: jest.Mock = jest.fn((): void => {
+      skipRescueWhenClosed.push(refs.skipRescue.current);
+    });
+    const ctx: MenuFocusContext = {
+      refs,
+      open: true,
+      disabled: false,
+      requestOpen,
+      onSelect: undefined,
+    };
+
+    expect(() =>
+      handleMenuKeyDown(ctx, {
+        key: 'Escape',
+      } as React.KeyboardEvent<HTMLElement>)
+    ).not.toThrow();
+
+    expect(requestOpen).toHaveBeenCalledWith(false);
+    expect(skipRescueWhenClosed).toEqual([true]);
     expect(refs.skipRescue.current).toBe(true);
     expect(document.body).toHaveFocus();
   });

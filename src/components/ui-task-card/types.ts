@@ -59,19 +59,19 @@ export interface UiTaskCardProps {
   /** Deadline chip text (e.g. `12.09 15:00`). Non-interactive, zero ARIA. */
   deadline: string;
   /** Assignee; omit for an unassigned task (track reserved, nothing painted). */
-  assignee?: TaskAssignee;
+  assignee?: TaskAssignee | undefined;
   /** Called on activation of a wired, non-disabled card. Presence makes it a button. */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover recipe is
    * suppressed and `onActivate` never fires — so keyboard focus is never dropped
    * when a focused card flips disabled (WCAG 2.4.3).
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the card; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the card's language differs from the page language (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

@@ -71,7 +71,7 @@ export interface UiProfileSelectCardProps {
    * Menu open state (wired cards only). Always controlled; defaults to `false`.
    * The component never flips it — feed the next state back via `onOpenChange`.
    */
-  open?: boolean;
+  open?: boolean | undefined;
   /**
    * Requests the next open state, carrying the requested boolean. Presence makes
    * the card a wired menu button. The payload is a deliberate, documented
@@ -79,9 +79,9 @@ export interface UiProfileSelectCardProps {
    * (Escape, Tab, outside pointer, item activation, trigger re-click) and a
    * payload-free toggle races against stale state when two fire together.
    */
-  onOpenChange?: (next: boolean) => void;
+  onOpenChange?: ((next: boolean) => void) | undefined;
   /** Fired with the activated item's `id`, after focus returns to the trigger. */
-  onSelect?: (itemId: string) => void;
+  onSelect?: ((itemId: string) => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover recipe is
@@ -89,13 +89,13 @@ export interface UiProfileSelectCardProps {
    * when a focused card flips disabled (WCAG 2.4.3). While `disabled`, the closed
    * presentation wins over `open` (§6.3).
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the trigger; falls back to a generated one so the menu can name itself. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the card's language differs from the page language (SC 3.1.2). */
-  lang?: string;
+  lang?: string | undefined;
   /** Merged last on the positioning wrapper. */
-  sx?: SxProps<Theme>;
+  sx?: SxProps<Theme> | undefined;
   /** Merged last on the `role="menu"` element. */
-  menuSx?: SxProps<Theme>;
+  menuSx?: SxProps<Theme> | undefined;
 }
