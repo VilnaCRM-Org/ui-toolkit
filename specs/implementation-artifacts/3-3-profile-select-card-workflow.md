@@ -570,7 +570,7 @@ showcase board's own `#FBFBFB` surface behind the white card.
 | ------------------------------------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **AC1** — profile information and selection/menu interaction states supported; consistent with card and control patterns | ✅     | Four Figma state nodes delivered pixel-exact; APG menu button on the toolkit's native-button, wired/static and `aria-disabled` conventions; no new palette tokens.                          |
 | **AC2** — active/disabled/error-relevant behaviour predictable; callback and contract behaviour clearly defined          | ✅     | Open/hover/disabled all measured; `error` documented N/A (not a form field); `onOpenChange(next)` and `onSelect(itemId)` specified in `types.ts`; five dev-warnings cover misconfiguration. |
-| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 98-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
+| **AC3** — independently usable and testable; no future-story dependency                                                  | ✅     | No dependency on 3.4+; consumed standalone; 99-spec unit suite at 100% coverage + 4 Storybook stories + a 5-tile showcase group act as usage examples.                                      |
 
 ## Provenance
 
@@ -580,9 +580,8 @@ marketing-site cards. Visuals come from the UI-kit Cards profile state nodes
 (`451:26219` rest, `451:26229` hover, `451:26252` active+open, `451:26255`
 disabled) inside frame `439:19893`; behaviour comes from the WAI-ARIA APG
 **menu-button** pattern on the toolkit's established native-button,
-wired/static and `aria-disabled`-boundary conventions. The
-`component-provenance.md` Epic 3 row is the one governance entry still to be
-appended for this story.
+wired/static and `aria-disabled`-boundary conventions. Recorded in
+`component-provenance.md` under Epic 3.
 
 ## Governance / CI gates addressed
 
@@ -591,7 +590,7 @@ appended for this story.
   guard in `tests/unit/components-index.test.ts` updated.
 - **No palette additions** — the second Epic 3 story with zero new tokens.
 - **100% statements / branches / functions / lines** of the component via
-  `tests/unit/ui-profile-select-card.test.tsx` — **98 specs across 18 describe
+  `tests/unit/ui-profile-select-card.test.tsx` — **99 specs across 18 describe
   blocks**: wired trigger semantics, the static card, empty-items and
   disabled dominance, the `aria-disabled` boundary, open-transition focus, menu
   navigation with wrap/Home/End, item activation ordering, all five close paths,
@@ -638,9 +637,9 @@ appended for this story.
 | Consistent with established card and control patterns | AC1 | ✅ wired/static split, `aria-disabled` boundary, always-controlled state axis |
 | Active/disabled behaviour predictable                 | AC2 | ✅ open keeps rest chrome; disabled dominates `open`; every open path no-ops  |
 | Callback and contract behaviour clearly defined       | AC2 | ✅ `onOpenChange(next)` / `onSelect(itemId)` + shared-contract table          |
-| Independently usable and testable                     | AC3 | ✅ standalone; 98 specs at 100% coverage; stories + showcase usage            |
+| Independently usable and testable                     | AC3 | ✅ standalone; 99 specs at 100% coverage; stories + showcase usage            |
 | Binding a11y contract honoured §-by-§                 | —   | ✅ reproduced above; §13's ten regressions all asserted                       |
-| Export recorded                                       | —   | ✅ `src/components/index.ts` + drift guard                                    |
+| Export + provenance recorded                          | —   | ✅ `src/components/index.ts` + drift guard; `component-provenance.md` Epic 3  |
 | Quality gates green (this story's files)              | —   | ✅ coverage / `rca` / `jscpd` / `tsc` / ESLint / Prettier / `depcruise`       |
 
 ## Out of scope / deferred
@@ -659,5 +658,3 @@ appended for this story.
 - **Focus-ring pixel hardening / forced-colors visual design** — no Figma design
   exists; the toolkit's ring recipe applies by policy and the appearance audit
   stays with the accessibility-visuals PR.
-- **`component-provenance.md` Epic 3 row** — the single remaining governance
-  append for this story.
