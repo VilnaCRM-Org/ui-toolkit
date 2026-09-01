@@ -70,37 +70,37 @@ export interface UiNotificationBadgeProps {
    * `count === 0` and the prefix of `` `${label}: ${display}` `` above it. A blank
    * override leaves a nameless button and dev-warns.
    */
-  label?: string;
+  label?: string | undefined;
   /**
    * Counter cap, default `9`: above it the chip and the name both read
    * `` `${max}+` ``. Fractions are floored and values below 1 (or non-finite)
    * become 1; either way it dev-warns. The chip is a fixed 18px circle in the
    * master, so a cap wider than two glyphs will overflow it.
    */
-  max?: number;
+  max?: number | undefined;
   /**
    * Requests the notification surface. Bare and payload-free: the badge owns no
    * panel and never opens one itself. Presence makes the badge a wired button;
    * absence makes it static content.
    */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /**
    * Declares that `onActivate` opens a menu → `aria-haspopup="menu"`. It is what
    * switches the `aria-expanded` channel on, so pass it together with `menuOpen`.
    */
-  hasPopup?: 'menu';
+  hasPopup?: 'menu' | undefined;
   /**
    * Open state of the consumer's popup → `aria-expanded` in BOTH states (only
    * while `hasPopup` is set). It also paints the Figma "active" chrome, because a
    * solid-blue bell reads as "panel open" — the design's pressed column and the
    * expanded state are the same picture, so no extra prop is invented.
    */
-  menuOpen?: boolean;
+  menuOpen?: boolean | undefined;
   /**
    * `id` of the consumer's popup → `aria-controls`, emitted ONLY while `menuOpen`
    * is true, so a closed badge never leaves a dangling idref (the 3.3 rule).
    */
-  menuId?: string;
+  menuId?: string | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover and active
@@ -108,8 +108,8 @@ export interface UiNotificationBadgeProps {
    * never dropped when a focused badge flips disabled (WCAG 2.4.3). Figma ships a
    * disabled column, so it is painted as well as exposed.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the badge; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

@@ -87,7 +87,7 @@ export interface UiPaymentOptionCardProps {
    * still renders sensibly. The disabled mark is an ASSET swap, not a CSS filter:
    * `grayscale(1)` and `opacity` both miss the Figma `#D0D4D8` badly.
    */
-  logoDisabled?: IntegrationLogo;
+  logoDisabled?: IntegrationLogo | undefined;
   /**
    * Selected state (wired cards only). ALWAYS controlled, default `false`: a
    * nullish value is coerced so a card that starts unselected never silently
@@ -95,7 +95,7 @@ export interface UiPaymentOptionCardProps {
    * footgun). The component never self-flips it — a radio cannot unselect
    * itself, so deselection happens only when the consumer selects a sibling.
    */
-  selected?: boolean;
+  selected?: boolean | undefined;
   /**
    * Requests selection. Bare and payload-free on purpose: this widget has exactly
    * one state-change path (activation) in exactly one direction (false→true), so
@@ -104,7 +104,7 @@ export interface UiPaymentOptionCardProps {
    * nothing (native radio `change` semantics); a DECLINED selection leaves the
    * card eligible, so the next activation fires again.
    */
-  onSelect?: () => void;
+  onSelect?: (() => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover recipe is
@@ -113,8 +113,8 @@ export interface UiPaymentOptionCardProps {
    * master here, so it is painted: the grey wordmark plus a solid `brandGray`
    * circle. A selected + disabled card still keeps its full selected chrome.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the card; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

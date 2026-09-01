@@ -76,7 +76,7 @@ export interface UiFilterChipProps {
    * copy — never to blank it out, which would leave a button whose name reads
    * as a static label (dev-warned).
    */
-  removeLabel?: string;
+  removeLabel?: string | undefined;
   /**
    * Requests removal of this filter. Bare and payload-free on purpose: the chip
    * has exactly one state-change path in exactly one direction, so nothing can
@@ -85,7 +85,7 @@ export interface UiFilterChipProps {
    * removal leaves the chip mounted and eligible, so the next activation fires
    * again.
    */
-  onRemove?: () => void;
+  onRemove?: (() => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover and active
@@ -94,10 +94,10 @@ export interface UiFilterChipProps {
    * `disabled` is never set. Figma ships a disabled column, so it is painted:
    * both label segments swap to grey, and nothing is dimmed by opacity.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the chip; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the filter text's language differs from the page's (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

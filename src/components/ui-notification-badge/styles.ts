@@ -53,8 +53,7 @@ const FORCED_COLORS_RING: object = {
 // Hover also yields to the open state: without the `[aria-expanded]` guard the
 // hover tint (higher specificity) would repaint the solid open-blue bell while
 // the pointer rests on the trigger (the 3.3/3.4 hover-gate convention).
-const HOVER_SELECTOR: string =
-  '&:hover:not([aria-disabled="true"]):not([aria-expanded="true"])';
+const HOVER_SELECTOR: string = '&:hover:not([aria-disabled="true"]):not([aria-expanded="true"])';
 
 // The Figma "active" column is the pressed visual, but a solid-blue bell equally
 // reads as "the panel is open" — the same picture serves both, so the recipe keys

@@ -2,8 +2,8 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiPaymentOptionCard } from '../../src/components';
 import type { IntegrationLogo } from '../../src/components/ui-integration-card/types';
+import UiPaymentOptionCard from '../../src/components/ui-payment-option-card';
 import {
   resolvePaymentLogo,
   resolvePaymentMark,
@@ -22,6 +22,7 @@ import {
 } from '../../src/components/ui-payment-option-card/use-payment-card';
 import usePaymentCardRef from '../../src/components/ui-payment-option-card/use-payment-card-ref';
 
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 
 // UiPaymentOptionCard emits the four dev-only warnings via console.warn — one of
@@ -59,14 +60,14 @@ const FOCUS_SELECTORS: string =
   '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-checked="true"])';
 
 interface CardOverrides {
-  name?: string;
-  logo?: IntegrationLogo;
-  logoDisabled?: IntegrationLogo;
-  selected?: boolean;
-  onSelect?: () => void;
-  disabled?: boolean;
-  id?: string;
-  sx?: UiPaymentOptionCardProps['sx'];
+  name?: string | undefined;
+  logo?: IntegrationLogo | undefined;
+  logoDisabled?: IntegrationLogo | undefined;
+  selected?: boolean | undefined;
+  onSelect?: () => void | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  sx?: UiPaymentOptionCardProps['sx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). `in` checks keep
@@ -109,7 +110,7 @@ function cardImages(): HTMLImageElement[] {
 }
 
 function circle(): Element {
-  return nodesMatching(`.${CIRCLE_CLASS}`)[0];
+  return firstOf(nodesMatching(`.${CIRCLE_CLASS}`));
 }
 
 // Every hook that would make something else in the card focusable. Exactly one
@@ -156,7 +157,7 @@ function layersOf(interactive: boolean, sx: UiPaymentOptionCardProps['sx']): SxL
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  return firstOf(layersOf(interactive, undefined));
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -273,7 +274,7 @@ describe('UiPaymentOptionCard — static (unwired) card', () => {
   it('keeps the identical content tree, including the consumer id', () => {
     render(cardWith({ id: 'static-card' }));
 
-    const root: Element = nodesMatching('#static-card')[0];
+    const root: Element = firstOf(nodesMatching('#static-card'));
     expect(root.tagName).toBe('DIV');
     expect(root.contains(circle())).toBe(true);
     expect(cardImages()).toHaveLength(1);
@@ -302,7 +303,7 @@ describe('UiPaymentOptionCard — static (unwired) card', () => {
     // never crosses — so it can never paint a disabled-looking card.
     render(cardWith({ disabled: true, logoDisabled: LIQPAY_GREY_LOGO }));
 
-    expect(cardImages()[0]).toHaveAttribute('src', '/liqpay.png');
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/liqpay.png');
   });
 });
 
@@ -542,7 +543,7 @@ describe('UiPaymentOptionCard — focus and tab order', () => {
     expect(nodesMatching('#payment-7')).toHaveLength(0);
 
     render(cardWith({ id: 'payment-7', onSelect: noop }));
-    const remounted: Element = nodesMatching('#payment-7')[0];
+    const remounted: Element = firstOf(nodesMatching('#payment-7'));
     expect(remounted).toBe(card());
     (remounted as HTMLElement).focus();
     expect(remounted).toHaveFocus();
@@ -556,7 +557,7 @@ describe('UiPaymentOptionCard — accessible name and imagery (Ruling 1)', () =>
     // The one deliberate deviation from UiIntegrationCard: this card has no
     // visible text, so a decorative `alt=""` would ship a nameless radio.
     expect(card()).toHaveAccessibleName(LIQPAY);
-    expect(cardImages()[0]).toHaveAttribute('alt', LIQPAY);
+    expect(firstOf(cardImages())).toHaveAttribute('alt', LIQPAY);
     expect(nodesMatching('[aria-label], [aria-labelledby]')).toHaveLength(0);
     expect(card()).not.toHaveAttribute('title');
   });
@@ -564,7 +565,7 @@ describe('UiPaymentOptionCard — accessible name and imagery (Ruling 1)', () =>
   it('paints the wordmark with the full image hygiene attribute set', () => {
     render(cardWith({ onSelect: noop }));
 
-    const img: HTMLImageElement = cardImages()[0];
+    const img: HTMLImageElement = firstOf(cardImages());
     expect(cardImages()).toHaveLength(1);
     expect(img.tagName).toBe('IMG');
     expect(img).toHaveAttribute('src', '/liqpay.png');
@@ -581,7 +582,7 @@ describe('UiPaymentOptionCard — accessible name and imagery (Ruling 1)', () =>
   it('accepts a static import object as the mark source', () => {
     render(inGroup(cardWith({ logo: { src: { src: '/imported.png' }, width: 116, height: 24 } })));
 
-    expect(cardImages()[0]).toHaveAttribute('src', '/imported.png');
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/imported.png');
     expect(warn.spy).not.toHaveBeenCalled();
   });
 
@@ -636,7 +637,7 @@ describe('UiPaymentOptionCard — disabled wordmark resolution', () => {
   it('swaps in the flat-grey ASSET when a disabled card ships one', () => {
     render(cardWith({ disabled: true, logoDisabled: LIQPAY_GREY_LOGO, onSelect: noop }));
 
-    const img: HTMLImageElement = cardImages()[0];
+    const img: HTMLImageElement = firstOf(cardImages());
     expect(img).toHaveAttribute('src', '/liqpay-grey.png');
     // The name channel is untouched by the asset swap.
     expect(card()).toHaveAccessibleName(LIQPAY);
@@ -647,19 +648,19 @@ describe('UiPaymentOptionCard — disabled wordmark resolution', () => {
   it('falls back to the full-colour mark when no grey variant exists', () => {
     render(cardWith({ disabled: true, onSelect: noop }));
 
-    expect(cardImages()[0]).toHaveAttribute('src', '/liqpay.png');
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/liqpay.png');
   });
 
   it('falls back when the grey variant is itself unusable', () => {
     render(cardWith({ disabled: true, logoDisabled: NO_SIZE_LOGO, onSelect: noop }));
 
-    expect(cardImages()[0]).toHaveAttribute('src', '/liqpay.png');
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/liqpay.png');
   });
 
   it('keeps the full-colour mark on an enabled card that ships a grey one', () => {
     render(cardWith({ logoDisabled: LIQPAY_GREY_LOGO, onSelect: noop }));
 
-    expect(cardImages()[0]).toHaveAttribute('src', '/liqpay.png');
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/liqpay.png');
   });
 });
 
@@ -831,7 +832,7 @@ describe('UiPaymentOptionCard — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(cardWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = firstOf(nodesMatching('#styled'));
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -888,7 +889,7 @@ describe('paymentOptionCardSx — style assembly (pure, mutation-killing)', () =
 
     expect(hoverKeys).toEqual([HOVER_SELECTOR]);
     expect(base['&:hover']).toBeUndefined();
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(base[firstOf(hoverKeys)]).toEqual({
       backgroundColor: WHITE,
       borderColor: PRIMARY,
       [`& .${CIRCLE_CLASS}`]: { border: `1px solid ${PRIMARY}` },
@@ -929,7 +930,7 @@ describe('paymentOptionCardSx — style assembly (pure, mutation-killing)', () =
     // specificity; declared later, it wins. The bare one still covers the disabled
     // and selected cards.
     expect(ringKeys).toEqual([FOCUS_SELECTORS]);
-    expect(base[ringKeys[0]]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+    expect(base[firstOf(ringKeys)]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
   });
 
   it('omits every button-only rule from the static branch', () => {

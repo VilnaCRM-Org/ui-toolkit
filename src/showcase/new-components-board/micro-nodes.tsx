@@ -2,7 +2,9 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { UiFilterChip, UiPaymentOptionCard, UiPinInput } from '@/components';
+import UiFilterChip from '@/components/ui-filter-chip';
+import UiPaymentOptionCard from '@/components/ui-payment-option-card';
+import UiPinInput from '@/components/ui-pin-input';
 
 import { CHIP_LABEL, CHIP_VALUE, PIN_ERROR_TEXT, type PaymentSample } from './fixtures';
 import {

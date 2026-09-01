@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiStatusBadge } from '../../src/components';
+import UiStatusBadge from '../../src/components/ui-status-badge';
 import { CHECK_PATH, CheckGlyph } from '../../src/components/ui-status-badge/check-glyph';
 import statusBadgeWarning from '../../src/components/ui-status-badge/status-badge-warnings';
 import {
@@ -20,6 +20,7 @@ import {
   type StatusBadgeModel,
 } from '../../src/components/ui-status-badge/use-status-badge';
 
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 
 // The badge has exactly ONE dev warning (a blank `label`); several tests drive it
@@ -47,12 +48,12 @@ const RING_SELECTOR: string =
   '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-pressed="true"])';
 
 interface BadgeOverrides {
-  label?: string;
-  active?: boolean;
-  onToggle?: () => void;
-  disabled?: boolean;
-  id?: string;
-  sx?: UiStatusBadgeProps['sx'];
+  label?: string | undefined;
+  active?: boolean | undefined;
+  onToggle?: () => void | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  sx?: UiStatusBadgeProps['sx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). The `in` check
@@ -85,7 +86,7 @@ function nodesMatching(selector: string): Element[] {
 }
 
 function root(): Element {
-  return nodesMatching(`.${BADGE_ROOT_CLASS}`)[0];
+  return firstOf(nodesMatching(`.${BADGE_ROOT_CLASS}`));
 }
 
 function glyph(): SVGElement {
@@ -154,7 +155,7 @@ function layersOf(request: Readonly<LayerRequest>): SxLayers {
 }
 
 function baseOf(interactive: boolean, active: boolean): StyleObject {
-  return layersOf({ interactive, active, sx: undefined })[0];
+  return firstOf(layersOf({ interactive, active, sx: undefined }));
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -530,7 +531,7 @@ describe('UiStatusBadge — focus and tab order (S5)', () => {
     expect(nodesMatching('#status-7')).toHaveLength(0);
 
     render(badgeWith({ id: 'status-7', onToggle: noop }));
-    const remounted: Element = nodesMatching('#status-7')[0];
+    const remounted: Element = firstOf(nodesMatching('#status-7'));
     expect(remounted).toBe(badge());
     (remounted as HTMLElement).focus();
     expect(remounted).toHaveFocus();
@@ -930,12 +931,12 @@ describe('CheckGlyph — the Figma check, at 1.6x the standard weight', () => {
   it('is the same glyph in both branches, so no state changes the geometry', () => {
     const { rerender } = render(badgeWith({ label: DONE_LABEL, active: true }));
     expect(glyph()).toHaveAttribute('viewBox', '0 0 24 24');
-    expect(nodesMatching('path')[0]).toHaveAttribute('stroke-width', '3.2');
+    expect(firstOf(nodesMatching('path'))).toHaveAttribute('stroke-width', '3.2');
 
     rerender(badgeWith({ disabled: true, onToggle: noop }));
     expect(glyph()).toHaveAttribute('viewBox', '0 0 24 24');
-    expect(nodesMatching('path')[0]).toHaveAttribute('stroke-width', '3.2');
-    expect(nodesMatching('path')[0]).toHaveAttribute('d', CHECK_PATH);
+    expect(firstOf(nodesMatching('path'))).toHaveAttribute('stroke-width', '3.2');
+    expect(firstOf(nodesMatching('path'))).toHaveAttribute('d', CHECK_PATH);
   });
 });
 

@@ -91,7 +91,7 @@ export interface IntegrationSample {
 // Verbatim from the masters, capitalisation included ("Hubspot", not "HubSpot"):
 // the card bakes in no literals of its own (a11y contract §2.2), so the brand name
 // and the mark's intrinsic size are consumer data.
-export const INTEGRATION_CARDS: IntegrationSample[] = [
+export const INTEGRATION_CARDS: [IntegrationSample, IntegrationSample] = [
   { name: 'Hubspot', logo: { src: HUBSPOT_LOGO_SRC, width: 139, height: 40 } },
   { name: 'AmoCRM', logo: { src: AMOCRM_LOGO_SRC, width: 181, height: 52 } },
 ];
@@ -110,14 +110,14 @@ export interface PaymentSample {
   name: string;
   logo: IntegrationLogo;
   /** The flat-grey mark painted while disabled; falls back to `logo` when absent. */
-  logoDisabled?: IntegrationLogo;
+  logoDisabled?: IntegrationLogo | undefined;
 }
 
 // The card carries ZERO text nodes, so `name` is its entire accessible name and
 // must transcribe the visible wordmark (SC 2.5.3) — brand names and marks travel
 // as consumer data (SC 3.1.2), exactly as the integration cards do. WayForPay
 // ships no grey master, which is why only LiqPay carries `logoDisabled`.
-export const PAYMENT_OPTIONS: PaymentSample[] = [
+export const PAYMENT_OPTIONS: [PaymentSample, PaymentSample] = [
   {
     name: 'LiqPay',
     logo: { src: LIQPAY_LOGO_SRC, width: 116, height: 24 },
@@ -142,7 +142,14 @@ export interface ActionSample {
 // whole accessible name. The eye's label is CONSTANT across both toggle states —
 // `aria-pressed` already carries the state, so a state-describing label would
 // double-signal it.
-export const BAR_ACTIONS: ActionSample[] = [
+export const BAR_ACTIONS: [
+  ActionSample,
+  ActionSample,
+  ActionSample,
+  ActionSample,
+  ActionSample,
+  ActionSample,
+] = [
   { icon: 'x-close', label: 'Закрити' },
   { icon: 'dots-horizontal', label: 'Більше дій' },
   { icon: 'dots-vertical', label: 'Меню рядка' },

@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiNotificationBadge } from '../../src/components';
+import UiNotificationBadge from '../../src/components/ui-notification-badge';
 import { BELL_PATH } from '../../src/components/ui-notification-badge/bell-glyph';
 import badgeWarning from '../../src/components/ui-notification-badge/notification-badge-warnings';
 import {
@@ -26,6 +26,7 @@ import {
   type NotificationBadgeModel,
 } from '../../src/components/ui-notification-badge/use-notification-badge';
 
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 
 // UiNotificationBadge emits three dev-only warnings via console.warn for runtime
@@ -46,16 +47,16 @@ const MENU_ID: string = 'notification-panel';
 const CUSTOM_LABEL: string = 'Пошта';
 
 interface BadgeOverrides {
-  count?: number;
-  label?: string;
-  max?: number;
-  onActivate?: () => void;
-  hasPopup?: 'menu';
-  menuOpen?: boolean;
-  menuId?: string;
-  disabled?: boolean;
-  id?: string;
-  sx?: UiNotificationBadgeProps['sx'];
+  count?: number | undefined;
+  label?: string | undefined;
+  max?: number | undefined;
+  onActivate?: () => void | undefined;
+  hasPopup?: 'menu' | undefined;
+  menuOpen?: boolean | undefined;
+  menuId?: string | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  sx?: UiNotificationBadgeProps['sx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). The `in` check
@@ -146,7 +147,7 @@ function layersOf(interactive: boolean, sx: UiNotificationBadgeProps['sx']): SxL
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  return firstOf(layersOf(interactive, undefined));
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -154,7 +155,7 @@ function keysMatching(base: StyleObject, fragment: string): string[] {
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  return base[keysMatching(base, fragment)[0]] as StyleObject;
+  return base[firstOf(keysMatching(base, fragment))] as StyleObject;
 }
 
 // Records every node the forwarded callback ref is handed, attach and detach.
@@ -196,7 +197,7 @@ describe('UiNotificationBadge — wired button semantics (S1/S2/§6 role)', () =
     render(badgeWith({ onActivate: noop }));
 
     expect(bells()).toHaveLength(1);
-    const bell: Element = bells()[0];
+    const bell: Element = firstOf(bells());
     expect(bell).toHaveAttribute('aria-hidden', 'true');
     expect(bell).toHaveAttribute('focusable', 'false');
     expect(bell).toHaveAttribute('viewBox', '0 0 24 24');
@@ -218,7 +219,7 @@ describe('UiNotificationBadge — wired button semantics (S1/S2/§6 role)', () =
     render(badgeWith({ count: 4, onActivate: noop }));
 
     expect(chips()).toHaveLength(1);
-    const chip: Element = chips()[0];
+    const chip: Element = firstOf(chips());
     expect(chip.tagName).toBe('SPAN');
     expect(chip).toHaveAttribute('aria-hidden', 'true');
     expect(chip).toHaveTextContent('4');
@@ -233,7 +234,7 @@ describe('UiNotificationBadge — wired button semantics (S1/S2/§6 role)', () =
 
     rerender(badgeWith({ id: 'bell-7', onActivate: noop }));
     expect(badge()).toHaveAttribute('id', 'bell-7');
-    expect(nodesMatching('#bell-7')[0]).toBe(badge());
+    expect(firstOf(nodesMatching('#bell-7'))).toBe(badge());
   });
 
   it('exposes its display name', () => {
@@ -258,11 +259,11 @@ describe('UiNotificationBadge — accessible name format (Ruling 5)', () => {
 
     rerender(badgeWith({ count: 9, onActivate: noop }));
     expect(badge()).toHaveAccessibleName(`${LABEL}: 9`);
-    expect(chips()[0]).toHaveTextContent('9');
+    expect(firstOf(chips())).toHaveTextContent('9');
 
     rerender(badgeWith({ count: 10, onActivate: noop }));
     expect(badge()).toHaveAccessibleName(`${LABEL}: 9+`);
-    expect(chips()[0]).toHaveTextContent('9+');
+    expect(firstOf(chips())).toHaveTextContent('9+');
 
     rerender(badgeWith({ count: 99, onActivate: noop }));
     expect(badge()).toHaveAccessibleName(`${LABEL}: 9+`);
@@ -278,18 +279,18 @@ describe('UiNotificationBadge — accessible name format (Ruling 5)', () => {
     // visible text must be contained in the name.
     expect(badge()).toHaveAccessibleName(`${LABEL}: 9+`);
     expect(nameOf()).not.toContain('42');
-    expect(chips()[0]).toHaveTextContent('9+');
-    expect(nameOf()).toContain(chips()[0].textContent as string);
+    expect(firstOf(chips())).toHaveTextContent('9+');
+    expect(nameOf()).toContain(firstOf(chips()).textContent as string);
   });
 
   it('honours a custom cap on both channels', () => {
     const { rerender } = render(badgeWith({ count: 42, max: 99, onActivate: noop }));
     expect(badge()).toHaveAccessibleName(`${LABEL}: 42`);
-    expect(chips()[0]).toHaveTextContent('42');
+    expect(firstOf(chips())).toHaveTextContent('42');
 
     rerender(badgeWith({ count: 100, max: 99, onActivate: noop }));
     expect(badge()).toHaveAccessibleName(`${LABEL}: 99+`);
-    expect(chips()[0]).toHaveTextContent('99+');
+    expect(firstOf(chips())).toHaveTextContent('99+');
 
     rerender(badgeWith({ count: 2, max: 1, onActivate: noop }));
     expect(badge()).toHaveAccessibleName(`${LABEL}: 1+`);
@@ -318,7 +319,7 @@ describe('UiNotificationBadge — count normalisation (dev backstop)', () => {
   it('floors a fractional count on both channels', () => {
     render(badgeWith({ count: 2.7, onActivate: noop }));
 
-    expect(chips()[0]).toHaveTextContent('2');
+    expect(firstOf(chips())).toHaveTextContent('2');
     expect(badge()).toHaveAccessibleName(`${LABEL}: 2`);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('non-negative integer'));
   });
@@ -348,20 +349,20 @@ describe('UiNotificationBadge — count normalisation (dev backstop)', () => {
 
   it('clamps an out-of-range cap to 1 rather than rendering "0+"', () => {
     const { rerender } = render(badgeWith({ count: 5, max: 0, onActivate: noop }));
-    expect(chips()[0]).toHaveTextContent('1+');
+    expect(firstOf(chips())).toHaveTextContent('1+');
     expect(badge()).toHaveAccessibleName(`${LABEL}: 1+`);
 
     rerender(badgeWith({ count: 5, max: -3, onActivate: noop }));
-    expect(chips()[0]).toHaveTextContent('1+');
+    expect(firstOf(chips())).toHaveTextContent('1+');
 
     rerender(badgeWith({ count: 5, max: Number.NaN, onActivate: noop }));
-    expect(chips()[0]).toHaveTextContent('1+');
+    expect(firstOf(chips())).toHaveTextContent('1+');
   });
 
   it('floors a fractional cap', () => {
     render(badgeWith({ count: 5, max: 2.9, onActivate: noop }));
 
-    expect(chips()[0]).toHaveTextContent('2+');
+    expect(firstOf(chips())).toHaveTextContent('2+');
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('positive integer'));
   });
 
@@ -371,7 +372,7 @@ describe('UiNotificationBadge — count normalisation (dev backstop)', () => {
     counts.forEach((count: number): void => {
       const view = render(badgeWith({ count, onActivate: noop }));
       const label: string = nameOf();
-      const chip: Element | undefined = chips()[0];
+      const [chip]: readonly (Element | undefined)[] = chips();
 
       if (chip == null) {
         expect(label).toBe(LABEL);
@@ -503,7 +504,7 @@ describe('UiNotificationBadge — activation (S6/S3)', () => {
     await user.click(root);
     await user.keyboard('{Enter}');
 
-    expect(chips()[0]).toHaveTextContent('3');
+    expect(firstOf(chips())).toHaveTextContent('3');
     expect(badge()).toHaveAccessibleName(`${LABEL}: 3`);
     expect(root).toHaveFocus();
   });
@@ -580,7 +581,7 @@ describe('UiNotificationBadge — disabled (aria-disabled boundary, S4)', () => 
       })
     );
 
-    expect(chips()[0]).toHaveTextContent('9+');
+    expect(firstOf(chips())).toHaveTextContent('9+');
     expect(badge()).toHaveAccessibleName(`${LABEL}: 9+`);
     expect(badge()).toHaveAttribute('aria-expanded', 'true');
     expect(badge()).toHaveAttribute('aria-controls', MENU_ID);
@@ -600,12 +601,12 @@ describe('UiNotificationBadge — static (unwired) branch (S2)', () => {
   it('keeps the identical content tree on a div, including the consumer id', () => {
     render(badgeWith({ count: 3, id: 'static-bell' }));
 
-    const root: Element = nodesMatching('#static-bell')[0];
+    const root: Element = firstOf(nodesMatching('#static-bell'));
     expect(root.tagName).toBe('DIV');
-    expect(root.contains(bells()[0])).toBe(true);
-    expect(root.contains(chips()[0])).toBe(true);
-    expect(chips()[0]).toHaveTextContent('3');
-    expect(chips()[0]).toHaveAttribute('aria-hidden', 'true');
+    expect(root.contains(firstOf(bells()))).toBe(true);
+    expect(root.contains(firstOf(chips()))).toBe(true);
+    expect(firstOf(chips())).toHaveTextContent('3');
+    expect(firstOf(chips())).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('renders no chip at zero, exactly like the wired branch', () => {
@@ -670,7 +671,7 @@ describe('UiNotificationBadge — focus and tab order', () => {
     expect(nodesMatching('#bell-7')).toHaveLength(0);
 
     render(badgeWith({ id: 'bell-7', onActivate: noop }));
-    const remounted: Element = nodesMatching('#bell-7')[0];
+    const remounted: Element = firstOf(nodesMatching('#bell-7'));
     expect(remounted).toBe(badge());
     (remounted as HTMLElement).focus();
     expect(remounted).toHaveFocus();
@@ -822,7 +823,7 @@ describe('UiNotificationBadge — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(badgeWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { marginLeft: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = firstOf(nodesMatching('#styled'));
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ marginLeft: '2rem' });
   });

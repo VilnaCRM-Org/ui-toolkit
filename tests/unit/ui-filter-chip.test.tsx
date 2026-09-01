@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiFilterChip } from '../../src/components';
+import UiFilterChip from '../../src/components/ui-filter-chip';
 import { ChipGlyph, X_CLOSE_PATH } from '../../src/components/ui-filter-chip/chip-glyph';
 import filterChipWarning from '../../src/components/ui-filter-chip/filter-chip-warnings';
 import {
@@ -57,14 +57,14 @@ const ACTIVE_BLUE: string = '#0399ED';
 const WHITE: string = '#FFF';
 
 interface ChipOverrides {
-  label?: string;
-  filterValue?: string;
-  removeLabel?: string;
-  onRemove?: () => void;
-  disabled?: boolean;
-  id?: string;
-  lang?: string;
-  sx?: UiFilterChipProps['sx'];
+  label?: string | undefined;
+  filterValue?: string | undefined;
+  removeLabel?: string | undefined;
+  onRemove?: (() => void) | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  lang?: string | undefined;
+  sx?: UiFilterChipProps['sx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). `in` checks keep
@@ -95,8 +95,27 @@ function nodesMatching(selector: string): Element[] {
   return Array.from(document.querySelectorAll(selector));
 }
 
+// `noUncheckedIndexedAccess` makes every index read optional, so the "there is
+// one and this test is about it" assumption is asserted once here instead of
+// being cast away at each call site.
+function firstMatching(selector: string): Element {
+  const [first] = nodesMatching(selector);
+  if (first === undefined) {
+    throw new Error(`no node matched ${selector}`);
+  }
+  return first;
+}
+
+function firstKey(keys: string[]): string {
+  const [first] = keys;
+  if (first === undefined) {
+    throw new Error('no style key matched');
+  }
+  return first;
+}
+
 function glyphBox(): Element {
-  return nodesMatching(`.${CHIP_GLYPH_CLASS}`)[0];
+  return firstMatching(`.${CHIP_GLYPH_CLASS}`);
 }
 
 // Every hook that would make something else in the chip focusable. Exactly one
@@ -143,7 +162,7 @@ function layersOf(interactive: boolean, sx: UiFilterChipProps['sx']): SxLayers {
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  return layersOf(interactive, undefined)[0] as StyleObject;
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -151,7 +170,7 @@ function keysMatching(base: StyleObject, fragment: string): string[] {
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  return base[keysMatching(base, fragment)[0]] as StyleObject;
+  return base[firstKey(keysMatching(base, fragment))] as StyleObject;
 }
 
 // Records every node the forwarded callback ref is handed, attach and detach.
@@ -212,8 +231,8 @@ describe('UiFilterChip — wired button semantics (§ Role / ARIA state mapping)
   it('paints both label segments as plain spans carrying the class hooks', () => {
     render(chipWith({ onRemove: noop }));
 
-    const prefix: Element = nodesMatching(`.${CHIP_LABEL_CLASS}`)[0];
-    const value: Element = nodesMatching(`.${CHIP_VALUE_CLASS}`)[0];
+    const prefix: Element = firstMatching(`.${CHIP_LABEL_CLASS}`);
+    const value: Element = firstMatching(`.${CHIP_VALUE_CLASS}`);
     expect(prefix.tagName).toBe('SPAN');
     expect(value.tagName).toBe('SPAN');
     expect(screen.getByText(LABEL)).toBe(prefix);
@@ -226,7 +245,7 @@ describe('UiFilterChip — wired button semantics (§ Role / ARIA state mapping)
     render(chipWith({ onRemove: noop }));
 
     const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0];
+    const svg: Element = firstMatching('svg');
     expect(box.tagName).toBe('SPAN');
     expect(box).not.toHaveAttribute('role');
     expect(box).not.toHaveAttribute('tabindex');
@@ -265,7 +284,7 @@ describe('UiFilterChip — static (unwired) chip', () => {
   it('keeps the identical content tree, × included, with the consumer id and lang', () => {
     render(chipWith({ id: 'static-chip', lang: 'ru' }));
 
-    const root: Element = nodesMatching('#static-chip')[0];
+    const root: Element = firstMatching('#static-chip');
     expect(root.tagName).toBe('DIV');
     expect(root).toHaveAttribute('lang', 'ru');
     expect(root.contains(glyphBox())).toBe(true);
@@ -291,7 +310,7 @@ describe('UiFilterChip — static (unwired) chip', () => {
     const user: UserEvent = userEvent.setup();
     render(chipWith({ id: 'static-chip' }));
 
-    const root: HTMLElement = nodesMatching('#static-chip')[0] as HTMLElement;
+    const root: HTMLElement = firstMatching('#static-chip') as HTMLElement;
     await user.click(root);
     await user.tab();
 
@@ -510,7 +529,7 @@ describe('UiFilterChip — focus and tab order', () => {
     expect(nodesMatching('#filter-3')).toHaveLength(0);
 
     render(chipWith({ id: 'filter-3', onRemove: noop }));
-    const remounted: Element = nodesMatching('#filter-3')[0];
+    const remounted: Element = firstMatching('#filter-3');
     expect(remounted).toBe(chip());
     (remounted as HTMLElement).focus();
     expect(remounted).toHaveFocus();
@@ -556,7 +575,7 @@ describe('UiFilterChip — accessible name', () => {
   it('names the static chip identically, so the reading order never changes', () => {
     render(chipWith({ id: 'static-name' }));
 
-    const root: HTMLElement = nodesMatching('#static-name')[0] as HTMLElement;
+    const root: HTMLElement = firstMatching('#static-name') as HTMLElement;
     // Both segments then the hidden suffix, in that order and with nothing else
     // between them — the wired tree reads exactly the same.
     expect(root).toHaveTextContent(`${LABEL}${VALUE}${SUFFIX}`);
@@ -686,7 +705,7 @@ describe('UiFilterChip — dev warnings', () => {
 });
 
 describe('filterChipWarning — first-applicable selector (pure)', () => {
-  function warningFor(props: Readonly<Partial<UiFilterChipProps>>): string | null {
+  function warningFor(props: Readonly<ChipOverrides>): string | null {
     return filterChipWarning(props as UiFilterChipProps);
   }
 
@@ -733,7 +752,7 @@ describe('UiFilterChip — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(chipWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = firstMatching('#styled');
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -781,7 +800,7 @@ describe('filterChipSx — style assembly (pure, mutation-killing)', () => {
 
     expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"])']);
     expect(base['&:hover']).toBeUndefined();
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(base[firstKey(hoverKeys)]).toEqual({
       backgroundColor: WHITE,
       borderColor: GREY400,
       boxShadow: CHIP_SHADOW,
@@ -794,7 +813,7 @@ describe('filterChipSx — style assembly (pure, mutation-killing)', () => {
     const activeKeys: string[] = keysMatching(base, ':active');
 
     expect(activeKeys).toEqual(['&:active:not([aria-disabled="true"])']);
-    expect(base[activeKeys[0]]).toEqual({
+    expect(base[firstKey(activeKeys)]).toEqual({
       backgroundColor: WHITE,
       borderColor: GREY300,
       boxShadow: CHIP_SHADOW,
@@ -830,7 +849,7 @@ describe('filterChipSx — style assembly (pure, mutation-killing)', () => {
     // focused chip.
     expect(ringKeys).toEqual([FOCUS_SELECTORS]);
     expect(FOCUS_SELECTORS).toBe('&:focus-visible, &:focus-visible:not([aria-disabled="true"])');
-    expect(base[ringKeys[0]]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+    expect(base[firstKey(ringKeys)]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
@@ -961,8 +980,8 @@ describe('ChipGlyph — the remove × (pure recipe)', () => {
   it('renders one decorative 20px svg whose stroke follows currentColor', () => {
     render(<ChipGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0];
-    const path: Element = nodesMatching('svg path')[0];
+    const svg: Element = firstMatching('svg');
+    const path: Element = firstMatching('svg path');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '20');

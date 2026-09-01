@@ -2,8 +2,10 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { UiActionIconBar, UiNotificationBadge, UiStatusBadge } from '@/components';
+import UiActionIconBar from '@/components/ui-action-icon-bar';
 import type { UiActionIconBarAction } from '@/components/ui-action-icon-bar/types';
+import UiNotificationBadge from '@/components/ui-notification-badge';
+import UiStatusBadge from '@/components/ui-status-badge';
 
 import { BAR_ACTIONS, type ActionSample } from './fixtures';
 import {

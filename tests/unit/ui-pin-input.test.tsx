@@ -2,7 +2,7 @@ import { createEvent, fireEvent, render, renderHook, screen } from '@testing-lib
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiPinInput } from '../../src/components';
+import UiPinInput from '../../src/components/ui-pin-input';
 import {
   buildPinHandlers,
   type PinCellHandlers,
@@ -20,7 +20,9 @@ import {
 import type { UiPinCellLabel, UiPinInputProps } from '../../src/components/ui-pin-input/types';
 import { usePinInput, type PinInputModel } from '../../src/components/ui-pin-input/use-pin-input';
 
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import nthOf from './utils/nth-of';
 
 // UiPinInput emits four dev-only warnings via console.warn — one of them on every
 // field that mounts without an accessible group name. Silence them and keep a
@@ -58,18 +60,18 @@ const FORCED_COLORS_KEY: string = '@media (forced-colors: active)';
 const HELPER_TEXT_KEY: string = '& .MuiFormHelperText-root';
 
 interface PinOverrides {
-  label?: string;
-  labelledBy?: string;
-  value?: string;
-  onChange?: (next: string) => void;
-  length?: number;
-  cellLabel?: UiPinCellLabel;
-  required?: boolean;
-  error?: boolean;
-  helperText?: React.ReactNode;
-  disabled?: boolean;
-  id?: string;
-  sx?: UiPinInputProps['sx'];
+  label?: string | undefined;
+  labelledBy?: string | undefined;
+  value?: string | undefined;
+  onChange?: (next: string) => void | undefined;
+  length?: number | undefined;
+  cellLabel?: UiPinCellLabel | undefined;
+  required?: boolean | undefined;
+  error?: boolean | undefined;
+  helperText?: React.ReactNode | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  sx?: UiPinInputProps['sx'] | undefined;
 }
 
 // Props are threaded one by one (the repo forbids JSX spreading). The `in` check
@@ -318,7 +320,7 @@ describe('UiPinInput — per-cell semantics', () => {
       'Цифра 3 з 4',
       'Цифра 4 з 4',
     ]);
-    expect(screen.getByRole('textbox', { name: 'Цифра 1 з 4' })).toBe(cells()[0]);
+    expect(screen.getByRole('textbox', { name: 'Цифра 1 з 4' })).toBe(nthOf(cells(), 0));
   });
 
   it('accepts a consumer `cellLabel`, which receives the 1-based index and length', () => {
@@ -343,7 +345,7 @@ describe('UiPinInput — per-cell semantics', () => {
 
   it('never lets the placeholder become the accessible name', () => {
     render(pinWith({ onChange: noop }));
-    expect(cells()[0]).toHaveAccessibleName('Цифра 1 з 6');
+    expect(nthOf(cells(), 0)).toHaveAccessibleName('Цифра 1 з 6');
   });
 });
 
@@ -387,7 +389,7 @@ describe('UiPinInput — always-controlled value', () => {
     const onChange: jest.Mock = jest.fn();
     render(pinWith({ value: '', onChange }));
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('4');
 
     expect(onChange).toHaveBeenCalledWith('4');
@@ -401,14 +403,14 @@ describe('UiPinInput — typing', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('4');
     expect(onValue).toHaveBeenLastCalledWith('4');
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
 
     await user.keyboard('8');
     expect(onValue).toHaveBeenLastCalledWith('48');
-    expect(cells()[2]).toHaveFocus();
+    expect(nthOf(cells(), 2)).toHaveFocus();
 
     expect(valuesOf()).toEqual(['4', '8', '', '', '', '']);
   });
@@ -418,11 +420,11 @@ describe('UiPinInput — typing', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="48210" onValue={onValue} />);
 
-    await user.click(cells()[5]);
+    await user.click(nthOf(cells(), 5));
     await user.keyboard('0');
 
     expect(onValue).toHaveBeenLastCalledWith('482100');
-    expect(cells()[5]).toHaveFocus();
+    expect(nthOf(cells(), 5)).toHaveFocus();
   });
 
   it('rejects a non-digit outright — no value change, no advance', async () => {
@@ -430,11 +432,11 @@ describe('UiPinInput — typing', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('a');
 
     expect(onValue).not.toHaveBeenCalled();
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
     expect(valuesOf()).toEqual(['', '', '', '', '', '']);
   });
 
@@ -443,14 +445,14 @@ describe('UiPinInput — typing', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    await user.click(cells()[4]);
+    await user.click(nthOf(cells(), 4));
     await user.keyboard('7');
 
     // The digit lands at index 0 rather than opening a four-cell hole, so the
     // emitted string round-trips through the normaliser unchanged.
     expect(onValue).toHaveBeenLastCalledWith('7');
     expect(valuesOf()).toEqual(['7', '', '', '', '', '']);
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
   });
 
   it('overwrites a filled cell instead of appending', () => {
@@ -461,7 +463,7 @@ describe('UiPinInput — typing', () => {
     // character, even with the content selected; a browser replaces the selection
     // and emits exactly this change. The selection itself is asserted below in
     // "focus and tab order".
-    fireEvent.change(cells()[1], { target: { value: '9' } });
+    fireEvent.change(nthOf(cells(), 1), { target: { value: '9' } });
 
     expect(onValue).toHaveBeenCalledWith('492');
     expect(valuesOf()).toEqual(['4', '9', '2', '', '', '']);
@@ -473,10 +475,10 @@ describe('UiPinInput — typing', () => {
 
     // An IME or an autofill can hand a change event a whole run; it is validated
     // and distributed by the paste resolver, exactly like a keystroke.
-    fireEvent.change(cells()[0], { target: { value: 'a' } });
+    fireEvent.change(nthOf(cells(), 0), { target: { value: 'a' } });
     expect(onValue).not.toHaveBeenCalled();
 
-    fireEvent.change(cells()[0], { target: { value: '4' } });
+    fireEvent.change(nthOf(cells(), 0), { target: { value: '4' } });
     expect(onValue).toHaveBeenCalledWith('4');
   });
 });
@@ -487,11 +489,11 @@ describe('UiPinInput — Backspace / Delete / Arrow matrix', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="482100" onValue={onValue} />);
 
-    await user.click(cells()[2]);
+    await user.click(nthOf(cells(), 2));
     await user.keyboard('{Backspace}');
 
     expect(onValue).toHaveBeenLastCalledWith('48100');
-    expect(cells()[2]).toHaveFocus();
+    expect(nthOf(cells(), 2)).toHaveFocus();
   });
 
   it('Backspace on an EMPTY cell steps back and clears the previous one', async () => {
@@ -499,11 +501,11 @@ describe('UiPinInput — Backspace / Delete / Arrow matrix', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="48" onValue={onValue} />);
 
-    await user.click(cells()[2]);
+    await user.click(nthOf(cells(), 2));
     await user.keyboard('{Backspace}');
 
     expect(onValue).toHaveBeenLastCalledWith('4');
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
   });
 
   it('Backspace clamps at cell 0 and reports nothing when there is nothing to clear', async () => {
@@ -511,11 +513,11 @@ describe('UiPinInput — Backspace / Delete / Arrow matrix', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('{Backspace}');
 
     expect(onValue).not.toHaveBeenCalled();
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
   });
 
   it('Delete clears the current cell and never moves focus', async () => {
@@ -523,11 +525,11 @@ describe('UiPinInput — Backspace / Delete / Arrow matrix', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="482100" onValue={onValue} />);
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('{Delete}');
 
     expect(onValue).toHaveBeenLastCalledWith('82100');
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
   });
 
   it('Delete on an empty cell reaches neither channel', async () => {
@@ -535,11 +537,11 @@ describe('UiPinInput — Backspace / Delete / Arrow matrix', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    await user.click(cells()[3]);
+    await user.click(nthOf(cells(), 3));
     await user.keyboard('{Delete}');
 
     expect(onValue).not.toHaveBeenCalled();
-    expect(cells()[3]).toHaveFocus();
+    expect(nthOf(cells(), 3)).toHaveFocus();
   });
 
   it('arrows move focus one cell and clamp at both ends, never wrapping', async () => {
@@ -547,26 +549,26 @@ describe('UiPinInput — Backspace / Delete / Arrow matrix', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="482100" onValue={onValue} />);
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('{ArrowLeft}');
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
 
     await user.keyboard('{ArrowRight}');
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
 
     await user.keyboard('{ArrowLeft}');
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
 
-    await user.click(cells()[5]);
+    await user.click(nthOf(cells(), 5));
     await user.keyboard('{ArrowRight}');
-    expect(cells()[5]).toHaveFocus();
+    expect(nthOf(cells(), 5)).toHaveFocus();
 
     expect(onValue).not.toHaveBeenCalled();
   });
 
   it('preventDefaults the four intercepted keys and nothing else', () => {
     render(pinWith({ value: '4821', onChange: noop }));
-    const cell: HTMLInputElement = cells()[1];
+    const cell: HTMLInputElement = nthOf(cells(), 1);
 
     ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].forEach((key: string): void => {
       const event: Event = createEvent.keyDown(cell, { key });
@@ -588,36 +590,36 @@ describe('UiPinInput — paste distribution', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    pasteInto(cells()[0], '48-21');
+    pasteInto(nthOf(cells(), 0), '48-21');
 
     expect(onValue).toHaveBeenCalledWith('4821');
     expect(valuesOf()).toEqual(['4', '8', '2', '1', '', '']);
-    expect(cells()[4]).toHaveFocus();
+    expect(nthOf(cells(), 4)).toHaveFocus();
   });
 
   it('truncates at the cell count and parks focus on the last cell', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="" onValue={onValue} />);
 
-    pasteInto(cells()[0], '1234567890');
+    pasteInto(nthOf(cells(), 0), '1234567890');
 
     expect(onValue).toHaveBeenCalledWith('123456');
-    expect(cells()[5]).toHaveFocus();
+    expect(nthOf(cells(), 5)).toHaveFocus();
   });
 
   it('starts the run at the focused cell', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="48" onValue={onValue} />);
 
-    pasteInto(cells()[2], '99');
+    pasteInto(nthOf(cells(), 2), '99');
 
     expect(onValue).toHaveBeenCalledWith('4899');
-    expect(cells()[4]).toHaveFocus();
+    expect(nthOf(cells(), 4)).toHaveFocus();
   });
 
   it('always swallows the native paste, so a maxLength=1 cell cannot eat the code', () => {
     render(<ControlledPin initial="" />);
-    const event: Event = pasteInto(cells()[0], '482100');
+    const event: Event = pasteInto(nthOf(cells(), 0), '482100');
     expect(event.defaultPrevented).toBe(true);
   });
 
@@ -625,7 +627,7 @@ describe('UiPinInput — paste distribution', () => {
     const onValue: jest.Mock = jest.fn();
     render(<ControlledPin initial="48" onValue={onValue} />);
 
-    pasteInto(cells()[1], 'код');
+    pasteInto(nthOf(cells(), 1), 'код');
 
     expect(onValue).not.toHaveBeenCalled();
     expect(valuesOf()).toEqual(['4', '8', '', '', '', '']);
@@ -637,7 +639,7 @@ describe('UiPinInput — paste distribution', () => {
 
     // The OS drops the whole code onto the single `one-time-code` target; it runs
     // the same filter, the same clamp and the same distribution as a keystroke.
-    pasteInto(cells()[0], 'Ваш код: 4821-00');
+    pasteInto(nthOf(cells(), 0), 'Ваш код: 4821-00');
 
     expect(onValue).toHaveBeenCalledWith('482100');
     expect(valuesOf()).toEqual(['4', '8', '2', '1', '0', '0']);
@@ -734,7 +736,7 @@ describe('UiPinInput — error contract', () => {
     render(pinWith({ error: true, helperText: node, onChange: noop }));
 
     const helper: HTMLElement = screen.getByText('Невірний код');
-    expect(cells()[0]).toHaveAttribute('aria-describedby', helper.parentElement?.id);
+    expect(nthOf(cells(), 0)).toHaveAttribute('aria-describedby', helper.parentElement?.id);
   });
 });
 
@@ -755,13 +757,13 @@ describe('UiPinInput — disabled boundary (Ruling 3)', () => {
   it('keeps every cell focusable and keeps focus when a focused field flips', () => {
     const { rerender } = render(pinWith({ value: '4821', onChange: noop }));
 
-    cells()[2].focus();
-    expect(cells()[2]).toHaveFocus();
+    nthOf(cells(), 2).focus();
+    expect(nthOf(cells(), 2)).toHaveFocus();
 
     // SC 2.4.3: native `disabled` would drop focus to the body here.
     rerender(pinWith({ value: '4821', disabled: true, onChange: noop }));
-    expect(cells()[2]).toHaveFocus();
-    expect(cells()[2]).toHaveAttribute('aria-disabled', 'true');
+    expect(nthOf(cells(), 2)).toHaveFocus();
+    expect(nthOf(cells(), 2)).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('never reports a change, whichever entry path is used', async () => {
@@ -769,11 +771,11 @@ describe('UiPinInput — disabled boundary (Ruling 3)', () => {
     const onChange: jest.Mock = jest.fn();
     render(pinWith({ value: '4821', disabled: true, onChange }));
 
-    await user.click(cells()[4]);
+    await user.click(nthOf(cells(), 4));
     await user.keyboard('9');
-    fireEvent.change(cells()[4], { target: { value: '9' } });
-    pasteInto(cells()[0], '999999');
-    await user.click(cells()[1]);
+    fireEvent.change(nthOf(cells(), 4), { target: { value: '9' } });
+    pasteInto(nthOf(cells(), 0), '999999');
+    await user.click(nthOf(cells(), 1));
     await user.keyboard('{Backspace}');
     await user.keyboard('{Delete}');
 
@@ -784,10 +786,10 @@ describe('UiPinInput — disabled boundary (Ruling 3)', () => {
     const user: UserEvent = userEvent.setup();
     render(pinWith({ value: '4821', disabled: true, onChange: noop }));
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('{ArrowRight}');
 
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
   });
 
   it('leaves aria-disabled off a disabled but UNWIRED field', () => {
@@ -804,7 +806,7 @@ describe('UiPinInput — required announces once', () => {
   it('puts aria-required on the FIRST cell only', () => {
     render(pinWith({ required: true, onChange: noop }));
 
-    expect(cells()[0]).toHaveAttribute('aria-required', 'true');
+    expect(nthOf(cells(), 0)).toHaveAttribute('aria-required', 'true');
     cells()
       .slice(1)
       .forEach((cell: HTMLInputElement): void => {
@@ -869,9 +871,9 @@ describe('UiPinInput — static (unwired) branch', () => {
     const user: UserEvent = userEvent.setup();
     render(pinWith({ value: '4821' }));
 
-    await user.click(cells()[0]);
+    await user.click(nthOf(cells(), 0));
     await user.keyboard('9{Backspace}{Delete}');
-    pasteInto(cells()[0], '999999');
+    pasteInto(nthOf(cells(), 0), '999999');
 
     expect(valuesOf()).toEqual(['4', '8', '2', '1', '', '']);
   });
@@ -885,11 +887,11 @@ describe('UiPinInput — focus and tab order', () => {
     expect(nodesMatching('[tabindex]')).toHaveLength(0);
 
     await user.tab();
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
     await user.tab();
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
     await user.tab();
-    expect(cells()[2]).toHaveFocus();
+    expect(nthOf(cells(), 2)).toHaveFocus();
   });
 
   it('keeps a disabled field fully tabbable (readOnly, never native disabled)', async () => {
@@ -897,18 +899,18 @@ describe('UiPinInput — focus and tab order', () => {
     render(pinWith({ length: 2, disabled: true, onChange: noop }));
 
     await user.tab();
-    expect(cells()[0]).toHaveFocus();
+    expect(nthOf(cells(), 0)).toHaveFocus();
     await user.tab();
-    expect(cells()[1]).toHaveFocus();
+    expect(nthOf(cells(), 1)).toHaveFocus();
   });
 
   it('selects the cell content on focus, so typing overwrites', () => {
     render(pinWith({ value: '4821', onChange: noop }));
 
-    cells()[1].focus();
+    nthOf(cells(), 1).focus();
 
-    expect(cells()[1].selectionStart).toBe(0);
-    expect(cells()[1].selectionEnd).toBe(1);
+    expect(nthOf(cells(), 1).selectionStart).toBe(0);
+    expect(nthOf(cells(), 1).selectionEnd).toBe(1);
   });
 
   it('exposes exactly the cells as focusables — nothing else in the tree', () => {
@@ -945,7 +947,7 @@ describe('UiPinInput — live-region prohibition (S9)', () => {
     expectNoLiveRegion();
 
     rerender(<ControlledPin initial="" />);
-    pasteInto(cells()[0], '482100');
+    pasteInto(nthOf(cells(), 0), '482100');
     expectNoLiveRegion();
   });
 });
@@ -1099,7 +1101,7 @@ describe('pinInputWarning — first-applicable selection (pure)', () => {
 // The field root is the `FormControl` that wraps the group and the helper text —
 // the element `pinInputSx` (and therefore the consumer `sx`) lands on.
 function fieldRoot(): Element {
-  return nodesMatching('.MuiFormControl-root')[0];
+  return firstOf(nodesMatching('.MuiFormControl-root'));
 }
 
 describe('UiPinInput — consumer sx', () => {
@@ -1148,7 +1150,7 @@ describe('pinInputSx / pinGroupSx — layout assembly (pure, mutation-killing)',
   // falls back to MUI's Roboto 12px and the off-palette #D32F2F error red.
   it('carries the field-controls helper-text treatment on the root', () => {
     const layers: StyleObject[] = pinInputSx(undefined) as unknown as StyleObject[];
-    const base: StyleObject = layers[0];
+    const base: StyleObject = firstOf(layers);
 
     expect(base[HELPER_TEXT_KEY]).toEqual({
       margin: '0.25rem 0 0 0',

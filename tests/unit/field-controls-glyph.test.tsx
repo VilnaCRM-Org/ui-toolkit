@@ -3,6 +3,8 @@ import React from 'react';
 
 import { Glyph } from '../../src/components/field-controls';
 
+import firstOf from './utils/first-of';
+
 // Two throwaway subpaths, deliberately not any real icon's: this suite is about
 // the wrapper's contract, not about a particular Figma vector.
 const FIRST: string = 'M4 4L20 20';
@@ -21,7 +23,7 @@ function svgs(): Element[] {
 }
 
 function svg(): Element {
-  return svgs()[0];
+  return firstOf(svgs());
 }
 
 describe('Glyph — the shared stroked-icon wrapper', () => {

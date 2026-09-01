@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiActionIconBar } from '../../src/components';
+import UiActionIconBar from '../../src/components/ui-action-icon-bar';
 import actionIconBarWarning from '../../src/components/ui-action-icon-bar/action-icon-bar-warnings';
 import {
   DOTS_HORIZONTAL_PATHS,
@@ -36,7 +36,9 @@ import {
   type ActionState,
 } from '../../src/components/ui-action-icon-bar/use-action-state';
 
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import nthOf from './utils/nth-of';
 
 // UiActionIconBar emits four dev-only accessibility warnings through console.warn.
 // Silence them for the suite and keep a live handle for the assertions.
@@ -95,11 +97,11 @@ const ERROR: string = '#DC3939';
 const STROKE_DANGER: string = '#DF7878';
 
 interface BarOverrides {
-  label?: string;
-  actions?: readonly UiActionIconBarAction[];
-  disabled?: boolean;
-  id?: string;
-  sx?: UiActionIconBarProps['sx'];
+  label?: string | undefined;
+  actions?: readonly UiActionIconBarAction[] | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  sx?: UiActionIconBarProps['sx'] | undefined;
 }
 
 // Props are threaded one by one (the repo forbids JSX spreading). `in` checks keep
@@ -147,7 +149,7 @@ function pathsIn(node: Element): string[] {
 
 // The glyph belonging to the nth slot, in DOM (= paint = tab) order.
 function glyphAt(index: number): Element {
-  return svgs()[index];
+  return nthOf(svgs(), index);
 }
 
 const FOCUSABLE_SELECTOR: string =
@@ -405,8 +407,8 @@ describe('UiActionIconBar — action buttons and accessible names (S1/S7)', () =
       })
     );
 
-    expect(buttons()[0]).toHaveAttribute('id', 'close-row');
-    expect(buttons()[1]).not.toHaveAttribute('id');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('id', 'close-row');
+    expect(nthOf(buttons(), 1)).not.toHaveAttribute('id');
   });
 
   it('renders each icon at its Figma size in its native viewBox and stroke weight', () => {
@@ -455,9 +457,9 @@ describe('UiActionIconBar — action buttons and accessible names (S1/S7)', () =
 
     const plates: Element[] = nodesMatching(`.${BACKDROP_CLASS}`);
     expect(plates).toHaveLength(1);
-    expect(plates[0].tagName).toBe('SPAN');
+    expect(firstOf(plates).tagName).toBe('SPAN');
     expect(plates[0]).toHaveAttribute('aria-hidden', 'true');
-    expect(buttons()[5]).toContainElement(plates[0] as HTMLElement);
+    expect(nthOf(buttons(), 5)).toContainElement(plates[0] as HTMLElement);
   });
 });
 
@@ -465,7 +467,7 @@ describe('UiActionIconBar — plain actions carry no state ARIA', () => {
   it('leaves toggle, popup and selection ARIA off every non-toggle action', () => {
     render(barWith({}));
 
-    const plain: HTMLElement[] = [0, 1, 2, 4, 5].map((index: number) => buttons()[index]);
+    const plain: HTMLElement[] = [0, 1, 2, 4, 5].map((index: number) => nthOf(buttons(), index));
     plain.forEach((button: HTMLElement): void => {
       expect(button).not.toHaveAttribute('aria-pressed');
       expect(button).not.toHaveAttribute('aria-selected');
@@ -482,7 +484,7 @@ describe('UiActionIconBar — plain actions carry no state ARIA', () => {
 
     // Frame 5441 is the Figma `:active` column, not a toggle: painting
     // `aria-pressed` here would announce a state the control never holds.
-    expect(buttons()[5]).not.toHaveAttribute('aria-pressed');
+    expect(nthOf(buttons(), 5)).not.toHaveAttribute('aria-pressed');
   });
 
   it('fires onActivate exactly once per click and per key activation', async () => {
@@ -490,10 +492,10 @@ describe('UiActionIconBar — plain actions carry no state ARIA', () => {
     const onActivate: jest.Mock = jest.fn();
     render(barWith({ actions: [{ icon: 'x-close', label: CLOSE, onActivate }] }));
 
-    await user.click(buttons()[0]);
+    await user.click(nthOf(buttons(), 0));
     expect(onActivate).toHaveBeenCalledTimes(1);
 
-    buttons()[0].focus();
+    nthOf(buttons(), 0).focus();
     await user.keyboard('{Enter}');
     expect(onActivate).toHaveBeenCalledTimes(2);
 
@@ -510,21 +512,21 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
 
   it('renders aria-pressed in BOTH states, coerced from nullish', () => {
     const { rerender } = render(barWith({ actions: eyeRow(undefined, noop) }));
-    expect(buttons()[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-pressed', 'false');
 
     rerender(barWith({ actions: eyeRow(true, noop) }));
-    expect(buttons()[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-pressed', 'true');
 
     rerender(barWith({ actions: eyeRow(false, noop) }));
-    expect(buttons()[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('keeps the accessible name CONSTANT across both states', () => {
     const { rerender } = render(barWith({ actions: eyeRow(false, noop) }));
-    expect(buttons()[0]).toHaveAccessibleName(VISIBILITY);
+    expect(nthOf(buttons(), 0)).toHaveAccessibleName(VISIBILITY);
 
     rerender(barWith({ actions: eyeRow(true, noop) }));
-    expect(buttons()[0]).toHaveAccessibleName(VISIBILITY);
+    expect(nthOf(buttons(), 0)).toHaveAccessibleName(VISIBILITY);
   });
 
   it('swaps eye→eye-off off `pressed` alone, both glyphs staying aria-hidden', () => {
@@ -549,7 +551,7 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
     // Figma's disabled column draws eye-off, but that is a board copy-paste
     // artefact: a disabled toggle shows whichever state it is actually in.
     expect(pathsIn(glyphAt(0))).toEqual([EXPECTED_EYE_OFF]);
-    expect(buttons()[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('calls onToggle exactly once per click, Enter and Space', async () => {
@@ -557,10 +559,10 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
     const onToggle: jest.Mock = jest.fn();
     render(barWith({ actions: eyeRow(false, onToggle) }));
 
-    await user.click(buttons()[0]);
+    await user.click(nthOf(buttons(), 0));
     expect(onToggle).toHaveBeenCalledTimes(1);
 
-    buttons()[0].focus();
+    nthOf(buttons(), 0).focus();
     await user.keyboard('{Enter}');
     await user.keyboard(' ');
     expect(onToggle).toHaveBeenCalledTimes(3);
@@ -571,10 +573,10 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
     const onToggle: jest.Mock = jest.fn();
     render(barWith({ actions: eyeRow(false, onToggle) }));
 
-    await user.click(buttons()[0]);
+    await user.click(nthOf(buttons(), 0));
 
     expect(onToggle).toHaveBeenCalledTimes(1);
-    expect(buttons()[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('gives the toggle ONE activation path, onToggle winning over onActivate', async () => {
@@ -583,7 +585,7 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
     const onActivate: jest.Mock = jest.fn();
     render(barWith({ actions: [{ icon: 'eye', label: VISIBILITY, onToggle, onActivate }] }));
 
-    await user.click(buttons()[0]);
+    await user.click(nthOf(buttons(), 0));
 
     expect(onToggle).toHaveBeenCalledTimes(1);
     expect(onActivate).not.toHaveBeenCalled();
@@ -594,7 +596,7 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
       barWith({ actions: [{ icon: 'eye', label: VISIBILITY, pressed: true, onActivate: noop }] })
     );
 
-    expect(buttons()[0]).not.toHaveAttribute('aria-pressed');
+    expect(nthOf(buttons(), 0)).not.toHaveAttribute('aria-pressed');
     // The glyph does not swap either: an unbacked pressed rendering would paint a
     // state nothing exposes.
     expect(pathsIn(glyphAt(0))).toEqual(EXPECTED_EYE);
@@ -620,19 +622,19 @@ describe('UiActionIconBar — popup passthrough (the 3.3 dangling-idref rule)', 
       })
     );
 
-    expect(buttons()[0]).toHaveAttribute('aria-haspopup', 'menu');
-    expect(buttons()[1]).not.toHaveAttribute('aria-haspopup');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-haspopup', 'menu');
+    expect(nthOf(buttons(), 1)).not.toHaveAttribute('aria-haspopup');
   });
 
   it('renders aria-expanded in BOTH states, and omits it when unwired', () => {
     const { rerender } = render(barWith({ actions: [menuAction(false)] }));
-    expect(buttons()[0]).toHaveAttribute('aria-expanded', 'false');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-expanded', 'false');
 
     rerender(barWith({ actions: [menuAction(true)] }));
-    expect(buttons()[0]).toHaveAttribute('aria-expanded', 'true');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-expanded', 'true');
 
     rerender(barWith({ actions: [menuAction(undefined)] }));
-    expect(buttons()[0]).not.toHaveAttribute('aria-expanded');
+    expect(nthOf(buttons(), 0)).not.toHaveAttribute('aria-expanded');
   });
 
   it('omits aria-controls for a blank menuId rather than emitting an empty list', () => {
@@ -640,28 +642,28 @@ describe('UiActionIconBar — popup passthrough (the 3.3 dangling-idref rule)', 
     // list — invalid ARIA rather than a dangling reference.
     render(barWith({ actions: [menuAction(true, '   ')] }));
 
-    expect(buttons()[0]).not.toHaveAttribute('aria-controls');
+    expect(nthOf(buttons(), 0)).not.toHaveAttribute('aria-controls');
     // The rest of the menu-button channel is unaffected.
-    expect(buttons()[0]).toHaveAttribute('aria-haspopup', 'menu');
-    expect(buttons()[0]).toHaveAttribute('aria-expanded', 'true');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-haspopup', 'menu');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('renders aria-controls only while the menu is really open', () => {
     const { rerender } = render(barWith({ actions: [menuAction(true, 'row-menu')] }));
-    expect(buttons()[0]).toHaveAttribute('aria-controls', 'row-menu');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-controls', 'row-menu');
 
     rerender(barWith({ actions: [menuAction(false, 'row-menu')] }));
-    expect(buttons()[0]).not.toHaveAttribute('aria-controls');
+    expect(nthOf(buttons(), 0)).not.toHaveAttribute('aria-controls');
 
     rerender(barWith({ actions: [menuAction(undefined, 'row-menu')] }));
-    expect(buttons()[0]).not.toHaveAttribute('aria-controls');
+    expect(nthOf(buttons(), 0)).not.toHaveAttribute('aria-controls');
   });
 
   it('renders no aria-controls when the menu is open but unidentified', () => {
     render(barWith({ actions: [menuAction(true)] }));
 
-    expect(buttons()[0]).toHaveAttribute('aria-expanded', 'true');
-    expect(buttons()[0]).not.toHaveAttribute('aria-controls');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-expanded', 'true');
+    expect(nthOf(buttons(), 0)).not.toHaveAttribute('aria-controls');
   });
 });
 
@@ -676,12 +678,12 @@ describe('UiActionIconBar — disabled matrix (S4 aria-disabled boundary)', () =
       })
     );
 
-    expect(buttons()[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-disabled', 'true');
     // Native `disabled` is NEVER set, which is what keeps a disabled action
     // focusable and stops focus being dropped mid-interaction (SC 2.4.3).
-    expect(buttons()[0]).toBeEnabled();
+    expect(nthOf(buttons(), 0)).toBeEnabled();
     expect(nodesMatching('button[disabled]')).toHaveLength(0);
-    expect(buttons()[1]).not.toHaveAttribute('aria-disabled');
+    expect(nthOf(buttons(), 1)).not.toHaveAttribute('aria-disabled');
   });
 
   it('ORs the whole-bar flag into every action', () => {
@@ -698,20 +700,20 @@ describe('UiActionIconBar — disabled matrix (S4 aria-disabled boundary)', () =
     render(barWith({ disabled: true }));
 
     await user.tab();
-    expect(buttons()[0]).toHaveFocus();
+    expect(nthOf(buttons(), 0)).toHaveFocus();
     await user.tab();
-    expect(buttons()[1]).toHaveFocus();
+    expect(nthOf(buttons(), 1)).toHaveFocus();
   });
 
   it('never drops focus when a focused action flips disabled (SC 2.4.3)', () => {
     const { rerender } = render(barWith({}));
-    buttons()[0].focus();
-    expect(buttons()[0]).toHaveFocus();
+    nthOf(buttons(), 0).focus();
+    expect(nthOf(buttons(), 0)).toHaveFocus();
 
     rerender(barWith({ disabled: true }));
 
-    expect(buttons()[0]).toHaveFocus();
-    expect(buttons()[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(nthOf(buttons(), 0)).toHaveFocus();
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('no-ops activation for both the plain and the toggle lane', async () => {
@@ -728,8 +730,8 @@ describe('UiActionIconBar — disabled matrix (S4 aria-disabled boundary)', () =
       })
     );
 
-    await user.click(buttons()[0]);
-    buttons()[1].focus();
+    await user.click(nthOf(buttons(), 0));
+    nthOf(buttons(), 1).focus();
     await user.keyboard('{Enter}');
 
     expect(onActivate).not.toHaveBeenCalled();
@@ -749,8 +751,8 @@ describe('UiActionIconBar — disabled matrix (S4 aria-disabled boundary)', () =
       })
     );
 
-    await user.click(buttons()[0]);
-    await user.click(buttons()[1]);
+    await user.click(nthOf(buttons(), 0));
+    await user.click(nthOf(buttons(), 1));
 
     expect(blocked).not.toHaveBeenCalled();
     expect(live).toHaveBeenCalledTimes(1);
@@ -767,7 +769,7 @@ describe('UiActionIconBar — static branch (S2 zero-ARIA sweep)', () => {
   it('renders a bare div root with no group role and no name', () => {
     render(barWith({ actions: STATIC_ROW, id: 'static-row' }));
 
-    const root: Element = nodesMatching('#static-row')[0];
+    const root: Element = firstOf(nodesMatching('#static-row'));
     expect(root.tagName).toBe('DIV');
     expect(screen.queryByRole('group')).not.toBeInTheDocument();
     expect(root).not.toHaveAttribute('role');
@@ -796,7 +798,7 @@ describe('UiActionIconBar — static branch (S2 zero-ARIA sweep)', () => {
   it('applies a per-action id to the static span too', () => {
     render(barWith({ actions: [{ icon: 'x-close', label: CLOSE, id: 'static-close' }] }));
 
-    const slot: Element = nodesMatching('#static-close')[0];
+    const slot: Element = firstOf(nodesMatching('#static-close'));
     expect(slot.tagName).toBe('SPAN');
     expect(slot).not.toHaveAttribute('role');
     expect(slot).not.toHaveAttribute('aria-label');
@@ -813,7 +815,7 @@ describe('UiActionIconBar — static branch (S2 zero-ARIA sweep)', () => {
     );
 
     expect(buttons()).toHaveLength(1);
-    const slot: Element = nodesMatching('#static-trash')[0];
+    const slot: Element = firstOf(nodesMatching('#static-trash'));
     expect(slot.tagName).toBe('SPAN');
     expect(slot).not.toHaveAttribute('aria-label');
     expect(slot).not.toHaveAttribute('aria-disabled');
@@ -843,7 +845,7 @@ describe('UiActionIconBar — live-region prohibition (S9)', () => {
     const onActivate: jest.Mock = jest.fn();
     render(barWith({ actions: [{ icon: 'x-close', label: CLOSE, onActivate }] }));
 
-    await user.click(buttons()[0]);
+    await user.click(nthOf(buttons(), 0));
 
     expect(onActivate).toHaveBeenCalledTimes(1);
     expectNoLiveRegion();
@@ -986,7 +988,7 @@ describe('UiActionIconBar — consumer sx', () => {
       })
     );
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = firstOf(nodesMatching('#styled'));
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -994,7 +996,7 @@ describe('UiActionIconBar — consumer sx', () => {
 
 describe('actionIconBarSx — row assembly (pure, mutation-killing)', () => {
   it('pins the row to the derived 12px slot rhythm', () => {
-    const base: StyleObject = barLayers(undefined)[0];
+    const base: StyleObject = firstOf(barLayers(undefined));
 
     expect(base.display).toBe('flex');
     expect(base.alignItems).toBe('center');
@@ -1018,7 +1020,7 @@ describe('actionIconBarSx — row assembly (pure, mutation-killing)', () => {
   });
 
   it('ships no row chrome of its own — no border, background or radius', () => {
-    const base: StyleObject = barLayers(undefined)[0];
+    const base: StyleObject = firstOf(barLayers(undefined));
 
     expect(base.border).toBeUndefined();
     expect(base.backgroundColor).toBeUndefined();

@@ -73,7 +73,7 @@ export interface UiStatusBadgeProps {
    * NEVER self-flips it — the next state is fed back through `onToggle`. Wired
    * badges expose it as `aria-pressed`; static badges expose it through `label`.
    */
-  active?: boolean;
+  active?: boolean | undefined;
   /**
    * Requests the opposite state. Bare and payload-free (this widget has exactly
    * one state axis, so nothing can race — close over the task id when mapping
@@ -81,7 +81,7 @@ export interface UiStatusBadgeProps {
    * the badge is a static `role="img"`. Unlike a radio, a toggle fires from BOTH
    * states, so an active badge activated again requests deactivation.
    */
-  onToggle?: () => void;
+  onToggle?: (() => void) | undefined;
   /**
    * Disabled status (wired badges only). The repo `aria-disabled` boundary: still
    * a real, focusable `<button>`, but `aria-disabled="true"`, the hover recipe is
@@ -90,8 +90,8 @@ export interface UiStatusBadgeProps {
    * set. An active + disabled badge keeps its ACTIVE chrome, exactly as Figma
    * draws it; the disabled fill only replaces the rest presentation.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the badge; lands on the root so focus can be re-resolved. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

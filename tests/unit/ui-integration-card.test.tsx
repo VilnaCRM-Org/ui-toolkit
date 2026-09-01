@@ -2,7 +2,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiIntegrationCard } from '../../src/components';
+import UiIntegrationCard from '../../src/components/ui-integration-card';
 import { resolveLogo } from '../../src/components/ui-integration-card/integration-logo';
 import {
   GLYPH_CLASS,
@@ -23,6 +23,7 @@ import {
   type IntegrationCardModel,
 } from '../../src/components/ui-integration-card/use-integration-card';
 
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 
 // UiIntegrationCard emits the four dev-only §12 warnings via console.warn — one of
@@ -52,14 +53,14 @@ const RING_SELECTORS: string =
   '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-checked="true"])';
 
 interface CardOverrides {
-  name?: string;
-  logo?: IntegrationLogo;
-  selected?: boolean;
-  onSelect?: () => void;
-  disabled?: boolean;
-  id?: string;
-  lang?: string;
-  sx?: UiIntegrationCardProps['sx'];
+  name?: string | undefined;
+  logo?: IntegrationLogo | undefined;
+  selected?: boolean | undefined;
+  onSelect?: () => void | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  lang?: string | undefined;
+  sx?: UiIntegrationCardProps['sx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). `in` checks keep
@@ -104,7 +105,7 @@ function cardImages(): HTMLImageElement[] {
 }
 
 function glyph(): Element {
-  return nodesMatching(`.${GLYPH_CLASS}`)[0];
+  return firstOf(nodesMatching(`.${GLYPH_CLASS}`));
 }
 
 // Every hook that would make something else in the card focusable. Exactly one
@@ -152,7 +153,7 @@ function layersOf(interactive: boolean, sx: UiIntegrationCardProps['sx']): SxLay
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  return firstOf(layersOf(interactive, undefined));
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -235,7 +236,7 @@ describe('UiIntegrationCard — wired radio semantics (§1.1/§2/§13.3)', () =>
   it('renders the brand name as plain text, never a heading', () => {
     render(cardWith({ onSelect: noop }));
 
-    const label: Element = nodesMatching(`.${NAME_CLASS}`)[0];
+    const label: Element = firstOf(nodesMatching(`.${NAME_CLASS}`));
     expect(label.tagName).toBe('SPAN');
     expect(label).toHaveTextContent(HUBSPOT);
     expect(screen.queryAllByRole('heading')).toHaveLength(0);
@@ -271,7 +272,7 @@ describe('UiIntegrationCard — static (unwired) card (§2.3/§3.4/§13.5)', () 
   it('keeps the identical content tree, including the consumer id and lang', () => {
     render(cardWith({ id: 'static-card', lang: 'en' }));
 
-    const root: Element = nodesMatching('#static-card')[0];
+    const root: Element = firstOf(nodesMatching('#static-card'));
     expect(root.tagName).toBe('DIV');
     expect(root).toHaveAttribute('lang', 'en');
     expect(root.contains(glyph())).toBe(true);
@@ -529,7 +530,7 @@ describe('UiIntegrationCard — focus and tab order (§4.2/§4.3)', () => {
     expect(nodesMatching('#integration-7')).toHaveLength(0);
 
     render(cardWith({ id: 'integration-7', onSelect: noop }));
-    const remounted: Element = nodesMatching('#integration-7')[0];
+    const remounted: Element = firstOf(nodesMatching('#integration-7'));
     expect(remounted).toBe(card());
     (remounted as HTMLElement).focus();
     expect(remounted).toHaveFocus();
@@ -548,7 +549,7 @@ describe('UiIntegrationCard — accessible name and imagery (§5/§13.6)', () =>
   it('paints the logo as a decorative img with the full hygiene attribute set', () => {
     render(cardWith({ onSelect: noop }));
 
-    const img: HTMLImageElement = cardImages()[0];
+    const img: HTMLImageElement = firstOf(cardImages());
     expect(cardImages()).toHaveLength(1);
     expect(img.tagName).toBe('IMG');
     expect(img).toHaveAttribute('src', '/hubspot.png');
@@ -568,7 +569,7 @@ describe('UiIntegrationCard — accessible name and imagery (§5/§13.6)', () =>
   it('accepts a static import object as the mark source', () => {
     render(cardWith({ logo: { src: { src: '/imported.png' }, width: 139, height: 40 } }));
 
-    expect(cardImages()[0]).toHaveAttribute('src', '/imported.png');
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/imported.png');
     expect(warn.spy).not.toHaveBeenCalled();
   });
 
@@ -770,7 +771,7 @@ describe('UiIntegrationCard — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(cardWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = firstOf(nodesMatching('#styled'));
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -816,7 +817,7 @@ describe('integrationCardSx — style assembly (pure, mutation-killing)', () => 
 
     expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"]):not([aria-checked="true"])']);
     expect(base['&:hover']).toBeUndefined();
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(base[firstOf(hoverKeys)]).toEqual({
       borderColor: '#D0D4D8',
       boxShadow: LANDING_SHADOW,
     });
@@ -854,7 +855,7 @@ describe('integrationCardSx — style assembly (pure, mutation-killing)', () => 
     expect(RING_SELECTORS).toBe(
       '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-checked="true"])'
     );
-    expect(base[ringKeys[0]]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+    expect(base[firstOf(ringKeys)]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
   });
 
   it('omits every button-only rule from the static branch', () => {
@@ -874,7 +875,7 @@ describe('integrationCardSx — style assembly (pure, mutation-killing)', () => 
 
   it('keeps the border a constant 1px in every state, swapping only its colour', () => {
     const base: StyleObject = baseOf(true);
-    const hover: StyleObject = base[keysMatching(base, ':hover')[0]] as StyleObject;
+    const hover: StyleObject = base[firstOf(keysMatching(base, ':hover'))] as StyleObject;
     const checked: StyleObject = base['&[aria-checked="true"]'] as StyleObject;
 
     expect(base.border).toBe('1px solid #E1E7EA');

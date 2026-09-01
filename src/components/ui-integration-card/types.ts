@@ -82,7 +82,7 @@ export interface UiIntegrationCardProps {
    * footgun). The component never self-flips it — a radio cannot unselect
    * itself, so deselection happens only when the consumer selects a sibling.
    */
-  selected?: boolean;
+  selected?: boolean | undefined;
   /**
    * Requests selection. Bare and payload-free on purpose (§3.2): this widget has
    * exactly one state-change path (activation) in exactly one direction
@@ -92,7 +92,7 @@ export interface UiIntegrationCardProps {
    * DECLINED selection leaves the card eligible, so the next activation fires
    * again.
    */
-  onSelect?: () => void;
+  onSelect?: (() => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover recipe is
@@ -101,10 +101,10 @@ export interface UiIntegrationCardProps {
    * master, so disabled is SEMANTICS ONLY: a selected + disabled card keeps its
    * full selected chrome (§6.3) and nothing is dimmed.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the card; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the card's language differs from the page language (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

@@ -106,53 +106,53 @@ export interface UiPinInputProps {
    * The group's accessible name, applied as `aria-label`. Required in practice —
    * a field with neither `label` nor `labelledBy` dev-warns.
    */
-  label?: string;
+  label?: string | undefined;
   /**
    * Id of a visible element that names the group (`aria-labelledby`). Preferred
    * over `label` when the consumer paints its own heading, and it wins when both
    * are supplied.
    */
-  labelledBy?: string;
+  labelledBy?: string | undefined;
   /**
    * The entered digits, concatenated. ALWAYS controlled: nullish becomes `''`,
    * non-digits are filtered out and anything past `length` is clamped away (both
    * dev-warn). Cell `i` paints `value.charAt(i)`.
    */
-  value?: string;
+  value?: string | undefined;
   /**
    * Receives the full next value on every accepted edit. Its PRESENCE is what
    * makes the cells editable — without it the field renders the same tree as
    * read-only content, exactly like the wired/static split on the Epic 3 cards.
    * There is no `onComplete`; compare `next.length === length` instead.
    */
-  onChange?: (next: string) => void;
+  onChange?: ((next: string) => void) | undefined;
   /** Cell count. Default 6, normalised to a whole number of at least 1 (warns). */
-  length?: number;
+  length?: number | undefined;
   /** Per-cell accessible name; default «Цифра ${index} з ${length}», 1-based. */
-  cellLabel?: UiPinCellLabel;
+  cellLabel?: UiPinCellLabel | undefined;
   /**
    * Marks the field required. `aria-required="true"` lands on the FIRST cell
    * only — one announcement for one field, rather than N repeats — and the
    * native `required` attribute is never used, since a per-cell native
    * constraint would block submission on a partially typed code.
    */
-  required?: boolean;
+  required?: boolean | undefined;
   /**
    * Invalid status: `aria-invalid="true"` on every cell. Pair it with
    * `helperText`, always — the error is never colour-only.
    */
-  error?: boolean;
+  error?: boolean | undefined;
   /**
    * Rendered once below the group and linked from every cell through
    * `aria-describedby`. The non-colour channel for `error`.
    */
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   /**
    * Disabled status, expressed as `readOnly` + `aria-disabled` on every cell
    * (Ruling 3). Cells stay focusable and native `disabled` is never set.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the `role="group"` element; also seeds the helper-text id. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

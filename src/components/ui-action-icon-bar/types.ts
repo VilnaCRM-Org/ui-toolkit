@@ -43,7 +43,7 @@ export interface UiActionIconBarAction {
    * mapping bars. Ignored when `onToggle` is also supplied (a toggle has one
    * activation path).
    */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /**
    * Toggle state for the `eye` visibility control. ALWAYS controlled, coerced
    * from nullish to `false` (S3), and honoured only while `onToggle` is present
@@ -52,28 +52,28 @@ export interface UiActionIconBarAction {
    * the glyph is `aria-hidden` either way. A disabled toggle keeps rendering
    * whichever glyph it is currently in.
    */
-  pressed?: boolean;
+  pressed?: boolean | undefined;
   /**
    * Requests the toggle flip. Presence makes the action a toggle button carrying
    * `aria-pressed` in BOTH states. The bar NEVER self-flips `pressed`: the next
    * state is fed back through this callback (S3).
    */
-  onToggle?: () => void;
+  onToggle?: (() => void) | undefined;
   /**
    * Menu passthrough for the dots actions: renders `aria-haspopup="menu"`. The
    * bar owns NO menu of its own — it fires callbacks only. Consumers needing
    * full APG menu-button behaviour compose this with the `UiProfileSelectCard`
    * pattern.
    */
-  hasPopup?: 'menu';
+  hasPopup?: 'menu' | undefined;
   /** Open state of that consumer-owned menu; renders `aria-expanded` in BOTH states. */
-  menuOpen?: boolean;
+  menuOpen?: boolean | undefined;
   /**
    * `id` of the consumer-owned menu element. Rendered as `aria-controls` ONLY
    * while `menuOpen` is `true`, so a closed menu leaves no dangling idref (the
    * Story 3.3 rule). Supplying it without `menuOpen` is ambiguous and dev-warns.
    */
-  menuId?: string;
+  menuId?: string | undefined;
   /**
    * Disabled status, via the repo `aria-disabled` boundary (S4): still a real,
    * focusable `<button>` with `aria-disabled="true"`, the hover recipe
@@ -81,9 +81,9 @@ export interface UiActionIconBarAction {
    * is NEVER set, so keyboard focus is never dropped when a focused action flips
    * disabled (SC 2.4.3). Disabled actions stay in the tab order.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for this action; lands on the button so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
 }
 
 /**
@@ -139,8 +139,8 @@ export interface UiActionIconBarProps {
    * Disables every action at once, through the same `aria-disabled` boundary as
    * the per-action flag (S4). Bar-wide and per-action disabling OR together.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the bar root. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }
