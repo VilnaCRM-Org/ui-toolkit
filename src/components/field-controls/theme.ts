@@ -2,6 +2,8 @@ import { Theme, createTheme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
 
+import { helperTextTypography } from './helper-text';
+
 // Shared outlined-field theme for the Autocomplete-based controls (search /
 // select): 8px radius, `#D0D4D8` stroke, hover/focus/error/disabled parity with
 // `UiInput`, and the error helper-text treatment. Individual controls extend it
@@ -60,19 +62,10 @@ const outlinedFieldTheme: Theme = createTheme({
       styleOverrides: {
         // Shared typography for both resting and error helper text so the resting
         // state stays in the Inter/token system instead of falling back to MUI's
-        // default Roboto/rgba; error only swaps the colour.
-        root: {
-          margin: '0.25rem 0 0 0',
-          fontFamily: 'Inter',
-          fontWeight: '500',
-          fontSize: '0.875rem',
-          lineHeight: '1.125rem',
-          letterSpacing: 0,
-          color: colorTheme.palette.grey250.main,
-          '&.Mui-error': {
-            color: colorTheme.palette.error.main,
-          },
-        },
+        // default Roboto/rgba; error only swaps the colour. The recipe itself
+        // lives in `helper-text.ts`, which the two ThemeProvider-less controls
+        // read as well, so there is exactly one copy of it.
+        root: helperTextTypography,
       },
     },
   },

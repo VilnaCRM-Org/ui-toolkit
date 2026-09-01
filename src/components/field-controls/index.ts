@@ -2,6 +2,8 @@ export { default as outlinedFieldTheme } from './theme';
 export { ChevronDownGlyph } from './chevron-down';
 export { Glyph } from './glyph';
 export type { GlyphProps } from './glyph';
+export { hasHelperContent } from './has-helper-content';
+export { helperTextSx } from './helper-text';
 export { hasText } from './has-text';
 export { createFieldRenderInput } from './render-input';
 export type { FieldRenderInputConfig } from './render-input';
