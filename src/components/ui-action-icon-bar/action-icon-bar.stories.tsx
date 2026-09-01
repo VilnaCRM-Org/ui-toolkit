@@ -14,28 +14,27 @@ import type { UiActionIconBarAction, UiActionIconBarProps } from './types';
 
 import UiActionIconBar from './index';
 
-// The bar carries no visible text, so this string is its whole accessible name —
-// and unlike the 3.4 radiogroup, the group role and the name are the component's
-// own, not the consumer's.
+// The bar carries no visible text, so this is its whole accessible name — and
+// unlike the 3.4 radiogroup, the group role and the name are the bar's own.
 const BAR_LABEL: string = 'Дії над рядком';
 
-// The consumer-owned menu the popup story points `aria-controls` at. It only ever
-// appears while that menu is really mounted (the Story 3.3 dangling-idref rule).
+// The consumer-owned menu the popup story points `aria-controls` at, emitted only
+// while that menu is really mounted (the Story 3.3 dangling-idref rule).
 const MENU_ID: string = 'action-icon-bar-row-menu';
 
-// Stories fire no real side effects; the callbacks exist to WIRE the actions,
-// because interactivity is switched on callback presence alone (a11y contract S2).
+// No real side effects: the callbacks exist to WIRE the actions, because
+// interactivity is switched on callback presence alone (a11y contract S2).
 function noop(): void {
   return undefined;
 }
 
-// The showcase fixtures are plain `{ icon, label }` pairs, which is already a
-// legal UNWIRED action — so the static story consumes them exactly as they are.
+// The showcase fixtures are plain `{ icon, label }` pairs — already a legal
+// UNWIRED action, so the static story consumes them exactly as they are.
 const STATIC_ACTIONS: readonly UiActionIconBarAction[] = BAR_ACTIONS;
 
 // The eye is the row's one toggle, so it takes `pressed`/`onToggle` instead of
-// `onActivate`; every other slot is a plain command. The eye's label stays
-// CONSTANT across both states — `aria-pressed` already carries the state.
+// `onActivate`; every other slot is a plain command. Its label stays CONSTANT
+// across both states — `aria-pressed` already carries the state.
 function toWiredAction(sample: ActionSample): UiActionIconBarAction {
   if (sample.icon === 'eye') {
     return { icon: sample.icon, label: sample.label, pressed: false, onToggle: noop };
@@ -101,13 +100,10 @@ const MENU_ACTIONS: readonly UiActionIconBarAction[] = [
   },
 ];
 
-/**
- * `pressed` is ALWAYS controlled (S3) — the bar never self-flips it — so a
- * stateful wrapper owns the eye's flag and `onToggle` feeds it back, keeping the
- * story interactive. Storybook Controls drive the initial state (and every other
- * prop) through the `useEffect` adoption below; props are threaded explicitly,
- * since the repo forbids prop-spreading.
- */
+// `pressed` is ALWAYS controlled (S3) — the bar never self-flips it — so this
+// wrapper owns the eye's flag and `onToggle` feeds it back. Controls drive the
+// initial state through the `useEffect` adoption below; props are threaded
+// explicitly, since the repo forbids prop-spreading.
 function ActionIconBarStory({
   args,
 }: Readonly<{ args: UiActionIconBarProps }>): React.ReactElement {
@@ -151,19 +147,18 @@ export default meta;
 
 type Story = StoryObj<typeof UiActionIconBar>;
 
-// Wired render: every action is a native `<button type="button">` inside the
-// bar's own `role="group"`, so hover, press, activation and the focus ring are
-// all live — and each button is an independent tab stop (no roving tabindex).
+// Wired render: every action is a native `<button type="button">` in the bar's
+// own `role="group"`, so hover, press, activation and the ring are all live —
+// and each button is an independent tab stop (no roving tabindex).
 function renderWired(args: UiActionIconBarProps): React.ReactElement {
   return <ActionIconBarStory args={args} />;
 }
 
 // Static render: no callbacks anywhere, so the root is a plain `<div>` with no
-// group role and no name, and every slot is a `<span>` with no ARIA of any kind
-// — over an identical content tree (S2). Every prop the Controls panel exposes is
-// still threaded through, so editing `disabled` or `id` here does what the
-// control promises: `id` lands on the static root, and `disabled` is deliberately
-// swallowed by the component (a static bar exposes no state it cannot back).
+// group role and no name, and every slot is a `<span>` with no ARIA at all — over
+// an identical content tree (S2). Every Control is still threaded through, so
+// `id` lands on the static root and `disabled` is deliberately swallowed by the
+// component (a static bar exposes no state it cannot back).
 function renderStatic(args: UiActionIconBarProps): React.ReactElement {
   return (
     <UiActionIconBar
