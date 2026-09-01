@@ -1,6 +1,8 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
+import { srOnlySx } from '../field-controls';
+
 import type { ResolvedPaymentLogo } from './payment-logo';
 import { CIRCLE_CLASS, LOGO_CLASS, paymentLogoSx, selectionCircleSx } from './styles';
 
@@ -47,6 +49,20 @@ function PaymentLogoImage({ name, logo }: Readonly<PaymentLogoImageProps>): Reac
   );
 }
 
+// The fallback for an unusable bundle. The wordmark's `alt` is normally this
+// card's ENTIRE accessible name, so rendering nothing here would leave the wired
+// radio unnamed (SC 4.1.2) — a runtime data defect turning into a barrier. The
+// name is therefore always in the tree; when the mark paints it rides the `alt`,
+// and when it cannot it rides this visually hidden text instead. The card still
+// dev-warns, because a missing wordmark is still wrong.
+function PaymentNameFallback({ name }: Readonly<{ name: string }>): React.ReactElement {
+  return (
+    <Box component="span" sx={srOnlySx}>
+      {name}
+    </Box>
+  );
+}
+
 export interface PaymentCardContentProps {
   name: string;
   logo: ResolvedPaymentLogo | null;
@@ -59,7 +75,7 @@ export function PaymentCardContent({
   return (
     <>
       <PaymentSelectionCircle />
-      {logo ? <PaymentLogoImage name={name} logo={logo} /> : null}
+      {logo ? <PaymentLogoImage name={name} logo={logo} /> : <PaymentNameFallback name={name} />}
     </>
   );
 }

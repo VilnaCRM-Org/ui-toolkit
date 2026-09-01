@@ -1224,16 +1224,22 @@ describe('pinCellSx — the 64x86 master (pure, mutation-killing)', () => {
     expect(JSON.stringify(cellStyle())).not.toMatch(/backgroundImage/);
   });
 
-  it('moves the ghost past the caret only while focused AND empty', () => {
+  it('moves the ghost past the caret only while focused, empty AND enabled', () => {
     // The Figma active master puts the caret BEFORE the ghost digit: the text
     // lane left-aligns at 23px (caret lands on the master's x) and the ghost is
     // indented 4px past it. Once a digit exists, :placeholder-shown stops
     // matching and the value centres exactly as at rest.
-    expect(ruleAt('&:focus:placeholder-shown')).toEqual({
+    expect(ruleAt('&:focus:placeholder-shown:not([aria-disabled="true"])')).toEqual({
       textAlign: 'left',
       paddingLeft: '23px',
     });
-    expect(ruleAt('&:focus::placeholder')).toEqual({ textIndent: '4px' });
+    expect(ruleAt('&:focus:not([aria-disabled="true"])::placeholder')).toEqual({
+      textIndent: '4px',
+    });
+    // A disabled cell hides the caret entirely, so it has nothing to make room
+    // for and stays centred: neither ungated selector exists.
+    expect(cellStyle()['&:focus:placeholder-shown']).toBeUndefined();
+    expect(cellStyle()['&:focus::placeholder']).toBeUndefined();
   });
 
   it('keeps the border a constant 1px in every state, swapping only its colour', () => {

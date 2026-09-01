@@ -160,9 +160,20 @@ function renderWired(args: UiActionIconBarProps): React.ReactElement {
 
 // Static render: no callbacks anywhere, so the root is a plain `<div>` with no
 // group role and no name, and every slot is a `<span>` with no ARIA of any kind
-// — over an identical content tree (S2).
+// — over an identical content tree (S2). Every prop the Controls panel exposes is
+// still threaded through, so editing `disabled` or `id` here does what the
+// control promises: `id` lands on the static root, and `disabled` is deliberately
+// swallowed by the component (a static bar exposes no state it cannot back).
 function renderStatic(args: UiActionIconBarProps): React.ReactElement {
-  return <UiActionIconBar label={args.label} actions={args.actions} sx={args.sx} />;
+  return (
+    <UiActionIconBar
+      label={args.label}
+      actions={args.actions}
+      disabled={args.disabled}
+      id={args.id}
+      sx={args.sx}
+    />
+  );
 }
 
 // The bar owns no menu: the popup ARIA is a passthrough, and the menu itself is

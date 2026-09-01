@@ -877,6 +877,26 @@ describe('UiActionIconBar — dev warnings', () => {
     );
   });
 
+  it('warns instead of throwing on a non-string action label', () => {
+    render(
+      barWith({
+        actions: [
+          { icon: 'x-close', label: 42, onActivate: noop } as unknown as UiActionIconBarAction,
+        ],
+      })
+    );
+    expect(warn.spy).toHaveBeenCalledWith(
+      expect.stringContaining('an action with a blank `label`')
+    );
+  });
+
+  it('warns instead of throwing on a non-string bar label', () => {
+    render(barWith({ label: 42 as unknown as string }));
+    expect(warn.spy).toHaveBeenCalledWith(
+      expect.stringContaining('while at least one action is wired')
+    );
+  });
+
   it('warns for a blank bar label once at least one action is wired', () => {
     render(barWith({ label: '  ' }));
     expect(warn.spy).toHaveBeenCalledWith(

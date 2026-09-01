@@ -47,7 +47,6 @@ export function usePaymentCard(
   props: UiPaymentOptionCardProps,
   forwardedRef: React.ForwardedRef<HTMLButtonElement>
 ): PaymentCardModel {
-  useDevWarning(paymentCardWarning(props));
   const interactive: boolean = props.onSelect != null;
   const disabled: boolean = props.disabled ?? false;
   // Always controlled, coerced from nullish: the component never self-flips it, so
@@ -61,11 +60,16 @@ export function usePaymentCard(
     forwardedRef,
     interactive
   );
+  const mark: ResolvedPaymentLogo | null = resolvePaymentMark({
+    card: props,
+    disabled: ariaDisabled === true,
+  });
+  useDevWarning(paymentCardWarning(props, mark));
   return {
     interactive,
     ariaChecked: selected,
     ariaDisabled,
-    logo: resolvePaymentMark({ card: props, disabled: ariaDisabled === true }),
+    logo: mark,
     onActivate: makeActivate({ disabled, selected }, props.onSelect),
     setCardRef,
   };

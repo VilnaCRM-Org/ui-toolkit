@@ -1,4 +1,4 @@
-import { resolvePaymentLogo } from './payment-logo';
+import type { ResolvedPaymentLogo } from './payment-logo';
 import type { UiPaymentOptionCardProps } from './types';
 
 const UNWIRED_SELECTED_WARNING: string =
@@ -11,8 +11,8 @@ const BLANK_NAME_WARNING: string =
   'the provider name exactly as the wordmark reads (e.g. "LiqPay").';
 const UNUSABLE_LOGO_WARNING: string =
   'UiPaymentOptionCard received a `logo` without a usable `src`, `width` and `height`; no image ' +
-  'is rendered, which also leaves the card nameless. Pass a valid URL or import together with ' +
-  "the wordmark's intrinsic pixel size.";
+  'is rendered, so the card falls back to a visually hidden name and shows nothing at all. Pass ' +
+  "a valid URL or import together with the wordmark's intrinsic pixel size.";
 
 // The wired/static switch is `onSelect` alone, so a truthy `selected` without it is
 // a misconfiguration: the static branch renders the rest presentation and never
@@ -28,16 +28,23 @@ function unwiredSelectedWarning(props: UiPaymentOptionCardProps): string | null 
 // payloads produce anyway. `name` is TYPE-checked as well as blank-checked: this
 // message is computed on every render of the production build too (only the
 // `console.warn` itself is stripped), so a non-string must warn here rather than
-// throw `.trim is not a function` and take the card down. The disabled mark is
-// not checked: it legitimately falls back to the full-colour one.
-function contentWarning(props: UiPaymentOptionCardProps): string | null {
+// throw `.trim is not a function` and take the card down. The logo check reads
+// the MARK THAT RENDERS rather than `logo` alone, so a disabled card whose grey
+// variant is perfectly usable is not accused of painting nothing.
+function contentWarning(
+  props: UiPaymentOptionCardProps,
+  mark: ResolvedPaymentLogo | null
+): string | null {
   if (typeof props.name !== 'string' || !props.name.trim()) {
     return BLANK_NAME_WARNING;
   }
-  return resolvePaymentLogo(props.logo) == null ? UNUSABLE_LOGO_WARNING : null;
+  return mark == null ? UNUSABLE_LOGO_WARNING : null;
 }
 
 /** The first applicable a11y-contract warning, or null when all is well. */
-export default function paymentCardWarning(props: UiPaymentOptionCardProps): string | null {
-  return unwiredSelectedWarning(props) ?? contentWarning(props);
+export default function paymentCardWarning(
+  props: UiPaymentOptionCardProps,
+  mark: ResolvedPaymentLogo | null
+): string | null {
+  return unwiredSelectedWarning(props) ?? contentWarning(props, mark);
 }

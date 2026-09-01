@@ -30,7 +30,6 @@ function WiredChip({ chip, model, chipRef, sx }: Readonly<ChipShellProps>): Reac
       component="button"
       type="button"
       id={chip.id}
-      lang={chip.lang}
       aria-disabled={model.ariaDisabled}
       onClick={model.onActivate}
       ref={chipRef}
@@ -39,6 +38,7 @@ function WiredChip({ chip, model, chipRef, sx }: Readonly<ChipShellProps>): Reac
       <FilterChipContent
         label={chip.label}
         filterValue={chip.filterValue}
+        lang={chip.lang}
         removeLabel={model.removeLabel}
       />
     </Box>
@@ -46,18 +46,21 @@ function WiredChip({ chip, model, chipRef, sx }: Readonly<ChipShellProps>): Reac
 }
 
 // The unwired chip: static, non-interactive content — no role, no tabindex, and
-// no ARIA of any kind, not even `aria-disabled`. The content tree is identical to
-// the wired branch (the × glyph included, decoratively), and a truthy `disabled`
+// no ARIA of any kind, not even `aria-disabled`. The visible tree is identical to
+// the wired branch (the × glyph included, decoratively) but the hidden removal
+// suffix is dropped — a static chip cannot remove anything, so announcing the
+// action would be a promise it cannot keep. A truthy `disabled`
 // is deliberately NOT painted here: the static branch never renders state it
 // cannot expose programmatically, which is why the styles key the disabled chrome
 // off `[aria-disabled="true"]` — an attribute this branch never has.
-function StaticChip({ chip, model, sx }: Readonly<ChipShellProps>): React.ReactElement {
+function StaticChip({ chip, sx }: Readonly<ChipShellProps>): React.ReactElement {
   return (
-    <Box component="div" id={chip.id} lang={chip.lang} sx={sx}>
+    <Box component="div" id={chip.id} sx={sx}>
       <FilterChipContent
         label={chip.label}
         filterValue={chip.filterValue}
-        removeLabel={model.removeLabel}
+        lang={chip.lang}
+        removeLabel={null}
       />
     </Box>
   );

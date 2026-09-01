@@ -29,10 +29,14 @@ export const FOCUS_RING: string = `${FOCUS_RING_OUTER}, ${FOCUS_RING_INNER}`;
 
 // Two selectors, one recipe (Amendment A1). CSS keeps per-selector specificity
 // inside a selector list, so the bare `:focus-visible` (0,2,0) covers the disabled
-// badge while the second copy repeats the hover rule's own negation to reach
-// hover's (0,3,0) — declared later, it therefore wins on a badge that is focused
-// AND hovered, where the plain rule alone would lose its ring to the hover tint.
-const FOCUS_SELECTORS: string = '&:focus-visible, &:focus-visible:not([aria-disabled="true"])';
+// badge while the second copy repeats BOTH of the hover rule's own negations to
+// reach hover's (0,4,0) — declared later, it therefore wins on a badge that is
+// focused AND hovered, where the plain rule alone would lose its ring to the
+// hover tint. The tie has to track hover exactly: dropping either negation would
+// leave the ring a level below hover, so a future declaration they share would
+// silently repaint the focused-and-hovered badge.
+const FOCUS_SELECTORS: string =
+  '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-expanded="true"])';
 
 // Forced-colors discards box-shadow, so the ring is re-expressed as an outline
 // pulled inside the border box. The circle keeps a REAL border in that mode, so
@@ -60,7 +64,15 @@ const HOVER_SELECTOR: string = '&:hover:not([aria-disabled="true"]):not([aria-ex
 // off the pointer state AND `aria-expanded`, and no extra prop is invented. Each
 // selector in the list keeps its own specificity, so the disabled rule below
 // (equal 0,2,0 against `[aria-expanded]`, declared later) still wins.
-const ACTIVE_SELECTORS: string = '&:active:not([aria-disabled="true"]), &[aria-expanded="true"]';
+//
+// The pressed half repeats hover's `[aria-expanded]` negation as well. A mouse
+// press always keeps `:hover` matching, so without it hover (0,4,0) would outrank
+// the pressed rule (0,3,0) and a closed badge would never paint the Figma active
+// column under the pointer. Repeating the negation ties them at (0,4,0), and this
+// rule is declared later, so it wins — while an OPEN badge is left entirely to
+// the `[aria-expanded="true"]` branch, which hover no longer contests.
+const ACTIVE_SELECTORS: string =
+  '&:active:not([aria-disabled="true"]):not([aria-expanded="true"]), &[aria-expanded="true"]';
 
 const DISABLED_SELECTOR: string = '&[aria-disabled="true"]';
 
@@ -138,8 +150,12 @@ const CHIP_ACTIVE_RING: object = {
   boxShadow: `0 0 0 2px ${palette.backgroundGrey100.main}`,
 };
 
-const CHIP_DISABLED_FILL: object = {
+// The ring is cleared as well as the fill: a disabled badge can still carry
+// `aria-expanded="true"` (the panel outlives the flip), which would otherwise
+// leave the chip wearing the active ring under fully disabled chrome.
+const CHIP_DISABLED: object = {
   backgroundColor: palette.grey400.main,
+  boxShadow: 'none',
 };
 
 // Button-only additions. Hover and the pressed half of the active rule are both
@@ -168,7 +184,7 @@ function interactiveBadgeSx(): object {
       backgroundColor: palette.brandGray.main,
       borderColor: 'transparent',
       color: palette.grey400.main,
-      [`& .${COUNT_CLASS}`]: CHIP_DISABLED_FILL,
+      [`& .${COUNT_CLASS}`]: CHIP_DISABLED,
     },
     [FOCUS_SELECTORS]: { outline: 'none', boxShadow: FOCUS_RING },
     ...FORCED_COLORS_RING,

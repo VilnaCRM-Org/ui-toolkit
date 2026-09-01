@@ -98,7 +98,11 @@ export interface UiNotificationBadgeProps {
   menuOpen?: boolean | undefined;
   /**
    * `id` of the consumer's popup → `aria-controls`, emitted ONLY while `menuOpen`
-   * is true, so a closed badge never leaves a dangling idref (the 3.3 rule).
+   * is true AND this id contains non-whitespace text, so a closed badge never
+   * leaves a dangling idref (the 3.3 rule) and an open one never emits a blank
+   * one. `aria-controls` is an IDREF LIST, so a blank value is a zero-length
+   * list — invalid ARIA rather than a dangling reference — and omitting beats
+   * emitting. Mount the panel under this id while `menuOpen` is true.
    */
   menuId?: string | undefined;
   /**

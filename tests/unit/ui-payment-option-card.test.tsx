@@ -623,6 +623,16 @@ describe('UiPaymentOptionCard — accessible name and imagery (Ruling 1)', () =>
     expect(baseOf(false).minHeight).toBe('5.625rem');
   });
 
+  it('keeps the radio named through a visually hidden fallback when no mark renders', () => {
+    render(inGroup(cardWith({ logo: NO_SIZE_LOGO, onSelect: noop })));
+
+    // The wordmark's `alt` is normally this card's whole accessible name, so an
+    // unusable bundle would otherwise ship a nameless radio (SC 4.1.2).
+    expect(cardImages()).toHaveLength(0);
+    expect(card()).toHaveAccessibleName(LIQPAY);
+    expect(screen.getByText(LIQPAY)).toBeInTheDocument();
+  });
+
   it('transcribes a long provider name whole, with no clamp on the wordmark', () => {
     const LONG: string = 'LiqPay Checkout for Merchants and Marketplaces';
     render(cardWith({ name: LONG, onSelect: noop }));
@@ -727,6 +737,24 @@ describe('UiPaymentOptionCard — dev warnings', () => {
   it('warns for an unusable logo bundle', () => {
     render(inGroup(cardWith({ logo: NO_SIZE_LOGO, onSelect: noop })));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('usable `src`'));
+  });
+
+  it('stays silent when a disabled card paints its usable grey mark', () => {
+    // The rendered mark is what matters: `logo` alone is unusable here, but the
+    // disabled card really does paint `logoDisabled`, so nothing is missing.
+    render(
+      inGroup(
+        cardWith({
+          logo: NO_SIZE_LOGO,
+          logoDisabled: LIQPAY_GREY_LOGO,
+          disabled: true,
+          onSelect: noop,
+        })
+      )
+    );
+
+    expect(firstOf(cardImages())).toHaveAttribute('src', '/liqpay-grey.png');
+    expect(warn.spy).not.toHaveBeenCalled();
   });
 
   it('warns once per warning state, not once per render', () => {

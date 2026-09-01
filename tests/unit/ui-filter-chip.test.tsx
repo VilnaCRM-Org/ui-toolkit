@@ -256,15 +256,20 @@ describe('UiFilterChip — wired button semantics (§ Role / ARIA state mapping)
     expect(nodesMatching('svg')).toHaveLength(1);
   });
 
-  it('applies id and lang only when the consumer supplies them', () => {
+  it('applies id on the button and lang on the filter text alone', () => {
     const { rerender } = render(chipWith({ onRemove: noop }));
 
     expect(chip()).not.toHaveAttribute('id');
-    expect(chip()).not.toHaveAttribute('lang');
+    expect(nodesMatching('[lang]')).toHaveLength(0);
 
     rerender(chipWith({ id: 'filter-comment', lang: 'ru', onRemove: noop }));
     expect(chip()).toHaveAttribute('id', 'filter-comment');
-    expect(chip()).toHaveAttribute('lang', 'ru');
+    // `lang` marks the FILTER TEXT, never the whole chip: the built-in Ukrainian
+    // removal suffix must not be relabelled as Russian along with it (SC 3.1.2).
+    expect(chip()).not.toHaveAttribute('lang');
+    const marked: Element = firstMatching('[lang="ru"]');
+    expect(marked).toHaveTextContent(`${LABEL}${VALUE}`);
+    expect(marked).not.toHaveTextContent(SUFFIX);
   });
 
   it('exposes its display name', () => {
@@ -281,18 +286,18 @@ describe('UiFilterChip — static (unwired) chip', () => {
     expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
   });
 
-  it('keeps the identical content tree, × included, with the consumer id and lang', () => {
+  it('keeps the identical VISIBLE tree, × included, and drops the removal suffix', () => {
     render(chipWith({ id: 'static-chip', lang: 'ru' }));
 
     const root: Element = firstMatching('#static-chip');
     expect(root.tagName).toBe('DIV');
-    expect(root).toHaveAttribute('lang', 'ru');
     expect(root.contains(glyphBox())).toBe(true);
     expect(screen.getByText(LABEL)).toBeInTheDocument();
     expect(screen.getByText(VALUE)).toBeInTheDocument();
-    // The hidden suffix is part of the SHARED tree, so the reading order never
-    // changes between the two branches.
-    expect(screen.getByText(SUFFIX)).toBeInTheDocument();
+    expect(firstMatching('[lang="ru"]')).toHaveTextContent(`${LABEL}${VALUE}`);
+    // A static chip removes nothing, so announcing ", видалити фільтр" would
+    // promise assistive tech an action that does not exist.
+    expect(screen.queryByText(SUFFIX)).not.toBeInTheDocument();
     expect(nodesMatching('svg')).toHaveLength(1);
   });
 
@@ -572,13 +577,14 @@ describe('UiFilterChip — accessible name', () => {
     expect(hidden).not.toHaveAttribute('aria-hidden');
   });
 
-  it('names the static chip identically, so the reading order never changes', () => {
+  it('reads the static chip as the visible text alone, with no action verb', () => {
     render(chipWith({ id: 'static-name' }));
 
     const root: HTMLElement = firstMatching('#static-name') as HTMLElement;
-    // Both segments then the hidden suffix, in that order and with nothing else
-    // between them — the wired tree reads exactly the same.
-    expect(root).toHaveTextContent(`${LABEL}${VALUE}${SUFFIX}`);
+    // Both visible segments in wired order, and nothing after them: the removal
+    // verb belongs to the wired branch, which is the only one that can act.
+    expect(root).toHaveTextContent(`${LABEL}${VALUE}`);
+    expect(root).not.toHaveTextContent(SUFFIX);
   });
 
   it('keeps a long filter value whole — no clamp, no ellipsis, one line', () => {

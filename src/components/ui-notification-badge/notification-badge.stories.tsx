@@ -11,6 +11,7 @@ import {
   selectControlArgType,
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
+import { srOnlySx } from '../field-controls';
 
 import type { UiNotificationBadgeProps } from './types';
 
@@ -27,8 +28,18 @@ const SURFACE_SX: SxProps<Theme> = {
 };
 
 // The consumer's popup id. `aria-controls` is emitted only while the panel is
-// open, so a closed badge never leaves a dangling idref.
+// open, so a closed badge never leaves a dangling idref — but "not dangling"
+// also means the target has to EXIST while the badge points at it, which is the
+// consumer's half of the contract. The demo therefore mounts a real panel
+// alongside the open badge. It is visually hidden rather than painted: the badge
+// masters draw no panel, so a visible one would change every baseline while
+// teaching nothing about the badge itself.
 const MENU_ID: string = 'notification-panel';
+
+// The consumer's half of the `aria-controls` contract, mounted only while open.
+function NotificationPanel(): React.ReactElement {
+  return <Box component="div" id={MENU_ID} role="menu" aria-label="Сповіщення" sx={srOnlySx} />;
+}
 
 /**
  * `menuOpen` is always controlled (S3): the badge never opens anything itself, it
@@ -61,6 +72,7 @@ function NotificationBadgeStory({
         menuId={MENU_ID}
         disabled={args.disabled}
       />
+      {menuOpen ? <NotificationPanel /> : null}
     </Box>
   );
 }

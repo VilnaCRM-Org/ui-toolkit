@@ -1,9 +1,9 @@
 # Story 3.5 — Board A Micro-Components Delivery
 
-- **Issue:** [#23](https://github.com/VilnaCRM-Config/ui-toolkit/issues/23)
+- **Issue:** [#23](https://github.com/VilnaCRM-Org/ui-toolkit/issues/23)
 - **Branch:** `feat/issue-23-board-a-micro-components`
 - **Epic:** Epic 3 — Data Presentation and Cards
-- **Status:** spec authored (2026-07-31) — implementation not started
+- **Status:** review — delivered on `feat/issue-22-integration-card` (PR #122)
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 3.5: Board A
   Micro-Components Delivery_
 - **Format precedent:** `specs/implementation-artifacts/3-4-integration-card-workflow.md`
@@ -2060,17 +2060,17 @@ these are the items a designer or reviewer may overturn.
 
 ## Definition of Done
 
-| DoD item                                                       | AC  |
-| -------------------------------------------------------------- | --- |
-| Six components exist with defined contracts + behaviour        | AC1 |
-| Shared styling/contract conventions followed                   | AC1 |
-| disabled/error/state semantics consistent + predictable        | AC2 |
-| Documented exceptions captured for every ⛔ field              | AC2 |
-| Each component individually usable and testable                | AC3 |
-| No future Epic 3 story required for baseline function          | AC3 |
-| Binding a11y contract honoured clause by clause                | —   |
-| Barrel exports + drift guard updated                           | —   |
-| Stories + showcase tiles + regenerated `stories.json`          | —   |
-| Visual baselines generated in the pinned Playwright image      | —   |
-| 100% coverage, `rca`, `tsc`, ESLint, Prettier, depcruise green | —   |
-| Contrast inventory logged and routed (S10)                     | —   |
+| DoD item                                                       | AC  | Status                                                                                                                          |
+| -------------------------------------------------------------- | --- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Six components exist with defined contracts + behaviour        | AC1 | ✅ `ui-filter-chip`, `ui-pin-input`, `ui-payment-option-card`, `ui-action-icon-bar`, `ui-status-badge`, `ui-notification-badge` |
+| Shared styling/contract conventions followed                   | AC1 | ✅ wired/static split, `aria-disabled` boundary, no-jitter chrome, `[base, ...sx]` merge                                        |
+| disabled/error/state semantics consistent + predictable        | AC2 | ✅ every state flip is an attribute selector; a state the DOM cannot expose is unpaintable                                      |
+| Documented exceptions captured for every ⛔ field              | AC2 | ✅ per-component "Ambiguities carried forward" plus the S1–S10 rulings above                                                    |
+| Each component individually usable and testable                | AC3 | ✅ one directory and one suite per component; each is a standalone export                                                       |
+| No future Epic 3 story required for baseline function          | AC3 | ✅ group/roving-tabindex wrappers are the only deferrals, and none blocks baseline use                                          |
+| Binding a11y contract honoured clause by clause                | —   | ✅ S1–S10 asserted per component, including the two-selector focus rings                                                        |
+| Barrel exports + drift guard updated                           | —   | ✅ `src/components/index.ts` + `tests/unit/components-index.test.ts`                                                            |
+| Stories + showcase tiles + regenerated `stories.json`          | —   | ✅ six story files, six board groups, `tests/visual/stories.json` regenerated                                                   |
+| Visual baselines generated in the pinned Playwright image      | —   | ✅ state-grid and story baselines committed under `tests/visual`                                                                |
+| 100% coverage, `rca`, `tsc`, ESLint, Prettier, depcruise green | —   | ✅ gates green on this branch                                                                                                   |
+| Contrast inventory logged and routed (S10)                     | —   | ✅ inventoried and routed to the accessibility-visuals PR per the Story 1.3 policy                                              |

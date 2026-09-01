@@ -3,6 +3,8 @@ import type { SystemStyleObject } from '@mui/system';
 
 import colorTheme from '@/components/ui-color-theme';
 
+import { helperTextSx } from '../field-controls';
+
 // Figma source: the file-upload control, nodes 449:25710 (rest), 449:25717
 // (hover), 449:25703 (active), 449:25724 (disabled) and 449:25676 (error). The
 // cluster is detached from every page in the file, so it is reachable only by
@@ -42,18 +44,7 @@ export const groupLabelActiveColor: string = palette.grey250.main;
 // the shared Inter Medium 14/18 treatment, grey250, #DC3939 on error.
 const rootSx: SystemStyleObject<Theme> = {
   width: '100%',
-  '& .MuiFormHelperText-root': {
-    margin: '0.25rem 0 0 0',
-    fontFamily: 'Inter',
-    fontWeight: 500,
-    fontSize: '0.875rem',
-    lineHeight: '1.125rem',
-    // Figma "14 medium" tracks at 0; without this the helper text inherits MUI's
-    // default caption letterSpacing (0.03333em), reading looser than the design.
-    letterSpacing: 0,
-    color: palette.grey250.main,
-    '&.Mui-error': { color: palette.error.main },
-  },
+  ...helperTextSx,
 };
 
 export function mergeRootSx(consumer: SxProps<Theme> | undefined): SxProps<Theme> {

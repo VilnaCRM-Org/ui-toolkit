@@ -168,9 +168,11 @@ function collectorInto(
 }
 
 const HOVER_KEY: string = '&:hover:not([aria-disabled="true"]):not([aria-expanded="true"])';
-const ACTIVE_KEY: string = '&:active:not([aria-disabled="true"]), &[aria-expanded="true"]';
+const ACTIVE_KEY: string =
+  '&:active:not([aria-disabled="true"]):not([aria-expanded="true"]), &[aria-expanded="true"]';
 const DISABLED_KEY: string = '&[aria-disabled="true"]';
-const FOCUS_KEY: string = '&:focus-visible, &:focus-visible:not([aria-disabled="true"])';
+const FOCUS_KEY: string =
+  '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-expanded="true"])';
 
 describe('UiNotificationBadge — wired button semantics (S1/S2/§6 role)', () => {
   it('renders the whole badge as ONE native type="button"', () => {
@@ -880,6 +882,10 @@ describe('notificationBadgeSx — style assembly (pure, mutation-killing)', () =
   it('keys the active column off BOTH the pointer state and aria-expanded', () => {
     const base: StyleObject = baseOf(true);
 
+    // The pressed half repeats hover's `[aria-expanded]` negation so both land on
+    // (0,4,0). A mouse press always keeps `:hover` matching, so without the tie
+    // hover would outrank the pressed rule and a closed badge under the pointer
+    // would never paint the Figma active column.
     expect(keysMatching(base, ':active')).toEqual([ACTIVE_KEY]);
     expect(base[ACTIVE_KEY]).toEqual({
       backgroundColor: '#1EAEFF',
@@ -897,17 +903,20 @@ describe('notificationBadgeSx — style assembly (pure, mutation-killing)', () =
       backgroundColor: '#E1E7EA',
       borderColor: 'transparent',
       color: '#D0D4D8',
-      [`& .${COUNT_CLASS}`]: { backgroundColor: '#D0D4D8' },
+      // `boxShadow: none` as well as the fill: a disabled badge can still carry
+      // `aria-expanded="true"`, which would otherwise leave the chip wearing the
+      // active ring under fully disabled chrome.
+      [`& .${COUNT_CLASS}`]: { backgroundColor: '#D0D4D8', boxShadow: 'none' },
     });
   });
 
   it('ships the Amendment A1 two-selector ring with the two-layer recipe', () => {
     const base: StyleObject = baseOf(true);
 
-    // A bare `&:focus-visible` is (0,2,0) while the hover rule is (0,3,0), so on a
+    // A bare `&:focus-visible` is (0,2,0) while the hover rule is (0,4,0), so on a
     // badge that is focused AND hovered the hover tint would win and the ring would
-    // vanish. The second selector repeats hover's negation to tie it; declared
-    // later, it wins. The bare one still covers the disabled badge.
+    // vanish. The second selector repeats BOTH of hover's negations to tie it;
+    // declared later, it wins. The bare one still covers the disabled badge.
     expect(keysMatching(base, ':focus-visible')).toEqual([FOCUS_KEY]);
     expect(base[FOCUS_KEY]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
     expect(FOCUS_RING).toBe('inset 0 0 0 2px #1A1C1E, inset 0 0 0 4px #FFF');

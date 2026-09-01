@@ -15,8 +15,12 @@ const DANGLING_MENU_ID_WARNING: string =
   'UiActionIconBar received `menuId` on an action with no `menuOpen`; `aria-controls` is ' +
   'rendered only while the menu is open, so the wiring is ambiguous. Pass `menuOpen` too.';
 
+// TYPE-checked as well as blank-checked (the payment-card precedent): this runs
+// on every render of the production build too — only the `console.warn` itself is
+// stripped — so a non-string `label` out of a CMS/API payload must warn here
+// rather than throw `.trim is not a function` and take the whole row down.
 function hasBlankLabel(action: UiActionIconBarAction): boolean {
-  return !action.label?.trim();
+  return typeof action.label !== 'string' || !action.label.trim();
 }
 
 // `pressed` is honoured only on a real toggle, so supplying it anywhere else is a
@@ -44,7 +48,7 @@ function barLabelWarning(
   if (!actions.some(isWiredAction)) {
     return null;
   }
-  return props.label?.trim() ? null : BLANK_BAR_LABEL_WARNING;
+  return typeof props.label === 'string' && props.label.trim() ? null : BLANK_BAR_LABEL_WARNING;
 }
 
 function pressedWarning(actions: readonly UiActionIconBarAction[]): string | null {

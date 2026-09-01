@@ -10,6 +10,8 @@ import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
 
+import { helperTextSx } from '../field-controls';
+
 const palette: Theme['palette'] = colorTheme.palette;
 
 // Stable class hook so the showcase board (and a consumer) can force a cell's
@@ -43,9 +45,15 @@ export const PIN_FOCUS_SHADOW: string = '0 7px 12px rgba(76, 90, 126, 0.15)';
 // renders centred exactly as before (focus advances on entry anyway). A filled
 // cell keeps select-on-focus, so it shows the selection highlight, never a
 // mid-glyph caret.
+// Both halves are gated on the aria-disabled boundary: a disabled cell hides the
+// caret (`caretColor: transparent`), so shifting its ghost left to make room for
+// one would move the digit for nothing. A disabled cell stays centred.
 const EMPTY_FOCUS_CARET: object = {
-  '&:focus:placeholder-shown': { textAlign: 'left', paddingLeft: '23px' },
-  '&:focus::placeholder': { textIndent: '4px' },
+  '&:focus:placeholder-shown:not([aria-disabled="true"])': {
+    textAlign: 'left',
+    paddingLeft: '23px',
+  },
+  '&:focus:not([aria-disabled="true"])::placeholder': { textIndent: '4px' },
 };
 
 // Two selectors, one recipe (Amendment A1). CSS keeps per-selector specificity
@@ -147,33 +155,19 @@ export const pinGroupSx: SxProps<Theme> = {
   gap: '0.75rem',
 };
 
-// The shared field-controls helper-text recipe (`field-controls/theme.ts`,
-// `MuiFormHelperText`), inlined here as a descendant rule because this control
-// mounts no `ThemeProvider` of its own — the `ui-file-upload-input` precedent.
-// Without it the message falls back to MUI's Roboto 12/19.92 at letterSpacing
-// 0.4 and, on error, MUI's own `#D32F2F` instead of the palette `error.main`
-// `#DC3939`. The error message is this field's non-colour signal, so it has to
-// carry the Figma treatment, not a framework default.
-const HELPER_TEXT_SX: object = {
-  '& .MuiFormHelperText-root': {
-    margin: '0.25rem 0 0 0',
-    fontFamily: 'Inter',
-    fontWeight: 500,
-    fontSize: '0.875rem',
-    lineHeight: '1.125rem',
-    // Figma "14 medium" tracks at 0; without this the helper text inherits MUI's
-    // default caption letterSpacing (0.03333em) and reads looser than the design.
-    letterSpacing: 0,
-    color: palette.grey250.main,
-    '&.Mui-error': { color: palette.error.main },
-  },
-};
-
+// The shared field-controls helper-text recipe, pulled in as a descendant rule
+// because this control mounts no `ThemeProvider` of its own — the
+// `ui-file-upload-input` precedent. Without it the message falls back to MUI's
+// Roboto 12/19.92 at letterSpacing 0.4 and, on error, MUI's own `#D32F2F`
+// instead of the palette `error.main` `#DC3939`. The error message is this
+// field's non-colour signal, so it has to carry the Figma treatment, not a
+// framework default — and it has to keep carrying it when the shared recipe
+// changes, which is why the values are imported rather than re-declared.
 const ROOT_BASE: object = {
   display: 'inline-flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  ...HELPER_TEXT_SX,
+  ...helperTextSx,
 };
 
 /** The field root `sx`: the group column plus the consumer's `sx`, merged last. */

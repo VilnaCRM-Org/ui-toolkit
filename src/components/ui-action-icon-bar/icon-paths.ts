@@ -10,9 +10,11 @@
 // and the 100-column line limit cannot hold them whole. Splitting only ever
 // happens at an existing space, so the joined result is the original path.
 //
-// Six of the seven live in the shared 24-unit space; `settings-04` keeps its
-// native 30-unit viewBox (stroke 2.5), which resolves to exactly 2 once rendered
-// into the same 24px slot — see `action-glyph.tsx`.
+// Six of the seven live in the shared 24-unit space at stroke 2. `settings-04` is
+// the board's one larger glyph: Figma draws it 30x30 where its siblings are
+// 24x24, so it keeps its native 30-unit viewBox and 2.5 stroke AND renders at
+// 30px — no coordinate is rewritten and nothing is scaled down into the 24px
+// slot — see `action-glyph.tsx`.
 
 /** `x-close` — two crossing strokes, one path. */
 export const X_CLOSE_PATH: string = 'M18 6L6 18M6 6L18 18';
