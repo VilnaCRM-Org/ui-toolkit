@@ -38,7 +38,8 @@ const MENU_ID: string = 'notification-panel';
 
 // The consumer's half of the `aria-controls` contract, mounted only while open.
 function NotificationPanel(): React.ReactElement {
-  return <Box component="div" id={MENU_ID} role="menu" aria-label="Сповіщення" sx={srOnlySx} />;
+  const label: string = 'Сповіщення';
+  return <Box component="div" id={MENU_ID} role="menu" aria-label={label} sx={srOnlySx} />;
 }
 
 /**

@@ -569,7 +569,7 @@ export function describeRadioCardContract(contract: RadioCardContract): void {
   describe(`${name} — wired radio semantics`, () => describeWiredSemantics(contract));
   describe(`${name} — static (unwired) card`, () => describeStaticBranch(contract));
   describe(`${name} — selection requests`, () => describeSelectionRequests(contract));
-  describe(`${name} — disabled (aria-disabled boundary)`, () => describeDisabledBoundary(contract));
+  describe(`${name} — the aria-disabled boundary`, () => describeDisabledBoundary(contract));
   describe(`${name} — focus and tab order`, () => describeFocusAndTabOrder(contract));
   describe(`${name} — live-region prohibition`, () => describeLiveRegionProhibition(contract));
   describe(`${name} — shared dev warnings`, () => describeSharedDevWarnings(contract));
