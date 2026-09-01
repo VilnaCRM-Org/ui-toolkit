@@ -25,7 +25,9 @@ import {
   type FilterChipModel,
 } from '../../src/components/ui-filter-chip/use-filter-chip';
 
+import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject, type SxLayers } from './utils/style-layers';
 
 // UiFilterChip emits the two dev-only accessible-name warnings via console.warn.
 // Silence them for the suite and keep a handle for the assertions.
@@ -91,10 +93,6 @@ function chip(): HTMLElement {
   return screen.getByRole('button');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 // `noUncheckedIndexedAccess` makes every index read optional, so the "there is
 // one and this test is about it" assumption is asserted once here instead of
 // being cast away at each call site.
@@ -118,55 +116,12 @@ function glyphBox(): Element {
   return firstMatching(`.${CHIP_GLYPH_CLASS}`);
 }
 
-// Every hook that would make something else in the chip focusable. Exactly one
-// match is allowed in the wired tree and zero in the static one.
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-// Every ARIA/interactivity hook the static branch must not ship. `aria-hidden` is
-// excluded on purpose: the decorative × carries it in BOTH branches.
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby], [aria-haspopup], [aria-expanded], [aria-controls], ' +
-  '[aria-setsize], [aria-posinset], [aria-required], [aria-invalid], [aria-current]';
-
-// A bare `aria-live` container has no implicit role, so role queries alone leave a
-// hole; sweep the attributes too.
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-// `filterChipSx` is typed as the broad `SxProps` union; in practice it always
-// returns the `[base, ...consumerSx]` array. Narrow it once here so the layer
-// assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
-
 function layersOf(interactive: boolean, sx: UiFilterChipProps['sx']): SxLayers {
   return filterChipSx({ interactive, sx }) as SxLayers;
 }
 
 function baseOf(interactive: boolean): StyleObject {
   return layersOf(interactive, undefined)[0] as StyleObject;
-}
-
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {

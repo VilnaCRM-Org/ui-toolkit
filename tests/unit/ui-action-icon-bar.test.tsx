@@ -36,9 +36,11 @@ import {
   type ActionState,
 } from '../../src/components/ui-action-icon-bar/use-action-state';
 
+import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 import nthOf from './utils/nth-of';
+import { keysMatching, type StyleObject } from './utils/style-layers';
 
 // UiActionIconBar emits four dev-only accessibility warnings through console.warn.
 // Silence them for the suite and keep a live handle for the assertions.
@@ -131,10 +133,6 @@ function buttons(): HTMLElement[] {
   return screen.getAllByRole('button');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 function svgs(): Element[] {
   return nodesMatching('svg');
 }
@@ -152,42 +150,9 @@ function glyphAt(index: number): Element {
   return nthOf(svgs(), index);
 }
 
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-// Every ARIA/interactivity hook the static branch must not ship (S2). `aria-hidden`
-// is excluded on purpose: the decorative glyph and the danger backdrop carry it in
-// both branches, which is exactly what keeps the content trees identical.
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-label], [aria-labelledby], [aria-describedby], ' +
-  '[aria-pressed], [aria-checked], [aria-disabled], [aria-haspopup], [aria-expanded], ' +
-  '[aria-controls], [aria-setsize], [aria-posinset], [aria-required], [aria-invalid], ' +
-  '[aria-current], [aria-selected]';
-
 function ariaNodes(): Element[] {
   return nodesMatching(ARIA_SELECTOR);
 }
-
-// A bare `aria-live` container has no implicit role, so role queries alone leave a
-// hole; sweep the attributes too (S9).
-function liveRegionNodes(): Element[] {
-  return nodesMatching('[aria-live], [aria-atomic], [aria-relevant], output');
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-type StyleObject = Record<string, unknown>;
 
 function slotOf(icon: ActionIconName, interactive: boolean): StyleObject {
   return actionButtonSx({ icon, interactive }) as StyleObject;
@@ -195,10 +160,6 @@ function slotOf(icon: ActionIconName, interactive: boolean): StyleObject {
 
 function barLayers(sx: UiActionIconBarProps['sx']): StyleObject[] {
   return actionIconBarSx({ sx }) as StyleObject[];
-}
-
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
 }
 
 function ruleAt(base: StyleObject, selector: string): StyleObject {

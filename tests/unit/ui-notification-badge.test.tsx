@@ -26,8 +26,10 @@ import {
   type NotificationBadgeModel,
 } from '../../src/components/ui-notification-badge/use-notification-badge';
 
+import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject, type SxLayers } from './utils/style-layers';
 
 // UiNotificationBadge emits three dev-only warnings via console.warn for runtime
 // data the strict prop types forbid. Silence them and keep a handle for the
@@ -89,10 +91,6 @@ function nameOf(): string {
   return badge().getAttribute('aria-label') as string;
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 // The counter chip is `aria-hidden`, so it is reached by node query rather than by
 // role — the integration-card decorative-node precedent.
 function chips(): Element[] {
@@ -103,55 +101,12 @@ function bells(): Element[] {
   return nodesMatching('svg');
 }
 
-// Every hook that would make something else in the badge focusable. Exactly one
-// match is allowed in the wired tree and zero in the static one.
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-// Every ARIA/interactivity hook the static branch must not ship (S2). `aria-hidden`
-// is excluded on purpose: the bell and the chip carry it in BOTH branches.
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby], [aria-haspopup], [aria-expanded], [aria-controls], ' +
-  '[aria-setsize], [aria-posinset], [aria-required], [aria-invalid]';
-
-// A bare `aria-live` container has no implicit role, so role queries alone leave a
-// hole; sweep the attributes too (the S9 prohibition).
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-// `notificationBadgeSx` is typed as the broad `SxProps` union; in practice it
-// always returns the `[base, ...consumerSx]` array. Narrow it once here so the
-// layer assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
-
 function layersOf(interactive: boolean, sx: UiNotificationBadgeProps['sx']): SxLayers {
   return notificationBadgeSx({ interactive, sx }) as SxLayers;
 }
 
 function baseOf(interactive: boolean): StyleObject {
   return firstOf(layersOf(interactive, undefined));
-}
-
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {

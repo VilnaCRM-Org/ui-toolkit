@@ -1,5 +1,4 @@
 import { render, renderHook, screen } from '@testing-library/react';
-import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import type { IntegrationLogo } from '../../src/components/ui-integration-card/types';
@@ -22,8 +21,11 @@ import {
 } from '../../src/components/ui-payment-option-card/use-payment-card';
 import usePaymentCardRef from '../../src/components/ui-payment-option-card/use-payment-card-ref';
 
+import { nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { describeRadioCardContract, describeRadioCardRefHook } from './utils/radio-card-contract';
+import { keysMatching, type StyleObject, type SxLayers } from './utils/style-layers';
 
 // UiPaymentOptionCard emits the four dev-only warnings via console.warn — one of
 // them on every wired card that mounts outside a `role="radiogroup"`, which is
@@ -64,7 +66,7 @@ interface CardOverrides {
   logo?: IntegrationLogo | undefined;
   logoDisabled?: IntegrationLogo | undefined;
   selected?: boolean | undefined;
-  onSelect?: () => void | undefined;
+  onSelect?: (() => void) | undefined;
   disabled?: boolean | undefined;
   id?: string | undefined;
   sx?: UiPaymentOptionCardProps['sx'] | undefined;
@@ -101,10 +103,6 @@ function card(): HTMLElement {
   return screen.getByRole('radio');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 function cardImages(): HTMLImageElement[] {
   return Array.from(document.querySelectorAll<HTMLImageElement>('img'));
 }
@@ -112,45 +110,6 @@ function cardImages(): HTMLImageElement[] {
 function circle(): Element {
   return firstOf(nodesMatching(`.${CIRCLE_CLASS}`));
 }
-
-// Every hook that would make something else in the card focusable. Exactly one
-// match is allowed in the wired tree and zero in the static one.
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-// Every ARIA/interactivity hook the static branch must not ship. `aria-hidden` is
-// excluded on purpose: the selection circle carries it in both branches.
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby], [aria-haspopup], [aria-expanded], [aria-controls], ' +
-  '[aria-setsize], [aria-posinset], [aria-required], [aria-invalid]';
-
-// A bare `aria-live` container has no implicit role, so role queries alone leave a
-// hole; sweep the attributes too.
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-// `paymentOptionCardSx` is typed as the broad `SxProps` union; in practice it
-// always returns the `[base, ...consumerSx]` array. Narrow it once here so the
-// layer assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
 
 function layersOf(interactive: boolean, sx: UiPaymentOptionCardProps['sx']): SxLayers {
   return paymentOptionCardSx({ interactive, sx }) as SxLayers;
@@ -160,74 +119,36 @@ function baseOf(interactive: boolean): StyleObject {
   return firstOf(layersOf(interactive, undefined));
 }
 
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
-}
+// The behaviour every radio card in the toolkit shares — role and permanent
+// `aria-checked`, the selection-request gate, the `aria-disabled` boundary, tab
+// order and ref plumbing, the live-region prohibition, the radiogroup teaching
+// warning and the `sx` merge — is asserted once for both cards. What follows
+// below is what is TRUE OF THIS CARD ALONE.
+describeRadioCardContract({
+  name: 'UiPaymentOptionCard',
+  cardWith,
+  inGroup,
+  warn,
+  primaryName: LIQPAY,
+  secondaryName: WAYFORPAY,
+  remountId: 'payment-7',
+  unusableLogo: { logo: NO_SIZE_LOGO } as CardOverrides,
+  tabOrderGroup: (): React.ReactElement => (
+    <div role="radiogroup">
+      <UiPaymentOptionCard name={LIQPAY} logo={LIQPAY_LOGO} onSelect={noop} />
+      <UiPaymentOptionCard name="Static" logo={WAYFORPAY_LOGO} />
+      <UiPaymentOptionCard name={WAYFORPAY} logo={WAYFORPAY_LOGO} selected onSelect={noop} />
+    </div>
+  ),
+  withRef: (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
+    <UiPaymentOptionCard ref={ref} name={LIQPAY} logo={LIQPAY_LOGO} onSelect={noop} />
+  ),
+  staticBase: (): StyleObject => baseOf(false),
+});
 
-// Records every node the forwarded callback ref is handed, attach and detach.
-function collectorInto(
-  seen: (HTMLButtonElement | null)[]
-): (node: HTMLButtonElement | null) => void {
-  return (node: HTMLButtonElement | null): void => {
-    seen.push(node);
-  };
-}
+describeRadioCardRefHook({ name: 'usePaymentCardRef', useRef: usePaymentCardRef, warn });
 
 describe('UiPaymentOptionCard — wired radio semantics (contract §1.1/§1.2)', () => {
-  it('renders the whole card as one native type="button" with role="radio"', () => {
-    render(cardWith({ onSelect: noop }));
-
-    const root: HTMLElement = card();
-    expect(root.tagName).toBe('BUTTON');
-    expect(root).toHaveAttribute('type', 'button');
-    expect(root).toHaveAttribute('role', 'radio');
-    expect(root).toHaveAccessibleName(LIQPAY);
-  });
-
-  it('carries a permanent aria-checked that mirrors `selected` across re-renders', () => {
-    const { rerender } = render(cardWith({ onSelect: noop }));
-
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-    expect(card()).not.toBeChecked();
-
-    rerender(cardWith({ selected: true, onSelect: noop }));
-    expect(card()).toHaveAttribute('aria-checked', 'true');
-    expect(card()).toBeChecked();
-
-    rerender(cardWith({ selected: false, onSelect: noop }));
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-
-    // Nullish coerces to `false` rather than dropping the attribute: an absent
-    // aria-checked would leave the radio's state unexposed.
-    rerender(cardWith({ selected: undefined, onSelect: noop }));
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('never ships aria-pressed, and never a self-rendered group or set metadata', () => {
-    render(cardWith({ selected: true, onSelect: noop }));
-
-    const root: HTMLElement = card();
-    // `aria-pressed` is forbidden: a toggle button carries no mutual exclusivity,
-    // so a user who "pressed" LiqPay then WayForPay would believe both are on.
-    expect(root).not.toHaveAttribute('aria-pressed');
-    expect(root).not.toHaveAttribute('aria-setsize');
-    expect(root).not.toHaveAttribute('aria-posinset');
-    expect(root).not.toHaveAttribute('aria-expanded');
-    expect(root).not.toHaveAttribute('aria-haspopup');
-    expect(root).not.toHaveAttribute('aria-selected');
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
-  });
-
-  it('keeps exactly one focusable element in the tree (no nested interactive)', () => {
-    render(cardWith({ onSelect: noop }));
-
-    expect(focusables()).toHaveLength(1);
-    expect(focusables()[0]).toBe(card());
-    expect(screen.getAllByRole('radio')).toHaveLength(1);
-    // No `<input type="radio">` and no MUI Radio: the circle is paint.
-    expect(nodesMatching('input')).toHaveLength(0);
-  });
-
   it('renders the selection circle as an aria-hidden span that is never a control', () => {
     render(cardWith({ onSelect: noop }));
 
@@ -262,15 +183,6 @@ describe('UiPaymentOptionCard — wired radio semantics (contract §1.1/§1.2)',
 });
 
 describe('UiPaymentOptionCard — static (unwired) card', () => {
-  it('exposes zero focusable elements and zero ARIA hooks', () => {
-    render(cardWith({}));
-
-    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(focusables()).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
-  });
-
   it('keeps the identical content tree, including the consumer id', () => {
     render(cardWith({ id: 'static-card' }));
 
@@ -279,23 +191,6 @@ describe('UiPaymentOptionCard — static (unwired) card', () => {
     expect(root.contains(circle())).toBe(true);
     expect(cardImages()).toHaveLength(1);
     expect(screen.getByRole('img')).toHaveAccessibleName(LIQPAY);
-  });
-
-  it('never paints the selected state, so no checked circle outlives aria-checked', () => {
-    render(cardWith({ selected: true }));
-
-    // The selected chrome is keyed off `[aria-checked="true"]`, an attribute this
-    // branch never has — the rest presentation is structural, not conditional.
-    expect(nodesMatching('[aria-checked]')).toHaveLength(0);
-    expect(baseOf(false)['&[aria-checked="true"]']).toBeUndefined();
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('static content'));
-  });
-
-  it('shows no aria-disabled on a disabled static card', () => {
-    render(cardWith({ disabled: true }));
-
-    expect(nodesMatching('[aria-disabled]')).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
   });
 
   it('keeps the full-colour mark on a disabled static card', () => {
@@ -307,248 +202,7 @@ describe('UiPaymentOptionCard — static (unwired) card', () => {
   });
 });
 
-describe('UiPaymentOptionCard — selection requests', () => {
-  it('requests selection exactly once per click', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    await user.click(card());
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith();
-  });
-
-  it('requests selection exactly once on Enter (no manual key handler double-fires)', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    card().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it('requests selection exactly once on Space', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    card().focus();
-    await user.keyboard(' ');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it('ignores arrow, Home/End and printable keys — no roving model lives here', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    card().focus();
-    await user.keyboard('{ArrowDown}{ArrowUp}{ArrowRight}{ArrowLeft}{Home}{End}{Escape}a');
-
-    expect(onSelect).not.toHaveBeenCalled();
-  });
-
-  it('fires nothing when an already-selected card is activated by any gesture', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ selected: true, onSelect }));
-
-    await user.click(card());
-    card().focus();
-    await user.keyboard('{Enter} ');
-
-    // Native radio `change` semantics: a radio cannot unselect itself, and a
-    // repeat selection must not re-run the consumer's side effects.
-    expect(onSelect).not.toHaveBeenCalled();
-    expect(card()).toBeChecked();
-  });
-
-  it('stays eligible after the consumer DECLINES the selection', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    await user.click(card());
-    await user.click(card());
-    card().focus();
-    await user.keyboard('{Enter}');
-
-    // `selected` stayed false (the consumer declined), so every later activation
-    // is reported again — the gate is state, never a latch.
-    expect(onSelect).toHaveBeenCalledTimes(3);
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('never self-flips the checked state (always controlled)', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(cardWith({ onSelect: noop }));
-
-    await user.click(card());
-
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('never submits an enclosing checkout form on Enter (type="button")', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSubmit: jest.Mock = jest.fn();
-    const onSelect: jest.Mock = jest.fn();
-    render(<form onSubmit={onSubmit}>{cardWith({ onSelect })}</form>);
-
-    card().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-});
-
-describe('UiPaymentOptionCard — disabled (aria-disabled boundary)', () => {
-  it('stays a focusable button with aria-disabled and no native disabled attribute', () => {
-    render(cardWith({ disabled: true, onSelect: noop }));
-
-    const root: HTMLElement = card();
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    // The native `disabled` attribute is NEVER set — that is what keeps the card
-    // focusable while disabled (SC 2.4.3).
-    expect(root.getAttributeNames()).not.toContain('disabled');
-    expect(root).toBeEnabled();
-    expect(root).toHaveAttribute('role', 'radio');
-    expect(root).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('remains reachable by Tab while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(cardWith({ disabled: true, onSelect: noop }));
-
-    await user.tab();
-    expect(card()).toHaveFocus();
-  });
-
-  it('no-ops every activation path while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ disabled: true, onSelect }));
-
-    await user.click(card());
-    card().focus();
-    await user.keyboard('{Enter} ');
-
-    expect(onSelect).not.toHaveBeenCalled();
-  });
-
-  it('retains focus when a focused card flips disabled, then restores selection', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    const { rerender } = render(cardWith({ onSelect }));
-
-    const root: HTMLElement = card();
-    root.focus();
-    await user.keyboard('{Enter}');
-    expect(onSelect).toHaveBeenCalledTimes(1);
-
-    rerender(cardWith({ disabled: true, onSelect }));
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root).toHaveFocus();
-    expect(document.body).not.toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onSelect).toHaveBeenCalledTimes(1);
-
-    rerender(cardWith({ onSelect }));
-    expect(root).not.toHaveAttribute('aria-disabled');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onSelect).toHaveBeenCalledTimes(2);
-  });
-
-  it('keeps the full selected chrome on a selected + disabled card', () => {
-    render(cardWith({ selected: true, disabled: true, onSelect: noop }));
-
-    // The disabled circle rule is declared BEFORE the checked rule, so a selected
-    // + disabled card keeps its blue border, second pixel and 5px circle.
-    expect(card()).toHaveAttribute('aria-checked', 'true');
-    expect(card()).toHaveAttribute('aria-disabled', 'true');
-    const base: StyleObject = baseOf(true);
-    const keys: string[] = Object.keys(base);
-    expect(keys.indexOf('&[aria-disabled="true"]')).toBeLessThan(
-      keys.indexOf('&[aria-checked="true"]')
-    );
-  });
-});
-
-describe('UiPaymentOptionCard — focus and tab order', () => {
-  it('adds no explicit tabindex, so every wired card is one native tab stop', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(
-      <div role="radiogroup">
-        <UiPaymentOptionCard name={LIQPAY} logo={LIQPAY_LOGO} onSelect={noop} />
-        <UiPaymentOptionCard name="Static" logo={WAYFORPAY_LOGO} />
-        <UiPaymentOptionCard name={WAYFORPAY} logo={WAYFORPAY_LOGO} selected onSelect={noop} />
-      </div>
-    );
-
-    expect(nodesMatching('[tabindex]')).toHaveLength(0);
-
-    await user.tab();
-    expect(screen.getByRole('radio', { name: LIQPAY })).toHaveFocus();
-    // No roving tabindex: the SELECTED sibling is an ordinary next stop, and the
-    // static card is skipped because it is not focusable at all.
-    await user.tab();
-    expect(screen.getByRole('radio', { name: WAYFORPAY })).toHaveFocus();
-  });
-
-  it('keeps focus on the card after activation (the card never moves focus)', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    const root: HTMLElement = card();
-    root.focus();
-    await user.keyboard('{Enter}');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(root).toHaveFocus();
-  });
-
-  it('forwards an object ref to the card button itself, never a wrapper', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    render(<UiPaymentOptionCard ref={ref} name={LIQPAY} logo={LIQPAY_LOGO} onSelect={noop} />);
-
-    expect(ref.current).toBe(card());
-    expect(ref.current?.tagName).toBe('BUTTON');
-  });
-
-  it('forwards a callback ref to the same node and releases it on unmount', () => {
-    const seen: (HTMLButtonElement | null)[] = [];
-    const collect: (node: HTMLButtonElement | null) => void = collectorInto(seen);
-    const { unmount } = render(
-      <UiPaymentOptionCard ref={collect} name={LIQPAY} logo={LIQPAY_LOGO} onSelect={noop} />
-    );
-
-    expect(seen[0]).toBe(card());
-    unmount();
-    expect(seen[seen.length - 1]).toBeNull();
-  });
-
-  it('re-resolves the card by id after a remount, the documented focus-return API', () => {
-    const { unmount } = render(cardWith({ id: 'payment-7', onSelect: noop }));
-    expect(card()).toHaveAttribute('id', 'payment-7');
-
-    unmount();
-    expect(nodesMatching('#payment-7')).toHaveLength(0);
-
-    render(cardWith({ id: 'payment-7', onSelect: noop }));
-    const remounted: Element = firstOf(nodesMatching('#payment-7'));
-    expect(remounted).toBe(card());
-    (remounted as HTMLElement).focus();
-    expect(remounted).toHaveFocus();
-  });
-});
+describe('UiPaymentOptionCard — focus and tab order', () => {});
 
 describe('UiPaymentOptionCard — accessible name and imagery (Ruling 1)', () => {
   it('names the card with the wordmark alt exactly, with no aria-label anywhere', () => {
@@ -674,71 +328,7 @@ describe('UiPaymentOptionCard — disabled wordmark resolution', () => {
   });
 });
 
-describe('UiPaymentOptionCard — live-region prohibition', () => {
-  it('exposes none across rest, selected, disabled and selected + disabled', () => {
-    const { rerender } = render(cardWith({ onSelect: noop }));
-    expectNoLiveRegion();
-
-    rerender(cardWith({ selected: true, onSelect: noop }));
-    expectNoLiveRegion();
-
-    rerender(cardWith({ disabled: true, onSelect: noop }));
-    expectNoLiveRegion();
-
-    rerender(cardWith({ selected: true, disabled: true, onSelect: noop }));
-    expectNoLiveRegion();
-  });
-
-  it('exposes none on a static card, or after a real activation', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    const { rerender } = render(cardWith({}));
-    expectNoLiveRegion();
-
-    rerender(cardWith({ onSelect }));
-    await user.click(card());
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expectNoLiveRegion();
-  });
-});
-
 describe('UiPaymentOptionCard — dev warnings', () => {
-  it('stays silent for a healthy wired card inside a radiogroup', () => {
-    render(inGroup(cardWith({ onSelect: noop })));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
-
-  it('stays silent for a healthy static card', () => {
-    render(cardWith({}));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
-
-  it('warns when `selected` arrives without `onSelect`', () => {
-    render(cardWith({ selected: true }));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('static content'));
-  });
-
-  it('stays silent for an explicitly unselected static card', () => {
-    render(cardWith({ selected: false }));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
-
-  it('warns for a whitespace-only name', () => {
-    render(inGroup(cardWith({ name: '   ', onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `name`'));
-  });
-
-  it('warns for a name missing entirely', () => {
-    render(inGroup(cardWith({ name: undefined, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `name`'));
-  });
-
-  it('warns for an unusable logo bundle', () => {
-    render(inGroup(cardWith({ logo: NO_SIZE_LOGO, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('usable `src`'));
-  });
-
   it('stays silent when a disabled card paints its usable grey mark', () => {
     // The rendered mark is what matters: `logo` alone is unusable here, but the
     // disabled card really does paint `logoDisabled`, so nothing is missing.
@@ -757,32 +347,6 @@ describe('UiPaymentOptionCard — dev warnings', () => {
     expect(warn.spy).not.toHaveBeenCalled();
   });
 
-  it('warns once per warning state, not once per render', () => {
-    const { rerender } = render(inGroup(cardWith({ name: '   ', onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    // `useDevWarning` is keyed on the message, so a prop change that lands in the
-    // SAME warning state stays quiet — a blank name and an absent one are one
-    // state, and the console is not a render log.
-    rerender(inGroup(cardWith({ name: undefined, onSelect: noop })));
-    rerender(inGroup(cardWith({ name: '', selected: false, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    // A change INTO a different warning state does re-report.
-    rerender(inGroup(cardWith({ logo: NO_SIZE_LOGO, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledTimes(2);
-    expect(warn.spy).toHaveBeenLastCalledWith(expect.stringContaining('usable `src`'));
-  });
-
-  it('reports the unwired-selected misconfiguration ahead of the content ones', () => {
-    render(cardWith({ name: '', selected: true }));
-
-    // One warning per render, most structural first: fixing the wiring is what
-    // makes the state representable at all.
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('static content'));
-  });
-
   it('reports the blank name ahead of an unusable bundle', () => {
     render(inGroup(cardWith({ name: '', logo: NO_SIZE_LOGO, onSelect: noop })));
 
@@ -793,76 +357,6 @@ describe('UiPaymentOptionCard — dev warnings', () => {
   it('never warns about the disabled mark, which legitimately falls back', () => {
     render(inGroup(cardWith({ disabled: true, logoDisabled: NO_SIZE_LOGO, onSelect: noop })));
     expect(warn.spy).not.toHaveBeenCalled();
-  });
-
-  it('emits nothing in production, for any of the four warnings', () => {
-    const originalEnv: string | undefined = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      const { rerender } = render(cardWith({ name: '', selected: true }));
-      rerender(cardWith({ name: '', logo: NO_SIZE_LOGO, onSelect: noop }));
-      expect(warn.spy).not.toHaveBeenCalled();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
-  });
-});
-
-describe('UiPaymentOptionCard — radiogroup context warning', () => {
-  it('warns once for a standalone wired card', () => {
-    render(cardWith({ onSelect: noop }));
-
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('[role="radiogroup"]'));
-  });
-
-  it('does not warn for a wired card wrapped in a radiogroup', () => {
-    render(inGroup(cardWith({ onSelect: noop })));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
-
-  it('never warns for a static card, wrapped or not', () => {
-    const { rerender } = render(cardWith({}));
-    expect(warn.spy).not.toHaveBeenCalled();
-
-    rerender(inGroup(cardWith({})));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
-
-  it('does not re-warn on an ordinary re-render', () => {
-    const { rerender } = render(cardWith({ onSelect: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    rerender(cardWith({ selected: true, onSelect: noop }));
-    rerender(cardWith({ selected: true, disabled: true, onSelect: noop }));
-
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-  });
-
-  it('stays silent in production', () => {
-    const originalEnv: string | undefined = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      render(cardWith({ onSelect: noop }));
-      expect(warn.spy).not.toHaveBeenCalled();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
-  });
-});
-
-describe('UiPaymentOptionCard — consumer sx', () => {
-  it('applies an object sx to the wired root, merged last', () => {
-    render(cardWith({ sx: { marginTop: '1rem' }, onSelect: noop }));
-    expect(card()).toHaveStyle({ marginTop: '1rem' });
-  });
-
-  it('applies array sx layers to the static root', () => {
-    render(cardWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
-
-    const root: Element = firstOf(nodesMatching('#styled'));
-    expect(root).toHaveStyle({ marginTop: '1rem' });
-    expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
 });
 
@@ -1219,61 +713,5 @@ describe('usePaymentCard — card view model', () => {
 
     expect(() => modelFor({ name: badName, logo: LIQPAY_LOGO })).not.toThrow();
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `name`'));
-  });
-});
-
-describe('usePaymentCardRef — ref plumbing and the radiogroup mount check', () => {
-  it('feeds a forwarded callback ref', () => {
-    const seen: (HTMLButtonElement | null)[] = [];
-    const node: HTMLButtonElement = document.createElement('button');
-    const { result } = renderHook(() => usePaymentCardRef(collectorInto(seen), false));
-
-    result.current(node);
-    result.current(null);
-
-    expect(seen).toEqual([node, null]);
-  });
-
-  it('feeds a forwarded ref object', () => {
-    const node: HTMLButtonElement = document.createElement('button');
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    const { result } = renderHook(() => usePaymentCardRef(ref, false));
-
-    result.current(node);
-    expect(ref.current).toBe(node);
-
-    result.current(null);
-    expect(ref.current).toBeNull();
-  });
-
-  it('keeps its private handle when the consumer forwards nothing', () => {
-    // The common case: no consumer ref at all. The handle is still kept, because
-    // the radiogroup-ancestor mount check is what reads it.
-    const node: HTMLButtonElement = document.createElement('button');
-    const { result } = renderHook(() => usePaymentCardRef(null, false));
-
-    expect(() => result.current(node)).not.toThrow();
-  });
-
-  it('keeps the callback identity stable while the forwarded ref does not change', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    const { result, rerender } = renderHook(() => usePaymentCardRef(ref, true));
-    const first: React.RefCallback<HTMLButtonElement> = result.current;
-
-    rerender();
-
-    expect(result.current).toBe(first);
-  });
-
-  it('warns when a wired card has no node to check against, and stays quiet unwired', () => {
-    // The card button always mounts in the real component, so this exercises the
-    // hook's own guard: with no node the ancestor cannot be proven, and the
-    // warning teaches rather than gates.
-    renderHook(() => usePaymentCardRef(null, true));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('[role="radiogroup"]'));
-
-    warn.spy.mockClear();
-    renderHook(() => usePaymentCardRef(null, false));
-    expect(warn.spy).not.toHaveBeenCalled();
   });
 });

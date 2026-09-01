@@ -20,9 +20,11 @@ import {
 import type { UiPinCellLabel, UiPinInputProps } from '../../src/components/ui-pin-input/types';
 import { usePinInput, type PinInputModel } from '../../src/components/ui-pin-input/use-pin-input';
 
+import { expectNoLiveRegion, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 import nthOf from './utils/nth-of';
+import { keysMatching, type StyleObject } from './utils/style-layers';
 
 // UiPinInput emits four dev-only warnings via console.warn — one of them on every
 // field that mounts without an accessible group name. Silence them and keep a
@@ -144,10 +146,6 @@ function valuesOf(): string[] {
   return cells().map((cell: HTMLInputElement): string => cell.value);
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 // Every ARIA/interactivity hook that would make the field claim widget state.
 // `aria-label`, `aria-invalid`, `aria-required` and `aria-describedby` are
 // deliberately absent from this list: they are the field's CONTENT semantics and
@@ -156,23 +154,6 @@ const WIDGET_ARIA_SELECTOR: string =
   '[aria-disabled], [aria-pressed], [aria-checked], [aria-expanded], [aria-haspopup], ' +
   '[aria-controls], [aria-selected], [aria-setsize], [aria-posinset], [aria-readonly], ' +
   '[tabindex], [role="button"], [role="radio"]';
-
-// A bare `aria-live` container has no implicit role, so role queries alone leave a
-// hole; sweep the attributes too (S9).
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
 
 // Emotion injects `sx` through CSSOM `insertRule`, so the emitted CSS is only
 // reachable through `document.styleSheets` — the `<style>` nodes carry no text.
@@ -192,18 +173,12 @@ function fieldRootEmotionClass(): string {
   return `.${classes.find((name: string): boolean => name.startsWith('css-')) ?? 'missing'}`;
 }
 
-type StyleObject = Record<string, unknown>;
-
 function cellStyle(): StyleObject {
   return pinCellSx as unknown as StyleObject;
 }
 
 function ruleAt(key: string): StyleObject {
   return cellStyle()[key] as StyleObject;
-}
-
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
 }
 
 function pasteInto(cell: HTMLInputElement, text: string): Event {

@@ -20,8 +20,10 @@ import {
   type StatusBadgeModel,
 } from '../../src/components/ui-status-badge/use-status-badge';
 
+import { expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject, type SxLayers } from './utils/style-layers';
 
 // The badge has exactly ONE dev warning (a blank `label`); several tests drive it
 // on purpose. Silence it for the suite and keep a handle for the assertions.
@@ -81,25 +83,12 @@ function staticBadge(): HTMLElement {
   return screen.getByRole('img');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 function root(): Element {
   return firstOf(nodesMatching(`.${BADGE_ROOT_CLASS}`));
 }
 
 function glyph(): SVGElement {
   return document.querySelector('svg') as SVGElement;
-}
-
-// Every hook that would make something focusable. Exactly one match is allowed in
-// the wired tree and zero in the static one (S2).
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
 }
 
 // Every ARIA/interactivity hook the static branch must not ship. `role` and
@@ -117,29 +106,6 @@ function unexpectedAttributes(element: Element, allowed: readonly string[]): str
   return element.getAttributeNames().filter((name: string): boolean => !allowed.includes(name));
 }
 
-// A bare `aria-live` container has no implicit role, so role queries alone leave a
-// hole; sweep the attributes too (S9).
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-  expect(screen.queryByRole('marquee')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-// `statusBadgeSx` is typed as the broad `SxProps` union; in practice it always
-// returns the `[base, ...consumerSx]` array. Narrow it once here so the layer
-// assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
-
 interface LayerRequest {
   interactive: boolean;
   active: boolean;
@@ -156,10 +122,6 @@ function layersOf(request: Readonly<LayerRequest>): SxLayers {
 
 function baseOf(interactive: boolean, active: boolean): StyleObject {
   return firstOf(layersOf({ interactive, active, sx: undefined }));
-}
-
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
 }
 
 function indexOfKey(base: StyleObject, fragment: string): number {
