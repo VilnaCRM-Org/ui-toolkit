@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
+import UiIntegrationCard from '@/components/ui-integration-card';
 import UiItemRow from '@/components/ui-item-row';
 import type { ItemRowMethod } from '@/components/ui-item-row/types';
 import UiProfileSelectCard from '@/components/ui-profile-select-card';
@@ -9,8 +10,15 @@ import UiSearchInput from '@/components/ui-search-input';
 import UiTaskCard from '@/components/ui-task-card';
 import type { TaskAssignee } from '@/components/ui-task-card/types';
 
-import { PROFILE_AVATAR_SRC, PROFILE_ITEMS, SUGGESTIONS, TASK_AVATAR_SRC } from './fixtures';
 import {
+  PROFILE_AVATAR_SRC,
+  PROFILE_ITEMS,
+  SUGGESTIONS,
+  TASK_AVATAR_SRC,
+  type IntegrationSample,
+} from './fixtures';
+import {
+  INTEGRATION_CARD_HOVER_SX,
   PROFILE_CARD_HOVER_SX,
   PROFILE_MENU_ROW_HOVER_SX,
   SEARCH_ACTIVE_SX,
@@ -142,4 +150,35 @@ export function profileSelectCardNode(opts: ProfileTileOptions): React.ReactElem
       sx={profileTileSx(opts)}
     />
   );
+}
+
+interface IntegrationTileOptions {
+  brand: IntegrationSample;
+  selected?: boolean;
+  hover?: boolean;
+  staticCard?: boolean;
+}
+
+// Builds an integration-card tile on a master's own brand and mark. The static
+// tile drops `onSelect`, which leaves plain content with no ARIA at all; every
+// other tile is wired, so it is wrapped in the `role="radiogroup"` the card
+// deliberately never renders for itself (a11y contract §1.2/§12.2) — the board is
+// the CONSUMER here. The wrapper carries no `aria-label`: the tile's own visible
+// state label names it, exactly as every other board group titles its states, and
+// the component tree never carries one either (§5.1). The hover recipe is
+// pointer-gated, so it is forced through the card's own `sx`.
+export function integrationCardNode(opts: IntegrationTileOptions): React.ReactElement {
+  const card = (
+    <UiIntegrationCard
+      name={opts.brand.name}
+      logo={opts.brand.logo}
+      selected={opts.selected}
+      onSelect={opts.staticCard ? undefined : noop}
+      sx={opts.hover ? INTEGRATION_CARD_HOVER_SX : undefined}
+    />
+  );
+  if (opts.staticCard) {
+    return card;
+  }
+  return <Box role="radiogroup">{card}</Box>;
 }
