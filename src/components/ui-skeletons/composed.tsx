@@ -2,7 +2,7 @@ import type { SxProps, Theme } from '@mui/material';
 import Box from '@mui/material/Box';
 import React from 'react';
 
-import { srOnlySx } from '../field-controls';
+import srOnlySx from '../../utils/sr-only';
 
 export const DEFAULT_LOADING_TEXT: string = 'Завантаження';
 
