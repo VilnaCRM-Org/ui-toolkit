@@ -23,6 +23,13 @@ export function selectControlArgType(description: string, options: string[]): Fi
   return { type: 'string', description, control: { type: 'select' }, options };
 }
 
+export function radioControlArgType(
+  description: string,
+  options: readonly (string | number)[]
+): FieldArgType {
+  return { description, control: { type: 'radio' }, options: [...options] };
+}
+
 // A JSON object/array editor, so a story reader can supply their own value —
 // e.g. edit a multi-select's `options`/`value` arrays directly in the Controls panel.
 export function objectControlArgType(description: string): FieldArgType {

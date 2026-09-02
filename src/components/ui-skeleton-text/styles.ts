@@ -1,12 +1,30 @@
-import { SKELETON_BORDER_RADIUS, baseSkeletonStyle } from '../ui-skeletons';
+import type { Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
 
-import type { SkeletonTextSize } from './types';
+import {
+  SKELETON_BORDER_RADIUS,
+  baseSkeletonStyle,
+  getSkeletonKeys,
+  normalizeCount,
+} from '../ui-skeletons';
+
+import type { SkeletonTextLine, SkeletonTextSize } from './types';
 
 const sizeHeights: Record<SkeletonTextSize, string> = {
   s: '8px',
   m: '12px',
   l: '18px',
 };
+
+// Board D many-lines pattern, measured from Figma `538:38695` / `538:38696` /
+// `538:38697`: three 8px rows on a 14px pitch (a 6px gap) measuring 197, 157 and
+// 96 wide, which is the full / ~4-5ths / ~half taper below.
+export const SINGLE_LINE_SIZE: SkeletonTextSize = 'm';
+export const MANY_LINES_SIZE: SkeletonTextSize = 's';
+export const MANY_LINES_GAP: string = '6px';
+export const FIRST_LINE_WIDTH: string = '100%';
+export const MIDDLE_LINE_WIDTH: string = '80%';
+export const LAST_LINE_WIDTH: string = '50%';
 
 export default function getTextSkeletonStyles(
   size: SkeletonTextSize,
@@ -21,5 +39,47 @@ export default function getTextSkeletonStyles(
     height: sizeHeights[size],
     width,
     borderRadius: SKELETON_BORDER_RADIUS,
+  };
+}
+
+export function resolveTextSize(
+  size: SkeletonTextSize | undefined,
+  lines: number
+): SkeletonTextSize {
+  return size ?? (lines > 1 ? MANY_LINES_SIZE : SINGLE_LINE_SIZE);
+}
+
+// First-line precedence: a sole line is full width, mirroring the component's
+// single-bar path, so the pure builder and the rendered contract agree on every
+// input.
+function getLineWidth(index: number, lines: number): string {
+  if (index === 0) {
+    return FIRST_LINE_WIDTH;
+  }
+
+  return index === lines - 1 ? LAST_LINE_WIDTH : MIDDLE_LINE_WIDTH;
+}
+
+/**
+ * The taper needs a whole line count, so the public value is normalized here
+ * too — to the SAME outcome as `UiSkeletonText`: anything the component would
+ * render as its single bar (a normalized count of 0 or 1) is one full-width
+ * line.
+ */
+export function getTextLines(lines: number): SkeletonTextLine[] {
+  const count: number = Math.max(1, normalizeCount(lines, 1));
+
+  return getSkeletonKeys('line', count).map((key, index) => ({
+    key,
+    width: getLineWidth(index, count),
+  }));
+}
+
+export function getTextLinesContainerStyles(width: string | number): SystemStyleObject<Theme> {
+  return {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: MANY_LINES_GAP,
+    width,
   };
 }

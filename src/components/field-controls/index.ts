@@ -9,7 +9,7 @@ export { createFieldRenderInput } from './render-input';
 export type { FieldRenderInputConfig } from './render-input';
 export { FieldLabel } from './field-label';
 export type { FieldLabelProps } from './field-label';
-export { srOnlySx } from './sr-only';
+export { default as srOnlySx } from '../../utils/sr-only';
 export { firstGhostMatch, isPrefixMatch, isGhostAcceptKey } from './ghost-completion';
 export { GhostOverlay } from './ghost-overlay';
 export type { GhostOverlayProps } from './ghost-overlay';
