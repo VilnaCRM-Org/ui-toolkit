@@ -55,6 +55,21 @@
     "name": "Static"
   },
   {
+    "id": "uicomponents-uiaddbutton--add-button",
+    "title": "UiComponents/UiAddButton",
+    "name": "Add Button"
+  },
+  {
+    "id": "uicomponents-uibackgroundpicker--background-picker",
+    "title": "UiComponents/UiBackgroundPicker",
+    "name": "Background Picker"
+  },
+  {
+    "id": "uicomponents-uibackgroundpicker--open",
+    "title": "UiComponents/UiBackgroundPicker",
+    "name": "Open"
+  },
+  {
     "id": "uicomponents-uibacktomain--custom-destination",
     "title": "UiComponents/UiBackToMain",
     "name": "Custom Destination"
@@ -73,6 +88,11 @@
     "id": "uicomponents-uibutton--contained",
     "title": "UiComponents/UiButton",
     "name": "Contained"
+  },
+  {
+    "id": "uicomponents-uibutton--danger",
+    "title": "UiComponents/UiButton",
+    "name": "Danger"
   },
   {
     "id": "uicomponents-uibutton--outlined",
@@ -115,9 +135,34 @@
     "name": "Checkbox"
   },
   {
+    "id": "uicomponents-uichevronbutton--chevron-button",
+    "title": "UiComponents/UiChevronButton",
+    "name": "Chevron Button"
+  },
+  {
+    "id": "uicomponents-uiclearbutton--clear-button",
+    "title": "UiComponents/UiClearButton",
+    "name": "Clear Button"
+  },
+  {
+    "id": "uicomponents-uiclearbutton--disabled",
+    "title": "UiComponents/UiClearButton",
+    "name": "Disabled"
+  },
+  {
+    "id": "uicomponents-uiclearbutton--static",
+    "title": "UiComponents/UiClearButton",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uicontainer--default",
     "title": "UiComponents/UiContainer",
     "name": "Default"
+  },
+  {
+    "id": "uicomponents-uicopyfield--copy-field",
+    "title": "UiComponents/UiCopyField",
+    "name": "Copy Field"
   },
   {
     "id": "uicomponents-uifileuploadinput--file-upload-input",
@@ -280,6 +325,16 @@
     "name": "Static"
   },
   {
+    "id": "uicomponents-uioptioncard--option-card",
+    "title": "UiComponents/UiOptionCard",
+    "name": "Option Card"
+  },
+  {
+    "id": "uicomponents-uioptioncard--static",
+    "title": "UiComponents/UiOptionCard",
+    "name": "Static"
+  },
+  {
     "id": "uicomponents-uipagination--disabled",
     "title": "UiComponents/UiPagination",
     "name": "Disabled"
@@ -383,6 +438,11 @@
     "id": "uicomponents-uisearchinput--search-input",
     "title": "UiComponents/UiSearchInput",
     "name": "Search Input"
+  },
+  {
+    "id": "uicomponents-uisegmentedcontrol--segmented-control",
+    "title": "UiComponents/UiSegmentedControl",
+    "name": "Segmented Control"
   },
   {
     "id": "uicomponents-uiselectwithsearch--select-with-search",
@@ -528,6 +588,16 @@
     "id": "uicomponents-uiskeletonwidget--small-task-list",
     "title": "UiComponents/UiSkeletonWidget",
     "name": "Small Task List"
+  },
+  {
+    "id": "uicomponents-uisocialiconbutton--row",
+    "title": "UiComponents/UiSocialIconButton",
+    "name": "Row"
+  },
+  {
+    "id": "uicomponents-uisocialiconbutton--social-icon-button",
+    "title": "UiComponents/UiSocialIconButton",
+    "name": "Social Icon Button"
   },
   {
     "id": "uicomponents-uistatusbadge--active",

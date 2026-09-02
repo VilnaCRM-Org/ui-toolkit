@@ -9,8 +9,16 @@ export type {
   ActionIconName,
   NeutralActionIconName,
 } from './ui-action-icon-bar/types';
+export { default as UiAddButton } from './ui-add-button';
+export type { UiAddButtonProps } from './ui-add-button/types';
 export { default as UiBackToMain } from './ui-back-to-main';
 export type { UiBackToMainProps } from './ui-back-to-main';
+export { default as UiBackgroundPicker } from './ui-background-picker';
+export type {
+  UiBackgroundPickerProps,
+  BackgroundOption,
+  BackgroundOptionGroup,
+} from './ui-background-picker/types';
 export { default as UiButton } from './ui-button';
 export type { UiButtonProps, ButtonLinkTarget } from './ui-button/types';
 export { default as UiCalendarMultiSelect } from './ui-calendar-multi-select';
@@ -24,8 +32,14 @@ export type {
 } from './ui-card-list/types';
 export { default as UiCheckbox } from './ui-checkbox';
 export type { UiCheckboxProps } from './ui-checkbox/types';
+export { default as UiChevronButton } from './ui-chevron-button';
+export type { UiChevronButtonProps } from './ui-chevron-button/types';
+export { default as UiClearButton } from './ui-clear-button';
+export type { UiClearButtonProps } from './ui-clear-button/types';
 export { default as UiContainer } from './ui-container';
 export type { UiContainerProps } from './ui-container';
+export { default as UiCopyField } from './ui-copy-field';
+export type { UiCopyFieldProps } from './ui-copy-field/types';
 export { default as UiFooter } from './ui-footer';
 export type { UiFooterProps, UiFooterSocialLink } from './ui-footer/types';
 export { default as UiFileUploadInput } from './ui-file-upload-input';
@@ -52,6 +66,8 @@ export { default as UiMultiSelect } from './ui-multi-select';
 export type { UiMultiSelectProps, UiMultiSelectOption } from './ui-multi-select/types';
 export { default as UiNotificationBadge } from './ui-notification-badge';
 export type { UiNotificationBadgeProps } from './ui-notification-badge/types';
+export { default as UiOptionCard } from './ui-option-card';
+export type { UiOptionCardProps } from './ui-option-card/types';
 export { default as UiPagination } from './ui-pagination';
 export type { UiPaginationProps } from './ui-pagination/types';
 export { default as UiPaymentOptionCard } from './ui-payment-option-card';
@@ -64,6 +80,8 @@ export { default as UiRadioGroup } from './ui-radio-group';
 export type { UiRadioGroupProps, UiRadioOption } from './ui-radio-group/types';
 export { default as UiSearchInput } from './ui-search-input';
 export type { UiSearchInputProps } from './ui-search-input/types';
+export { default as UiSegmentedControl } from './ui-segmented-control';
+export type { UiSegmentedControlProps, SegmentedOption } from './ui-segmented-control/types';
 export { default as UiSelectWithSearch } from './ui-select-with-search';
 export type {
   UiSelectWithSearchProps,
@@ -109,6 +127,8 @@ export type {
   SkeletonWidgetVariant,
   SkeletonWidgetColumns,
 } from './ui-skeleton-widget/types';
+export { default as UiSocialIconButton } from './ui-social-icon-button';
+export type { UiSocialIconButtonProps, SocialNetwork } from './ui-social-icon-button/types';
 export { default as UiToolbar } from './ui-toolbar';
 export type { UiToolbarProps } from './ui-toolbar';
 export { default as UiColorTheme } from './ui-color-theme';

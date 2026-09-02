@@ -64,6 +64,7 @@ development_status:
   3-4-integration-card-workflow: review
   3-5-board-a-micro-components: review
   3-6-epic-3-quality-gate-closure: review
+  3-7-board-follow-up-controls: review
   epic-3-retrospective: optional
   epic-4: in-progress
   4-1-crm-skeleton-baseline-and-provenance-lock: review

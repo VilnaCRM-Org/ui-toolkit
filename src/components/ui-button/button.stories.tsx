@@ -66,3 +66,12 @@ export const SocialButton: Story = {
     name: 'socialButton',
   },
 };
+
+export const Danger: Story = {
+  args: {
+    children: t('Cancel'),
+    variant: 'contained',
+    size: 'small',
+    name: 'danger',
+  },
+};
