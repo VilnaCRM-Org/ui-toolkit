@@ -29,9 +29,20 @@ jobs:
         # To change shard count, keep this list and MUTATION_SHARD_TOTAL (here and
         # in the merge job) in lock-step: index must be [0 .. TOTAL-1]. A mismatch
         # fails closed at the merge gate's shard-count/index check, never silently.
-        index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        #
+        # Why 16 and not 12: the LPT packing in scripts/ci/mutation-scope.mjs sorts
+        # by BYTE SIZE, and a slow interactive component has a SMALL index.tsx (it
+        # delegates to sub-modules), so size runs opposite to mutation time. LPT
+        # places the small tail last, always onto the lightest bin, which made
+        # shard 0 the dustbin: at 12 it collected all nine of the slow files at
+        # once (multi-select, search-input, calendar-header, ghost-overlay, ...)
+        # and took 17 min of Stryker against this 20 min cap. At 16 that cluster
+        # splits at most two-per-shard. The durable fix is to weight by measured
+        # per-file mutation time instead of bytes; until then the count is what
+        # keeps the tail from piling up.
+        index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     env:
-      MUTATION_SHARD_TOTAL: '12'
+      MUTATION_SHARD_TOTAL: '16'
       MUTATION_SHARD_INDEX: ${{ matrix.index }}
 
     steps:
@@ -73,7 +84,7 @@ jobs:
     permissions:
       contents: read
     env:
-      MUTATION_SHARD_TOTAL: '12'
+      MUTATION_SHARD_TOTAL: '16'
 
     steps:
       - name: Checkout code
