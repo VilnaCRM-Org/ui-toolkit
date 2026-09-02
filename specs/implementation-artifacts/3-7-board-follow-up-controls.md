@@ -2,7 +2,7 @@
 
 - **Issue:** [#149](https://github.com/VilnaCRM-Org/ui-toolkit/issues/149)
 - **Epic:** Epic 3 — Data Presentation and Cards (follow-up)
-- **Status:** implementation in progress
+- **Status:** delivered — PR [#150](https://github.com/VilnaCRM-Org/ui-toolkit/pull/150) (draft, base `feat/issue-33-export-contract`)
 - **Source AC:** appendix rulings in
   `specs/planning-artifacts/board-coverage-checklist.md` — the Board A
   social-icon row (`## Appendix — board paints outside prd.md §4 scope`) and
@@ -10,13 +10,13 @@
   board-painted controls the same audit surfaced with no delivered component.
 - **Format precedent:** `specs/implementation-artifacts/3-5-board-a-micro-components.md`
 
-This artifact is the **single source implementation agents build from**. It
-distils `/tmp/spec-149/briefs/00-shared.md` and the nine per-component briefs
-(`01`…`09-*.md`), cross-checked against each component's raw
-`/tmp/spec-149/<slug>/extraction.md`. Nine agents are implementing in
-parallel from those briefs directly; this document is the binding
-design/provenance record for what they build, not a redirection of their
-instructions.
+This artifact is the **binding design and provenance record** for the nine
+controls. Its per-component box models and per-state chrome tables were
+distilled from a direct Figma MCP extraction of every painted state of every
+node listed below, and they are what the implementation was built and
+verified against. The intermediate extraction scratch files are not retained;
+this document, together with `component-provenance.md` and the deviation
+ledger, is the durable record.
 
 ## Scope
 
@@ -738,7 +738,8 @@ itself. Width hugs content, `padding: '8px 14px'`, `gap: 8px`, radius 4px,
 Code text: Golos Text 600, 16px, `lineHeight: 'normal'`, letter-spacing 0
 (renders a 19px box). Glyph: shared `Glyph`, the copy-02 mark,
 `viewBox="0 0 20 20"`, `strokeWidth="1.66667"`, 20×20, `d` taken verbatim
-from `/tmp/spec-149/ui-copy-field/assets/`.
+from the Figma SVG export of node `451:25827`; the committed path lives in
+`src/components/ui-copy-field/copy-glyph.tsx`.
 
 ### Public API sketch
 
@@ -800,9 +801,11 @@ github** (github is drawn 1px larger on each side — kept, not normalised).
 The brand marks are fill-based, so the stroke-only shared `Glyph` cannot
 render them. A local `social-glyph.tsx` declares a tiny
 `<svg aria-hidden="true" focusable="false" fill="none">` wrapper whose single
-`<path fill="currentColor">` comes verbatim from the downloaded SVGs
-(`/tmp/spec-149/ui-social-icon-button/assets/`). `src/assets/svg/social-icons`
-is deliberately **not** reused — those hardcode the footer's ink.
+`<path fill="currentColor">` comes verbatim from the Figma SVG exports of the
+four chips in node `439:19307`; the committed paths live in
+`src/components/ui-social-icon-button/social-glyph.tsx`.
+`src/assets/svg/social-icons` is deliberately **not** reused — those hardcode
+the footer's ink.
 
 ### Per-state chrome
 
