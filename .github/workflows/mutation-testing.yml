@@ -29,9 +29,9 @@ jobs:
         # To change shard count, keep this list and MUTATION_SHARD_TOTAL (here and
         # in the merge job) in lock-step: index must be [0 .. TOTAL-1]. A mismatch
         # fails closed at the merge gate's shard-count/index check, never silently.
-        index: [0, 1, 2, 3, 4, 5, 6, 7]
+        index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     env:
-      MUTATION_SHARD_TOTAL: '8'
+      MUTATION_SHARD_TOTAL: '12'
       MUTATION_SHARD_INDEX: ${{ matrix.index }}
 
     steps:
@@ -73,7 +73,7 @@ jobs:
     permissions:
       contents: read
     env:
-      MUTATION_SHARD_TOTAL: '8'
+      MUTATION_SHARD_TOTAL: '12'
 
     steps:
       - name: Checkout code
