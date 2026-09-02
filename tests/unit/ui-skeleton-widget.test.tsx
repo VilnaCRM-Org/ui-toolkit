@@ -42,6 +42,8 @@ import type {
 } from '../../src/components/ui-skeleton-widget/types';
 import { DEFAULT_LOADING_TEXT, baseSkeletonStyle } from '../../src/components/ui-skeletons';
 
+import firstOf from './utils/first-of';
+
 const WIDGET_ROLES: string[] = [
   'button',
   'link',
@@ -338,12 +340,22 @@ describe('UiSkeletonWidget rendering', () => {
     render(<UiSkeletonWidget size="medium" columns={2} rows={3} />);
     expect(getRoot()).toHaveStyle({ maxWidth: '1167px', height: '540px' });
     expect(shapesWithHeight(TASK_ROW_HEIGHT)).toHaveLength(6);
+    // Separated tiles are the only board-level mark of the two-column layout, so
+    // pinning the tile recipe on the rendered row is what proves the resolved
+    // column count reached the row styles rather than only the grid geometry.
+    expect(firstOf(shapesWithHeight(TASK_ROW_HEIGHT))).toHaveStyle({
+      backgroundColor: 'rgba(231, 235, 240, 0.21)',
+    });
   });
 
   it('ignores the column override outside the medium task list', () => {
     render(<UiSkeletonWidget columns={2} rows={3} />);
     expect(getRoot()).toHaveStyle({ maxWidth: '375px' });
     expect(shapesWithHeight(TASK_ROW_HEIGHT)).toHaveLength(3);
+    // Single-column rows stay flush: no tint, divided by the hairline instead.
+    expect(firstOf(shapesWithHeight(TASK_ROW_HEIGHT))).toHaveStyle({
+      backgroundColor: 'rgba(0, 0, 0, 0)',
+    });
   });
 
   it('renders the block variant as a strip over a filled block', () => {
