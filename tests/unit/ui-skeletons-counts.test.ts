@@ -1,4 +1,4 @@
-import { getSkeletonKeys, normalizeCount } from '../../src/components/ui-skeletons';
+import { getSkeletonKeys, normalizeCount, skeletonKey } from '../../src/components/ui-skeletons';
 
 describe('normalizeCount', () => {
   it('passes a whole, positive count through untouched', () => {
@@ -22,6 +22,13 @@ describe('normalizeCount', () => {
   it('clamps a negative count to nothing rather than to the default', () => {
     expect(normalizeCount(-3, 5)).toBe(0);
     expect(normalizeCount(-0.5, 5)).toBe(0);
+  });
+});
+
+describe('skeletonKey', () => {
+  it('turns a 0-based position into the 1-based key the shapes are keyed by', () => {
+    expect(skeletonKey('row', 0)).toBe('row-1');
+    expect(skeletonKey('column', 4)).toBe('column-5');
   });
 });
 

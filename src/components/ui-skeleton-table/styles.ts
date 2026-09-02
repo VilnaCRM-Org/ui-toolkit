@@ -1,7 +1,7 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import { getSkeletonKeys } from '../ui-skeletons';
+import { normalizeCount, skeletonKey } from '../ui-skeletons';
 
 import type { SkeletonTableColumn, SkeletonTableColumnSlot } from './types';
 
@@ -50,10 +50,21 @@ export const TABLE_COLUMNS: SkeletonTableColumn[] = [
   { track: 324, width: '280px', kind: 'stacked' },
 ];
 
+// The measured pattern repeats for a larger column count. Repeating the list
+// and trimming it keeps every slot a whole column: reading one back by index
+// would type it as possibly-missing (`noUncheckedIndexedAccess`).
+function cycleColumns(count: number): SkeletonTableColumn[] {
+  const repeats: number = Math.ceil(count / TABLE_COLUMNS.length);
+
+  return Array.from({ length: repeats }, () => TABLE_COLUMNS)
+    .flat()
+    .slice(0, count);
+}
+
 export function getColumnSlots(columns: number): SkeletonTableColumnSlot[] {
-  return getSkeletonKeys('column', columns).map((key, index) => ({
-    ...TABLE_COLUMNS[index % TABLE_COLUMNS.length],
-    key,
+  return cycleColumns(normalizeCount(columns, 0)).map((column, index) => ({
+    ...column,
+    key: skeletonKey('column', index),
   }));
 }
 

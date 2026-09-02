@@ -17,9 +17,14 @@ export function normalizeCount(value: number, fallback: number): number {
   return Math.max(0, Math.floor(value));
 }
 
+/** The one 1-based key recipe every repeated skeleton shape is keyed by. */
+export function skeletonKey(prefix: string, index: number): string {
+  return `${prefix}-${index + 1}`;
+}
+
 /** Stable 1-based keys for a repeated shape (`prefix-1`, `prefix-2`, ...). */
 export function getSkeletonKeys(prefix: string, count: number): string[] {
   const length: number = normalizeCount(count, 0);
 
-  return Array.from({ length }, (_unused, index) => `${prefix}-${index + 1}`);
+  return Array.from({ length }, (_unused, index) => skeletonKey(prefix, index));
 }

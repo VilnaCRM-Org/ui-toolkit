@@ -40,8 +40,16 @@ const SHIMMER_BACKGROUND_SIZE: string = '200% 100%';
 // Measured underline segment origins and the label origins that sit ~21px into
 // each of those columns. Figma rounds the 188.67 pitch per shape, so the label
 // origins land within a pixel of the column edge plus the inset.
-const SEGMENT_ORIGINS: number[] = [0, 189, 377, 566, 755, 943];
-const LABEL_ORIGINS: number[] = [21, 209, 398, 587, 776, 965];
+// Measured segment and label x-origins for the six default tabs, paired at the
+// fixture so the inset assertion reads one row instead of two arrays by index.
+const TAB_ORIGINS: { segment: number; label: number }[] = [
+  { segment: 0, label: 21 },
+  { segment: 189, label: 209 },
+  { segment: 377, label: 398 },
+  { segment: 566, label: 587 },
+  { segment: 755, label: 776 },
+  { segment: 943, label: 965 },
+];
 
 const WIDGET_ROLES: string[] = ['tab', 'tablist', 'tabpanel', 'button', 'link', 'list', 'listitem'];
 
@@ -83,14 +91,14 @@ describe('UiSkeletonTabBar geometry constants', () => {
   it('carries the measured 189px tab pitch', () => {
     expect(TAB_PITCH).toBe(189);
     expect(Math.round(TAB_BAR_WIDTH / DEFAULT_TAB_COUNT)).toBe(TAB_PITCH);
-    SEGMENT_ORIGINS.forEach((origin, index) => {
-      expect(Math.round((TAB_BAR_WIDTH / DEFAULT_TAB_COUNT) * index)).toBe(origin);
+    TAB_ORIGINS.forEach(({ segment }, index) => {
+      expect(Math.round((TAB_BAR_WIDTH / DEFAULT_TAB_COUNT) * index)).toBe(segment);
     });
   });
 
   it('insets every label bar into its own column', () => {
-    LABEL_ORIGINS.forEach((origin, index) => {
-      expect(Math.abs(origin - SEGMENT_ORIGINS[index] - LABEL_INSET)).toBeLessThanOrEqual(1);
+    TAB_ORIGINS.forEach(({ segment, label }) => {
+      expect(Math.abs(label - segment - LABEL_INSET)).toBeLessThanOrEqual(1);
     });
   });
 

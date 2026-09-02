@@ -7,14 +7,14 @@ import { srOnlySx } from '../field-controls';
 export const DEFAULT_LOADING_TEXT: string = 'Завантаження';
 
 export interface ComposedSkeletonProps {
-  id?: string;
+  id?: string | undefined;
   /**
    * Screen-reader-only status text; pass a localized string in consuming apps.
    * The skeleton only marks state (`aria-busy` + this hidden text): announcing
    * load completion is the consumer's job via one persistent `role="status"`
    * region per view — skeletons never own live regions.
    */
-  loadingText?: string;
+  loadingText?: string | undefined;
   sx?: SxProps<Theme>;
   /** Layout styles for the hidden shape tree (flex/grid of the composition). */
   contentSx?: SxProps<Theme>;

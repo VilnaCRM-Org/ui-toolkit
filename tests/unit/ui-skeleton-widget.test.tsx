@@ -36,7 +36,10 @@ import {
   getTaskGridStyles,
   getTaskRowStyles,
 } from '../../src/components/ui-skeleton-widget/task-styles';
-import type { SkeletonWidgetColumns } from '../../src/components/ui-skeleton-widget/types';
+import type {
+  SkeletonTaskBar,
+  SkeletonWidgetColumns,
+} from '../../src/components/ui-skeleton-widget/types';
 import { DEFAULT_LOADING_TEXT, baseSkeletonStyle } from '../../src/components/ui-skeletons';
 
 const WIDGET_ROLES: string[] = [
@@ -225,7 +228,16 @@ describe('UiSkeletonWidget style builders', () => {
   });
 
   it('pins each task bar at its measured offset', () => {
-    expect(getTaskBarStyles(TASK_BARS[0])).toEqual({
+    const primaryBar: SkeletonTaskBar = {
+      key: 'primary',
+      size: 'm',
+      width: '81.99%',
+      left: '15.05%',
+      top: '14px',
+    };
+
+    expect(TASK_BARS).toContainEqual(primaryBar);
+    expect(getTaskBarStyles(primaryBar)).toEqual({
       position: 'absolute',
       left: '15.05%',
       top: '14px',
