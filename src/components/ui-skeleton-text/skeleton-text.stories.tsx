@@ -13,6 +13,7 @@ const meta: Meta<typeof UiSkeletonText> = {
       control: { type: 'radio' },
     },
     width: { description: 'Width of the text line', control: { type: 'text' } },
+    lines: { description: 'Number of stacked text lines', control: { type: 'number' } },
   },
 };
 
@@ -30,4 +31,8 @@ export const Medium: Story = {
 
 export const Large: Story = {
   args: { size: 'l', width: '60%' },
+};
+
+export const ManyLines: Story = {
+  args: { lines: 3, width: '197px' },
 };

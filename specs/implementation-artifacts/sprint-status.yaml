@@ -63,10 +63,10 @@ development_status:
   3-5-board-a-micro-components-delivery: review
   3-6-epic-3-quality-gate-closure: backlog
   epic-3-retrospective: optional
-  epic-4: backlog
-  4-1-crm-skeleton-baseline-and-provenance-lock: backlog
-  4-2-skeleton-primitive-variants: backlog
-  4-3-composed-skeleton-layout-variants: backlog
+  epic-4: in-progress
+  4-1-crm-skeleton-baseline-and-provenance-lock: review
+  4-2-skeleton-primitive-variants: review
+  4-3-composed-skeleton-layout-variants: review
   4-4-skeleton-parity-and-quality-gate-closure: backlog
   epic-4-retrospective: optional
   epic-5: backlog
