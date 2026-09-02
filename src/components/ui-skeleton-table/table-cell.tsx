@@ -30,7 +30,7 @@ interface ShapeProps {
 }
 
 /** Chip placeholder: a 5px dot and a 79x12.25 pill inside the 104x28 frame. */
-function ChipShape({ width }: ShapeProps): React.ReactElement {
+function ChipShape({ width }: Readonly<ShapeProps>): React.ReactElement {
   return (
     <Box sx={getChipStyles(width)}>
       <UiSkeletonBlock
@@ -49,7 +49,7 @@ function ChipShape({ width }: ShapeProps): React.ReactElement {
 }
 
 /** Two 12.25px bars on a 17.5px pitch, the measured trailing text column. */
-function StackedShape({ width }: ShapeProps): React.ReactElement {
+function StackedShape({ width }: Readonly<ShapeProps>): React.ReactElement {
   return (
     <Box sx={stackedStyles}>
       {getSkeletonKeys('stacked-line', STACKED_LINES).map(key => (
@@ -64,7 +64,9 @@ function StackedShape({ width }: ShapeProps): React.ReactElement {
   );
 }
 
-export default function SkeletonTableCell({ column }: SkeletonTableCellProps): React.ReactElement {
+export default function SkeletonTableCell({
+  column,
+}: Readonly<SkeletonTableCellProps>): React.ReactElement {
   const { kind, width } = column;
 
   if (kind === 'bar') {

@@ -46,7 +46,7 @@ const buildWrap: (disableAnimation: boolean) => Wrap =
   baseSx =>
     disableAnimation ? [baseSx, STATIC_SX] : [baseSx];
 
-function TitleBlock({ wrap, uid }: PartProps): React.ReactElement {
+function TitleBlock({ wrap, uid }: Readonly<PartProps>): React.ReactElement {
   return (
     <>
       <UiSkeletonText id={`${uid}auth-skeleton-title`} size="l" sx={wrap(styles.titleSkeleton)} />
@@ -66,7 +66,7 @@ function TitleBlock({ wrap, uid }: PartProps): React.ReactElement {
   );
 }
 
-function FieldRows({ wrap, uid, disableAnimation }: BodyProps): React.ReactElement {
+function FieldRows({ wrap, uid, disableAnimation }: Readonly<BodyProps>): React.ReactElement {
   return (
     <>
       {[1, 2, 3].map(id => (
@@ -86,7 +86,7 @@ function FieldRows({ wrap, uid, disableAnimation }: BodyProps): React.ReactEleme
   );
 }
 
-function SocialBlocks({ wrap, uid }: PartProps): React.ReactElement {
+function SocialBlocks({ wrap, uid }: Readonly<PartProps>): React.ReactElement {
   return (
     <Box sx={styles.socialContainer}>
       {SOCIAL_BUTTONS.map(button => (
@@ -100,7 +100,7 @@ function SocialBlocks({ wrap, uid }: PartProps): React.ReactElement {
   );
 }
 
-function DividerBlock({ wrap, uid }: PartProps): React.ReactElement {
+function DividerBlock({ wrap, uid }: Readonly<PartProps>): React.ReactElement {
   return (
     <Divider role="presentation" sx={styles.divider}>
       <UiSkeletonText
@@ -112,7 +112,7 @@ function DividerBlock({ wrap, uid }: PartProps): React.ReactElement {
   );
 }
 
-function FormBody({ wrap, uid, disableAnimation }: BodyProps): React.ReactElement {
+function FormBody({ wrap, uid, disableAnimation }: Readonly<BodyProps>): React.ReactElement {
   return (
     <Box sx={wrap({ ...styles.formWrapper, ...styles.formWrapperPulse })}>
       <TitleBlock wrap={wrap} uid={uid} />
@@ -127,7 +127,7 @@ function FormBody({ wrap, uid, disableAnimation }: BodyProps): React.ReactElemen
 export default function AuthSkeleton({
   disableAnimation = false,
   ariaLabel = 'Loading form',
-}: AuthSkeletonProps): React.ReactElement {
+}: Readonly<AuthSkeletonProps>): React.ReactElement {
   const wrap: Wrap = buildWrap(disableAnimation);
   const uid: string = React.useId();
 

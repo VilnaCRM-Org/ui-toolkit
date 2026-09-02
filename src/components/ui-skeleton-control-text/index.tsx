@@ -24,7 +24,7 @@ export default function UiSkeletonControlText({
   control = DEFAULT_CONTROL,
   loadingText,
   sx = [],
-}: UiSkeletonControlTextProps): React.ReactElement {
+}: Readonly<UiSkeletonControlTextProps>): React.ReactElement {
   return (
     <ComposedSkeleton
       id={id}

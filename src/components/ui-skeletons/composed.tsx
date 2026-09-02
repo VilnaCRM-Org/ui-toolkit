@@ -32,7 +32,7 @@ export default function ComposedSkeleton({
   sx = [],
   contentSx = [],
   children,
-}: ComposedSkeletonProps): React.ReactElement {
+}: Readonly<ComposedSkeletonProps>): React.ReactElement {
   return (
     <Box id={id} aria-busy="true" sx={[...(Array.isArray(sx) ? sx : [sx])]}>
       <Box component="span" sx={srOnlySx}>

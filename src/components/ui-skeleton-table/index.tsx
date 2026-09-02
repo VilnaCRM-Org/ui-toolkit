@@ -34,7 +34,7 @@ export default function UiSkeletonTable({
   columns = DEFAULT_COLUMNS,
   loadingText,
   sx = [],
-}: UiSkeletonTableProps): React.ReactElement {
+}: Readonly<UiSkeletonTableProps>): React.ReactElement {
   const columnCount: number = normalizeCount(columns, DEFAULT_COLUMNS);
   const slots: SkeletonTableColumnSlot[] = getColumnSlots(columnCount);
 

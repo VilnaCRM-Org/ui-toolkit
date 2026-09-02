@@ -22,7 +22,7 @@ export default function UiSkeletonList({
   rows = DEFAULT_LIST_ROWS,
   loadingText,
   sx = [],
-}: UiSkeletonListProps): React.ReactElement {
+}: Readonly<UiSkeletonListProps>): React.ReactElement {
   return (
     <ComposedSkeleton
       id={id}

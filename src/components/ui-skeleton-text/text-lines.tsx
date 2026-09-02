@@ -12,7 +12,7 @@ export interface SkeletonTextLinesProps {
 export default function SkeletonTextLines({
   size,
   lines,
-}: SkeletonTextLinesProps): React.ReactElement {
+}: Readonly<SkeletonTextLinesProps>): React.ReactElement {
   return (
     <>
       {getTextLines(lines).map(line => (

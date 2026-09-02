@@ -40,7 +40,7 @@ export default function SkeletonTableRow({
   slots,
   sx,
   glyph = false,
-}: SkeletonTableRowProps): React.ReactElement {
+}: Readonly<SkeletonTableRowProps>): React.ReactElement {
   return (
     <Box sx={sx}>
       {slots.map(slot => (

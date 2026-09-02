@@ -68,7 +68,7 @@ export default function UiSkeletonMenu({
   id,
   loadingText,
   sx = [],
-}: UiSkeletonMenuProps): React.ReactElement {
+}: Readonly<UiSkeletonMenuProps>): React.ReactElement {
   return (
     <ComposedSkeleton
       id={id}

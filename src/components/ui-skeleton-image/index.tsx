@@ -10,7 +10,7 @@ export default function UiSkeletonImage({
   width,
   height,
   sx = [],
-}: UiSkeletonImageProps): React.ReactElement {
+}: Readonly<UiSkeletonImageProps>): React.ReactElement {
   return (
     <Box
       id={id}

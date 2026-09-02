@@ -30,7 +30,7 @@ interface TaskColumnProps {
 }
 
 /** 34x34 avatar disc plus the three ratio-placed text bars of one task row. */
-function TaskRow({ gapped }: { gapped: boolean }): React.ReactElement {
+function TaskRow({ gapped }: Readonly<{ gapped: boolean }>): React.ReactElement {
   return (
     <Box sx={getTaskRowStyles(gapped)}>
       <UiSkeletonImage variant="round" width={AVATAR_SIZE} height={AVATAR_SIZE} sx={avatarStyles} />
@@ -46,7 +46,7 @@ function TaskRow({ gapped }: { gapped: boolean }): React.ReactElement {
   );
 }
 
-function TaskColumn({ column, gapped }: TaskColumnProps): React.ReactElement {
+function TaskColumn({ column, gapped }: Readonly<TaskColumnProps>): React.ReactElement {
   return (
     <Box sx={getTaskColumnStyles(gapped)}>
       {column.rows.map(row => (
@@ -65,7 +65,10 @@ function ScrollAffordance(): React.ReactElement {
   );
 }
 
-export default function TaskListBody({ rows, columns }: TaskListBodyProps): React.ReactElement {
+export default function TaskListBody({
+  rows,
+  columns,
+}: Readonly<TaskListBodyProps>): React.ReactElement {
   const gapped: boolean = columns === 2;
 
   return (

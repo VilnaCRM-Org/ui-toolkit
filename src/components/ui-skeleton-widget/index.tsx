@@ -23,7 +23,7 @@ export default function UiSkeletonWidget({
   columns = 1,
   loadingText,
   sx = [],
-}: UiSkeletonWidgetProps): React.ReactElement {
+}: Readonly<UiSkeletonWidgetProps>): React.ReactElement {
   const resolved: SkeletonWidgetColumns = resolveColumnCount(size, variant, columns);
 
   return (

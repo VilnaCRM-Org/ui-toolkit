@@ -30,7 +30,7 @@ function ChartPlot(): React.ReactElement {
   );
 }
 
-function PanelFill({ chart }: PanelBodyProps): React.ReactElement {
+function PanelFill({ chart }: Readonly<PanelBodyProps>): React.ReactElement {
   if (chart) {
     return <ChartPlot />;
   }
@@ -43,7 +43,7 @@ function PanelFill({ chart }: PanelBodyProps): React.ReactElement {
  * fill area — so they differ only in the strip height, the paddings and
  * whether the fill area is a solid block or the bar silhouette.
  */
-export default function PanelBody({ chart }: PanelBodyProps): React.ReactElement {
+export default function PanelBody({ chart }: Readonly<PanelBodyProps>): React.ReactElement {
   return (
     <Box sx={getPanelStyles(chart)}>
       <UiSkeletonBlock

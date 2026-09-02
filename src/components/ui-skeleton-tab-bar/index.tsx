@@ -23,7 +23,7 @@ import {
 import type { SkeletonTabsProps, UiSkeletonTabBarProps } from './types';
 
 /** One 147x18 label bar per column, each inset 21px from its column edge. */
-function TabLabels({ tabs }: SkeletonTabsProps): React.ReactElement {
+function TabLabels({ tabs }: Readonly<SkeletonTabsProps>): React.ReactElement {
   return (
     <Box sx={labelRowStyles}>
       {getTabs(tabs).map(tab => (
@@ -36,7 +36,7 @@ function TabLabels({ tabs }: SkeletonTabsProps): React.ReactElement {
 }
 
 /** The 4px track with one underline segment per column; the first is active. */
-function TabUnderlines({ tabs }: SkeletonTabsProps): React.ReactElement {
+function TabUnderlines({ tabs }: Readonly<SkeletonTabsProps>): React.ReactElement {
   return (
     <Box sx={trackStyles}>
       {getTabs(tabs).map(tab =>
@@ -66,7 +66,7 @@ export default function UiSkeletonTabBar({
   tabs = DEFAULT_TAB_COUNT,
   loadingText,
   sx = [],
-}: UiSkeletonTabBarProps): React.ReactElement {
+}: Readonly<UiSkeletonTabBarProps>): React.ReactElement {
   const count: number = normalizeCount(tabs, DEFAULT_TAB_COUNT);
 
   return (
