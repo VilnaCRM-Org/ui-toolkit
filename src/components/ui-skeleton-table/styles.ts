@@ -101,6 +101,15 @@ export function getTableWidth(columns: number): number {
   );
 }
 
+/**
+ * The frame is CAPPED at the derived footprint, never sized to it: `width: 100%`
+ * lets a host narrower than the board shrink the placeholder, and
+ * {@link contentStyles} clips the fixed tracks that no longer fit. Sizing the
+ * frame to `getTableWidth(columns)` instead would push a 1166px decorative block
+ * out of an 800px column and hand the page a horizontal scrollbar it never had
+ * while loading — the real table owns whatever overflow strategy it needs, and a
+ * placeholder standing in for it must not invent one.
+ */
 export function getRootStyles(columns: number): SystemStyleObject<Theme> {
   return { width: '100%', maxWidth: `${getTableWidth(columns)}px` };
 }
@@ -109,6 +118,9 @@ export const contentStyles: SystemStyleObject<Theme> = {
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
+  // Deliberate: the cells are fixed, non-shrinking tracks (see getCellStyles), so
+  // a narrow host has to cut the row off somewhere. Clipping keeps the cut inside
+  // the placeholder instead of spilling it onto the page.
   overflow: 'hidden',
 };
 

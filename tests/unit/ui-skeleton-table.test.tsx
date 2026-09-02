@@ -22,6 +22,8 @@ import {
 } from '../../src/components/ui-skeleton-table/styles';
 import { DEFAULT_LOADING_TEXT } from '../../src/components/ui-skeletons';
 
+import firstOf from './utils/first-of';
+
 // Shapes per body row at the design column set: three bars, the chip's dot and
 // pill, the two stacked bars and the three glyph dots.
 const SHAPES_PER_ROW: number = 10;
@@ -167,10 +169,26 @@ describe('UiSkeletonTable — width derived from the requested columns', () => {
     expect(getTableWidth(0)).toBe(CHROME);
   });
 
-  it('caps the rendered root at the derived width so no column is clipped', () => {
+  it('grows the rendered cap with the extra tracks instead of clipping them', () => {
     render(<UiSkeletonTable rows={1} columns={7} />);
 
     expect(getRoot()).toHaveStyle({ width: '100%', maxWidth: '1590px' });
+  });
+
+  it('shrinks to a host narrower than the derived width rather than overflowing it', () => {
+    // jsdom runs no layout engine, so this pins the two declarations that decide
+    // the outcome rather than a measured overflow: the frame is capped at the
+    // footprint but sized by its host, and the shape tree clips the fixed tracks
+    // that no longer fit. Sizing the frame to getTableWidth() would instead push
+    // a 1590px decorative block out of this 480px column.
+    render(
+      <div style={{ width: '480px' }}>
+        <UiSkeletonTable rows={1} columns={7} />
+      </div>
+    );
+
+    expect(getRoot()).toHaveStyle({ width: '100%', maxWidth: '1590px' });
+    expect(firstOf(getHiddenBoxes())).toHaveStyle({ width: '100%', overflow: 'hidden' });
   });
 
   it('keeps the design default at the measured width when columns is omitted', () => {
