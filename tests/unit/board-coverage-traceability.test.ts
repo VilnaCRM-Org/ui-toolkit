@@ -63,22 +63,30 @@ function allTableRows(markdown: string): string[][] {
     .map(tableCells);
 }
 
+// `noUncheckedIndexedAccess` types every index read as possibly-undefined, and
+// these rows are parsed from a markdown file rather than a typed source. Reading
+// a missing cell as '' keeps the parse total without an assertion: a malformed
+// row then fails the guard's own assertions below, which is the correct outcome,
+// instead of throwing here with no indication of which row was wrong.
+function cellAt(cells: string[], index: number): string {
+  return cells[index] ?? '';
+}
+
 /** Board data rows only — drops the header row and the `---` separator row. */
 function isBoardRow(cells: string[]): boolean {
-  return (
-    cells.length === BOARD_COLUMN_COUNT && cells[2] !== 'Status' && !/^:?-{3,}:?$/.test(cells[2])
-  );
+  const status: string = cellAt(cells, 2);
+  return cells.length === BOARD_COLUMN_COUNT && status !== 'Status' && !/^:?-{3,}:?$/.test(status);
 }
 
 function toBoardRow(board: string, cells: string[]): BoardRow {
   return {
     board,
-    element: cells[0],
-    component: cells[1],
-    status: cells[2],
-    exports: cells[3],
-    storybook: cells[4],
-    unitTests: cells[5],
+    element: cellAt(cells, 0),
+    component: cellAt(cells, 1),
+    status: cellAt(cells, 2),
+    exports: cellAt(cells, 3),
+    storybook: cellAt(cells, 4),
+    unitTests: cellAt(cells, 5),
   };
 }
 
@@ -93,7 +101,9 @@ const doneRows: BoardRow[] = allRows.filter(row => row.status === 'Done');
 
 /** Every backticked span in a cell: `UiButton`, `src/…/x.stories.tsx`, story ids. */
 function backticked(cell: string): string[] {
-  return [...cell.matchAll(/`([^`]+)`/g)].map(match => match[1]);
+  return [...cell.matchAll(/`([^`]+)`/g)]
+    .map(match => match[1])
+    .filter((token): token is string => token !== undefined);
 }
 
 // The component column also backticks prop shorthands (`variant="outlined"`,
