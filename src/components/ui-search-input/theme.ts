@@ -29,6 +29,12 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
             color: colorTheme.palette.grey300.main,
             marginRight: '0.625rem',
           },
+          // The loading slot mirrors the magnifier: the same 10px gap to the
+          // typed text, on the other side, so the field reads symmetrically.
+          // The inputRoot's own 13px inset then carries it to the border.
+          '& .MuiInputAdornment-positionEnd': {
+            marginLeft: '0.625rem',
+          },
           // The magnifier grows to 24px on tablet, back to 20px on mobile/desktop.
           '& .MuiInputAdornment-positionStart svg': {
             [TABLET_MAX]: { width: '1.5rem', height: '1.5rem' },

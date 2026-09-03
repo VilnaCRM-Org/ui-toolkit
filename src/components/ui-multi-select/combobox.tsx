@@ -3,7 +3,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
-import { ChevronDownGlyph, OPEN_FIELD_POPPER } from '../field-controls';
+import { ChevronDownGlyph, DEFAULT_LOADING_TEXT, OPEN_FIELD_POPPER } from '../field-controls';
 import colorTheme from '../ui-color-theme';
 
 import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
@@ -40,13 +40,27 @@ function getOptionLabel(option: UiMultiSelectOption): string {
   return option.label;
 }
 
-// The filled-field stroke is layered UNDER the consumer `sx` so a consumer override
-// still wins; an empty field passes the consumer value through untouched.
-function rootSx(config: UiMultiSelectProps): SxProps<Theme> {
+// While a fetch is in flight the arc takes the clear-all ×'s slot, so the × is
+// hidden underneath — the same swap UiSelectWithSearch makes, so the busy state
+// looks identical across the two selects. The × is Figma-mandated always-visible
+// in the RESTING field (node 622:44553) and stays so; this suppresses it only
+// for the duration of the fetch.
+const HIDE_CLEAR_SX: SystemStyleObject<Theme> = {
+  '& .MuiAutocomplete-clearIndicator': { display: 'none' },
+};
+
+// Both derived layers sit UNDER the consumer `sx` so a consumer override still
+// wins; an untouched field passes the consumer value through unchanged.
+export function multiSelectRootSx(config: UiMultiSelectProps): SxProps<Theme> {
   const consumerSx: SxProps<Theme> = config.sx ?? {};
-  return (config.value ?? EMPTY).length > 0
-    ? [FILLED_STROKE_SX, ...(Array.isArray(consumerSx) ? consumerSx : [consumerSx])]
-    : consumerSx;
+  const derived: SystemStyleObject<Theme>[] = [
+    ...((config.value ?? EMPTY).length > 0 ? [FILLED_STROKE_SX] : []),
+    ...(config.loading === true ? [HIDE_CLEAR_SX] : []),
+  ];
+  if (derived.length === 0) {
+    return consumerSx;
+  }
+  return [...derived, ...(Array.isArray(consumerSx) ? consumerSx : [consumerSx])];
 }
 
 // A force-opened dropdown (demo/visual states only) also pins the popper below the field.
@@ -70,8 +84,13 @@ export function MultiSelectCombobox(props: Readonly<MultiSelectComboboxProps>): 
       inputValue={field.text}
       onInputChange={field.handleInputChange}
       disabled={config.disabled}
+      // A loading combobox stays fully operable — no `disabled`, no `readOnly`
+      // (SC 2.1.1 / 3.2.2). MUI's `loading` only swaps the popup's empty row for
+      // `loadingText`, so a running fetch no longer reads as "no options".
+      loading={config.loading}
+      loadingText={config.loadingText ?? DEFAULT_LOADING_TEXT}
       size={config.size}
-      sx={rootSx(config)}
+      sx={multiSelectRootSx(config)}
       id={fieldId}
       isOptionEqualToValue={isOptionEqualToValue}
       getOptionLabel={getOptionLabel}

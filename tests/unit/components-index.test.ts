@@ -1,14 +1,26 @@
 import * as publicComponents from '../../src/components';
 import type {
   ActionIconName,
+  BackgroundOption,
+  BackgroundOptionGroup,
   IntegrationLogo,
+  SegmentedOption,
+  SocialNetwork,
   UiActionIconBarAction,
   UiActionIconBarProps,
+  UiAddButtonProps,
+  UiBackgroundPickerProps,
+  UiChevronButtonProps,
+  UiClearButtonProps,
+  UiCopyFieldProps,
   UiFilterChipProps,
   UiIntegrationCardProps,
   UiNotificationBadgeProps,
+  UiOptionCardProps,
   UiPaymentOptionCardProps,
   UiPinInputProps,
+  UiSegmentedControlProps,
+  UiSocialIconButtonProps,
   UiStatusBadgeProps,
 } from '../../src/components';
 
@@ -20,14 +32,19 @@ const expectedPublicExports: string[] = [
   'heightBreakpoints',
   'sharedPalette',
   'UiActionIconBar',
+  'UiAddButton',
   'UiBackToMain',
+  'UiBackgroundPicker',
   'UiBreakpoints',
   'UiButton',
   'UiCalendarMultiSelect',
   'UiCardList',
   'UiCheckbox',
+  'UiChevronButton',
+  'UiClearButton',
   'UiColorTheme',
   'UiContainer',
+  'UiCopyField',
   'UiFileUploadInput',
   'UiFilterChip',
   'UiFooter',
@@ -41,12 +58,14 @@ const expectedPublicExports: string[] = [
   'UiLink',
   'UiMultiSelect',
   'UiNotificationBadge',
+  'UiOptionCard',
   'UiPagination',
   'UiPaymentOptionCard',
   'UiPinInput',
   'UiProfileSelectCard',
   'UiRadioGroup',
   'UiSearchInput',
+  'UiSegmentedControl',
   'UiSelectWithSearch',
   'UiSkeletonBlock',
   'UiSkeletonButton',
@@ -59,6 +78,7 @@ const expectedPublicExports: string[] = [
   'UiSkeletonTable',
   'UiSkeletonText',
   'UiSkeletonWidget',
+  'UiSocialIconButton',
   'UiStatusBadge',
   'UiTaskCard',
   'UiTextFieldForm',
@@ -136,5 +156,43 @@ describe('components index', () => {
     expect(action.icon).toBe('trash');
     expect(status.label).toBe('Виконано');
     expect(notification.count).toBe(3);
+  });
+
+  // Drift guard for the Story-149 board follow-up controls: eight more
+  // type-only exports the runtime key sweep above cannot see. Binding each
+  // one to a real value is what makes dropping it from
+  // `src/components/index.ts` a type error rather than a silent pass.
+  it('exports the add-button, chevron-button and clear-button prop types', () => {
+    const add: UiAddButtonProps = { label: 'Додати стовпець' };
+    const chevron: UiChevronButtonProps = { label: 'Наступна сторінка' };
+    const clear: UiClearButtonProps = { label: 'Очистити фільтри' };
+
+    expect(add.label).toBe('Додати стовпець');
+    expect(chevron.label).toBe('Наступна сторінка');
+    expect(clear.label).toBe('Очистити фільтри');
+  });
+
+  it('exports the copy-field, option-card and background-picker prop types', () => {
+    const copy: UiCopyFieldProps = { value: '5POLGOPWQZFCCFEI' };
+    const option: UiOptionCardProps = { label: 'Analytics API', valueLabel: 'Reporting' };
+    const backgroundOption: BackgroundOption = { id: 'blue', label: 'Синій', kind: 'color' };
+    const group: BackgroundOptionGroup = { heading: 'Колір', options: [backgroundOption] };
+    const picker: UiBackgroundPickerProps = { groups: [group] };
+
+    expect(copy.value).toBe('5POLGOPWQZFCCFEI');
+    expect(option.valueLabel).toBe('Reporting');
+    expect(picker.groups[0]).toBe(group);
+    expect(group.options[0]).toBe(backgroundOption);
+  });
+
+  it('exports the segmented-control and social-icon-button prop types', () => {
+    const segment: SegmentedOption = { value: 'week', label: 'Тиждень' };
+    const control: UiSegmentedControlProps = { options: [segment] };
+    const network: SocialNetwork = 'github';
+    const social: UiSocialIconButtonProps = { network };
+
+    expect(control.options[0]).toBe(segment);
+    expect(segment.value).toBe('week');
+    expect(social.network).toBe('github');
   });
 });

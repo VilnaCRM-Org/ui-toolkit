@@ -6,6 +6,13 @@ export { hasHelperContent } from './has-helper-content';
 export { hasText } from './has-text';
 export { createFieldRenderInput } from './render-input';
 export type { FieldRenderInputConfig } from './render-input';
+export { FieldSpinner } from './field-spinner';
+export type { FieldSpinnerProps } from './field-spinner';
+// Only the tokens other modules actually consume are re-exported here; the rest
+// stay module-local, because an un-imported barrel re-export is instrumented as a
+// phantom uncovered function by esbuild-jest.
+export { loadingSlotSx } from './field-spinner-styles';
+export { useFieldLoadingAnnouncement, DEFAULT_LOADING_TEXT } from './use-loading-announcement';
 export { FieldLabel } from './field-label';
 export type { FieldLabelProps } from './field-label';
 export { srOnlySx } from './sr-only';

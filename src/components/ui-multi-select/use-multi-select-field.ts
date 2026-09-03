@@ -6,11 +6,13 @@ import {
   createFieldRenderInput,
   GhostOverlay,
   hasText,
+  useFieldLoadingAnnouncement,
   type FieldOptionRenderer,
 } from '../field-controls';
 
 import { announceChange } from './announce';
 import { createChipRenderer, type ChipRenderer } from './chip-renderer';
+import { multiSelectLoadingAdornment } from './loading-adornment';
 import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
 import { useMultiSelectGhost, type MultiSelectGhost } from './use-multi-select-ghost';
 
@@ -21,6 +23,13 @@ export interface MultiListboxSlotProps {
 
 export interface MultiSelectField {
   status: string;
+  /**
+   * Polite live-region text for the busy state. It gets its OWN region rather
+   * than sharing `status`: the two have independent writers (a chip diff fires
+   * on selection, this on a timer), and a single node would let one clobber the
+   * other's text before assistive tech had read it.
+   */
+  announced: string;
   /** The controlled typed text (the ghost owns it), threaded back as `inputValue`. */
   text: string;
   handleChange: (event: React.SyntheticEvent, next: UiMultiSelectOption[]) => void;
@@ -72,6 +81,7 @@ function buildRenderInput(
     placeholder: filled ? undefined : props.placeholder,
     required: props.required === true && !filled,
     overlay: ghostOverlay(ghost),
+    loadingAdornment: multiSelectLoadingAdornment(props.loading),
     htmlInputProps: {
       onKeyDown: ghost.handleKeyDown,
       onFocus: ghost.handleFocus,
@@ -98,8 +108,11 @@ export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField
     applySelection([...selected, option])
   );
 
+  const announced: string = useFieldLoadingAnnouncement(props);
+
   return {
     status,
+    announced,
     text: ghost.typed,
     handleChange: (_event, next): void => applySelection(next),
     handleInputChange: ghost.handleInputChange,

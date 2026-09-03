@@ -1,7 +1,7 @@
 import { Box, Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
 import React from 'react';
 
-import styles from './styles';
+import styles, { formControlLabelSxWith } from './styles';
 import type { UiCheckboxProps } from './types';
 
 function renderCheckbox(
@@ -35,7 +35,7 @@ function UiCheckbox(props: UiCheckboxProps): React.ReactElement {
 
   const control: React.ReactElement = (
     <FormControlLabel
-      sx={sx}
+      sx={formControlLabelSxWith(sx)}
       disabled={disabled}
       control={renderCheckbox(props, helperTextId)}
       label={label}

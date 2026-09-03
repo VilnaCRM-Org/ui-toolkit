@@ -3,6 +3,7 @@ import React from 'react';
 
 import { createFieldRenderInput, GhostOverlay } from '../field-controls';
 
+import { selectLoadingAdornment } from './loading-adornment';
 import type { UiSelectWithSearchProps } from './types';
 import type { SelectGhost } from './use-select-ghost';
 
@@ -30,6 +31,7 @@ export function createSelectRenderInput(
     variant: props.variant,
     ariaLabel: props['aria-label'],
     overlay: ghostOverlay(ghost),
+    loadingAdornment: selectLoadingAdornment(props.loading),
     htmlInputProps: {
       onKeyDown: ghost.handleKeyDown,
       onFocus: ghost.handleFocus,

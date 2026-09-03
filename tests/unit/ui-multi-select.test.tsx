@@ -3,6 +3,7 @@ import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import { UiMultiSelect, UiLink } from '../../src/components';
+import multiSelectTheme from '../../src/components/ui-multi-select/theme';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
 
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -325,10 +326,18 @@ describe('UiMultiSelect — listbox and multi-selection', () => {
   });
 });
 
+// UiMultiSelect owns TWO polite regions: the selection diff (first) and the
+// loading announcement (second). They are separate nodes on purpose — one writer
+// each — because a merged node would either drop a chip message that lands during
+// a fetch or re-announce a stale one when the fetch settles.
+function selectionRegion(): HTMLElement {
+  return screen.getAllByRole('status')[0];
+}
+
 describe('UiMultiSelect — status announcements', () => {
   it('exposes an empty polite status region at mount', () => {
     render(<UiMultiSelect options={options} aria-label="Cities" onChange={noop} />);
-    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(selectionRegion()).toBeEmptyDOMElement();
   });
 
   it('announces an addition with the running count', async () => {
@@ -339,7 +348,7 @@ describe('UiMultiSelect — status announcements', () => {
 
     await openListbox(user);
     await user.click(screen.getByRole('option', { name: 'Lviv' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Lviv added, 2 selected');
+    expect(selectionRegion()).toHaveTextContent('Lviv added, 2 selected');
   });
 
   it('announces a removal on delete-control click', async () => {
@@ -349,7 +358,7 @@ describe('UiMultiSelect — status announcements', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Remove Kyiv' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Kyiv removed, 0 selected');
+    expect(selectionRegion()).toHaveTextContent('Kyiv removed, 0 selected');
   });
 });
 
@@ -510,5 +519,24 @@ describe('UiMultiSelect — accessibility guidance', () => {
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
     rerender(<UiMultiSelect options={options} onChange={noop} />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+});
+
+describe('UiMultiSelect — trailing indicator alignment', () => {
+  it('fixes the indicator row height so the chevron centres with or without the clear x', () => {
+    const overrides: Record<string, Record<string, unknown>> = multiSelectTheme.components
+      ?.MuiAutocomplete?.styleOverrides as unknown as Record<string, Record<string, unknown>>;
+    const endAdornment: Record<string, unknown> = overrides.endAdornment;
+
+    // `top`/`transform` pin the indicators to the FIRST chip row, so they do not
+    // re-centre when chips wrap into a taller field. Because that pin measures
+    // from the row's top, the row needs a stable height: the clear-X is a 32px
+    // box and the chevron only 24px, so without this an empty field (which
+    // mounts no clear-X) collapsed the row to 24px and drew the chevron 4px high.
+    expect(endAdornment.top).toBe('1rem');
+    expect(endAdornment.transform).toBe('none');
+    expect(endAdornment.height).toBe('2rem');
+    expect(endAdornment.display).toBe('flex');
+    expect(endAdornment.alignItems).toBe('center');
   });
 });

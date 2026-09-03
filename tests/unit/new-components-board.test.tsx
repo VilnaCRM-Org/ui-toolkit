@@ -14,6 +14,27 @@ import {
   type PaymentSample,
 } from '../../src/showcase/new-components-board/fixtures';
 import {
+  ADD_BUTTON_LABEL,
+  CHEVRON_BUTTON_LABEL,
+  CLEAR_BUTTON_LABEL,
+  COPY_FIELD_SAMPLE,
+} from '../../src/showcase/new-components-board/followup-fixtures';
+import {
+  backgroundPickerNode,
+  dangerButtonNode,
+  optionCardNode,
+} from '../../src/showcase/new-components-board/followup-nodes-a';
+import {
+  addButtonNode,
+  chevronButtonNode,
+  clearButtonNode,
+} from '../../src/showcase/new-components-board/followup-nodes-b';
+import {
+  copyFieldNode,
+  segmentedControlNode,
+  socialIconButtonRowNode,
+} from '../../src/showcase/new-components-board/followup-nodes-c';
+import {
   actionIconBarNode,
   notificationBadgeNode,
   statusBadgeNode,
@@ -46,12 +67,21 @@ const GROUP_HEADINGS: readonly string[] = [
   'Картка завдання (Дошка)',
   'Картка профілю (меню)',
   'Картка інтеграції',
+  'Кнопка соцмережі',
   'Чіп фільтра',
   'Поле PIN-коду (2FA)',
   'Картка способу оплати',
+  'Фон дошки',
+  'Небезпечна кнопка',
   'Панель піктограм дій',
+  'Картка опції',
+  'Кнопка-шеврон',
+  'Кнопка додавання',
+  'Очистити фільтри',
+  'Поле копіювання коду',
   'Бейдж статусу',
   'Бейдж сповіщень',
+  'Перемикач періоду',
 ];
 
 describe('New Components board (Figma parity showcase)', () => {
@@ -205,5 +235,71 @@ describe('New Components board (Figma parity showcase)', () => {
 
     expect(warn.spy).not.toHaveBeenCalled();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('forces the picker, danger-button and option-card variants without crashing', () => {
+    // Each builder drives both branches of every optional, combined together
+    // here (the board itself only ever sets one flag per tile); rendering the
+    // full matrix asserts the builders stay total.
+    render(
+      <>
+        {backgroundPickerNode({ hover: true, open: true })}
+        {backgroundPickerNode({ disabled: true })}
+        {dangerButtonNode({ hover: true, active: true })}
+        {dangerButtonNode({ disabled: true })}
+        {optionCardNode({ hover: true })}
+        {optionCardNode({ selected: true, disabled: true })}
+      </>
+    );
+
+    expect(screen.getAllByRole('menu').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Cancel' }).length).toBeGreaterThan(0);
+    // Activating the unselected, enabled radio exercises the file's own
+    // no-op `onSelect` (an already-selected or disabled radio no-ops).
+    const [radio]: HTMLElement[] = screen.getAllByRole('radio');
+    fireEvent.click(radio);
+    expect(radio).toBeInTheDocument();
+  });
+
+  it('forces the chevron/add/clear button variants without crashing', () => {
+    render(
+      <>
+        {chevronButtonNode({ hover: true, active: true })}
+        {chevronButtonNode({ disabled: true })}
+        {addButtonNode({ hover: true, active: true })}
+        {addButtonNode({ disabled: true })}
+        {clearButtonNode({ hover: true, active: true })}
+        {clearButtonNode({ disabled: true })}
+      </>
+    );
+
+    expect(screen.getAllByRole('button', { name: CHEVRON_BUTTON_LABEL }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: ADD_BUTTON_LABEL }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: CLEAR_BUTTON_LABEL }).length).toBeGreaterThan(0);
+    // Activating one button exercises the file's own no-op `onActivate`.
+    const [addButton]: HTMLElement[] = screen.getAllByRole('button', { name: ADD_BUTTON_LABEL });
+    fireEvent.click(addButton);
+    expect(addButton).toBeInTheDocument();
+  });
+
+  it('forces the copy-field, social-row and segmented-control variants without crashing', () => {
+    render(
+      <>
+        {copyFieldNode({ hover: true, active: true })}
+        {copyFieldNode({ disabled: true })}
+        {socialIconButtonRowNode({ hover: true, active: true })}
+        {socialIconButtonRowNode({ disabled: true })}
+        {segmentedControlNode({ hover: true })}
+      </>
+    );
+
+    const copyNamePattern = new RegExp(COPY_FIELD_SAMPLE);
+    expect(screen.getAllByRole('button', { name: copyNamePattern }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Instagram' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('radio').length).toBeGreaterThan(0);
+    // Activating one chip exercises the file's own no-op `onActivate`.
+    const [instagram]: HTMLElement[] = screen.getAllByRole('button', { name: 'Instagram' });
+    fireEvent.click(instagram);
+    expect(instagram).toBeInTheDocument();
   });
 });

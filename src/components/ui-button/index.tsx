@@ -1,6 +1,9 @@
-import { Button, ThemeProvider } from '@mui/material';
+import { Box, Button, ThemeProvider } from '@mui/material';
 import React from 'react';
 
+import { srOnlySx } from '../field-controls';
+
+import { busySx, ButtonSpinner, useButtonBusy, type ButtonBusyState } from './loading';
 import { theme } from './theme';
 import type { UiButtonProps } from './types';
 
@@ -71,16 +74,32 @@ function UiButton({
   href,
   component,
   type = 'button',
+  loading,
+  loadingText,
+  onClick,
   children,
   ...rest
 }: React.PropsWithChildren<UiButtonProps>): React.ReactElement {
   const elementProps: ButtonElementProps = resolveButtonProps({ to, href, component, type });
+  const state: ButtonBusyState = useButtonBusy(loading, loadingText);
 
   return (
     <ThemeProvider theme={theme}>
-      <Button {...elementProps} {...rest}>
+      {/* Explicit props are written AFTER the spread so they win. `loading` is
+          deliberately destructured out and never reaches MUI — see types.ts. */}
+      <Button
+        {...elementProps}
+        {...rest}
+        aria-disabled={state.busy ? true : rest['aria-disabled']}
+        onClick={state.busy ? undefined : onClick}
+        sx={busySx(state.busy, rest.sx)}
+      >
         {children}
+        {state.busy ? <ButtonSpinner /> : null}
       </Button>
+      <Box role="status" aria-atomic="true" sx={srOnlySx}>
+        {state.announced}
+      </Box>
     </ThemeProvider>
   );
 }
