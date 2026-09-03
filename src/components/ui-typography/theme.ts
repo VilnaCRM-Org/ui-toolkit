@@ -31,6 +31,11 @@ const theme: Theme = createTheme({
     },
   },
   typography: {
+    // The per-variant styles below name their own family, but a UiTypography
+    // rendered with NO variant lands on MUI's stock `body1` — and with no base
+    // family declared that resolves to Roboto, which the toolkit never ships.
+    // This is the family the heading styles already use.
+    fontFamily: 'Golos Text',
     h1: {
       ...hStyles,
       fontSize: '3.5rem',

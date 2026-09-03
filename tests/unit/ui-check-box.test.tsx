@@ -2,6 +2,10 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import { UiCheckbox } from '../../src/components';
+import {
+  formControlLabelSx,
+  formControlLabelSxWith,
+} from '../../src/components/ui-checkbox/styles';
 
 import { testText } from './constants';
 
@@ -97,5 +101,46 @@ describe('UiCheckbox helperText (accessibility)', () => {
     // FormHelperText wrapper (an empty helper `<p>` would still be a11y noise).
     // eslint-disable-next-line testing-library/no-node-access
     expect(document.querySelector('.MuiFormHelperText-root')).not.toBeInTheDocument();
+  });
+});
+
+describe('UiCheckbox — label typography and consumer sx', () => {
+  // The label sits BESIDE the input inside FormControlLabel, so it can only be
+  // reached from the wrapper. Left unstyled it resolved to MUI's stock Roboto,
+  // a face the toolkit never ships.
+  it('names a loaded family on the label instead of inheriting the MUI default', () => {
+    const rule: Record<string, Record<string, string>> = formControlLabelSx as Record<
+      string,
+      Record<string, string>
+    >;
+    expect(rule['& .MuiFormControlLabel-label'].fontFamily).toBe('Inter');
+  });
+
+  // Pure assembly assertions: the wrapper is a `<label>`, which carries no ARIA
+  // role, so the merge order is pinned on the builder rather than by walking the
+  // DOM up from the label text.
+  it('keeps the label recipe first when no consumer sx is passed', () => {
+    expect(formControlLabelSxWith(undefined)).toEqual([formControlLabelSx, {}]);
+  });
+
+  it('merges an object sx after the label recipe', () => {
+    expect(formControlLabelSxWith({ marginTop: '1rem' })).toEqual([
+      formControlLabelSx,
+      { marginTop: '1rem' },
+    ]);
+  });
+
+  it('merges array sx layers after the label recipe, in order', () => {
+    expect(formControlLabelSxWith([{ marginTop: '1rem' }, { paddingTop: '2rem' }])).toEqual([
+      formControlLabelSx,
+      { marginTop: '1rem' },
+      { paddingTop: '2rem' },
+    ]);
+  });
+
+  it('applies the merged wrapper sx to the rendered control', () => {
+    render(<UiCheckbox onChange={mockOnChange} label={testText} sx={{ marginTop: '1rem' }} />);
+
+    expect(screen.getByLabelText(testText)).toBeInTheDocument();
   });
 });
