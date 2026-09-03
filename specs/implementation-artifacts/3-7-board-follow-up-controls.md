@@ -285,9 +285,15 @@ heading → colour rows. Card width constant 220px, radius 12px,
 | open     | white   | brandGray    | `0 8px 27px rgba(49,59,67,0.14)` | darkSecondary | grey300     |
 | disabled | grey500 | transparent  | none                             | grey300       | grey300     |
 
-Figma paints **no** row hover, **no** row selected fill, **no** focus ring —
-none is invented; the only addition is the shared `:focus-visible` ring on
-the trigger and on each row per the ruling above.
+Figma paints **no** row hover and **no** focus ring — neither is invented;
+the only addition there is the shared `:focus-visible` ring on the trigger
+and on each row per the ruling above.
+
+Figma paints no row **selected fill** either, and the master relies on the
+check glyph alone to mark the chosen colour. That was overturned by the
+product owner: a 10% `primary` tint now fills the selected row, keyed off
+the `aria-checked` the row already exposes, so the selection is not carried
+by a single 20px glyph. Filed as `DEV-64`.
 
 ### Typography
 
@@ -296,8 +302,11 @@ Trigger label and every row label: Golos Text 500, 15px/18px (`0.938rem` /
 
 ### Glyph
 
-Chevron: shared `ChevronDownGlyph` from `../field-controls`, 24×24, ink
-grey300. **Does not rotate when open** — the Figma open frame still points it
+Chevron: this control's own `TriggerChevronGlyph` (`trigger-chevron.tsx`,
+Figma node `439:19675`), 24×24, ink grey300. It is deliberately **not** the
+shared `ChevronDownGlyph`: that glyph is drawn on a 20px box at a lighter
+stroke, and scaling it into the trigger's 24px footprint reads visibly
+thinner than the master. The shared glyph is unchanged for its own callers. **Does not rotate when open** — the Figma open frame still points it
 down (see deviations table).
 
 ### Public API sketch
@@ -581,7 +590,8 @@ Figma: rest `451:25777` · hover `451:25781` · active `451:25785` · disabled
 
 ### Anatomy
 
-Native `<button type="button">`, width hugs content, `padding: '8px 12px'`,
+Native `<button type="button">`, width hugs content, `padding: '7px 11px'` +
+the 1px border = the master's 8/12 inside-stroke inset,
 `gap: 8px`, radius 4px, centred inline-flex, `boxSizing: 'border-box'`,
 `border: 1px solid …`. Label first, then the trailing plus glyph.
 
@@ -720,7 +730,8 @@ Figma: rest `451:25827` · hover `451:25831` · active `451:25835` · disabled
 
 The **whole chip** is one native `<button type="button">` — the design
 repaints the entire chip on hover/active, so the hover target is the chip
-itself. Width hugs content, `padding: '8px 14px'`, `gap: 8px`, radius 4px,
+itself. Width hugs content, `padding: '7px 13px'` + the 1px border = the
+master's 8/14 inside-stroke inset, `gap: 8px`, radius 4px,
 `display: 'inline-flex'`, `alignItems: 'center'`, `boxSizing: 'border-box'`,
 `border: 1px solid …`. Height 36px in every state.
 
@@ -1182,18 +1193,18 @@ Every deviation flagged by an extraction is recorded here with the ruling
 taken, per the PRIME DIRECTIVE's "record it, do not invent around it"
 instruction.
 
-| #   | Component              | Deviation                                                                               | Ruling                                                                                                                                                                               |
-| --- | ---------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | `ui-background-picker` | Figma's raw row ys alternate 49/46px (hand-placement drift)                             | Implemented as a uniform 14px gap between rows; the alternation is not reproduced                                                                                                    |
-| 2   | `ui-background-picker` | Open card frame is clipped at 201px in Figma                                            | That is a canvas crop, not a scroll region — implemented unclipped, no `maxHeight`, no scrolling                                                                                     |
-| 3   | `ui-background-picker` | Chevron layer would visually suggest rotation on open                                   | Does not rotate — the Figma open frame still points it down; no flip added                                                                                                           |
-| 4   | `ui-option-card`       | Selected-state label carries `line-height: normal` in Figma, a style artefact           | Kept as `normal`; the text is centred either way, recorded rather than "corrected" to `1.875rem`                                                                                     |
-| 5   | `ui-add-button`        | Hover and active differ only by border colour, and active's border is the _lighter_ one | Kept exactly as painted; not "fixed" to the expected darker-on-press convention                                                                                                      |
-| 6   | `ui-chevron-button`    | Figma layer is named "chevron-left" but every rendered state points right               | `direction` prop defaults to `'right'`; the layer name is not trusted over the pixels                                                                                                |
-| 7   | `ui-copy-field`        | No "copied" confirmation state exists in Figma                                          | No `copied` state implemented; `onCopy`/`onCopyError` are the only feedback channels, left to the consumer                                                                           |
-| 8   | `ui-segmented-control` | Board hand-pins segment widths at 112/102/117px for its three labels                    | Implemented as content sizing + equal-share slack distribution, not hardcoded per-label widths; ~2px delta from the board accepted and recorded                                      |
-| 9   | `ui-segmented-control` | Figma paints no active state and no disabled state                                      | Active is not invented (hover/selected chrome covers pointer feedback); disabled is styled with grey300 ink only, the minimal non-Figma extension needed for the prop to do anything |
-| 10  | `ui-button-danger`     | Active fill (`strokeDanger` `#DF7878`) is lighter than hover fill (`error` `#DC3939`)   | Kept exactly as painted; not "fixed" to the expected darker-on-press convention                                                                                                      |
+| #   | Component              | Deviation                                                                               | Ruling                                                                                                                                                                                                                   |
+| --- | ---------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | `ui-background-picker` | Figma's raw row ys alternate 49/46px (hand-placement drift)                             | Implemented as a uniform 14px gap between rows; the alternation is not reproduced                                                                                                                                        |
+| 2   | `ui-background-picker` | Open card frame is clipped at 201px in Figma                                            | That is a canvas crop, not a scroll region — implemented unclipped, no `maxHeight`, no scrolling                                                                                                                         |
+| 3   | `ui-background-picker` | Chevron layer would visually suggest rotation on open                                   | Does not rotate — the Figma open frame still points it down; no flip added                                                                                                                                               |
+| 4   | `ui-option-card`       | Selected-state label carries `line-height: normal` in Figma, a style artefact           | Kept as `normal`; the text is centred either way, recorded rather than "corrected" to `1.875rem`                                                                                                                         |
+| 5   | `ui-add-button`        | Hover and active differ only by border colour, and active's border is the _lighter_ one | Kept exactly as painted; not "fixed" to the expected darker-on-press convention                                                                                                                                          |
+| 6   | `ui-chevron-button`    | Figma layer is named "chevron-left" but every rendered state points right               | `direction` prop defaults to `'right'`; the layer name is not trusted over the pixels                                                                                                                                    |
+| 7   | `ui-copy-field`        | No "copied" confirmation state exists in Figma                                          | **Revised (DEV-61, supersedes DEV-56):** a successful copy latches the chip OWN active paint for `COPIED_RESET_MS`; no fifth chrome is invented. Visual only -- `onCopy` stays the channel for an announced confirmation |
+| 8   | `ui-segmented-control` | Board hand-pins segment widths at 112/102/117px for its three labels                    | Implemented as content sizing + equal-share slack distribution, not hardcoded per-label widths; ~2px delta from the board accepted and recorded                                                                          |
+| 9   | `ui-segmented-control` | Figma paints no active state and no disabled state                                      | Active is not invented (hover/selected chrome covers pointer feedback); disabled is styled with grey300 ink only, the minimal non-Figma extension needed for the prop to do anything                                     |
+| 10  | `ui-button-danger`     | Active fill (`strokeDanger` `#DF7878`) is lighter than hover fill (`error` `#DC3939`)   | Kept exactly as painted; not "fixed" to the expected darker-on-press convention                                                                                                                                          |
 
 ---
 
