@@ -26,6 +26,7 @@ const meta: Meta<typeof UiMultiSelect> = {
     label: textControlArgType('Visible label / accessible name for the combobox'),
     placeholder: textControlArgType('Placeholder text shown when nothing is selected'),
     disabled: booleanControlArgType('Whether the control is disabled'),
+    loading: booleanControlArgType('Whether the options are being fetched'),
     options: objectControlArgType(
       'The selectable options ({ label, value }) — edit to supply your own'
     ),
@@ -59,9 +60,24 @@ export const MultiSelect: Story = {
         label={args.label}
         placeholder={args.placeholder}
         disabled={args.disabled}
+        loading={args.loading}
         value={value}
         onChange={setValue}
       />
     );
   },
+};
+
+// This control keeps its clear-all × while loading — the × is Figma-mandated
+// always-visible (node 622:44553) — so the arc is drawn as a 32px ring
+// concentric with it rather than in its place.
+export const Loading: Story = {
+  args: {
+    options,
+    value: [options[0], options[2]],
+    label: 'Роль',
+    placeholder: 'Почніть вводити',
+    loading: true,
+  },
+  render: MultiSelect.render,
 };

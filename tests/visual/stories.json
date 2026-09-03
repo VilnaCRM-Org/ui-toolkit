@@ -95,6 +95,11 @@
     "name": "Danger"
   },
   {
+    "id": "uicomponents-uibutton--loading",
+    "title": "UiComponents/UiButton",
+    "name": "Loading"
+  },
+  {
     "id": "uicomponents-uibutton--outlined",
     "title": "UiComponents/UiButton",
     "name": "Outlined"
@@ -290,6 +295,11 @@
     "name": "Link"
   },
   {
+    "id": "uicomponents-uimultiselect--loading",
+    "title": "UiComponents/UiMultiSelect",
+    "name": "Loading"
+  },
+  {
     "id": "uicomponents-uimultiselect--multi-select",
     "title": "UiComponents/UiMultiSelect",
     "name": "Multi Select"
@@ -435,6 +445,11 @@
     "name": "Radio Group"
   },
   {
+    "id": "uicomponents-uisearchinput--loading",
+    "title": "UiComponents/UiSearchInput",
+    "name": "Loading"
+  },
+  {
     "id": "uicomponents-uisearchinput--search-input",
     "title": "UiComponents/UiSearchInput",
     "name": "Search Input"
@@ -443,6 +458,11 @@
     "id": "uicomponents-uisegmentedcontrol--segmented-control",
     "title": "UiComponents/UiSegmentedControl",
     "name": "Segmented Control"
+  },
+  {
+    "id": "uicomponents-uiselectwithsearch--loading",
+    "title": "UiComponents/UiSelectWithSearch",
+    "name": "Loading"
   },
   {
     "id": "uicomponents-uiselectwithsearch--select-with-search",

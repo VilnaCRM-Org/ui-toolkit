@@ -2,6 +2,7 @@ import { Box, TextField } from '@mui/material';
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
+import { composeEndAdornment } from './compose-end-adornment';
 import { hasText } from './has-text';
 
 type HtmlInputProps = React.InputHTMLAttributes<HTMLInputElement>;
@@ -16,6 +17,14 @@ export interface FieldRenderInputConfig {
   ariaLabel?: string;
   /** Optional leading adornment (e.g. the search magnifier); omitted for select. */
   startAdornment?: React.ReactNode;
+  /**
+   * The loading slot painted at the field's trailing edge. Composed BEFORE MUI's
+   * own end adornment (see `composeEndAdornment`) so the clear/popup indicators
+   * stay mounted; `undefined` leaves `params.slotProps.input.endAdornment`
+   * byte-identical, so a control that never sets `loading` renders exactly the
+   * tree it renders today.
+   */
+  loadingAdornment?: React.ReactNode;
   /** Extra native-input props (handlers/style) merged over MUI's own; handlers compose. */
   htmlInputProps?: HtmlInputProps;
   /**
@@ -82,6 +91,10 @@ export function createFieldRenderInput(
           input: {
             ...params.slotProps.input,
             startAdornment: config.startAdornment ?? params.slotProps.input.startAdornment,
+            endAdornment: composeEndAdornment(
+              config.loadingAdornment,
+              params.slotProps.input.endAdornment
+            ),
           },
           htmlInput: buildHtmlInput(params, config),
         }}

@@ -1,7 +1,11 @@
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import { useListboxSlotProps, type ListboxSlotProps } from '../field-controls';
+import {
+  useFieldLoadingAnnouncement,
+  useListboxSlotProps,
+  type ListboxSlotProps,
+} from '../field-controls';
 import { GhostOverlay } from '../field-controls';
 
 import { createSearchRenderInput } from './render-input';
@@ -13,6 +17,8 @@ export interface SearchField {
   handleInputChange: (event: React.SyntheticEvent, next: string) => void;
   renderInput: (params: AutocompleteRenderInputParams) => React.ReactElement;
   slotProps: ListboxSlotProps;
+  /** Polite live-region text: empty until a fetch crosses the announce delay. */
+  announced: string;
 }
 
 // Derives the input-change handler, `renderInput` callback (with the inline ghost
@@ -27,6 +33,8 @@ export function useSearchField(props: UiSearchInputProps): SearchField {
     ? React.createElement(GhostOverlay, { typed: ghost.text, completion: ghost.completion })
     : null;
 
+  const announced: string = useFieldLoadingAnnouncement(props);
+
   const renderInput: SearchField['renderInput'] = createSearchRenderInput({
     label,
     placeholder,
@@ -35,6 +43,7 @@ export function useSearchField(props: UiSearchInputProps): SearchField {
     helperText,
     ariaLabel,
     overlay,
+    loading: props.loading,
     htmlInputProps: {
       onKeyDown: ghost.handleKeyDown,
       onFocus: ghost.handleFocus,
@@ -44,5 +53,11 @@ export function useSearchField(props: UiSearchInputProps): SearchField {
 
   const slotProps: ListboxSlotProps = useListboxSlotProps(label, ariaLabel);
 
-  return { text: ghost.text, handleInputChange: ghost.handleInputChange, renderInput, slotProps };
+  return {
+    text: ghost.text,
+    handleInputChange: ghost.handleInputChange,
+    renderInput,
+    slotProps,
+    announced,
+  };
 }

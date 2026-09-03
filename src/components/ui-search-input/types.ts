@@ -22,6 +22,23 @@ export interface UiSearchInputProps {
   onChange?: (value: string) => void;
   /** Optional typeahead suggestions. Omit for a plain search box. */
   options?: string[];
+  /**
+   * Marks the suggestions as being fetched. The toolkit is presentational — it
+   * never fetches; the consuming app owns the request and drives this flag.
+   *
+   * Tri-state on purpose. `undefined` (the default) opts the field out of the
+   * loading contract entirely: no slot renders and the DOM is unchanged. `false`
+   * reserves the slot invisibly so the typed text does not reflow when a fetch
+   * starts. `true` reveals the spinner and, while there is nothing to list,
+   * replaces the "no options" popup row with `loadingText`.
+   */
+  loading?: boolean;
+  /**
+   * Loading copy: the popup row while options are in flight, and the text the
+   * field's polite `role="status"` region speaks once a fetch has run long
+   * enough to be worth announcing. Defaults to `'Завантаження'`.
+   */
+  loadingText?: string;
   disabled?: boolean;
   error?: boolean;
   /**

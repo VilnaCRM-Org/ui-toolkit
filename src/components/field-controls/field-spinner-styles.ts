@@ -1,0 +1,52 @@
+import type { SxProps, Theme } from '@mui/material';
+
+import colorTheme from '../ui-color-theme';
+
+/** 20px — the shared `field-controls` Glyph box, and the default. */
+export const FIELD_SPINNER_MD: string = '1.25rem';
+/**
+ * 32px — the multi-select clear-all button's own box (its 24px glyph plus MUI's
+ * 4px `IconButton` padding on each side), so a ring at this size is concentric
+ * with the × rather than merely near it.
+ */
+export const FIELD_SPINNER_RING: string = '2rem';
+
+/**
+ * The submit spinner's thickness (`ui-form/submit-spinner.tsx`), reused so every
+ * loading arc in the kit is drawn at one weight. MUI measures `thickness` in the
+ * 44-unit viewBox, so the painted stroke scales with the box: 4.5 over a 20px
+ * spinner is ~2.05px — the ring weight `ui-status-badge` already uses.
+ */
+export const FIELD_SPINNER_THICKNESS: number = 4.5;
+
+/**
+ * Ink is `grey250` #57595B — 7.03:1 on white and 5.63:1 on the disabled
+ * `brandGray` fill, so the indicator clears the 3:1 non-text floor (SC 1.4.11, DEV-62)
+ * on every field background in the kit. `grey300`, the resting magnifier/chevron
+ * ink, is only 2.81:1 and would not; `primary` is 2.46:1.
+ *
+ * `pointerEvents: 'none'` is load-bearing, not polish. In UiMultiSelect the ring
+ * is drawn ON TOP OF the real clear-all button, and a CircularProgress is an HTML
+ * box whose whole rectangle captures clicks — transparent centre or not. Without
+ * this, turning on `loading` would silently stop "clear all" from working.
+ * `cursor: 'default'` keeps the trailing edge from reading as an affordance: it
+ * sits in the slot where fields elsewhere in this kit put clear/submit controls,
+ * and nothing here is actionable.
+ *
+ * Reduced motion freezes the arc but never hides it — the indicator is the only
+ * thing painting "busy", so removing it would drop the information rather than
+ * the animation. MUI does route CircularProgress through its reduced-motion
+ * styles, but `theme.motion.reducedMotion` defaults to `'never'` and this kit
+ * never sets it, so the media query is written here — the same per-primitive
+ * shape `ui-skeletons/base.ts` uses.
+ */
+export const fieldSpinnerSx: SxProps<Theme> = {
+  color: colorTheme.palette.grey250.main,
+  pointerEvents: 'none',
+  cursor: 'default',
+  flexShrink: 0,
+  '@media (prefers-reduced-motion: reduce)': {
+    animation: 'none',
+    '& .MuiCircularProgress-circle': { animation: 'none' },
+  },
+};

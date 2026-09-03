@@ -25,6 +25,7 @@ const meta: Meta<typeof UiSelectWithSearch> = {
     label: textControlArgType('Visible label / accessible name for the combobox'),
     placeholder: textControlArgType('Placeholder text shown when nothing is selected'),
     disabled: booleanControlArgType('Whether the control is disabled'),
+    loading: booleanControlArgType('Whether the options are being fetched'),
   },
 };
 
@@ -46,7 +47,7 @@ export const SelectWithSearch: Story = {
   // (the repo forbids prop-spreading); `aria-label` is kept so the label-less combobox
   // retains its accessible name.
   render: function Render(args): React.ReactElement {
-    const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(null);
+    const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(args.value ?? null);
     // The component is fluid (fills its container); Figma "select с пошуком" sizes it in
     // a 262px frame (node 448:25545), so the demo constrains it to that width — matching
     // the figma-parity showcase board. maxWidth keeps it responsive on a narrow canvas.
@@ -58,10 +59,25 @@ export const SelectWithSearch: Story = {
           aria-label={args['aria-label']}
           placeholder={args.placeholder}
           disabled={args.disabled}
+          loading={args.loading}
           value={value}
           onChange={setValue}
         />
       </div>
     );
   },
+};
+
+// While a fetch is in flight the spinner takes the clear ×'s slot and the × is
+// hidden — safe because MUI never put it in the tab order. A preselected value
+// is what makes the swap visible: without one there is no × to replace.
+export const Loading: Story = {
+  args: {
+    options,
+    'aria-label': 'Місто',
+    placeholder: 'Оберіть місто',
+    value: options[0],
+    loading: true,
+  },
+  render: SelectWithSearch.render,
 };

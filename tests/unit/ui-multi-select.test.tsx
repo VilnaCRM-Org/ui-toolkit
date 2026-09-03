@@ -325,10 +325,18 @@ describe('UiMultiSelect — listbox and multi-selection', () => {
   });
 });
 
+// UiMultiSelect owns TWO polite regions: the selection diff (first) and the
+// loading announcement (second). They are separate nodes on purpose — one writer
+// each — because a merged node would either drop a chip message that lands during
+// a fetch or re-announce a stale one when the fetch settles.
+function selectionRegion(): HTMLElement {
+  return screen.getAllByRole('status')[0];
+}
+
 describe('UiMultiSelect — status announcements', () => {
   it('exposes an empty polite status region at mount', () => {
     render(<UiMultiSelect options={options} aria-label="Cities" onChange={noop} />);
-    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(selectionRegion()).toBeEmptyDOMElement();
   });
 
   it('announces an addition with the running count', async () => {
@@ -339,7 +347,7 @@ describe('UiMultiSelect — status announcements', () => {
 
     await openListbox(user);
     await user.click(screen.getByRole('option', { name: 'Lviv' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Lviv added, 2 selected');
+    expect(selectionRegion()).toHaveTextContent('Lviv added, 2 selected');
   });
 
   it('announces a removal on delete-control click', async () => {
@@ -349,7 +357,7 @@ describe('UiMultiSelect — status announcements', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Remove Kyiv' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Kyiv removed, 0 selected');
+    expect(selectionRegion()).toHaveTextContent('Kyiv removed, 0 selected');
   });
 });
 

@@ -27,6 +27,23 @@ export interface UiMultiSelectProps {
   value?: UiMultiSelectOption[];
   /** Called with the full next selection whenever an option is added or removed. */
   onChange?: (value: UiMultiSelectOption[]) => void;
+  /**
+   * Marks the options as being fetched. The toolkit is presentational — it never
+   * fetches; the consuming app owns the request and drives this flag.
+   *
+   * Unlike UiSelectWithSearch, the clear-all × is KEPT while loading and the
+   * spinner is drawn as a ring around it — its × is Figma-mandated
+   * always-visible (node 622:44553), so hiding it would drop a design-mandated
+   * control. `undefined` (the default) opts out entirely and leaves the DOM
+   * unchanged.
+   */
+  loading?: boolean;
+  /**
+   * Loading copy: the popup row while options are in flight, and the text the
+   * field's polite `role="status"` region speaks once a fetch has run long
+   * enough to be worth announcing. Defaults to `'Завантаження'`.
+   */
+  loadingText?: string;
   disabled?: boolean;
   error?: boolean;
   /**
