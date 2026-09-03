@@ -284,3 +284,35 @@ describe('inputAria — the attribute map the control writes', () => {
     expect(inputDescribedBy({}, 'pw')).toBeUndefined();
   });
 });
+
+describe('UiInput — required must not delete a consumer description', () => {
+  it('keeps an aria-describedby set through the input slot when required is added', () => {
+    // `slotProps.input` is the pre-existing escape hatch this suite documents
+    // above. Writing `'aria-describedby': undefined` into `slotProps.htmlInput`
+    // still creates the KEY, and object spread lets that undefined overwrite the
+    // input-slot value — so adding `required` silently unlinked the description.
+    render(
+      <UiInput
+        label="Password"
+        required
+        slotProps={{ input: { 'aria-describedby': 'slot-input-desc' } }}
+      />
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'slot-input-desc');
+  });
+
+  it('lets an explicit describedBy take over from the input slot', () => {
+    render(
+      <UiInput
+        label="Password"
+        describedBy="pw-rules"
+        slotProps={{ input: { 'aria-describedby': 'slot-input-desc' } }}
+      />
+    );
+    // Deliberate: once the consumer opts into the prop, that is the description
+    // this control owns. Only the no-value case must leave the slot untouched.
+    const describedBy: string = screen.getByRole('textbox').getAttribute('aria-describedby') ?? '';
+    expect(describedBy).toContain('pw-rules');
+    expect(describedBy).not.toContain('slot-input-desc');
+  });
+});

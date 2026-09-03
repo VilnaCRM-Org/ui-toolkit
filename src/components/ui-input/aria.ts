@@ -2,11 +2,8 @@ import type { UiInputProps } from './types';
 
 /** The native-input ARIA this control owns, flattened for a shallow JSX apply. */
 export interface InputAriaAttrs {
-  // Widened in place rather than omitted: `exactOptionalPropertyTypes` treats an
-  // optional property and an explicitly-undefined one as different types, and
-  // these are always written, sometimes as undefined (which React drops).
-  'aria-describedby'?: string | undefined;
-  'aria-required'?: true | undefined;
+  'aria-describedby'?: string;
+  'aria-required'?: true;
 }
 
 // MUI derives the helper text's id from the field id, and only when a field id
@@ -45,8 +42,15 @@ export function inputAria(
   props: Readonly<UiInputProps>,
   fieldId: string | undefined
 ): InputAriaAttrs {
+  const describedBy: string | undefined = inputDescribedBy(props, fieldId);
+  const required: true | undefined = props.required === true ? true : undefined;
+  // Each key is OMITTED when it has no value, never written as `undefined`.
+  // Object spread treats an explicitly-undefined key as present, so the
+  // always-write form let `required` alone (no helper text, no `describedBy`)
+  // spread `'aria-describedby': undefined` over a description the consumer had
+  // set through `slotProps.input` — silently unlinking it.
   return {
-    'aria-describedby': inputDescribedBy(props, fieldId),
-    'aria-required': props.required === true ? true : undefined,
+    ...(describedBy !== undefined && { 'aria-describedby': describedBy }),
+    ...(required !== undefined && { 'aria-required': required }),
   };
 }
