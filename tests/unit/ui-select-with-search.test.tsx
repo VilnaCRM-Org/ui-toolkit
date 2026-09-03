@@ -78,7 +78,9 @@ describe('UiSelectWithSearch — rendering and accessible name', () => {
 
   it('renders the dropdown chevron as a named, non-tabbable button', () => {
     render(<UiSelectWithSearch options={options} aria-label="City" onChange={noop} />);
-    const toggle: HTMLElement = screen.getByRole('button');
+    // Named explicitly: a dirty field also mounts the clear x, so a bare
+    // getByRole('button') would become ambiguous the moment this render gains a value.
+    const toggle: HTMLElement = screen.getByRole('button', { name: /open|close/i });
     expect(toggle).toHaveAccessibleName();
     expect(toggle).toHaveAttribute('tabindex', '-1');
   });
@@ -316,5 +318,69 @@ describe('UiSelectWithSearch — accessibility guidance', () => {
   it('force-opens the dropdown inline (demo props)', () => {
     render(<UiSelectWithSearch aria-label="City" options={options} open disablePortal />);
     expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+});
+
+describe('UiSelectWithSearch — clearing a selection', () => {
+  it('names the clear button after the value it removes', () => {
+    render(
+      <UiSelectWithSearch options={options} value={options[0]} aria-label="City" onChange={noop} />
+    );
+    // MUI's stock name is a bare "Clear"; with several selects on one form that is
+    // several identically-named controls.
+    expect(screen.getByRole('button', { name: 'Clear Kyiv' })).toBeInTheDocument();
+  });
+
+  it('mounts no clear button while nothing is selected', () => {
+    render(<UiSelectWithSearch options={options} value={null} aria-label="City" onChange={noop} />);
+    expect(screen.queryByRole('button', { name: /^Clear/ })).not.toBeInTheDocument();
+  });
+
+  it('puts the clear button in the tab order, right after the combobox', async () => {
+    const user: UserEvent = userEvent.setup();
+    render(
+      <UiSelectWithSearch options={options} value={options[0]} aria-label="City" onChange={noop} />
+    );
+    await user.tab();
+    expect(screen.getByRole('combobox')).toHaveFocus();
+    await user.tab();
+    // MUI ships the clear button `tabIndex={-1}`. That was fine while it was a
+    // hover-only convenience; as the primary way to remove a selection it has to
+    // be reachable, because the field holds the value's own label so "backspace
+    // on an empty input" is not an equivalent path.
+    expect(screen.getByRole('button', { name: 'Clear Kyiv' })).toHaveFocus();
+  });
+
+  it('clears the selection when the clear button is activated from the keyboard', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(
+      <UiSelectWithSearch
+        options={options}
+        value={options[0]}
+        aria-label="City"
+        onChange={onChange}
+      />
+    );
+    await user.tab();
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledWith(null);
+  });
+
+  it('keeps focus on the combobox after a selection', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(<UiSelectWithSearch options={options} aria-label="City" onChange={onChange} />);
+    const combobox: HTMLElement = await openListbox(user);
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Enter}');
+
+    expect(onChange).toHaveBeenCalledWith(options[0]);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    // Regression guard: selecting must never blur to <body>. MUI's `blurOnSelect`
+    // does exactly that, and its "mouse" value fires on Enter too, so there is no
+    // modality-split version of it that spares the keyboard (SC 2.4.3 / 3.2.2).
+    expect(combobox).toHaveFocus();
   });
 });
