@@ -1,4 +1,4 @@
-import { render, renderHook, screen } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
@@ -6,6 +6,7 @@ import UiCopyField from '../../src/components/ui-copy-field';
 import copyFieldWarning from '../../src/components/ui-copy-field/copy-field-warnings';
 import { CopyGlyph, COPY_ICON_PATH } from '../../src/components/ui-copy-field/copy-glyph';
 import {
+  COPY_FIELD_COPIED_ATTR,
   COPY_FIELD_GLYPH_CLASS,
   COPY_FIELD_VALUE_CLASS,
   FOCUS_RING,
@@ -16,6 +17,7 @@ import {
   copyFieldValueSx,
 } from '../../src/components/ui-copy-field/styles';
 import type { UiCopyFieldProps } from '../../src/components/ui-copy-field/types';
+import { COPIED_RESET_MS } from '../../src/components/ui-copy-field/use-copied-latch';
 import {
   DEFAULT_COPY_LABEL,
   useCopyField,
@@ -322,6 +324,90 @@ async function waitForCallCount(mock: jest.Mock, count: number): Promise<void> {
   }
 }
 
+describe('UiCopyField — copy confirmation latch', () => {
+  afterEach(() => stubClipboard(undefined));
+
+  it('latches data-copied only after the clipboard write RESOLVES', async () => {
+    const user: UserEvent = userEvent.setup();
+    stubClipboard(jest.fn().mockResolvedValue(undefined));
+    const onCopy: jest.Mock = jest.fn();
+    render(fieldWith({ onCopy }));
+
+    expect(field()).not.toHaveAttribute(COPY_FIELD_COPIED_ATTR);
+
+    await user.click(field());
+    await waitForCall(onCopy);
+
+    expect(field()).toHaveAttribute(COPY_FIELD_COPIED_ATTR, 'true');
+  });
+
+  it('releases the latch once COPIED_RESET_MS has elapsed', async () => {
+    jest.useFakeTimers();
+    try {
+      stubClipboard(jest.fn().mockResolvedValue(undefined));
+      const onCopy: jest.Mock = jest.fn();
+      render(fieldWith({ onCopy }));
+
+      // `fireEvent`, not `userEvent`: user-event drives the fake clock forward
+      // for its own inter-event delays, which would burn the whole reset window
+      // before the assertion below ever runs. `waitFor` polls on timers too, so
+      // the clipboard promise is flushed through `act` instead.
+      fireEvent.click(field());
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(onCopy).toHaveBeenCalled();
+      expect(field()).toHaveAttribute(COPY_FIELD_COPIED_ATTR, 'true');
+
+      act(() => {
+        jest.advanceTimersByTime(COPIED_RESET_MS);
+      });
+
+      expect(field()).not.toHaveAttribute(COPY_FIELD_COPIED_ATTR);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  // A failed copy must never claim success -- the latch hangs off the resolve
+  // path only, so a rejection leaves the chip in its rest paint.
+  it('never latches when the clipboard write rejects', async () => {
+    const user: UserEvent = userEvent.setup();
+    stubClipboard(jest.fn().mockRejectedValue(new Error('denied')));
+    const onCopyError: jest.Mock = jest.fn();
+    render(fieldWith({ onCopyError }));
+
+    await user.click(field());
+    await waitForCall(onCopyError);
+
+    expect(field()).not.toHaveAttribute(COPY_FIELD_COPIED_ATTR);
+  });
+
+  // The disabled boundary swallows activation before the clipboard is touched,
+  // so a disabled chip can never end up wearing the confirmation paint.
+  it('never latches while disabled', async () => {
+    const user: UserEvent = userEvent.setup();
+    const writeText: jest.Mock = jest.fn().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+    render(fieldWith({ disabled: true }));
+
+    await user.click(field());
+
+    expect(writeText).not.toHaveBeenCalled();
+    expect(field()).not.toHaveAttribute(COPY_FIELD_COPIED_ATTR);
+  });
+
+  it('paints the latch with the chip own active recipe, gated on the disabled boundary', () => {
+    const base: StyleObject = baseOf();
+    const latched: StyleObject = ruleAt(base, COPY_FIELD_COPIED_ATTR);
+    const active: StyleObject = ruleAt(base, ':active');
+
+    expect(latched).toEqual(active);
+    expect(latched.boxShadow).toBeUndefined();
+    expect(keysMatching(base, COPY_FIELD_COPIED_ATTR)[0]).toContain(':not([aria-disabled="true"])');
+  });
+});
+
 describe('UiCopyField — disabled (aria-disabled boundary)', () => {
   afterEach(() => stubClipboard(undefined));
 
@@ -600,7 +686,7 @@ describe('copyFieldSx — style assembly (pure, mutation-killing)', () => {
     expect(base.minHeight).toBe('2.25rem');
     expect(base.width).toBeUndefined();
     expect(base.margin).toBe(0);
-    expect(base.padding).toBe('0.5rem 0.875rem');
+    expect(base.padding).toBe('0.4375rem 0.8125rem');
     expect(base.borderRadius).toBe('0.25rem');
     expect(base.backgroundColor).toBe(GREY500);
     expect(base.textAlign).toBe('left');

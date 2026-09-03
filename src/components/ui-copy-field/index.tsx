@@ -17,11 +17,14 @@ interface CopyFieldButtonProps {
 // The whole chip is ONE native `<button type="button">` spanning the full
 // 226x36 pill (the `type` is mandatory — an untyped button submits an
 // enclosing form). Copying is its only action, so it carries NO ARIA state
-// beyond the disabled boundary: no `aria-pressed`, no `aria-expanded`, no
-// live region — the design paints no "copied" confirmation state. A disabled
-// chip keeps the aria-disabled boundary — still a real, focusable button
-// whose activation no-ops — so keyboard focus is never dropped when a
-// focused chip flips disabled.
+// beyond the disabled boundary: no `aria-pressed` (the chip is not a toggle),
+// no `aria-expanded`, and no live region. The post-copy confirmation is
+// therefore a PURELY VISUAL latch, reflected onto the root as `data-copied`
+// so the recipe can hold the chip's own active paint — it deliberately does
+// not touch the accessible name, which stays the visible code plus
+// `copyLabel`. A disabled chip keeps the aria-disabled boundary — still a
+// real, focusable button whose activation no-ops — so keyboard focus is never
+// dropped when a focused chip flips disabled.
 function CopyFieldButton({
   field,
   model,
@@ -35,6 +38,7 @@ function CopyFieldButton({
       id={field.id}
       lang={field.lang}
       aria-disabled={model.ariaDisabled}
+      data-copied={model.copied ? 'true' : undefined}
       onClick={model.onActivate}
       ref={fieldRef}
       sx={sx}

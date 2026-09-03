@@ -2,6 +2,7 @@ import { useDevWarning } from '@/utils/dev-warn';
 
 import copyFieldWarning from './copy-field-warnings';
 import type { UiCopyFieldProps } from './types';
+import { useCopiedLatch, type CopiedLatch } from './use-copied-latch';
 
 /**
  * The visually-hidden suffix appended to the visible code, in Ukrainian like
@@ -19,6 +20,8 @@ export interface CopyFieldModel {
   copyLabel: string;
   /** Fired on activation; a no-op while disabled. */
   onActivate: () => void;
+  /** True while the post-copy confirmation latch is held; drives the chrome. */
+  copied: boolean;
 }
 
 // Reaches for the Clipboard API defensively: jsdom (and older browsers) never
@@ -35,6 +38,7 @@ function writeToClipboard(value: string): Promise<void> {
 interface ActivateConfig {
   disabled: boolean;
   value: string;
+  onCopied: () => void;
   onCopy?: (value: string) => void;
   onCopyError?: (error: unknown) => void;
 }
@@ -49,7 +53,10 @@ function makeActivate(config: Readonly<ActivateConfig>): () => void {
   return (): void => {
     if (config.disabled) return;
     writeToClipboard(config.value)
-      .then((): void => config.onCopy?.(config.value))
+      .then((): void => {
+        config.onCopied();
+        config.onCopy?.(config.value);
+      })
       .catch((error: unknown): void => config.onCopyError?.(error));
   };
 }
@@ -57,12 +64,15 @@ function makeActivate(config: Readonly<ActivateConfig>): () => void {
 export function useCopyField(props: UiCopyFieldProps): CopyFieldModel {
   useDevWarning(copyFieldWarning(props));
   const disabled: boolean = props.disabled ?? false;
+  const { copied, latch }: CopiedLatch = useCopiedLatch();
   return {
     ariaDisabled: disabled ? true : undefined,
     copyLabel: props.copyLabel ?? DEFAULT_COPY_LABEL,
+    copied: copied && !disabled,
     onActivate: makeActivate({
       disabled,
       value: props.value,
+      onCopied: latch,
       onCopy: props.onCopy,
       onCopyError: props.onCopyError,
     }),

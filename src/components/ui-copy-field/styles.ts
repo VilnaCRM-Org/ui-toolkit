@@ -16,6 +16,9 @@ const palette: Theme['palette'] = colorTheme.palette;
 // single `currentColor` on the root cannot do this alone: hover/active tint
 // the text darkPrimary but the glyph a DIFFERENT colour (primary), so text and
 // glyph need independent hooks.
+/** Reflects the post-copy confirmation latch onto the root for the chrome below. */
+export const COPY_FIELD_COPIED_ATTR: string = 'data-copied';
+
 export const COPY_FIELD_VALUE_CLASS: string = 'ui-copy-field__value';
 export const COPY_FIELD_GLYPH_CLASS: string = 'ui-copy-field__glyph';
 
@@ -57,11 +60,20 @@ const FORCED_COLORS_RING: object = {
 };
 
 // The 226x36 master hugs its contents, so the width is `auto` — 226 is only
-// what the sample string measures. Figma strokes INSIDE the frame while CSS
-// draws the border outside the padding box, so `boxSizing: 'border-box'`
-// keeps the outer box identical whether or not the border is painted. `rest`
-// is borderless in Figma; keeping a constant `1px solid transparent` avoids a
-// 1px reflow when hover/active paint the border (the no-jitter precedent).
+// what the sample string measures.
+//
+// Figma strokes INSIDE the frame: 14 + 170 + 8 + 20 + 14 = 226 across and
+// 8 + 20 + 8 = 36 down, with no allowance for the stroke. CSS draws a border
+// OUTSIDE the padding box, and `boxSizing: 'border-box'` cannot absorb it here —
+// it only applies to a DECLARED length, and both axes are content-driven (the
+// `minHeight` floor below is not a declared height). The constant 1px border was
+// therefore purely additive, rendering 227.6x38. The border is subtracted from
+// the padding instead: 7/13 + 1px reproduces the master's 8/14 inset, landing
+// the box on 36 tall with `minHeight` now exactly binding.
+//
+// `rest` is borderless in Figma; keeping a constant `1px solid transparent`
+// avoids a 1px reflow when hover/active paint the border (the no-jitter
+// precedent), and it is what the padding compensation is measured against.
 const COPY_FIELD_BASE: object = {
   boxSizing: 'border-box',
   display: 'inline-flex',
@@ -69,7 +81,7 @@ const COPY_FIELD_BASE: object = {
   gap: '0.5rem',
   minHeight: '2.25rem',
   margin: 0,
-  padding: '0.5rem 0.875rem',
+  padding: '0.4375rem 0.8125rem',
   backgroundColor: palette.grey500.main,
   border: '1px solid transparent',
   borderRadius: '0.25rem',
@@ -109,6 +121,11 @@ export const copyFieldGlyphSx: SxProps<Theme> = {
 // disabled chip keeps its rest fill. Active is hover minus the shadow (a
 // flattened, pressed look) — the extraction confirms the glyph stays
 // `primary` in both, with NO extra darken step the way `UiFilterChip` has.
+
+// The confirmation latch reuses the ACTIVE paint rather than inventing a
+// fifth chrome: after a successful copy the chip simply stays pressed-looking
+// until COPIED_RESET_MS elapses, so the feedback is a state the design already
+// draws. Selector-only, like every other state here.
 function hoverActiveChrome(shadow: string | undefined): object {
   return {
     backgroundColor: palette.white.main,
@@ -134,6 +151,8 @@ function copyFieldStateChrome(): object {
   return {
     '&:hover:not([aria-disabled="true"])': hoverActiveChrome(HOVER_SHADOW),
     '&:active:not([aria-disabled="true"])': hoverActiveChrome(undefined),
+    [`&[${COPY_FIELD_COPIED_ATTR}="true"]:not([aria-disabled="true"])`]:
+      hoverActiveChrome(undefined),
     '&[aria-disabled="true"]': DISABLED_CHROME,
     [FOCUS_SELECTORS]: { outline: 'none', boxShadow: FOCUS_RING },
     ...FORCED_COLORS_RING,
