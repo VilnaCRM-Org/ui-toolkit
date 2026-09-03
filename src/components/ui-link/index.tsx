@@ -30,7 +30,9 @@ function mergeRel(opensInNewTab: boolean, rel: string | undefined): string | und
 }
 
 // A disabled link keeps its href (dropping it would strip the `link` role and
-// the accessible name), so activation has to be cancelled explicitly.
+// the accessible name), so activation has to be cancelled explicitly — on
+// `auxclick` as well as `click`, because a middle-click fires only the former
+// and would otherwise open the href in a new tab despite the disabled state.
 function suppressNavigation(event: React.MouseEvent<HTMLAnchorElement>): void {
   event.preventDefault();
 }
@@ -59,6 +61,7 @@ function UiLink({
         aria-disabled={disabled ? true : undefined}
         tabIndex={disabled ? -1 : undefined}
         onClick={disabled ? suppressNavigation : undefined}
+        onAuxClick={disabled ? suppressNavigation : undefined}
       >
         {children}
         {opensInNewTab && newTabLabel ? (

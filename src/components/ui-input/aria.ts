@@ -1,3 +1,5 @@
+import { hasHelperContent, hasText } from '../field-controls';
+
 import type { UiInputProps } from './types';
 
 /** The native-input ARIA this control owns, flattened for a shallow JSX apply. */
@@ -9,8 +11,14 @@ export interface InputAriaAttrs {
 // MUI derives the helper text's id from the field id, and only when a field id
 // exists — which is why the component supplies one whenever it has to write
 // `aria-describedby` itself.
+//
+// Gated on `hasHelperContent`, not on `!= null`: React renders both booleans and
+// blank strings as nothing, so the ubiquitous `helperText={hasError && message}`
+// idiom collapses to `false` and mounts NO helper element. Synthesising the id
+// anyway would point `aria-describedby` at an element that does not exist —
+// exactly the failure that predicate was written to prevent.
 function helperTextId(props: Readonly<UiInputProps>, fieldId: string | undefined): string | null {
-  return props.helperText != null && fieldId != null ? `${fieldId}-helper-text` : null;
+  return hasHelperContent(props.helperText) && hasText(fieldId) ? `${fieldId}-helper-text` : null;
 }
 
 /**
@@ -26,9 +34,11 @@ export function inputDescribedBy(
   props: Readonly<UiInputProps>,
   fieldId: string | undefined
 ): string | undefined {
-  const ids: string[] = [helperTextId(props, fieldId), props.describedBy ?? null].filter(
-    (id): id is string => id !== null && id.length > 0
-  );
+  // Trimmed before the emptiness test: a whitespace-only `describedBy` would
+  // otherwise survive as an idref that matches no element.
+  const ids: string[] = [helperTextId(props, fieldId), props.describedBy ?? null]
+    .map((id: string | null): string => id?.trim() ?? '')
+    .filter((id: string): boolean => id.length > 0);
   return ids.length > 0 ? ids.join(' ') : undefined;
 }
 

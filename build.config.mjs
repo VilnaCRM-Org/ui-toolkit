@@ -153,6 +153,12 @@ async function generateTypeDeclarations() {
   }
 }
 
+// Start from an empty outdir. Entries are derived from the public barrel, so a
+// component that is renamed or unexported simply stops being emitted — its old
+// `build/<name>.mjs` and `.d.ts` would otherwise survive, and the `./*` subpath
+// pattern would keep publishing a stale entry point that nothing builds.
+rmSync(path.resolve(currentDir, 'build'), { recursive: true, force: true });
+
 esbuild
   .build({
     outdir: path.resolve(currentDir, 'build'),

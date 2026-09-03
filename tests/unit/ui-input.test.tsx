@@ -283,6 +283,27 @@ describe('inputAria — the attribute map the control writes', () => {
   it('is undefined when nothing describes the field', () => {
     expect(inputDescribedBy({}, 'pw')).toBeUndefined();
   });
+
+  it('omits the helper id when helperText renders nothing', () => {
+    // `helperText={hasError && message}` collapses to `false` and mounts no
+    // helper element, so synthesising its id would point aria-describedby at
+    // an element that does not exist.
+    expect(inputDescribedBy({ helperText: false, describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: '', describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: '   ', describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: [], describedBy: 'rules' }, 'pw')).toBe('rules');
+  });
+
+  it('rejects a blank describedBy rather than emitting an empty idref', () => {
+    expect(inputDescribedBy({ describedBy: '   ' }, 'pw')).toBeUndefined();
+    expect(inputDescribedBy({ helperText: 'Too short', describedBy: '  ' }, 'pw')).toBe(
+      'pw-helper-text'
+    );
+  });
+
+  it('ignores a blank field id when synthesising the helper reference', () => {
+    expect(inputDescribedBy({ helperText: 'Too short' }, '  ')).toBeUndefined();
+  });
 });
 
 describe('UiInput — required must not delete a consumer description', () => {

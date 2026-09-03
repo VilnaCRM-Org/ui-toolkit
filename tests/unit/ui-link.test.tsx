@@ -365,3 +365,23 @@ describe('UiLink — target keyword matching is case-insensitive', () => {
     expect(screen.getByRole('link', { name: 'Docs' })).not.toHaveAttribute('rel');
   });
 });
+
+describe('UiLink — a disabled link is inert to middle-click too', () => {
+  it('cancels auxclick, not only click', () => {
+    render(
+      <UiLink href="https://example.com" disabled>
+        Docs
+      </UiLink>
+    );
+    const link: HTMLElement = screen.getByRole('link', { name: /Docs/ });
+    // A middle-click fires `auxclick`, never `click`, so suppressing only the
+    // latter left the browser free to open the href in a new tab.
+    const auxclick: MouseEvent = new MouseEvent('auxclick', {
+      bubbles: true,
+      cancelable: true,
+      button: 1,
+    });
+    link.dispatchEvent(auxclick);
+    expect(auxclick.defaultPrevented).toBe(true);
+  });
+});
