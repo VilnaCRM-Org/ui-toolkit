@@ -332,3 +332,36 @@ describe('UiLink disabled state', () => {
     expect(link).toHaveAccessibleName(`${testText} (opens in new tab)`);
   });
 });
+
+describe('UiLink — target keyword matching is case-insensitive', () => {
+  it.each(['_blank', '_BLANK', '_Blank'])('hardens rel for target=%s', target => {
+    render(
+      <UiLink href="https://example.com" target={target}>
+        Docs
+      </UiLink>
+    );
+    // HTML matches the keyword ASCII case-insensitively, so an exact comparison
+    // left `_BLANK` opening a new browsing context with no rel — reverse tabnabbing.
+    const link: HTMLElement = screen.getByRole('link', { name: /Docs/ });
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'));
+  });
+
+  it('announces the new tab for an upper-case target too', () => {
+    render(
+      <UiLink href="https://example.com" target="_BLANK">
+        Docs
+      </UiLink>
+    );
+    expect(screen.getByRole('link', { name: /opens in new tab/i })).toBeInTheDocument();
+  });
+
+  it('leaves rel alone for a same-tab target', () => {
+    render(
+      <UiLink href="https://example.com" target="_self">
+        Docs
+      </UiLink>
+    );
+    expect(screen.getByRole('link', { name: 'Docs' })).not.toHaveAttribute('rel');
+  });
+});

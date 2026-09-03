@@ -3,6 +3,7 @@ import React from 'react';
 
 import ScopedThemeProvider from '@/components/theme-scope';
 
+import { inputAria, type InputAriaAttrs } from './aria';
 import theme from './theme';
 import type { UiInputProps } from './types';
 
@@ -62,13 +63,28 @@ function useInputAccessibilityWarnings(props: UiInputProps): void {
   }, [nameWarning, errorWarning]);
 }
 
+// The consumer's own `htmlInput` props stay in front of the ARIA this control
+// derives, so nothing a caller wrote by hand is overwritten.
+function withInputAria(
+  slotProps: UiInputProps['slotProps'],
+  aria: InputAriaAttrs
+): UiInputProps['slotProps'] {
+  return { ...slotProps, htmlInput: { ...aria, ...slotProps?.htmlInput } };
+}
+
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>((props, ref) => {
-  const { InputProps, slotProps, ...rest } = props;
+  const { InputProps, slotProps, describedBy, ...rest } = props;
   useInputAccessibilityWarnings(props);
+  const generatedId: string = React.useId();
+  // Only claim an id when this control has ARIA to write, so a field that uses
+  // neither `describedBy` nor `required` renders exactly the DOM it renders today.
+  // Destructured out of `rest` so it never reaches the DOM, and read here.
+  const ownsAria: boolean = describedBy != null || rest.required === true;
+  const fieldId: string | undefined = ownsAria ? (rest.id ?? generatedId) : rest.id;
 
-  const mergedSlotProps: UiInputProps['slotProps'] = InputProps
+  const withInput: UiInputProps['slotProps'] = InputProps
     ? {
         ...slotProps,
         input: (ownerState: InputSlotOwnerState): InputSlotValue => {
@@ -79,9 +95,13 @@ const UiInput: React.ForwardRefExoticComponent<
       }
     : slotProps;
 
+  const mergedSlotProps: UiInputProps['slotProps'] = ownsAria
+    ? withInputAria(withInput, inputAria(props, fieldId))
+    : withInput;
+
   return (
     <ScopedThemeProvider theme={theme}>
-      <TextField {...rest} inputRef={ref} slotProps={mergedSlotProps} />
+      <TextField {...rest} id={fieldId} inputRef={ref} slotProps={mergedSlotProps} />
     </ScopedThemeProvider>
   );
 });

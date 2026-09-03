@@ -2,6 +2,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiInput from '../../src/components/ui-input';
+import { inputAria, inputDescribedBy } from '../../src/components/ui-input/aria';
 
 import { testText, testEmail, testPlaceholder } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -204,5 +205,82 @@ describe('UiInput error-description guidance', () => {
   it('does not warn about helperText when the field is not in error', () => {
     render(<UiInput label="Email" />);
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('helperText'));
+  });
+});
+
+describe('UiInput — native-input ARIA the consumer can drive', () => {
+  it('writes describedBy onto the input', () => {
+    render(<UiInput label="Password" describedBy="pw-rules" />);
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'pw-rules');
+  });
+
+  it('composes describedBy with helperText rather than replacing it', () => {
+    render(<UiInput id="pw" label="Password" helperText="Too short" describedBy="pw-rules" />);
+    // Helper text first: it carries the reason the field is invalid, which should
+    // be announced ahead of any supplementary description. Replacing instead of
+    // composing would silently unlink helperText.
+    expect(screen.getByRole('textbox')).toHaveAttribute(
+      'aria-describedby',
+      'pw-helper-text pw-rules'
+    );
+  });
+
+  it('supplies a field id when the consumer gave none, so the helper id resolves', () => {
+    render(<UiInput label="Password" helperText="Too short" describedBy="pw-rules" />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    const describedBy: string = input.getAttribute('aria-describedby') ?? '';
+    expect(describedBy.endsWith('pw-rules')).toBe(true);
+    expect(describedBy.split(' ')).toHaveLength(2);
+    expect(describedBy).toContain('-helper-text');
+  });
+
+  it('marks a required field with aria-required as well as the native attribute', () => {
+    render(<UiInput label="Email" required />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    // toBeRequired() passes on EITHER the native attribute or the ARIA one, so
+    // the ARIA emission itself is pinned directly on `inputAria` below.
+    expect(input).toBeRequired();
+  });
+
+  it('leaves the DOM untouched when it owns no ARIA of its own', () => {
+    render(<UiInput label="Plain" />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    expect(input).not.toHaveAttribute('aria-describedby');
+    expect(input).not.toBeRequired();
+  });
+
+  it('does not clobber an aria-describedby passed through the input slot', () => {
+    render(
+      <UiInput
+        label="Password"
+        required
+        slotProps={{ htmlInput: { 'aria-describedby': 'consumer-owned' } }}
+      />
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'consumer-owned');
+  });
+});
+
+describe('inputAria — the attribute map the control writes', () => {
+  it('emits aria-required only for a required field', () => {
+    expect(inputAria({ required: true }, 'f')['aria-required']).toBe(true);
+    expect(inputAria({}, 'f')['aria-required']).toBeUndefined();
+  });
+
+  it('composes the helper-text id ahead of the consumer ids', () => {
+    expect(inputDescribedBy({ helperText: 'Too short', describedBy: 'rules' }, 'pw')).toBe(
+      'pw-helper-text rules'
+    );
+  });
+
+  it('omits the helper id when there is no helper text or no field id', () => {
+    expect(inputDescribedBy({ describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: 'Too short', describedBy: 'rules' }, undefined)).toBe(
+      'rules'
+    );
+  });
+
+  it('is undefined when nothing describes the field', () => {
+    expect(inputDescribedBy({}, 'pw')).toBeUndefined();
   });
 });

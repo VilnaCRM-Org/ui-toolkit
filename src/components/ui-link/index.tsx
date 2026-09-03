@@ -44,7 +44,10 @@ function UiLink({
   disabled,
   newTabLabel = '(opens in new tab)',
 }: UiLinkProps): React.ReactElement {
-  const opensInNewTab: boolean = target === '_blank';
+  // HTML matches the `_blank` keyword ASCII case-insensitively, so an exact
+  // comparison let `target="_BLANK"` open a new browsing context with no
+  // `rel` — a reverse-tabnabbing hole — and skipped the new-tab hint with it.
+  const opensInNewTab: boolean = target?.toLowerCase() === '_blank';
 
   return (
     <ScopedThemeProvider theme={theme}>
