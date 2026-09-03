@@ -20,10 +20,19 @@ export const FIELD_SPINNER_RING: string = '2rem';
 export const FIELD_SPINNER_THICKNESS: number = 4.5;
 
 /**
- * Ink is `grey250` #57595B — 7.03:1 on white and 5.63:1 on the disabled
- * `brandGray` fill, so the indicator clears the 3:1 non-text floor (SC 1.4.11, DEV-62)
- * on every field background in the kit. `grey300`, the resting magnifier/chevron
- * ink, is only 2.81:1 and would not; `primary` is 2.46:1.
+ * Ink is `grey300` #969B9D — the same ink the resting magnifier and chevron
+ * already use, so the arc reads as part of the field's own icon language rather
+ * than as a heavier foreign mark. Owner direction (2026-09-03): the indicator
+ * should sit in the light-grey family the skeletons use, and match the CRM
+ * loader's light appearance.
+ *
+ * That is a deliberate contrast position, not an oversight: #969B9D is 2.81:1 on
+ * white, under the 3:1 non-text floor (SC 1.4.11, DEV-62), the same call CRM
+ * already ratified for its own white-on-`brandGray` loader. It is not the sole
+ * channel — the busy state is also spoken by a polite `role="status"` region —
+ * and the darker `grey250` #57595B (7.03:1) is a one-token swap if the ruling is
+ * ever overturned. On the contained button the arc goes white instead, over the
+ * brand fill (see `ui-button/loading.tsx`).
  *
  * `pointerEvents: 'none'` is load-bearing, not polish. In UiMultiSelect the ring
  * is drawn ON TOP OF the real clear-all button, and a CircularProgress is an HTML
@@ -41,7 +50,7 @@ export const FIELD_SPINNER_THICKNESS: number = 4.5;
  * shape `ui-skeletons/base.ts` uses.
  */
 export const fieldSpinnerSx: SxProps<Theme> = {
-  color: colorTheme.palette.grey250.main,
+  color: colorTheme.palette.grey300.main,
   pointerEvents: 'none',
   cursor: 'default',
   flexShrink: 0,
