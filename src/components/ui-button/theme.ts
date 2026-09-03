@@ -76,6 +76,10 @@ export const dangerStyles: Interpolation<{ theme: Theme }> = {
 };
 
 export const theme: Theme = createTheme({
+  // Base family for the slots the variants below do not name themselves —
+  // without it MUI's stock Roboto wins, and Roboto is not a face the toolkit
+  // ships. Same family the contained/outlined button text already uses.
+  typography: { fontFamily: 'Golos Text' },
   components: {
     MuiButton: {
       variants: [

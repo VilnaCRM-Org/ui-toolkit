@@ -4,6 +4,12 @@ import breakpointsTheme from '@/components/ui-breakpoints';
 import colorTheme from '@/components/ui-color-theme';
 
 const theme: Theme = createTheme({
+  // Without a base family every MUI slot this theme does NOT override by hand —
+  // the floating `InputLabel` above all — falls back to MUI's stock Roboto,
+  // which is not a face the toolkit ships. Declaring it once puts the label,
+  // the typed value and the helper text on the same Inter the placeholder and
+  // error overrides below already ask for.
+  typography: { fontFamily: 'Inter' },
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
