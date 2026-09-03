@@ -3,7 +3,7 @@ import type { Control, FieldValues, Path, PathValue, RegisterOptions } from 'rea
 import type { UiInputProps } from '../ui-input/types';
 
 /** The react-hook-form validation rules this field forwards to `Controller`. */
-type FieldRules<T extends FieldValues> = Omit<
+export type FieldRules<T extends FieldValues> = Omit<
   RegisterOptions<T, Path<T>>,
   'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
 >;

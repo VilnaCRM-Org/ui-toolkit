@@ -1,7 +1,7 @@
 import type { ButtonProps } from '@mui/material/Button';
 import type React from 'react';
 
-type ButtonLinkTarget =
+export type ButtonLinkTarget =
   | string
   | {
       pathname?: string;

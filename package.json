@@ -96,7 +96,12 @@
       "types": "./build/index.d.ts",
       "import": "./build/index.mjs"
     },
-    "./styles.css": "./build/index.css"
+    "./styles.css": "./build/index.css",
+    "./package.json": "./package.json",
+    "./*": {
+      "types": "./build/*.d.ts",
+      "import": "./build/*.mjs"
+    }
   },
   "files": [
     "build"

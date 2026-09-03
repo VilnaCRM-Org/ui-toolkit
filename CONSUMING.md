@@ -14,9 +14,12 @@ history, tags it, packs the library with `npm pack`, and attaches
 `VilnaCRM-Org/ui-toolkit` is public, so the asset downloads without a token, an `.npmrc` entry, or
 a CI secret.
 
-The package is ESM-only and exposes two entry points:
+The package is ESM-only and exposes three kinds of entry point:
 
-- `@vilnacrm/ui-toolkit` — the components, themes, and tokens, with bundled type declarations.
+- `@vilnacrm/ui-toolkit` — every component, theme, and token, with bundled type declarations.
+- `@vilnacrm/ui-toolkit/<component>` — one component on its own, e.g.
+  `@vilnacrm/ui-toolkit/ui-button`. The subpath is the component's directory name, and it exports
+  the component as `default` plus its prop types as named type exports.
 - `@vilnacrm/ui-toolkit/styles.css` — the stylesheet, carrying the Swiper carousel CSS and the
   Inter and Golos Text font faces.
 
@@ -69,11 +72,31 @@ renders:
 import '@vilnacrm/ui-toolkit/styles.css';
 ```
 
-Then import components by name:
+Then import components. Prefer the per-component subpath:
+
+```tsx
+import UiButton from '@vilnacrm/ui-toolkit/ui-button';
+import type { UiButtonProps } from '@vilnacrm/ui-toolkit/ui-button';
+```
+
+The barrel still works and stays supported:
 
 ```tsx
 import { UiButton, UiSearchInput } from '@vilnacrm/ui-toolkit';
 ```
+
+### Why the subpath is worth preferring
+
+Thirteen modules in the library build a MUI theme at module scope. A bundler cannot prove a
+`createTheme(...)` call pure, so while the library shipped as ONE bundled file those calls were
+top-level statements every importer had to retain — pulling a single component dragged every theme
+in the kit with it. Measured on a consumer bundling one component with everything else external:
+**240.9 KB before, 4.3 KB after.**
+
+The library is now built as one entry per component with shared code hoisted into chunks, which is
+what makes that possible. The barrel benefits too — it re-exports across chunk boundaries instead
+of inlining — but the subpath is the explicit, guaranteed form, and it is what the prop types
+resolve through.
 
 ## Checking the wiring holds
 
