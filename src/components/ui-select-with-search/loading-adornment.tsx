@@ -1,8 +1,7 @@
 import { Box } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { FieldSpinner } from '../field-controls';
+import { FieldSpinner, loadingSlotSx } from '../field-controls';
 
 /**
  * The spinner takes the clear ×'s place at the field's trailing edge.
@@ -15,17 +14,8 @@ import { FieldSpinner } from '../field-controls';
  * whether or not a value is selected, because MUI only mounts the clear button
  * once the field is dirty — the spinner must not jump between those two cases.
  */
-const SLOT_SX: SxProps<Theme> = {
-  position: 'absolute',
-  right: '2.6875rem',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  display: 'inline-flex',
-};
-
-// `false` reserves nothing here — the slot is absolutely positioned, so it
-// displaces no text and only needs to be painted or not.
-const RESERVED_SX: SxProps<Theme> = [SLOT_SX, { visibility: 'hidden' }];
+const SLOT_RIGHT: string = '2.6875rem';
+const SLOT_TOP: string = '50%';
 
 /**
  * Tri-state, matching the other fields: `undefined` renders nothing at all, so a
@@ -36,7 +26,7 @@ export function selectLoadingAdornment(loading: boolean | undefined): React.Reac
     return null;
   }
   return (
-    <Box sx={loading ? SLOT_SX : RESERVED_SX}>
+    <Box sx={loadingSlotSx(SLOT_RIGHT, SLOT_TOP, loading)}>
       <FieldSpinner />
     </Box>
   );

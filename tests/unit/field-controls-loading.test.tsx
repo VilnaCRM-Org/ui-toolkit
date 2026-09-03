@@ -5,7 +5,7 @@ import { composeEndAdornment } from '../../src/components/field-controls/compose
 import { FieldSpinner } from '../../src/components/field-controls/field-spinner';
 import {
   FIELD_SPINNER_MD,
-  FIELD_SPINNER_RING,
+  loadingSlotSx,
   FIELD_SPINNER_THICKNESS,
   fieldSpinnerSx,
 } from '../../src/components/field-controls/field-spinner-styles';
@@ -35,10 +35,26 @@ describe('FieldSpinner', () => {
     expect(screen.getByRole('progressbar', { hidden: true })).toHaveStyle({
       width: FIELD_SPINNER_MD,
     });
-    rerender(<FieldSpinner size={FIELD_SPINNER_RING} />);
-    expect(screen.getByRole('progressbar', { hidden: true })).toHaveStyle({
-      width: FIELD_SPINNER_RING,
-    });
+    rerender(<FieldSpinner size="1.5rem" />);
+    expect(screen.getByRole('progressbar', { hidden: true })).toHaveStyle({ width: '1.5rem' });
+  });
+
+  it('paints one slot recipe for every field', () => {
+    // The busy state must look the same wherever it appears; only the anchoring
+    // differs, because the DOM under each field's trailing edge differs.
+    const painted: Record<string, unknown> = loadingSlotSx('1rem', '50%', true) as Record<
+      string,
+      unknown
+    >;
+    expect(painted.position).toBe('absolute');
+    expect(painted.right).toBe('1rem');
+    expect(painted.visibility).toBeUndefined();
+
+    const reserved: Record<string, unknown> = loadingSlotSx('1rem', '50%', false) as Record<
+      string,
+      unknown
+    >;
+    expect(reserved.visibility).toBe('hidden');
   });
 
   it('pins the dash so a frozen spinner is still a legible arc', () => {

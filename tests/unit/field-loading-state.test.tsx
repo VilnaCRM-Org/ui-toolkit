@@ -7,6 +7,7 @@ import { LOADING_ANNOUNCE_DELAY_MS } from '@/components/field-controls/use-loadi
 import UiButton from '../../src/components/ui-button';
 import { busySx } from '../../src/components/ui-button/loading';
 import UiMultiSelect from '../../src/components/ui-multi-select';
+import { multiSelectRootSx } from '../../src/components/ui-multi-select/combobox';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
 import UiSearchInput from '../../src/components/ui-search-input';
 import { searchLoadingAdornment } from '../../src/components/ui-search-input/loading-adornment';
@@ -136,11 +137,25 @@ describe('UiSelectWithSearch loading', () => {
 });
 
 describe('UiMultiSelect loading', () => {
-  it('keeps the Figma-mandated clear-all and rings it rather than replacing it', () => {
+  it('shows the arc alone, hiding the clear-all for the duration of the fetch', () => {
     render(<UiMultiSelect options={MULTI} label="Role" loading value={[MULTI[0]]} />);
-    // The x stays: unlike the select's MUI-stock indicator, this one is design-mandated.
-    expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument();
+    // One busy view across the kit: the arc takes the x's slot here exactly as it
+    // does in UiSelectWithSearch, rather than ringing it. The x is Figma-mandated
+    // always-visible in the RESTING field and returns when the fetch settles.
     expect(spinner()).toHaveAttribute('aria-hidden', 'true');
+    const hideClear: unknown[] = multiSelectRootSx({
+      options: MULTI,
+      loading: true,
+      value: [MULTI[0]],
+    }) as unknown[];
+    expect(hideClear).toContainEqual({
+      '& .MuiAutocomplete-clearIndicator': { display: 'none' },
+    });
+  });
+
+  it('leaves the clear-all alone when not loading', () => {
+    render(<UiMultiSelect options={MULTI} label="Role" value={[MULTI[0]]} />);
+    expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument();
   });
 
   it('gives the busy state its own region so a chip diff cannot clobber it', () => {

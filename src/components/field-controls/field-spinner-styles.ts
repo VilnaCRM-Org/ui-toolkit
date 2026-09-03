@@ -4,12 +4,6 @@ import colorTheme from '../ui-color-theme';
 
 /** 20px — the shared `field-controls` Glyph box, and the default. */
 export const FIELD_SPINNER_MD: string = '1.25rem';
-/**
- * 32px — the multi-select clear-all button's own box (its 24px glyph plus MUI's
- * 4px `IconButton` padding on each side), so a ring at this size is concentric
- * with the × rather than merely near it.
- */
-export const FIELD_SPINNER_RING: string = '2rem';
 
 /**
  * The submit spinner's thickness (`ui-form/submit-spinner.tsx`), reused so every
@@ -59,3 +53,28 @@ export const fieldSpinnerSx: SxProps<Theme> = {
     '& .MuiCircularProgress-circle': { animation: 'none' },
   },
 };
+
+/**
+ * The one loading-slot recipe. Every field paints the SAME thing while busy —
+ * the arc on its own, at the control's trailing indicator slot — so the busy
+ * state reads identically across the kit rather than per-control.
+ *
+ * The two selects overlay their indicator slot absolutely (their trailing edge
+ * is already occupied by MUI's clear/chevron stack, and the clear is hidden
+ * underneath while the arc shows); UiSearchInput renders the same arc in flow,
+ * because `freeSolo` + `disableClearable` + `popupIcon={null}` leave its end
+ * slot genuinely empty. Same glyph, same size, same ink — only the anchoring
+ * differs, because the DOM underneath differs.
+ *
+ * `painted: false` reserves the slot invisibly so nothing reflows when a fetch
+ * starts.
+ */
+export function loadingSlotSx(right: string, top: string, painted: boolean): SxProps<Theme> {
+  return {
+    position: 'absolute',
+    right,
+    top,
+    display: 'inline-flex',
+    ...(painted ? {} : { visibility: 'hidden' }),
+  };
+}
