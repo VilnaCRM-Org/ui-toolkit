@@ -142,6 +142,10 @@ test.describe('Visual states (Figma state grid)', () => {
 
   test('link disabled', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link', 'disabled:!true');
+    // Anchor the baseline to the actual disabled state, the way the filter-chip
+    // and pin-input shots do: a story arg that silently stopped applying would
+    // otherwise re-baseline the ENABLED chrome without failing anything.
+    await expect(page.getByRole('link')).toHaveAttribute('aria-disabled', 'true');
     await shoot(page, 'link-disabled.png');
   });
 

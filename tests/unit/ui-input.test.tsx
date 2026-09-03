@@ -237,9 +237,63 @@ describe('UiInput — native-input ARIA the consumer can drive', () => {
   it('marks a required field with aria-required as well as the native attribute', () => {
     render(<UiInput label="Email" required />);
     const input: HTMLElement = screen.getByRole('textbox');
-    // toBeRequired() passes on EITHER the native attribute or the ARIA one, so
-    // the ARIA emission itself is pinned directly on `inputAria` below.
+    // Both are asserted separately: `toBeRequired()` is satisfied by the native
+    // attribute ALONE, so on its own it would still pass if the ARIA wiring
+    // through the htmlInput slot broke entirely.
+    //
+    // The ARIA half is read into a variable first because the two jest-dom
+    // rules close a loop around it: `prefer-required` rewrites an
+    // `aria-required` matcher into `toBeRequired()`, and
+    // `prefer-to-have-attribute` rewrites a `getAttribute` assertion back into
+    // that matcher. Binding the value outside `expect()` satisfies both while
+    // still asserting the attribute this control actually has to emit.
+    const ariaRequired: string | null = input.getAttribute('aria-required');
+
     expect(input).toBeRequired();
+    expect(ariaRequired).toBe('true');
+  });
+
+  // The deprecated `InputProps.inputProps` addresses the same native input as
+  // `slotProps.htmlInput`, and MUI lets the slot's own `inputProps` win — so
+  // routing it anywhere but through that slot silently dropped every attribute
+  // this control derives, for exactly the consumers still on the legacy prop.
+  it('keeps the derived ARIA when a consumer uses the legacy InputProps.inputProps', () => {
+    render(
+      <UiInput
+        label="Legacy"
+        required
+        describedBy="outside-note"
+        InputProps={{ inputProps: { 'data-legacy': 'yes' } }}
+      />
+    );
+    const input: HTMLElement = screen.getByRole('textbox');
+    const ariaRequired: string | null = input.getAttribute('aria-required');
+
+    expect(ariaRequired).toBe('true');
+    expect(input).toHaveAttribute('aria-describedby', 'outside-note');
+    expect(input).toHaveAttribute('data-legacy', 'yes');
+  });
+
+  it('lets the legacy inputProps win over the derived value on a clash', () => {
+    render(
+      <UiInput
+        label="Clash"
+        describedBy="derived"
+        InputProps={{ inputProps: { 'aria-describedby': 'consumer' } }}
+      />
+    );
+    // Same precedence `slotProps.htmlInput` already has: what the caller wrote
+    // by hand beats what this control derives.
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'consumer');
+  });
+
+  it('claims no id and installs no ARIA slot for a blank describedBy', () => {
+    render(<UiInput label="Blank" describedBy="   " />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    const ariaRequired: string | null = input.getAttribute('aria-required');
+
+    expect(input).not.toHaveAttribute('aria-describedby');
+    expect(ariaRequired).toBeNull();
   });
 
   it('leaves the DOM untouched when it owns no ARIA of its own', () => {
