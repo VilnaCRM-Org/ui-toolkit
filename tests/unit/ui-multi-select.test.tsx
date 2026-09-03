@@ -6,6 +6,7 @@ import React from 'react';
 import UiLink from '../../src/components/ui-link';
 import UiMultiSelect from '../../src/components/ui-multi-select';
 import { createChipRenderer } from '../../src/components/ui-multi-select/chip-renderer';
+import multiSelectTheme from '../../src/components/ui-multi-select/theme';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
 
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -863,5 +864,24 @@ describe('createChipRenderer — per-chip disabled', () => {
   it('leaves the chip enabled when neither the field nor the item is disabled', () => {
     renderChips(false, false);
     expect(chipRootFor('Kyiv')).not.toHaveClass('Mui-disabled');
+  });
+});
+
+describe('UiMultiSelect — trailing indicator alignment', () => {
+  it('fixes the indicator row height so the chevron centres with or without the clear x', () => {
+    const overrides: Record<string, Record<string, unknown>> = multiSelectTheme.components
+      ?.MuiAutocomplete?.styleOverrides as unknown as Record<string, Record<string, unknown>>;
+    const endAdornment: Record<string, unknown> = overrides.endAdornment;
+
+    // `top`/`transform` pin the indicators to the FIRST chip row, so they do not
+    // re-centre when chips wrap into a taller field. Because that pin measures
+    // from the row's top, the row needs a stable height: the clear-X is a 32px
+    // box and the chevron only 24px, so without this an empty field (which
+    // mounts no clear-X) collapsed the row to 24px and drew the chevron 4px high.
+    expect(endAdornment.top).toBe('1rem');
+    expect(endAdornment.transform).toBe('none');
+    expect(endAdornment.height).toBe('2rem');
+    expect(endAdornment.display).toBe('flex');
+    expect(endAdornment.alignItems).toBe('center');
   });
 });
