@@ -100,6 +100,55 @@ function mergeHtmlInput(
   return { ...slotProps, htmlInput: { ...under, ...own } };
 }
 
+// The legacy `InputProps` minus its `inputProps`, folded onto the `input` slot.
+// Kept as a callback so a function-valued consumer slot is still invoked with
+// the owner state rather than spread away.
+function withLegacyInputSlot(
+  slotProps: UiInputProps['slotProps'],
+  extra: object
+): UiInputProps['slotProps'] {
+  return {
+    ...slotProps,
+    input: (ownerState: InputSlotOwnerState): InputSlotValue => {
+      const base: InputSlotValue | undefined =
+        typeof slotProps?.input === 'function' ? slotProps.input(ownerState) : slotProps?.input;
+      return { ...base, ...extra };
+    },
+  };
+}
+
+/** The two consumer-supplied slot sources, plus the ARIA this control derived. */
+interface InputSlotSources {
+  InputProps: UiInputProps['InputProps'];
+  slotProps: UiInputProps['slotProps'];
+  /** `null` when this control owns no ARIA, so the slot is left untouched. */
+  aria: InputAriaAttrs | null;
+}
+
+// The whole native-input slot assembly, lifted out of the component body to
+// keep that body inside the Halstead budget.
+//
+// `InputProps.inputProps` targets the SAME native input as `slotProps.htmlInput`
+// — and MUI lets the slot's own `inputProps` win, so leaving it on the `input`
+// slot silently dropped every attribute `inputAria` generates. It is lifted out
+// and merged through the htmlInput slot instead. Precedence ends up
+// derived ARIA < legacy `inputProps` < explicit `slotProps.htmlInput`, so what a
+// caller wrote by hand always wins over what this control derives.
+function inputSlotProps({
+  InputProps,
+  slotProps,
+  aria,
+}: InputSlotSources): UiInputProps['slotProps'] {
+  const { inputProps: legacyHtmlInput, ...restInputProps } = InputProps ?? {};
+  const withInput: UiInputProps['slotProps'] = InputProps
+    ? withLegacyInputSlot(slotProps, restInputProps)
+    : slotProps;
+  const withLegacy: UiInputProps['slotProps'] = legacyHtmlInput
+    ? mergeHtmlInput(withInput, legacyHtmlInput)
+    : withInput;
+  return aria ? mergeHtmlInput(withLegacy, aria) : withLegacy;
+}
+
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>((props, ref) => {
@@ -115,31 +164,11 @@ const UiInput: React.ForwardRefExoticComponent<
   // install an empty ARIA slot and claim an id for nothing.
   const ownsAria: boolean = hasText(describedBy) || rest.required === true;
   const fieldId: string | undefined = ownsAria ? (rest.id ?? generatedId) : rest.id;
-
-  // The legacy `InputProps` is folded into the `input` slot, but its nested
-  // `inputProps` targets the SAME native input as `slotProps.htmlInput` — and MUI
-  // lets the slot's own `inputProps` win, so leaving it here silently dropped
-  // every attribute `inputAria` generates. It is lifted out and merged into the
-  // htmlInput slot instead, where the ARIA is applied UNDER it (consumer wins).
-  const { inputProps: legacyHtmlInput, ...restInputProps } = InputProps ?? {};
-  const withInput: UiInputProps['slotProps'] = InputProps
-    ? {
-        ...slotProps,
-        input: (ownerState: InputSlotOwnerState): InputSlotValue => {
-          const base: InputSlotValue | undefined =
-            typeof slotProps?.input === 'function' ? slotProps.input(ownerState) : slotProps?.input;
-          return { ...base, ...restInputProps };
-        },
-      }
-    : slotProps;
-
-  const withLegacy: UiInputProps['slotProps'] = legacyHtmlInput
-    ? mergeHtmlInput(withInput, legacyHtmlInput)
-    : withInput;
-
-  const mergedSlotProps: UiInputProps['slotProps'] = ownsAria
-    ? mergeHtmlInput(withLegacy, inputAria(props, fieldId))
-    : withLegacy;
+  const mergedSlotProps: UiInputProps['slotProps'] = inputSlotProps({
+    InputProps,
+    slotProps,
+    aria: ownsAria ? inputAria(props, fieldId) : null,
+  });
 
   return (
     <ScopedThemeProvider theme={theme}>
