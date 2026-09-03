@@ -271,6 +271,13 @@ describe('socialIconButtonSx', () => {
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
+  it('resets the native button chrome so no UA default border rings the chip', () => {
+    const sx: object[] = socialIconButtonSx({ sx: undefined }) as object[];
+    const base: Record<string, unknown> = sx[0] as Record<string, unknown>;
+    expect(base.border).toBe('none');
+    expect(base.appearance).toBe('none');
+  });
+
   it('merges a plain object consumer sx after the base styles', () => {
     const sx: object[] = socialIconButtonSx({ sx: { marginLeft: '4px' } }) as object[];
     expect(sx).toHaveLength(2);

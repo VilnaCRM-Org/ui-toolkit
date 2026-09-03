@@ -19,13 +19,20 @@ const REST_TINT: number = 0.1;
 export const FOCUS_RING: string = `inset 0 0 0 2px ${palette.darkPrimary.main}`;
 
 // 40x40, fully round (any radius >= 20px on a 40px box renders a circle — the
-// extraction's own note on the master's literal 36px). No border and no
-// shadow in any of the four states, so neither property is declared at all
-// rather than set-then-overridden. `boxSizing: border-box` keeps the root
-// exactly 40x40 even if a consumer's `sx` ever adds a border via the `sx`
-// merge.
+// extraction's own note on the master's literal 36px). No shadow in any of the
+// four states, so that property is not declared at all — nothing draws one.
+// The border is different: Figma paints none either, but leaving it undeclared
+// let the UA default through, because the `href`-less branch renders a native
+// `<button>` — a dark ring around every chip in button mode, which the `<a>`
+// branch never had. `border`/`appearance` are therefore reset explicitly, the
+// `ui-clear-button` recipe for a bare native button (`appearance` kills the
+// residual WebKit chrome that would otherwise distort the circular clip).
+// `boxSizing: border-box` keeps the root exactly 40x40 even if a consumer's
+// `sx` ever adds a border back via the `sx` merge.
 const CHIP_BASE: object = {
   boxSizing: 'border-box',
+  border: 'none',
+  appearance: 'none',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
