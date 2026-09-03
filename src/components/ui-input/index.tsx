@@ -7,6 +7,11 @@ import { inputAria, type InputAriaAttrs } from './aria';
 import theme from './theme';
 import type { UiInputProps } from './types';
 
+type HtmlInputSlotProp = NonNullable<NonNullable<UiInputProps['slotProps']>['htmlInput']>;
+type HtmlInputSlotFn = Extract<HtmlInputSlotProp, (...args: never[]) => unknown>;
+type HtmlInputOwnerState = Parameters<HtmlInputSlotFn>[0];
+type HtmlInputSlotValue = ReturnType<HtmlInputSlotFn>;
+
 type InputSlotProp = NonNullable<NonNullable<UiInputProps['slotProps']>['input']>;
 type InputSlotFn = Extract<InputSlotProp, (...args: never[]) => unknown>;
 type InputSlotOwnerState = Parameters<InputSlotFn>[0];
@@ -65,11 +70,26 @@ function useInputAccessibilityWarnings(props: UiInputProps): void {
 
 // The consumer's own `htmlInput` props stay in front of the ARIA this control
 // derives, so nothing a caller wrote by hand is overwritten.
+//
+// MUI allows a slot to be `(ownerState) => props` as well as a plain object, and
+// spreading a FUNCTION copies no own enumerable properties — so the object form
+// alone silently dropped a caller's callback, and every attribute it returned,
+// the moment this control had ARIA to write. The callback is re-wrapped instead.
 function withInputAria(
   slotProps: UiInputProps['slotProps'],
   aria: InputAriaAttrs
 ): UiInputProps['slotProps'] {
-  return { ...slotProps, htmlInput: { ...aria, ...slotProps?.htmlInput } };
+  const own: HtmlInputSlotProp | undefined = slotProps?.htmlInput;
+  if (typeof own === 'function') {
+    return {
+      ...slotProps,
+      htmlInput: (ownerState: HtmlInputOwnerState): HtmlInputSlotValue => ({
+        ...aria,
+        ...own(ownerState),
+      }),
+    };
+  }
+  return { ...slotProps, htmlInput: { ...aria, ...own } };
 }
 
 const UiInput: React.ForwardRefExoticComponent<

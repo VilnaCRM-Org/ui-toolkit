@@ -55,6 +55,43 @@ function barrelExportNames(): string[] {
 
 const runtimeExports: string[] = barrelExportNames();
 
+// A checklist row's Export cell, plus the first column of the "exports outside
+// board scope" appendix. Scoped deliberately: matching the NAME anywhere in the
+// document would let a new export satisfy this guard by appearing in unrelated
+// prose, which is precisely the drift the bidirectional check exists to catch.
+function appendixExportNames(): string[] {
+  const heading: string = '## Appendix — exports outside board scope';
+  const start: number = checklist.indexOf(heading);
+  if (start === -1) {
+    return [];
+  }
+  const section: string = checklist.slice(start);
+  return allTableRows(section).flatMap(cells => backticked(cellAt(cells, 0)));
+}
+
+function trackedExportNames(): string[] {
+  const fromBoards: string[] = allRows.flatMap(row => backticked(row.exports));
+  return [...new Set([...fromBoards, ...appendixExportNames()])];
+}
+
+// Story ids as Storybook derives them: `<kebab-title>--<kebab-story>`. The
+// Storybook cell also backticks the story FILE path, which this must not match.
+const STORY_ID: RegExp = /^[a-z0-9]+(?:-[a-z0-9]+)*--[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function citedStoryIds(row: BoardRow): string[] {
+  return backticked(row.storybook).filter(token => STORY_ID.test(token));
+}
+
+interface StoryManifestEntry {
+  id: string;
+}
+
+const manifestStoryIds: string[] = (
+  JSON.parse(
+    readFileSync(join(REPO_ROOT, 'tests/visual/stories.json'), 'utf8')
+  ) as StoryManifestEntry[]
+).map(entry => entry.id);
+
 interface BoardRow {
   board: string;
   element: string;
@@ -223,6 +260,13 @@ describe('board coverage checklist traceability', () => {
       expect(missingPaths(row.storybook)).toEqual([]);
     });
 
+    it.each(doneRows)('$element cites Storybook ids that the manifest still defines', row => {
+      // The file-existence check above cannot see a story that was renamed or
+      // deleted inside a file that still exists, so the cited id is resolved
+      // against the visual manifest — the same list the screenshot loop iterates.
+      expect(manifestStoryIds).toEqual(expect.arrayContaining(citedStoryIds(row)));
+    });
+
     it.each(doneRows)('$element cites unit test files that exist on disk', row => {
       expect(repoPaths(row.unitTests).length).toBeGreaterThan(0);
       expect(missingPaths(row.unitTests)).toEqual([]);
@@ -234,7 +278,7 @@ describe('board coverage checklist traceability', () => {
   // out-of-scope export in the appendix.
   describe('every public export is tracked', () => {
     it.each(runtimeExports)('%s appears in a board row or the out-of-scope appendix', name => {
-      expect(checklist).toContain(`\`${name}\``);
+      expect(trackedExportNames()).toContain(name);
     });
   });
 

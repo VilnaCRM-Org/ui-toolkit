@@ -209,12 +209,33 @@ scope:
 | `tests/unit/ui-link.test.tsx`                                                   | modified |
 | `tests/unit/core-controls-accessibility.test.tsx`                               | modified |
 | `tests/visual/states.spec.ts`                                                   | modified |
+| `src/components/ui-input/aria.ts`                                               | added    |
+| `src/components/ui-input/index.tsx`                                             | modified |
+| `src/components/ui-input/types.ts`                                              | modified |
+| `src/components/ui-button/types.ts`                                             | modified |
+| `tests/unit/ui-input.test.tsx`                                                  | modified |
+| `tests/unit/ui-button.test.tsx`                                                 | modified |
+| `package.json`                                                                  | modified |
+| `.github/workflows/autorelease.yml`                                             | modified |
 
-The traceability work itself delivers no component code. The seven `ui-link` and
-`tests` entries above are the BLOCK-01 closure: a state that the board already
-specified and `prd.md` FR-04 acceptance 4 already required, added to an existing
-component. No new module, no `package.json` change, and no public-export change
-(`UiLink` was already exported).
+The traceability work itself delivers no component code. The `ui-link` and `tests`
+entries above are the BLOCK-01 closure: a state that the board already specified
+and `prd.md` FR-04 acceptance 4 already required, added to an existing component.
+
+Two later additions widen the table beyond that closure, and are called out here
+rather than left to be inferred from the diff:
+
+- **Downstream adapter parity** — `ui-input` (new `aria.ts`, plus `describedBy`
+  and `aria-required` on the native input), `ui-link` (case-insensitive `_blank`
+  matching, closing a reverse-tabnabbing hole) and `ui-button` (`rel`/`target`
+  declared on the public prop type). These close the three gaps that forced a
+  consuming app to keep local adapter wrappers. Still no public-export change:
+  `aria.ts` is internal to `ui-input`, so the export register is untouched.
+- **Release plumbing** — `package.json` moves to `0.3.0` and
+  `.github/workflows/autorelease.yml` keeps its checkout credentials, which
+  together unstick a release job that could neither tag nor push. This is
+  repository infrastructure rather than Story 5.1 scope; it rides here because
+  this is the branch open against `main`.
 
 ## Definition of Done (instantiated from `story-dod-template.md`)
 

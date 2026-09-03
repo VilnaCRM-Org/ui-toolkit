@@ -316,3 +316,21 @@ describe('UiInput — required must not delete a consumer description', () => {
     expect(describedBy).not.toContain('slot-input-desc');
   });
 });
+
+describe('UiInput — a callback htmlInput slot survives the ARIA merge', () => {
+  it('invokes an owner-state callback instead of spreading the function', () => {
+    // MUI lets a slot be `(ownerState) => props`. Spreading a FUNCTION copies no
+    // own enumerable properties, so the callback and everything it returned were
+    // silently dropped the moment this control had ARIA of its own to write.
+    render(
+      <UiInput
+        label="Email"
+        required
+        slotProps={{ htmlInput: () => ({ 'data-source': 'callback' }) }}
+      />
+    );
+    const input: HTMLElement = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('data-source', 'callback');
+    expect(input).toBeRequired();
+  });
+});
