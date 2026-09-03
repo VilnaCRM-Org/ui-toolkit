@@ -408,12 +408,14 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(base.boxSizing).toBe('border-box');
     expect(base.display).toBe('inline-flex');
     expect(base.alignItems).toBe('center');
-    expect(base.justifyContent).toBe('center');
+    // Pins the label left and the glyph right, so a consumer-supplied width
+    // cannot float them inward off the master's 12px insets.
+    expect(base.justifyContent).toBe('space-between');
     expect(base.gap).toBe('0.5rem');
     expect(base.height).toBeUndefined();
     expect(base.width).toBeUndefined();
     expect(base.margin).toBe(0);
-    expect(base.padding).toBe('8px 12px');
+    expect(base.padding).toBe('7px 11px');
     expect(base.borderRadius).toBe('0.25rem');
     expect(base.backgroundColor).toBe(WHITE);
     expect(base.textAlign).toBe('left');
@@ -503,7 +505,7 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(keysMatching(base, ':focus-visible')).toEqual([]);
     expect(base.border).toBe(`1px solid ${BRAND_GRAY}`);
     expect(base.backgroundColor).toBe(WHITE);
-    expect(base.padding).toBe('8px 12px');
+    expect(base.padding).toBe('7px 11px');
   });
 
   it('ships no transition and no animation, so nothing can move between states', () => {

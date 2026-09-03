@@ -27,18 +27,36 @@ export const ADD_BUTTON_SHADOW: string = '0 8px 15px rgba(49, 59, 67, 0.14)';
 export const FOCUS_RING: string = `inset 0 0 0 2px ${palette.darkPrimary.main}`;
 
 // The 178x34 master hugs its contents, so width is `auto` — 178 is only what
-// the sample string measures. Figma strokes INSIDE the frame while CSS draws
-// the border outside the padding box, so `border-box` keeps the outer box
-// pinned to the Figma pixels; disabled drops the border but keeps a
-// transparent 1px so nothing shifts by 1px between states.
+// the sample string measures.
+//
+// Figma strokes INSIDE the frame: its own arithmetic is 12 + 128 + 8 + 18 + 12
+// = 178 across and 8 + 18 + 8 = 34 down, leaving no room for the 1px stroke. CSS
+// draws a border OUTSIDE the padding box, and `boxSizing` cannot absorb it here
+// because both axes are `auto` — border-box only bites when a length is
+// declared. So the border is subtracted from the padding instead: 7/11 + the 1px
+// border reproduces the master's 8/12 inset exactly, landing
+// 1+7+18+7+1 = 34 and 1+11+128+8+18+11+1 = 178. Same compensation
+// `ui-filter-chip`, `ui-profile-select-card`, `ui-task-card` and
+// `ui-integration-card` already apply.
+//
+// Disabled drops the border colour but keeps a transparent 1px, so nothing
+// shifts between states.
 const ADD_BUTTON_BASE: object = {
   boxSizing: 'border-box',
   display: 'inline-flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  // Label pins left, glyph pins right — the master's own structure (text at the
+  // 12px left inset, plus at the 12px right inset). At the natural hugging width
+  // this is indistinguishable from `center` because there is no free space; it
+  // only differs when a consumer gives the button a width, and there `center`
+  // floated both children inward and broke the 12px insets. The Figma-parity
+  // showcase pins each tile to the master's 178px, which is exactly that case:
+  // our Ukrainian label is 8px shorter than the master's Russian one, so the
+  // slack was being split 4px onto each side.
+  justifyContent: 'space-between',
   gap: '0.5rem',
   margin: 0,
-  padding: '8px 12px',
+  padding: '7px 11px',
   backgroundColor: palette.white.main,
   border: `1px solid ${palette.brandGray.main}`,
   borderRadius: '0.25rem',

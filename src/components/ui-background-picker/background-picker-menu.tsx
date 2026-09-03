@@ -9,7 +9,7 @@ import {
   menuSx,
   rowSx,
   sectionSx,
-} from './styles';
+} from './menu-styles';
 import type { BackgroundOption, BackgroundOptionGroup } from './types';
 import type { BackgroundPickerModel } from './use-background-picker';
 import { useMenuActionHandlers } from './use-menu-handlers';
@@ -31,8 +31,9 @@ export interface BackgroundPickerRowProps {
 
 // One row: a native `role="menuitemradio"` button, `tabIndex={-1}` because the
 // menu contributes zero tab stops (rows are found by role, never a roving
-// tabindex). The visible label IS the accessible name. Figma paints no row
-// hover and no row-selected fill, so `checked` drives only `aria-checked`.
+// tabindex). The visible label IS the accessible name. `checked` drives
+// `aria-checked` only: the selected fill is a CSS rule keyed off that attribute
+// (see `rowSx`), so the state is published once and painted from it.
 function BackgroundPickerRow({
   option,
   checked,
