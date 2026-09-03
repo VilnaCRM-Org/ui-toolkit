@@ -3,6 +3,7 @@ import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
 import { FieldSpinner, useFieldLoadingAnnouncement } from '../field-controls';
+import colorTheme from '../ui-color-theme';
 
 /**
  * The busy paint. Only the label's INK goes transparent — the text stays in the
@@ -19,6 +20,16 @@ const BUSY_SX: SxProps<Theme> = {
   color: 'transparent',
   pointerEvents: 'none',
   cursor: 'default',
+  // The shared field ink is a light grey tuned for a white field; over the
+  // contained button's brand fill it reads muddy. CRM draws this exact case in
+  // white (`ui-form/submit-spinner.tsx`, `route-fallback/styles.ts`), so the
+  // contained variant — brand blue, and the `danger` red that also builds on it —
+  // takes white. Scoped by variant so `outlined`/`text`, which sit on white,
+  // keep the grey arc that is legible there. Two class selectors, so this wins
+  // over the spinner's own single-class colour without an `!important`.
+  '&.MuiButton-contained .MuiCircularProgress-root': {
+    color: colorTheme.palette.white.main,
+  },
 };
 
 const CENTRE_SX: SxProps<Theme> = {
