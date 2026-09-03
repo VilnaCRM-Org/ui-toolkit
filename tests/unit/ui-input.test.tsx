@@ -2,6 +2,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiInput from '../../src/components/ui-input';
+import { inputAria, inputDescribedBy } from '../../src/components/ui-input/aria';
 
 import { testText, testEmail, testPlaceholder } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -204,5 +205,207 @@ describe('UiInput error-description guidance', () => {
   it('does not warn about helperText when the field is not in error', () => {
     render(<UiInput label="Email" />);
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('helperText'));
+  });
+});
+
+describe('UiInput — native-input ARIA the consumer can drive', () => {
+  it('writes describedBy onto the input', () => {
+    render(<UiInput label="Password" describedBy="pw-rules" />);
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'pw-rules');
+  });
+
+  it('composes describedBy with helperText rather than replacing it', () => {
+    render(<UiInput id="pw" label="Password" helperText="Too short" describedBy="pw-rules" />);
+    // Helper text first: it carries the reason the field is invalid, which should
+    // be announced ahead of any supplementary description. Replacing instead of
+    // composing would silently unlink helperText.
+    expect(screen.getByRole('textbox')).toHaveAttribute(
+      'aria-describedby',
+      'pw-helper-text pw-rules'
+    );
+  });
+
+  it('supplies a field id when the consumer gave none, so the helper id resolves', () => {
+    render(<UiInput label="Password" helperText="Too short" describedBy="pw-rules" />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    const describedBy: string = input.getAttribute('aria-describedby') ?? '';
+    expect(describedBy.endsWith('pw-rules')).toBe(true);
+    expect(describedBy.split(' ')).toHaveLength(2);
+    expect(describedBy).toContain('-helper-text');
+  });
+
+  it('marks a required field with aria-required as well as the native attribute', () => {
+    render(<UiInput label="Email" required />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    // Both are asserted separately: `toBeRequired()` is satisfied by the native
+    // attribute ALONE, so on its own it would still pass if the ARIA wiring
+    // through the htmlInput slot broke entirely.
+    //
+    // The ARIA half is read into a variable first because the two jest-dom
+    // rules close a loop around it: `prefer-required` rewrites an
+    // `aria-required` matcher into `toBeRequired()`, and
+    // `prefer-to-have-attribute` rewrites a `getAttribute` assertion back into
+    // that matcher. Binding the value outside `expect()` satisfies both while
+    // still asserting the attribute this control actually has to emit.
+    const ariaRequired: string | null = input.getAttribute('aria-required');
+
+    expect(input).toBeRequired();
+    expect(ariaRequired).toBe('true');
+  });
+
+  // The deprecated `InputProps.inputProps` addresses the same native input as
+  // `slotProps.htmlInput`, and MUI lets the slot's own `inputProps` win — so
+  // routing it anywhere but through that slot silently dropped every attribute
+  // this control derives, for exactly the consumers still on the legacy prop.
+  it('keeps the derived ARIA when a consumer uses the legacy InputProps.inputProps', () => {
+    render(
+      <UiInput
+        label="Legacy"
+        required
+        describedBy="outside-note"
+        InputProps={{ inputProps: { 'data-legacy': 'yes' } }}
+      />
+    );
+    const input: HTMLElement = screen.getByRole('textbox');
+    const ariaRequired: string | null = input.getAttribute('aria-required');
+
+    expect(ariaRequired).toBe('true');
+    expect(input).toHaveAttribute('aria-describedby', 'outside-note');
+    expect(input).toHaveAttribute('data-legacy', 'yes');
+  });
+
+  it('lets the legacy inputProps win over the derived value on a clash', () => {
+    render(
+      <UiInput
+        label="Clash"
+        describedBy="derived"
+        InputProps={{ inputProps: { 'aria-describedby': 'consumer' } }}
+      />
+    );
+    // Same precedence `slotProps.htmlInput` already has: what the caller wrote
+    // by hand beats what this control derives.
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'consumer');
+  });
+
+  it('claims no id and installs no ARIA slot for a blank describedBy', () => {
+    render(<UiInput label="Blank" describedBy="   " />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    const ariaRequired: string | null = input.getAttribute('aria-required');
+
+    expect(input).not.toHaveAttribute('aria-describedby');
+    expect(ariaRequired).toBeNull();
+  });
+
+  it('leaves the DOM untouched when it owns no ARIA of its own', () => {
+    render(<UiInput label="Plain" />);
+    const input: HTMLElement = screen.getByRole('textbox');
+    expect(input).not.toHaveAttribute('aria-describedby');
+    expect(input).not.toBeRequired();
+  });
+
+  it('does not clobber an aria-describedby passed through the input slot', () => {
+    render(
+      <UiInput
+        label="Password"
+        required
+        slotProps={{ htmlInput: { 'aria-describedby': 'consumer-owned' } }}
+      />
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'consumer-owned');
+  });
+});
+
+describe('inputAria — the attribute map the control writes', () => {
+  it('emits aria-required only for a required field', () => {
+    expect(inputAria({ required: true }, 'f')['aria-required']).toBe(true);
+    expect(inputAria({}, 'f')['aria-required']).toBeUndefined();
+  });
+
+  it('composes the helper-text id ahead of the consumer ids', () => {
+    expect(inputDescribedBy({ helperText: 'Too short', describedBy: 'rules' }, 'pw')).toBe(
+      'pw-helper-text rules'
+    );
+  });
+
+  it('omits the helper id when there is no helper text or no field id', () => {
+    expect(inputDescribedBy({ describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: 'Too short', describedBy: 'rules' }, undefined)).toBe(
+      'rules'
+    );
+  });
+
+  it('is undefined when nothing describes the field', () => {
+    expect(inputDescribedBy({}, 'pw')).toBeUndefined();
+  });
+
+  it('omits the helper id when helperText renders nothing', () => {
+    // `helperText={hasError && message}` collapses to `false` and mounts no
+    // helper element, so synthesising its id would point aria-describedby at
+    // an element that does not exist.
+    expect(inputDescribedBy({ helperText: false, describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: '', describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: '   ', describedBy: 'rules' }, 'pw')).toBe('rules');
+    expect(inputDescribedBy({ helperText: [], describedBy: 'rules' }, 'pw')).toBe('rules');
+  });
+
+  it('rejects a blank describedBy rather than emitting an empty idref', () => {
+    expect(inputDescribedBy({ describedBy: '   ' }, 'pw')).toBeUndefined();
+    expect(inputDescribedBy({ helperText: 'Too short', describedBy: '  ' }, 'pw')).toBe(
+      'pw-helper-text'
+    );
+  });
+
+  it('ignores a blank field id when synthesising the helper reference', () => {
+    expect(inputDescribedBy({ helperText: 'Too short' }, '  ')).toBeUndefined();
+  });
+});
+
+describe('UiInput — required must not delete a consumer description', () => {
+  it('keeps an aria-describedby set through the input slot when required is added', () => {
+    // `slotProps.input` is the pre-existing escape hatch this suite documents
+    // above. Writing `'aria-describedby': undefined` into `slotProps.htmlInput`
+    // still creates the KEY, and object spread lets that undefined overwrite the
+    // input-slot value — so adding `required` silently unlinked the description.
+    render(
+      <UiInput
+        label="Password"
+        required
+        slotProps={{ input: { 'aria-describedby': 'slot-input-desc' } }}
+      />
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'slot-input-desc');
+  });
+
+  it('lets an explicit describedBy take over from the input slot', () => {
+    render(
+      <UiInput
+        label="Password"
+        describedBy="pw-rules"
+        slotProps={{ input: { 'aria-describedby': 'slot-input-desc' } }}
+      />
+    );
+    // Deliberate: once the consumer opts into the prop, that is the description
+    // this control owns. Only the no-value case must leave the slot untouched.
+    const describedBy: string = screen.getByRole('textbox').getAttribute('aria-describedby') ?? '';
+    expect(describedBy).toContain('pw-rules');
+    expect(describedBy).not.toContain('slot-input-desc');
+  });
+});
+
+describe('UiInput — a callback htmlInput slot survives the ARIA merge', () => {
+  it('invokes an owner-state callback instead of spreading the function', () => {
+    // MUI lets a slot be `(ownerState) => props`. Spreading a FUNCTION copies no
+    // own enumerable properties, so the callback and everything it returned were
+    // silently dropped the moment this control had ARIA of its own to write.
+    render(
+      <UiInput
+        label="Email"
+        required
+        slotProps={{ htmlInput: () => ({ 'data-source': 'callback' }) }}
+      />
+    );
+    const input: HTMLElement = screen.getByRole('textbox');
+    expect(input).toHaveAttribute('data-source', 'callback');
+    expect(input).toBeRequired();
   });
 });

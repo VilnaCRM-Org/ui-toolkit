@@ -41,7 +41,8 @@ setup() {
 
 @test "verifier accepts a tarball carrying every published entry point" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
-    package.json build/index.mjs build/index.d.ts build/index.css
+    package.json build/index.mjs build/index.d.ts build/index.css \
+    build/ui-button.mjs build/ui-button.d.ts
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 0 ]
@@ -65,6 +66,17 @@ setup() {
   assert_output_contains 'is missing package/build/index.d.ts'
 }
 
+@test "verifier rejects a tarball that carries no component subpath entry" {
+  # The split build emits one entry per exported component; a tarball with only
+  # the index entries means that degraded back to a single bundle.
+  make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
+    package.json build/index.mjs build/index.d.ts build/index.css
+
+  run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'is missing package/build/ui-button.mjs'
+}
+
 @test "verifier rejects a tarball missing only the stylesheet" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
     package.json build/index.mjs build/index.d.ts
@@ -82,9 +94,11 @@ setup() {
 
 @test "verifier refuses to guess when several tarballs are present" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
-    package.json build/index.mjs build/index.d.ts build/index.css
+    package.json build/index.mjs build/index.d.ts build/index.css \
+    build/ui-button.mjs build/ui-button.d.ts
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.1.0.tgz" \
-    package.json build/index.mjs build/index.d.ts build/index.css
+    package.json build/index.mjs build/index.d.ts build/index.css \
+    build/ui-button.mjs build/ui-button.d.ts
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 1 ]

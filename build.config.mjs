@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { existsSync, readFileSync, rmSync } from 'fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createRequire } from 'module';
@@ -28,6 +28,117 @@ const localizationPlugin = {
     });
   },
 };
+
+// Every VALUE re-export in the public barrel becomes its own entry point.
+//
+// This is not cosmetic packaging. Thirteen modules call `createTheme` /
+// `createBreakpoints` at module scope, and a bundler cannot prove those calls
+// pure — bundled into one file they are top-level statements every importer has
+// to retain, so pulling `UiButton` dragged every theme in the kit with it.
+// (esbuild's `pure` does not help: it feeds esbuild's own DCE and emits no
+// `@__PURE__` annotation for the consumer's bundler.) One entry per component
+// puts each of those calls behind an import the consumer can simply not make.
+//
+// Derived from `index.ts` rather than from the directory listing, so the entry
+// set and the public surface cannot drift: a component that is not exported is
+// not published, and one that is gets its subpath automatically.
+function componentEntryPoints() {
+  const barrel = readFileSync(entryPoint, 'utf8');
+  const directories = new Set();
+  // `export { … } from './x'` only. `export type { … }` is erased at runtime and
+  // needs no entry — its declarations ride the shared rollup.
+  for (const match of barrel.matchAll(/^export \{[^}]*\} from '\.\/([^']+)'/gm)) {
+    directories.add(match[1].split('/')[0]);
+  }
+
+  const entryPoints = { index: entryPoint };
+  for (const directory of directories) {
+    const base = path.resolve(currentDir, 'src', 'components', directory, 'index');
+    const source = ['.tsx', '.ts'].map(extension => `${base}${extension}`).find(existsSync);
+    if (source) {
+      entryPoints[directory] = source;
+    }
+  }
+  return entryPoints;
+}
+
+// The names the barrel re-exports from one component directory, split by whether
+// they survive to runtime. Used to give each subpath a `.d.ts` whose shape
+// matches its `.mjs` exactly.
+function barrelNamesFor(barrel, directory) {
+  const escaped = directory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const from = `from '\\./${escaped}(?:/[^']+)?'`;
+  const defaultAs = new RegExp(`export \\{ default as (\\w+) \\} ${from}`).exec(barrel);
+  const values = [];
+  const types = [];
+  for (const match of barrel.matchAll(new RegExp(`export (type )?\\{([^}]*)\\} ${from}`, 'g'))) {
+    for (const specifier of match[2].split(',')) {
+      const name = specifier.trim();
+      if (!name || name.startsWith('default as')) continue;
+      (match[1] ? types : values).push(name);
+    }
+  }
+  return { defaultExport: defaultAs ? defaultAs[1] : null, values, types };
+}
+
+// The names a built subpath actually exports at runtime, read back off the
+// emitted ESM. esbuild always closes an entry with a single `export { … }`.
+function runtimeExportsOf(directory) {
+  const file = path.resolve(currentDir, 'build', `${directory}.mjs`);
+  if (!existsSync(file)) return null;
+  const matches = [...readFileSync(file, 'utf8').matchAll(/^export \{([^}]*)\};?\s*$/gms)];
+  if (matches.length === 0) return [];
+  return matches[matches.length - 1][1]
+    .split(',')
+    .map(specifier => specifier.trim().split(' as ').pop())
+    .filter(Boolean);
+}
+
+// Fails the build if a subpath DECLARES a name its module does not export —
+// the direction that breaks a consumer, because the import type-checks and then
+// resolves to undefined at runtime.
+//
+// The opposite direction is deliberately allowed. Two components re-export a
+// shared internal through their own public index purely to satisfy the
+// `components-public-api` dependency-cruiser rule (ui-card-list's card styles,
+// consumed by ui-card-item; ui-typography's theme, consumed by ui-card-list),
+// so those names ride along in the emitted module without being part of the
+// published API. Typing them would put internals into the contract that Story
+// 5.3 exists to keep closed — the rollup does not carry them, so the `.d.ts`
+// could not even name them. Leaving them untyped is what makes them
+// unreachable from TypeScript, which is the intent.
+function assertDeclarationsAreBacked(directory, declared) {
+  const runtime = runtimeExportsOf(directory);
+  if (runtime === null) return;
+  const missing = declared.filter(name => !runtime.includes(name));
+  if (missing.length > 0) {
+    throw new Error(
+      `build/${directory}.d.ts declares ${missing.join(', ')}, which build/${directory}.mjs ` +
+        'does not export. The subpath would type-check and then resolve to undefined.'
+    );
+  }
+}
+
+// One `.d.ts` per subpath, re-exporting from the single API Extractor rollup.
+// Types are erased, so a subpath importer pays nothing for the shared rollup —
+// which keeps ONE self-contained declaration artifact (and the
+// `ae-forgotten-export` gate that guards it) instead of running API Extractor
+// once per entry.
+function generateSubpathDeclarations(entryPoints) {
+  const barrel = readFileSync(entryPoint, 'utf8');
+  for (const directory of Object.keys(entryPoints)) {
+    if (directory === 'index') continue;
+    const { defaultExport, values, types } = barrelNamesFor(barrel, directory);
+    const lines = [
+      `// Generated by build.config.mjs — the '${directory}' subpath, typed from the rollup.`,
+    ];
+    if (defaultExport) lines.push(`export { ${defaultExport} as default } from './index';`);
+    if (values.length) lines.push(`export { ${values.join(', ')} } from './index';`);
+    if (types.length) lines.push(`export type { ${types.join(', ')} } from './index';`);
+    assertDeclarationsAreBacked(directory, [...(defaultExport ? ['default'] : []), ...values]);
+    writeFileSync(path.resolve(currentDir, 'build', `${directory}.d.ts`), `${lines.join('\n')}\n`);
+  }
+}
 
 if (!existsSync(entryPoint)) {
   process.stdout.write(
@@ -81,11 +192,22 @@ async function generateTypeDeclarations() {
   }
 }
 
+// Start from an empty outdir. Entries are derived from the public barrel, so a
+// component that is renamed or unexported simply stops being emitted — its old
+// `build/<name>.mjs` and `.d.ts` would otherwise survive, and the `./*` subpath
+// pattern would keep publishing a stale entry point that nothing builds.
+rmSync(path.resolve(currentDir, 'build'), { recursive: true, force: true });
+
 esbuild
   .build({
     outdir: path.resolve(currentDir, 'build'),
-    entryPoints: [entryPoint],
+    entryPoints: componentEntryPoints(),
     entryNames: '[name]',
+    // Code shared by several entries is hoisted into `chunks/` instead of being
+    // duplicated into each one. Requires `format: 'esm'`, which this build
+    // already uses.
+    splitting: true,
+    chunkNames: 'chunks/[name]-[hash]',
     bundle: true,
     minify: true,
     format: 'esm',
@@ -121,6 +243,7 @@ esbuild
     },
   })
   .then(generateTypeDeclarations)
+  .then(() => generateSubpathDeclarations(componentEntryPoints()))
   .catch(error => {
     process.stderr.write(`Build failed: ${error.message ?? error}\n`);
     process.exit(1);

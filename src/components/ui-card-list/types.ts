@@ -5,6 +5,7 @@ import type { StaticImageSrc } from '@/types/assets';
 import type { CardItem, CardType, HeadingLevel } from '../ui-card-item/types';
 
 export type { CardItem, CardType, HeadingLevel };
+export type { StaticImageSrc };
 
 export type NonEmptyCardList = [CardItem, ...CardItem[]];
 

@@ -31,11 +31,18 @@ fi
 contents="$(tar -tzf "$tarball")"
 
 # npm prefixes every archive member with `package/`.
+# The per-component subpath entries are checked through one representative
+# component: the build derives them from the public barrel, so either every
+# component entry is emitted or none is. A tarball carrying only the index
+# entries means the split build silently degraded back to one bundle, which
+# resolves fine for `@vilnacrm/ui-toolkit` and 404s for every subpath import.
 for required in \
   package/package.json \
   package/build/index.mjs \
   package/build/index.d.ts \
-  package/build/index.css; do
+  package/build/index.css \
+  package/build/ui-button.mjs \
+  package/build/ui-button.d.ts; do
   if ! printf '%s\n' "$contents" | grep -qxF -- "$required"; then
     echo "$tarball is missing $required" >&2
     exit 1

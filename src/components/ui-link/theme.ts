@@ -27,6 +27,22 @@ const theme: Theme = createTheme({
           '&:active': {
             color: colorTheme.palette.textLinkActive.main,
           },
+          // Board A's Disabled column (`439:19364`, `439:19614`) repaints the link
+          // ink to Brand gray and changes nothing else — the measured disabled and
+          // rest glyphs share their typography and carry no decoration delta — so
+          // only `color` moves here. The nested hover/active resets keep the
+          // interactive accents from firing while the link is disabled; they sit
+          // last so they win the equal-specificity race against the rules above.
+          '&[aria-disabled="true"]': {
+            color: colorTheme.palette.brandGray.main,
+            cursor: 'default',
+            '&:hover': {
+              color: colorTheme.palette.brandGray.main,
+            },
+            '&:active': {
+              color: colorTheme.palette.brandGray.main,
+            },
+          },
         },
       },
     },

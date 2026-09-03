@@ -26,6 +26,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
+          # Dropped, like every other workflow in this repo. The changelog action
+          # does NOT use the checkout credential: its `init()` rewrites `origin`
+          # to https://x-access-token:<github-token>@... before it pulls, commits
+          # or pushes, so it authenticates the version bump and the tag with the
+          # token passed to it below. Persisting the checkout token here would
+          # leave a contents:write credential in .git/config for the docker build
+          # and `make package` steps that run after this job's release steps.
           persist-credentials: false
 
       - name: Conventional Changelog Action

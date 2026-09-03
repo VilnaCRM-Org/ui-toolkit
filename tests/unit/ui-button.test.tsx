@@ -202,3 +202,19 @@ describe('UiButton href guard (line 34: linkTarget && !isButtonElement)', () => 
     expect(link).toHaveAttribute('href', '/external');
   });
 });
+
+describe('UiButton — link attributes are part of the public type', () => {
+  it('forwards target and rel to the anchor it renders', () => {
+    // Both were already forwarded at runtime but missing from UiButtonProps, so a
+    // TypeScript consumer had to cast to pass them. This renders through the
+    // typed props, so it fails to compile if the declaration regresses.
+    render(
+      <UiButton href="https://example.com" target="_blank" rel="noopener noreferrer">
+        {testText}
+      </UiButton>
+    );
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+});
