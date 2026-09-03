@@ -15,10 +15,10 @@ const REST_SHADOW: string = `0 8px 27px ${CARD_SHADOW_TINT}`;
 const HOVER_SHADOW: string = `0 8px 15px ${CARD_SHADOW_TINT}`;
 
 // Single-layer inset ring: the card's own opaque fill needs no white layer.
-const FOCUS_RING: string = `inset 0 0 0 2px ${palette.darkPrimary.main}`;
+export const FOCUS_RING: string = `inset 0 0 0 2px ${palette.darkPrimary.main}`;
 
 // Forced-colors drops box-shadow, so the ring becomes an inset outline.
-const FORCED_COLORS_RING: object = {
+export const FORCED_COLORS_RING: object = {
   '@media (forced-colors: active)': {
     '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
   },
@@ -122,7 +122,7 @@ export function triggerButtonSx(state: Readonly<PickerVisualState>): SxProps<The
   };
 }
 
-const LABEL_TYPE: object = {
+export const LABEL_TYPE: object = {
   fontFamily: 'Golos Text',
   fontWeight: 500,
   fontSize: '0.938rem',
@@ -130,9 +130,26 @@ const LABEL_TYPE: object = {
   letterSpacing: 0,
 };
 
+// Figma sets the trigger label `whitespace-nowrap` on a fixed 220px card, and
+// the height depends on it: wrapped to two lines the closed card measures 60px
+// instead of the master's 48px. The toolkit's Ukrainian default label is ~3px
+// wider than the Russian string the design was drawn with, so it is allowed to
+// run into the 9px label-to-chevron gap rather than resize the card or move
+// the chevron off its 19px inset.
+// `minWidth: 0` lets the label shrink below its text width so the CHEVRON keeps
+// Figma's hard 21px right inset (an edge alignment the eye checks against the
+// card border) and the ~3px of surplus Ukrainian text runs into the 9px gap
+// instead (a soft internal gap, still 6px clear). Without it the flex item
+// refuses to shrink and pushes the glyph off that inset.
+const LABEL_NOWRAP: object = { whiteSpace: 'nowrap', minWidth: 0 };
+
 /** The trigger label ink: darkSecondary everywhere but the disabled paint. */
 export function triggerLabelSx(disabled: boolean): SxProps<Theme> {
-  return { ...LABEL_TYPE, color: disabled ? palette.grey300.main : palette.darkSecondary.main };
+  return {
+    ...LABEL_TYPE,
+    ...LABEL_NOWRAP,
+    color: disabled ? palette.grey300.main : palette.darkSecondary.main,
+  };
 }
 
 // 24x24 chevron footprint, glyph centred in the shared 20px box; grey300 ink.
@@ -145,76 +162,3 @@ export const chevronWrapSx: SxProps<Theme> = {
   height: '1.5rem',
   color: palette.grey300.main,
 };
-
-/** The `role="menu"` surface: no border of its own, the card supplies it. */
-export const menuSx: SxProps<Theme> = {
-  boxSizing: 'border-box',
-  display: 'flex',
-  flexDirection: 'column',
-  width: '100%',
-  margin: 0,
-  padding: 0,
-};
-
-// Full-bleed 2px rule; 12px bottom margin is the divider-to-content gap.
-export const dividerSx: SxProps<Theme> = {
-  boxSizing: 'border-box',
-  width: '100%',
-  height: 0,
-  margin: '0 0 12px',
-  border: 0,
-  borderTop: `2px solid ${palette.brandGray.main}`,
-};
-
-// Wraps a group's heading + rows (or just its rows) in a uniform 14px rhythm,
-// deviating from Figma's inconsistent 49px/46px raw pitch (see `types.ts`).
-export const sectionSx: SxProps<Theme> = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.875rem',
-};
-
-export const headingSx: SxProps<Theme> = { ...LABEL_TYPE, margin: 0, padding: '0 19px' };
-
-// One row: 32px tall, 21px inset (2px border + 19px padding); focus ring last
-// so it wins. No hover/selected paint exists, so this stays a flat constant.
-export const rowSx: SxProps<Theme> = {
-  ...LABEL_TYPE,
-  boxSizing: 'border-box',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  width: '100%',
-  minHeight: '2rem',
-  margin: 0,
-  padding: '0 19px',
-  border: 0,
-  backgroundColor: 'transparent',
-  cursor: 'pointer',
-  textAlign: 'left',
-  color: palette.darkSecondary.main,
-  '&:focus-visible': { outline: 'none', boxShadow: FOCUS_RING },
-  ...FORCED_COLORS_RING,
-};
-
-/** The 32px circular board-preview image. */
-export const imageMediaSx: SxProps<Theme> = {
-  flexShrink: 0,
-  display: 'block',
-  width: '2rem',
-  height: '2rem',
-  borderRadius: '50%',
-  objectFit: 'cover',
-};
-
-/** The 32px circular colour swatch, filled with the consumer's own colour. */
-export function colorMediaSx(color: string | undefined): SxProps<Theme> {
-  return {
-    flexShrink: 0,
-    boxSizing: 'border-box',
-    width: '2rem',
-    height: '2rem',
-    borderRadius: '50%',
-    backgroundColor: color,
-  };
-}

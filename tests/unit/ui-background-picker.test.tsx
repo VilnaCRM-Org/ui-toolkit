@@ -5,6 +5,15 @@ import React from 'react';
 import UiBackgroundPicker from '@/components/ui-background-picker';
 import backgroundPickerWarning from '@/components/ui-background-picker/background-picker-warnings';
 import {
+  colorMediaSx,
+  dividerSx,
+  headingSx,
+  imageMediaSx,
+  menuSx,
+  rowSx,
+  sectionSx,
+} from '@/components/ui-background-picker/menu-styles';
+import {
   handleOutsidePointerDown,
   handleRowActivate,
   handleTriggerClick,
@@ -26,13 +35,6 @@ import {
   CARD_SHADOW_TINT,
   cardRootSx,
   chevronWrapSx,
-  colorMediaSx,
-  dividerSx,
-  headingSx,
-  imageMediaSx,
-  menuSx,
-  rowSx,
-  sectionSx,
   triggerButtonSx,
   triggerLabelSx,
 } from '@/components/ui-background-picker/styles';
@@ -163,6 +165,24 @@ function imageCount(): number {
   return document.querySelectorAll('img').length;
 }
 
+// The chevron is decorative (`aria-hidden`), so it has no role to query by — it
+// is read directly, the same way the decorative previews are counted above.
+function svgs(): Element[] {
+  return Array.from(document.querySelectorAll('svg'));
+}
+
+function chevronPaths(): Element[] {
+  return Array.from(document.querySelectorAll('svg path'));
+}
+
+function triggerChevron(): Element | undefined {
+  return svgs()[svgs().length - 1];
+}
+
+function chevronPath(): Element | undefined {
+  return chevronPaths()[chevronPaths().length - 1];
+}
+
 describe('styles', () => {
   it('resolves rest chrome with the hover rule only while interactive', () => {
     const interactive = cardRootSx({ interactive: true, open: false, disabled: false }, undefined);
@@ -230,12 +250,32 @@ describe('styles', () => {
 
   it('exposes the constant painted objects', () => {
     expect((chevronWrapSx as Record<string, unknown>).color).toBe(GREY300);
-    expect((menuSx as Record<string, unknown>).padding).toBe(0);
     expect((dividerSx as Record<string, unknown>).borderTop).toBe(`2px solid ${BRAND_GRAY}`);
     expect((sectionSx as Record<string, unknown>).gap).toBe('0.875rem');
     expect((headingSx as Record<string, unknown>).padding).toBe('0 19px');
     expect((rowSx as Record<string, unknown>).color).toBe(DARK_SECONDARY);
     expect((imageMediaSx as Record<string, unknown>).borderRadius).toBe('50%');
+  });
+
+  // Figma insets the option list by 12px at BOTH ends: divider to first row is
+  // 48->60, and last row to the next divider is 187->199. The trailing half
+  // used to be missing entirely, so the final row sat flush on the card border.
+  it('insets the option list by 12px at both ends', () => {
+    expect((menuSx as Record<string, unknown>).padding).toBe('0 0 12px');
+    expect((dividerSx as Record<string, unknown>).margin).toBe('0 0 12px');
+    expect((dividerSx as Record<string, Record<string, unknown>>)['&:not(:first-of-type)']).toEqual(
+      {
+        marginTop: '12px',
+      }
+    );
+  });
+
+  // The card is a fixed 220px and its 48px closed height depends on the label
+  // staying on ONE line -- wrapped, the closed card measures 60px.
+  it('keeps the trigger label on a single line', () => {
+    const label: Record<string, unknown> = triggerLabelSx(false) as Record<string, unknown>;
+    expect(label.whiteSpace).toBe('nowrap');
+    expect(label.minWidth).toBe(0);
   });
 });
 
@@ -771,5 +811,39 @@ describe('UiBackgroundPicker', () => {
     await user.click(trigger());
     expect(screen.getByRole('menu')).toBeInTheDocument();
     expect(() => unmount()).not.toThrow();
+  });
+});
+
+describe('UiBackgroundPicker — the trigger chevron matches its Figma export', () => {
+  it('draws a 24px, 2px-stroke chevron rather than the thinner shared glyph', () => {
+    render(<UiBackgroundPicker groups={GROUPS} onOpenChange={noop} />);
+
+    // Figma node `439:19675` exports a 24x24 box at stroke-width 2, whose mark is
+    // 12x6. The shared `ChevronDownGlyph` is baked at a 20px box and 1.5px, which
+    // rendered a visibly smaller and thinner 10x5 mark. Pinned because the two are
+    // easy to swap back by eye.
+    expect(triggerChevron()).toHaveAttribute('width', '24');
+    expect(triggerChevron()).toHaveAttribute('height', '24');
+    expect(triggerChevron()).toHaveAttribute('viewBox', '0 0 24 24');
+    expect(chevronPath()).toHaveAttribute('stroke-width', '2');
+  });
+});
+
+describe('UiBackgroundPicker — the selected row is painted', () => {
+  it('tints a checked row with the kit\'s shared "chosen" blue', () => {
+    // Keyed off `aria-checked` so the paint follows the state the row already
+    // publishes. The value is the same `primary` @10% the multi-select chip and
+    // its aria-selected option rows use, so a picked background reads like any
+    // other picked thing. Figma's open frame (439:19689) paints no selected row —
+    // this is an owner-requested addition, without which the menu never showed
+    // which background was currently applied.
+    const row: Record<string, unknown> = rowSx as Record<string, unknown>;
+    expect(row['&[aria-checked="true"]']).toEqual({
+      backgroundColor: 'rgba(30, 174, 255, 0.1)',
+    });
+  });
+
+  it('leaves an unchecked row transparent', () => {
+    expect((rowSx as Record<string, unknown>).backgroundColor).toBe('transparent');
   });
 });

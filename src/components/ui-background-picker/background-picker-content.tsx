@@ -1,18 +1,19 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { ChevronDownGlyph } from '../field-controls';
-
 import { chevronWrapSx, triggerLabelSx } from './styles';
+import { TriggerChevronGlyph } from './trigger-chevron';
 
-// The trigger's chevron: the SHARED field-controls glyph (never a redrawn
-// path), centred inside a 24x24 footprint. It does not rotate open — the Figma
-// open frame still points it down — and its ink is the constant grey300 in
-// every state, so the wrapper carries no per-state colour logic.
+// The trigger's chevron, centred inside its 24x24 footprint. It does not rotate
+// open — the Figma open frame still points it down — and its ink is the constant
+// grey300 in every state, so the wrapper carries no per-state colour logic.
+// The glyph is drawn from THIS control's Figma export rather than the shared
+// `ChevronDownGlyph`; see `trigger-chevron.tsx` for why the shared one could not
+// match the weight.
 function TriggerChevron(): React.ReactElement {
   return (
     <Box component="span" sx={chevronWrapSx}>
-      <ChevronDownGlyph />
+      <TriggerChevronGlyph />
     </Box>
   );
 }
