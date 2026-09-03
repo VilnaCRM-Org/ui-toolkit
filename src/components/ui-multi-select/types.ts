@@ -31,11 +31,12 @@ export interface UiMultiSelectProps {
    * Marks the options as being fetched. The toolkit is presentational — it never
    * fetches; the consuming app owns the request and drives this flag.
    *
-   * Unlike UiSelectWithSearch, the clear-all × is KEPT while loading and the
-   * spinner is drawn as a ring around it — its × is Figma-mandated
-   * always-visible (node 622:44553), so hiding it would drop a design-mandated
-   * control. `undefined` (the default) opts out entirely and leaves the DOM
-   * unchanged.
+   * While loading, the arc takes the clear-all ×'s slot and the × is hidden
+   * underneath — the same treatment every other field in the kit uses, so a
+   * busy field looks the same wherever it appears. The × is Figma-mandated
+   * always-visible in the RESTING field (node 622:44553) and stays so; it is
+   * suppressed only for the duration of the fetch. `undefined` (the default)
+   * opts out entirely and leaves the DOM unchanged.
    */
   loading?: boolean;
   /**
