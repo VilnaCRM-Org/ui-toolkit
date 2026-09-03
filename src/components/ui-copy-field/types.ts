@@ -3,8 +3,16 @@ import type { SxProps, Theme } from '@mui/material';
 /**
  * A copy-to-clipboard chip: a monospace-looking code string beside a trailing
  * `copy-02` glyph. Figma Board A, state nodes 451:25827 rest / 451:25831 hover /
- * 451:25835 active / 451:25839 disabled — four states and nothing else; the
- * design paints no "copied" confirmation state, so none is invented here.
+ * 451:25835 active / 451:25839 disabled — four painted states.
+ *
+ * **Copy confirmation (deviation from Figma).** The design paints no "copied"
+ * state, but a copy action with no feedback leaves the user unable to tell it
+ * worked. Rather than invent a fifth chrome, a successful copy LATCHES the
+ * chip's existing ACTIVE paint for `COPIED_RESET_MS`, reflected on the root as
+ * `data-copied="true"`. The latch is visual only: it changes no ARIA state and
+ * no accessible name, so it is currently a colour-only cue — a consumer that
+ * needs the confirmation announced should own a status region beside the chip
+ * and drive it from `onCopy`.
  *
  * **The whole chip is ONE native `<button type="button">`** (a11y contract):
  * the design repaints the entire chip on hover/active, so the hover/press
