@@ -35,6 +35,13 @@ function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement 
       <Box role="status" aria-atomic="true" sx={srOnlySx}>
         {field.status}
       </Box>
+      {/* A SECOND region, deliberately. The chip diff above and the loading
+          timer below have independent writers; sharing one node would let a
+          chip removal and a fetch starting clobber each other's text before
+          assistive tech had read either. */}
+      <Box role="status" aria-atomic="true" sx={srOnlySx}>
+        {field.announced}
+      </Box>
     </ThemeProvider>
   );
 }

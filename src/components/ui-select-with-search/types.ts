@@ -25,7 +25,24 @@ export interface UiSelectWithSearchProps {
   /** Controlled selected option (`null` when nothing is selected). */
   value?: UiSelectWithSearchOption | null | undefined;
   /** Called with the newly selected option, or `null` when the value is cleared. */
-  onChange?: ((value: UiSelectWithSearchOption | null) => void) | undefined;
+  onChange?: (value: UiSelectWithSearchOption | null) => void | undefined;
+  /**
+   * Marks the options as being fetched. The toolkit is presentational — it never
+   * fetches; the consuming app owns the request and drives this flag.
+   *
+   * While `true` the spinner takes the clear ×'s slot and the × is hidden. That
+   * swap is safe rather than merely tidy: MUI gives the clear button
+   * `tabIndex={-1}`, so it is not in the tab order and removing it cannot break
+   * a Tab sequence. `undefined` (the default) opts out entirely and leaves the
+   * DOM unchanged.
+   */
+  loading?: boolean | undefined;
+  /**
+   * Loading copy: the popup row while options are in flight, and the text the
+   * field's polite `role="status"` region speaks once a fetch has run long
+   * enough to be worth announcing. Defaults to `'Завантаження'`.
+   */
+  loadingText?: string | undefined;
   disabled?: boolean | undefined;
   error?: boolean | undefined;
   /**

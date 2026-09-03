@@ -1,7 +1,11 @@
 import { Autocomplete } from '@mui/material';
 import React from 'react';
 
-import { createFieldOptionRenderer, OPEN_FIELD_POPPER } from '../field-controls';
+import {
+  createFieldOptionRenderer,
+  DEFAULT_LOADING_TEXT,
+  OPEN_FIELD_POPPER,
+} from '../field-controls';
 
 import type { UiSearchInputProps } from './types';
 import type { SearchField } from './use-search-field';
@@ -26,6 +30,13 @@ export function renderSearchAutocomplete(
       inputValue={field.text}
       onInputChange={field.handleInputChange}
       disabled={props.disabled}
+      // A loading field stays fully operable — no `disabled`, no `readOnly`: the
+      // user is mid-word and must be able to keep typing (SC 2.1.1), and a fetch
+      // they triggered by typing must not change context (SC 3.2.2). MUI's own
+      // `loading` only swaps the popup's empty row for `loadingText`, so a
+      // running search no longer reads as "nothing found".
+      loading={props.loading}
+      loadingText={props.loadingText ?? DEFAULT_LOADING_TEXT}
       size={props.size}
       id={fieldId}
       popupIcon={null}

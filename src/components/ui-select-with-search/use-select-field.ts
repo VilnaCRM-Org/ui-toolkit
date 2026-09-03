@@ -1,7 +1,11 @@
 import type { AutocompleteInputChangeReason, AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import { useListboxSlotProps, type ListboxSlotProps } from '../field-controls';
+import {
+  useFieldLoadingAnnouncement,
+  useListboxSlotProps,
+  type ListboxSlotProps,
+} from '../field-controls';
 
 import { createSelectRenderInput } from './render-input';
 import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
@@ -25,6 +29,8 @@ export interface SelectField {
   resolvedOpen: boolean;
   renderInput: (params: AutocompleteRenderInputParams) => React.ReactElement;
   slotProps: ListboxSlotProps;
+  /** Polite live-region text: empty until a fetch crosses the announce delay. */
+  announced: string;
 }
 
 // Derives the change handler, the `renderInput` callback (with the inline ghost
@@ -46,6 +52,7 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
     [onChange]
   );
 
+  const announced: string = useFieldLoadingAnnouncement(props);
   const renderInput: SelectField['renderInput'] = createSelectRenderInput(props, ghost);
   const slotProps: ListboxSlotProps = useListboxSlotProps(props.label, props['aria-label']);
 
@@ -57,5 +64,6 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
     resolvedOpen: props.open ?? popupOpen,
     renderInput,
     slotProps,
+    announced,
   };
 }

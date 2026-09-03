@@ -3,7 +3,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
-import { ChevronDownGlyph, OPEN_FIELD_POPPER } from '../field-controls';
+import { ChevronDownGlyph, DEFAULT_LOADING_TEXT, OPEN_FIELD_POPPER } from '../field-controls';
 import colorTheme from '../ui-color-theme';
 
 import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
@@ -70,6 +70,11 @@ export function MultiSelectCombobox(props: Readonly<MultiSelectComboboxProps>): 
       inputValue={field.text}
       onInputChange={field.handleInputChange}
       disabled={config.disabled}
+      // A loading combobox stays fully operable — no `disabled`, no `readOnly`
+      // (SC 2.1.1 / 3.2.2). MUI's `loading` only swaps the popup's empty row for
+      // `loadingText`, so a running fetch no longer reads as "no options".
+      loading={config.loading}
+      loadingText={config.loadingText ?? DEFAULT_LOADING_TEXT}
       size={config.size}
       sx={rootSx(config)}
       id={fieldId}
