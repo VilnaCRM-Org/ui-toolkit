@@ -38,6 +38,7 @@ import {
 
 import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
+import mockConsoleError from './utils/mock-console-error';
 import mockConsoleWarn from './utils/mock-console-warn';
 import nthOf from './utils/nth-of';
 import { keysMatching, type StyleObject } from './utils/style-layers';
@@ -45,6 +46,11 @@ import { keysMatching, type StyleObject } from './utils/style-layers';
 // UiActionIconBar emits four dev-only accessibility warnings through console.warn.
 // Silence them for the suite and keep a live handle for the assertions.
 const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
+
+// React reports a broken list key — a missing one, or two siblings sharing one —
+// through console.error and nowhere else. Silence that channel too, and keep the
+// handle so the row's keying can be asserted instead of merely eyeballed.
+const error: { readonly spy: jest.SpyInstance } = mockConsoleError();
 
 const noop: () => void = () => undefined;
 
@@ -424,6 +430,39 @@ describe('UiActionIconBar — action buttons and accessible names (S1/S7)', () =
   });
 });
 
+describe('UiActionIconBar — slot keys (list identity across re-renders)', () => {
+  const KEYED_ROW: readonly UiActionIconBarAction[] = [
+    { icon: 'x-close', label: CLOSE, onActivate: noop, id: 'close-row' },
+    { icon: 'trash', label: DELETE, onActivate: noop, id: 'delete-row' },
+  ];
+
+  it('keys a slot by its own id, so a reordered row moves nodes instead of rebuilding', () => {
+    const { rerender } = render(barWith({ actions: KEYED_ROW }));
+    const deleteSlot: HTMLElement = nthOf(buttons(), 1);
+
+    rerender(barWith({ actions: [nthOf(KEYED_ROW, 1), firstOf(KEYED_ROW)] }));
+
+    // The id is what ties a slot to its action across a reorder. Keyed by
+    // position instead, neither key would survive the swap: React would tear
+    // both slots down and mount replacements, handing the same two actions new
+    // buttons — and dropping the focus and the pointer state that sat on them.
+    expect(nthOf(buttons(), 0)).toBe(deleteSlot);
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-label', DELETE);
+  });
+
+  it('falls back to icon+index, so an id-less row never shares one key', () => {
+    render(barWith({ actions: WIRED_ROW }));
+
+    // Six slots and not one id: the fallback has to differ per slot. A constant
+    // one would collide six ways, and React reports every collision as
+    // "Encountered two children with the same key" on console.error alone.
+    expect(error.spy).not.toHaveBeenCalledWith(
+      expect.stringContaining('Encountered two children with the same key'),
+      expect.anything()
+    );
+  });
+});
+
 describe('UiActionIconBar — plain actions carry no state ARIA', () => {
   it('leaves toggle, popup and selection ARIA off every non-toggle action', () => {
     render(barWith({}));
@@ -498,6 +537,26 @@ describe('UiActionIconBar — eye visibility toggle (binding pressed semantics)'
     expect(pathsIn(glyphAt(0))).toEqual([EXPECTED_EYE_OFF]);
     expect(glyphAt(0)).toHaveAttribute('aria-hidden', 'true');
     expect(glyphAt(0)).toHaveAttribute('viewBox', '0 0 24 24');
+  });
+
+  it('never lends eye-off to another lane, however pressed that lane is', () => {
+    render(
+      barWith({
+        actions: [
+          { icon: 'settings', label: SETTINGS, pressed: true, onToggle: noop },
+          { icon: 'x-close', label: CLOSE, pressed: true, onToggle: noop },
+        ],
+      })
+    );
+
+    // Both slots are real toggles holding a real pressed state, so `pressed`
+    // alone cannot decide the swap: the eye-off vector belongs to the eye lane
+    // and to nothing else, and a settings toggle keeps its native 30-unit box.
+    expect(nthOf(buttons(), 0)).toHaveAttribute('aria-pressed', 'true');
+    expect(pathsIn(glyphAt(0))).toEqual([EXPECTED_SETTINGS]);
+    expect(glyphAt(0)).toHaveAttribute('viewBox', '0 0 30 30');
+    expect(nthOf(buttons(), 1)).toHaveAttribute('aria-pressed', 'true');
+    expect(pathsIn(glyphAt(1))).toEqual([EXPECTED_X_CLOSE]);
   });
 
   it('keeps rendering the current glyph while disabled', () => {

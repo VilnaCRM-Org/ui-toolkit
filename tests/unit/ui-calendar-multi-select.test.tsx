@@ -520,6 +520,35 @@ describe('UiCalendarMultiSelect — error, helper and required semantics', () =>
     expect(screen.getByRole('alert')).toBeEmptyDOMElement();
   });
 
+  // The helper paragraph is emitted only when there IS helper text for it to carry.
+  // Rendering it unguarded would leave an empty <p id="cal-helper-text"> in the tree:
+  // a dangling aria-describedby target that describes the grid with nothing at all.
+  it('renders no helper-text element at all when helperText is omitted', () => {
+    const { rerender } = render(
+      <UiCalendarMultiSelect label="Dates" id="cal" defaultMonth={MONTH} onChange={noop} />
+    );
+    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
+    expect(document.querySelector('#cal-helper-text')).not.toBeInTheDocument();
+    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
+    expect(document.querySelector('.MuiFormHelperText-root')).not.toBeInTheDocument();
+
+    // The very same queries find the paragraph once helper text arrives, so the
+    // absences above are a real absence and not selectors that never match.
+    rerender(
+      <UiCalendarMultiSelect
+        label="Dates"
+        id="cal"
+        defaultMonth={MONTH}
+        helperText="Pick a date"
+        onChange={noop}
+      />
+    );
+    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
+    expect(document.querySelector('#cal-helper-text')).toHaveTextContent('Pick a date');
+    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
+    expect(document.querySelector('.MuiFormHelperText-root')).toBeInTheDocument();
+  });
+
   it('treats a blank id as absent so ARIA ids stay unique (no "-helper-text")', () => {
     render(
       <UiCalendarMultiSelect
@@ -891,7 +920,11 @@ describe('UiCalendarMultiSelect — adjacent-month padding cells', () => {
   it('keeps them as real, unfocusable gridcells with an aria-hidden day number', () => {
     render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
 
-    // September 2025 starts on a Monday, so the first row carries August padding.
+    // September 2025 begins on a Monday and the grid's rows start on Monday, so the
+    // FIRST row is all in-month (Sep 1-7) and carries no padding at all. The padding
+    // is on the last row: September 30 is a Tuesday, so Oct 1-5 fill it out. The cells
+    // are found by their aria-disabled flag rather than by position for exactly that
+    // reason — which end of the grid pads depends on the month.
     const cells: HTMLElement[] = screen.getAllByRole('gridcell');
     const padding: HTMLElement[] = cells.filter(
       (cell: HTMLElement): boolean => cell.getAttribute('aria-disabled') === 'true'

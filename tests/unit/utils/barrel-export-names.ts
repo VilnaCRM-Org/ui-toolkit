@@ -19,11 +19,19 @@ export default function barrelExportNames(barrelSource: string): string[] {
       continue;
     }
     for (const specifier of (block[2] ?? '').split(',')) {
+      const trimmed: string = specifier.trim();
+      // An INLINE type specifier — `export { default as UiFoo, type UiFooProps }` —
+      // erases at compile time just as a whole `export type { … }` block does, so it
+      // is not a runtime export either. The barrel uses only the block form today;
+      // this arm keeps a later inline one from being counted as a component and
+      // demanding a registry row for a type (PR #126 review).
+      if (/^type\s/.test(trimmed)) {
+        continue;
+      }
       // `default as UiButton` exports the name after `as`; a bare `sharedPalette`
       // exports itself.
       const name: string =
-        specifier
-          .trim()
+        trimmed
           .split(/\s+as\s+/)
           .pop()
           ?.trim() ?? '';

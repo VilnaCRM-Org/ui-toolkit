@@ -209,6 +209,60 @@ describe('UiPagination — whole-component disabled', () => {
   });
 });
 
+// The three Figma columns a page cell can paint (nodes 439:19463/19465/19466),
+// written out literally: reading them off `pageCellSx` would let the assertion
+// travel with whatever the recipe became.
+const CELL_REST_FILL: string = '#FFF';
+const CELL_REST_STROKE: string = '#E1E7EA';
+const CELL_REST_INK: string = '#57595B';
+const CELL_CURRENT_FILL: string = '#1EAEFF';
+const CELL_CURRENT_INK: string = '#FFF';
+const CELL_DISABLED_FILL: string = '#E1E7EA';
+const CELL_DISABLED_INK: string = '#969B9D';
+
+describe('UiPagination — page-cell paint per state', () => {
+  it('paints the current cell with the Primary fill and white ink', () => {
+    render(<UiPagination value={3} count={5} onChange={noop} />);
+
+    // The current branch has to be reached: falling through to the rest column
+    // would hand back a white cell with Font/250 ink and lose the selection.
+    expect(pageButton(3)).toHaveStyle({
+      backgroundColor: CELL_CURRENT_FILL,
+      color: CELL_CURRENT_INK,
+    });
+  });
+
+  it('paints every other cell as rest: white fill, Brand-gray stroke, Font/250 ink', () => {
+    render(<UiPagination value={3} count={5} onChange={noop} />);
+
+    // The complement of the assertion above — on an operable navigator a
+    // non-current cell takes neither the current nor the disabled column, and
+    // keeps the pointer affordance that only the disabled column drops.
+    [1, 2, 4, 5].forEach((page: number) => {
+      expect(pageButton(page)).toHaveStyle({
+        backgroundColor: CELL_REST_FILL,
+        borderColor: CELL_REST_STROKE,
+        color: CELL_REST_INK,
+        cursor: 'pointer',
+      });
+    });
+  });
+
+  it('paints every cell with the disabled column while the whole bar is disabled', () => {
+    render(<UiPagination value={3} count={5} disabled onChange={noop} />);
+
+    // Disabled outranks current: even the current page drops the Primary fill
+    // for Brand-gray, and the pointer affordance goes with it.
+    [1, 2, 3, 4, 5].forEach((page: number) => {
+      expect(pageButton(page)).toHaveStyle({
+        backgroundColor: CELL_DISABLED_FILL,
+        color: CELL_DISABLED_INK,
+        cursor: 'default',
+      });
+    });
+  });
+});
+
 describe('UiPagination — ellipsis', () => {
   it('renders the skipped-pages marker as a non-interactive, hidden span', () => {
     render(<UiPagination value={1} count={10} onChange={noop} />);
@@ -221,6 +275,23 @@ describe('UiPagination — ellipsis', () => {
     expect(screen.queryByRole('button', { name: 'Сторінка 7' })).not.toBeInTheDocument();
     // Six page cells (1-5, 10) plus previous/next.
     expect(screen.getAllByRole('button')).toHaveLength(8);
+  });
+
+  it('keys the two ellipsis cells apart so React sees no duplicate key', () => {
+    // Both markers are the same element with no own props, so only the index in
+    // the key tells them apart. A key prefix without it would collide and React
+    // would report "Encountered two children with the same key".
+    const error: jest.SpyInstance = jest.spyOn(console, 'error').mockImplementation();
+    try {
+      render(
+        <UiPagination value={6} count={10} siblingCount={0} boundaryCount={2} onChange={noop} />
+      );
+
+      expect(screen.getAllByText('...')).toHaveLength(2);
+      expect(error).not.toHaveBeenCalled();
+    } finally {
+      error.mockRestore();
+    }
   });
 });
 

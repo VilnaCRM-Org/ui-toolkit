@@ -1,9 +1,11 @@
+import type { AutocompleteRenderValueGetItemProps } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import UiLink from '../../src/components/ui-link';
 import UiMultiSelect from '../../src/components/ui-multi-select';
+import { createChipRenderer } from '../../src/components/ui-multi-select/chip-renderer';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
 
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -380,6 +382,17 @@ describe('UiMultiSelect — rendering and accessible name', () => {
   });
 });
 
+// The chip root — the node MUI paints its disabled state on. `getByText` lands on the
+// chip's label span, so climb to the wrapper, which carries no role of its own.
+function chipRootFor(label: string): HTMLElement {
+  // eslint-disable-next-line testing-library/no-node-access -- chip wrapper, no role
+  const root: HTMLElement | null = screen.getByText(label).closest('.MuiChip-root');
+  if (root === null) {
+    throw new Error(`no chip wrapper rendered for "${label}"`);
+  }
+  return root;
+}
+
 describe('UiMultiSelect — removable chips', () => {
   it('renders a chip for each selected option', () => {
     render(
@@ -689,6 +702,31 @@ describe('UiMultiSelect — disabled semantics', () => {
     expect(screen.getByText('Kyiv')).toBeInTheDocument();
   });
 
+  // The delete-control assertion above only proves the `onDelete` branch is off; a
+  // chip still painted as interactive would pass it unchanged. Assert the disabled
+  // state MUI paints from the chip's own `disabled` prop as well. 'Mui-disabled' is
+  // written out rather than imported — MUI's global state class for the branch.
+  it('marks every chip disabled while the field is disabled', () => {
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[options[0], options[1]]}
+        aria-label="Cities"
+        disabled
+        onChange={noop}
+      />
+    );
+    expect(chipRootFor('Kyiv')).toHaveClass('Mui-disabled');
+    expect(chipRootFor('Lviv')).toHaveClass('Mui-disabled');
+  });
+
+  it('leaves the chips enabled while the field is enabled', () => {
+    render(
+      <UiMultiSelect options={options} value={[options[0]]} aria-label="Cities" onChange={noop} />
+    );
+    expect(chipRootFor('Kyiv')).not.toHaveClass('Mui-disabled');
+  });
+
   it('removes a disabled combobox from the keyboard tab order', async () => {
     const user: UserEvent = userEvent.setup();
     render(
@@ -779,5 +817,43 @@ describe('UiMultiSelect — accessibility guidance', () => {
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
     rerender(<UiMultiSelect options={options} onChange={noop} />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+});
+
+// Every case above drives the renderer through the whole control, where MUI hands each
+// chip the field's own `disabled` — so there the field flag and the per-chip flag can
+// never disagree. MUI's `getItemProps` carries a `disabled` of its own though, and the
+// renderer ORs the two, so a chip MUI marks disabled stays disabled even while the
+// field is enabled. Driving the exported renderer directly is the only way to pull the
+// two flags apart.
+type GetItemProps = AutocompleteRenderValueGetItemProps<true>;
+
+function stubGetItemProps(itemDisabled: boolean): GetItemProps {
+  return ({ index }) => ({
+    key: index,
+    className: 'MuiAutocomplete-tag',
+    disabled: itemDisabled,
+    'data-item-index': index,
+    tabIndex: -1,
+    onDelete: () => undefined,
+  });
+}
+
+function renderChips(fieldDisabled: boolean, itemDisabled: boolean): void {
+  // Called inline rather than bound to a name: `render-result-naming-convention`
+  // flags anything assigned from a `*render*` function, which is meant for RTL's
+  // own `render` and has nothing useful to say about this factory.
+  render(<>{createChipRenderer(fieldDisabled)([options[0]], stubGetItemProps(itemDisabled))}</>);
+}
+
+describe('createChipRenderer — per-chip disabled', () => {
+  it('disables a chip MUI marks disabled even while the field is enabled', () => {
+    renderChips(false, true); // field enabled, this one chip disabled by MUI
+    expect(chipRootFor('Kyiv')).toHaveClass('Mui-disabled');
+  });
+
+  it('leaves the chip enabled when neither the field nor the item is disabled', () => {
+    renderChips(false, false);
+    expect(chipRootFor('Kyiv')).not.toHaveClass('Mui-disabled');
   });
 });

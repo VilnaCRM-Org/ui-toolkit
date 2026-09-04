@@ -30,9 +30,13 @@ Close the three provenance/compliance obligations `epics.md:682-703` places on t
 
 Boundaries held deliberately:
 
-- **Story 5.1** owns the board coverage checklist and its drift guard; this story cites
-  `board-coverage-checklist.md` and never edits it (editing it would also collide with
-  `tests/unit/board-coverage-traceability.test.ts`).
+- **Story 5.1** owns the board coverage checklist and its drift guard: every coverage ruling,
+  status and deferral in `board-coverage-checklist.md` stays 5.1's to make, and this story cites
+  them rather than restating or revising them. The one edit this story makes to that file is
+  reference maintenance it cannot avoid — PR #126 renamed the two `GhostOverlay` suites when the
+  module moved to its own directory, and 5.1's own drift guard
+  (`tests/unit/board-coverage-traceability.test.ts`) fails on a cited test file that no longer
+  exists. No ruling, status or count in the checklist is touched.
 - **Story 5.3** owns export-contract remediation — including the `ui-card-item` duplication this
   story rules on but does not resolve.
 - **Story 5.4** owns the consolidated release-readiness governance report.

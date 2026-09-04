@@ -14,8 +14,9 @@ import { validateFiles } from '../../src/components/ui-file-upload-input/validat
 import mockConsoleWarn from './utils/mock-console-warn';
 
 // The suite renders deliberately minimal fields in a few specs; silence the
-// dev-only accessible-name guidance so it does not clutter the output.
-mockConsoleWarn();
+// dev-only accessible-name guidance so it does not clutter the output. The
+// handle keeps it assertable: silencing a warning is not proof that it fires.
+const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
 
 const LABEL: string = 'Project logo';
 const HINT: string = 'PNG or JPG, up to 2 MB.';
@@ -387,6 +388,29 @@ describe('UiFileUploadInput — drag and drop', () => {
     expect(surface.className).toBe(resting);
   });
 
+  // Figma steps the group label from grey200 (#404142, rest node 449:25710) to
+  // grey250 (#57595B, active node 449:25703) while a file is dragged over the
+  // field. Both tints are written out rather than imported: an expectation that
+  // reads the style constant passes whatever that constant becomes.
+  it('steps the label tint to the active grey while a drag is over the field', () => {
+    renderField();
+
+    expect(screen.getByText(LABEL)).toHaveStyle({ color: 'rgb(64, 65, 66)' });
+
+    fireEvent.dragEnter(fileInput(), { dataTransfer: { files: [] } });
+
+    expect(screen.getByText(LABEL)).toHaveStyle({ color: 'rgb(87, 89, 91)' });
+    // The active tint is layered ON the resting label rather than swapping it
+    // out, so the Figma metrics (9px gap, Inter Medium 14/18) must survive the
+    // step; without them the label falls back to MUI's stock body1.
+    expect(screen.getByText(LABEL)).toHaveStyle({
+      marginBottom: '0.5625rem',
+      fontWeight: '500',
+      fontSize: '0.875rem',
+      lineHeight: '1.125rem',
+    });
+  });
+
   it('keeps the highlight while the drag moves onto a child of the field', () => {
     renderField({ id: 'logo' });
 
@@ -627,6 +651,32 @@ describe('UiFileUploadInput — repeated rejection', () => {
     // announce the *previous* selection before the new `files` prop arrives.
     expect(screen.getByRole('status')).toBe(before);
     expect(onFilesChange).toHaveBeenCalledWith([PNG]);
+  });
+});
+
+describe('UiFileUploadInput — accessibility guidance', () => {
+  it('warns when the field has no accessible name', () => {
+    renderField({ label: undefined });
+
+    expect(warn.spy).toHaveBeenCalledWith(
+      expect.stringContaining('UiFileUploadInput has no accessible name')
+    );
+  });
+
+  it('warns when a failed upload ships no helper text to explain it', () => {
+    // A failed upload is an error state like any other, so `status="error"` with
+    // nothing in `helperText` leaves assistive tech no reason for the error.
+    renderField({ files: [PNG], status: 'error' });
+
+    expect(warn.spy).toHaveBeenCalledWith(
+      expect.stringContaining('UiFileUploadInput has `error` set but no `helperText`')
+    );
+  });
+
+  it('stays quiet for a named field that is not in error', () => {
+    renderField({ files: [PNG] });
+
+    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('UiFileUploadInput'));
   });
 });
 

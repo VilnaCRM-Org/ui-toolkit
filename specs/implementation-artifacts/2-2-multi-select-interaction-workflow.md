@@ -48,8 +48,9 @@ so the chips follow MUI + toolkit tokens.
   `getItemProps`. `getItemProps`' fully-typed fields (`key`, `className`, `tabIndex`,
   `data-item-index`, `onDelete`) are applied **explicitly, not spread** (the repo's
   no-prop-spreading rule), so no lint exception is needed. Each chip's delete control
-  is a named affordance ("Remove Kyiv"), 24×24 (WCAG 2.5.8), and out of the tab order
-  (removal is via click, Backspace, or arrow-to-chip + Delete — all MUI-native).
+  is a named affordance ("Remove Kyiv"), ~~24×24 (WCAG 2.5.8)~~ — the superseded
+  expectation, see the corrections below — and out of the tab order (removal is via
+  click, Backspace, or arrow-to-chip + Delete — all MUI-native).
   **Correction (2026-08-06, Story 5.2):** the control shipped at 20×20, not 24×24
   (`deleteButtonSx`, `src/components/ui-multi-select/styles.ts`). **Further correction
   (PR #126 review):** SC 2.5.8 is not met and no exception closes it — the SC's

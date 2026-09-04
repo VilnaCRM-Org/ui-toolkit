@@ -218,3 +218,28 @@ describe('UiButton — link attributes are part of the public type', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 });
+
+describe('UiButton to guard (line 38: isCustomComponent && to !== undefined)', () => {
+  it('flattens to into href on the built-in anchor instead of forwarding it raw', () => {
+    // Only a custom link component owns navigation via `to`; the built-in `a` has no
+    // such prop, so forwarding it would leak a stray to="/dashboard" attribute into
+    // the DOM. A guard that always forwarded (if (true)) would render that attribute.
+    render(<UiButton to="/dashboard">{testText}</UiButton>);
+
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('href', '/dashboard');
+    expect(link).not.toHaveAttribute('to');
+  });
+
+  it('keeps the native button when the to object is empty rather than forwarding it', () => {
+    // `to={{}}` flattens to an empty string, so UiButton stays a plain <button>.
+    // Forwarding the raw (truthy) object makes MUI's ButtonBase treat the button as a
+    // link and swap the root for its LinkComponent <a>, losing the role and the type.
+    render(<UiButton to={{}}>{testText}</UiButton>);
+
+    const button: HTMLElement = screen.getByRole('button', { name: testText });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).not.toHaveAttribute('to');
+  });
+});

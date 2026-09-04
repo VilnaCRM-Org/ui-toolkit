@@ -94,6 +94,19 @@ describe('UiSearchInput — rendering and accessible name', () => {
     expect(wrapper).toHaveStyle({ marginTop: '11px' });
   });
 
+  it('merges a consumer object sx onto the same wrapper as an array sx', () => {
+    render(<UiSearchInput aria-label="Search" sx={{ marginTop: '13px' }} />);
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    // A bare object takes the other branch of the sx merge, so it needs its own case:
+    // the wrapper must keep the flex-column stack AND still pick the consumer value up.
+    /* eslint-disable testing-library/no-node-access -- wrapper Box, no semantic query */
+    const wrapper: HTMLElement | null | undefined =
+      combobox.closest('.MuiAutocomplete-root')?.parentElement;
+    /* eslint-enable testing-library/no-node-access */
+    expect(wrapper).toHaveStyle({ display: 'flex', flexDirection: 'column' });
+    expect(wrapper).toHaveStyle({ marginTop: '13px' });
+  });
+
   it('names the combobox from the aria-label prop', () => {
     render(<UiSearchInput aria-label="Search customers" />);
     expect(screen.getByRole('combobox', { name: 'Search customers' })).toBeInTheDocument();
@@ -310,6 +323,13 @@ describe('UiSearchInput — accessibility guidance', () => {
       <UiSearchInput aria-label="Search" options={suggestions} value="Top" open disablePortal />
     );
     expect(screen.getByRole('listbox')).toBeInTheDocument();
+  });
+
+  it('names the force-opened listbox from the field label', () => {
+    render(<UiSearchInput label="Find" options={suggestions} value="Top" open disablePortal />);
+    // Force-open swaps in a second slotProps object (it also pins the popper); the
+    // listbox aria-label has to survive that swap, not just the typed-open path.
+    expect(screen.getByRole('listbox')).toHaveAccessibleName('Find');
   });
 });
 

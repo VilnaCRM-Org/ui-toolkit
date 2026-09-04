@@ -3,7 +3,16 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { createFieldRenderInput } from '../../src/components/field-controls';
+import {
+  createFieldRenderInput,
+  type FieldRenderInputConfig,
+} from '../../src/components/field-controls';
+
+// Every case drives the factory through a real MUI Autocomplete, so `params` carries the
+// exact runtime shape (id, slotProps.input/htmlInput) the merge is written against.
+function renderField(config: FieldRenderInputConfig): void {
+  render(<Autocomplete options={['A', 'B']} renderInput={createFieldRenderInput(config)} />);
+}
 
 // The ghost-enabled fields (search/select/multi-select) always pass an `overlay` and
 // input handlers, so they exercise the wrapped path. This covers the plain-field path:
@@ -29,5 +38,39 @@ describe('createFieldRenderInput — plain field (no overlay, no input handlers)
     const renderedOptions: HTMLElement[] = screen.getAllByRole('option');
     await user.keyboard('{ArrowDown}');
     expect(combobox).toHaveAttribute('aria-activedescendant', renderedOptions[0]!.id);
+  });
+
+  it('leaves the field unwrapped when no overlay is configured', () => {
+    renderField({ ariaLabel: 'City' });
+
+    // The overlay wrapper is a style-only Box (position:relative) with no role of its
+    // own, so it has to be read off the DOM. With `overlay` absent the TextField must
+    // be the Autocomplete root's own child: a wrapper that rendered unconditionally
+    // would sit between the two and remount the input on every completion toggle,
+    // dropping focus and the live key handlers mid-type.
+    const combobox: HTMLElement = screen.getByRole('combobox', { name: 'City' });
+    // eslint-disable-next-line testing-library/no-node-access -- wrapper class, no role
+    const field: Element | null = combobox.closest('.MuiTextField-root');
+    // eslint-disable-next-line testing-library/no-node-access -- reach the wrapper slot
+    expect(field?.parentElement).toHaveClass('MuiAutocomplete-root');
+  });
+});
+
+// `htmlInputProps` is the documented escape hatch for extra native-input props, and its
+// `style` half has no in-tree caller — the three ghost fields pass handlers only — so
+// nothing else exercises the style merge.
+describe('createFieldRenderInput — caller style on the native input', () => {
+  it('merges the caller style onto the input instead of dropping it', () => {
+    renderField({
+      ariaLabel: 'City',
+      htmlInputProps: { style: { caretColor: 'rgb(30, 174, 255)' } },
+    });
+
+    // `buildHtmlInput` rebuilds `style` as `{ ...own.style, ...extra.style }` AFTER the
+    // wholesale `...extra` spread, so the rebuilt object — not the spread — is what the
+    // input actually receives; an empty one drops the caller's style without a trace.
+    expect(screen.getByRole('combobox', { name: 'City' })).toHaveStyle({
+      caretColor: 'rgb(30, 174, 255)',
+    });
   });
 });

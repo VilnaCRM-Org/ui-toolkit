@@ -585,8 +585,16 @@ describe('component provenance traceability', () => {
 
   // E — the ledger's own integrity.
   describe('E — ledger integrity', () => {
-    it('assigns every DEV id exactly once', () => {
-      expect(ledgerIds.length).toBe(new Set(ledgerIds).size);
+    // Unique is weaker than what the ledger promises. `DEV-01`-`DEV-nn` is a
+    // CONTIGUOUS register: a deleted row leaves a hole that uniqueness alone
+    // cannot see, and a hole is exactly how an audit record goes missing without
+    // anything turning red. Comparing against the full expected sequence subsumes
+    // the duplicate check and catches the gap too (PR #126 review).
+    it('assigns DEV ids as one contiguous, duplicate-free register', () => {
+      const expected: string[] = ledgerRows.map(
+        (_row: LedgerRow, index: number): string => `DEV-${String(index + 1).padStart(2, '0')}`
+      );
+      expect(ledgerIds).toEqual(expected);
     });
 
     it.each(ledgerRows)('$id carries a closed Kind token', (row: LedgerRow) => {

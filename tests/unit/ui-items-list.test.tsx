@@ -1,9 +1,12 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import UiItemRow from '../../src/components/ui-item-row';
 import UiItemsList from '../../src/components/ui-items-list';
 import { listSx } from '../../src/components/ui-items-list/styles';
+
+import mockConsoleError from './utils/mock-console-error';
 
 const noop: () => void = () => undefined;
 
@@ -25,6 +28,18 @@ function sampleRows(): React.ReactElement[] {
     />,
     <UiItemRow key="post" method="post" path="/put/{petID}" description="Update existing pet" />,
   ];
+}
+
+// Rows whose identity is observable from the outside: each holds an uncontrolled
+// input, so a row React rebuilt instead of moved comes back with an empty box.
+function KeyedInputs({ order }: Readonly<{ order: readonly string[] }>): React.ReactElement {
+  return (
+    <UiItemsList>
+      {order.map((name: string) => (
+        <input key={name} aria-label={name} />
+      ))}
+    </UiItemsList>
+  );
 }
 
 describe('UiItemsList — semantic list structure', () => {
@@ -160,6 +175,79 @@ describe('UiItemsList — fragment flattening', () => {
       </UiItemsList>
     );
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+});
+
+// A row's key never reaches the DOM, so it is asserted through the two effects
+// React does make observable: it reports a collision through console.error, and
+// a key that stays put keeps its <li> — and the uncontrolled state inside it —
+// alive across a reorder instead of rebuilding it.
+describe('UiItemsList — row key identity', () => {
+  const consoleError: { readonly spy: jest.SpyInstance } = mockConsoleError();
+
+  // React 19 phrases a collision as "Encountered two children with the same
+  // key, `x`." — spelled out here rather than imported — and everything else on
+  // the error channel is none of this suite's business.
+  const collision: RegExp = /two children with the same key/;
+
+  function duplicateKeyReports(): unknown[][] {
+    return consoleError.spy.mock.calls.filter(([message]) => collision.test(String(message)));
+  }
+
+  it('keys a fragment row apart from the sibling holding its position', () => {
+    render(
+      <UiItemsList>
+        <UiItemRow method="get" path="/a" onToggle={noop} />
+        <>
+          <UiItemRow method="put" path="/b" onToggle={noop} />
+          <UiItemRow method="post" path="/c" onToggle={noop} />
+        </>
+      </UiItemsList>
+    );
+
+    // The fragment sits at position 1 and its rows are keyless, so without the
+    // fragment's own key in the recursion prefix its first row falls back to
+    // '.0' — exactly the key the direct sibling above it already holds.
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(duplicateKeyReports()).toHaveLength(0);
+  });
+
+  it('gives sibling rows distinct keys', () => {
+    render(<UiItemsList>{sampleRows()}</UiItemsList>);
+
+    // An empty key would collapse all three rows onto the one '' identity.
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(duplicateKeyReports()).toHaveLength(0);
+  });
+
+  it('falls back to the position for children carrying no key of their own', () => {
+    render(
+      <UiItemsList>
+        {'alpha'}
+        {'beta'}
+      </UiItemsList>
+    );
+
+    // A text child has no key, so the index has to stand in for one. Keying on
+    // the key AND the index rather than the key OR the index would leave both
+    // of these rows on the same 'null'.
+    expect(screen.getByText('alpha').tagName).toBe('LI');
+    expect(screen.getByText('beta').tagName).toBe('LI');
+    expect(duplicateKeyReports()).toHaveLength(0);
+  });
+
+  it('carries an explicit key with its row when the rows are reordered', async () => {
+    const user: UserEvent = userEvent.setup();
+    const { rerender } = render(<KeyedInputs order={['first', 'second']} />);
+
+    await user.type(screen.getByRole('textbox', { name: 'first' }), 'kept');
+    rerender(<KeyedInputs order={['second', 'first']} />);
+
+    // The explicit key rides through, so React moves the existing <li> and the
+    // uncontrolled text moves with it. Keying rows by position instead would
+    // hand each <li> the other row's element and remount both, emptying them.
+    expect(screen.getByRole('textbox', { name: 'first' })).toHaveValue('kept');
+    expect(screen.getByRole('textbox', { name: 'second' })).toHaveValue('');
   });
 });
 

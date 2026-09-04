@@ -1,9 +1,11 @@
 import { useMediaQuery } from '@mui/material';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, createEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as React from 'react';
 
 import WrapperUiTooltip from '../../src/components/ui-tooltip/tooltip-wrapper';
+
+import firstOf from './utils/first-of';
 
 const triggerText: string = 'Trigger';
 const tooltipContent: string = 'Tooltip Text';
@@ -195,5 +197,54 @@ describe('WrapperUiTooltip mutation-hardening', () => {
     await waitFor(() => {
       expect(screen.getByRole(tooltipRole)).toBeInTheDocument();
     });
+  });
+
+  it('cancels the browser default for a key it acts on', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    render(<WrapperUiTooltip title={tooltipContent}>{triggerText}</WrapperUiTooltip>);
+    const trigger: HTMLElement = screen.getByRole('button');
+
+    // Space scrolls the page by default, which would drag the tooltip it has
+    // just opened out of view, so the handler has to cancel the event itself.
+    const spaceKeyDown: Event = createEvent.keyDown(trigger, { key: ' ' });
+    fireEvent(trigger, spaceKeyDown);
+
+    expect(spaceKeyDown.defaultPrevented).toBe(true);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('leaves the browser default alone for a key it ignores', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    render(<WrapperUiTooltip title={tooltipContent}>{triggerText}</WrapperUiTooltip>);
+    const trigger: HTMLElement = screen.getByRole('button');
+
+    // Tab resolves to no action, and cancelling it would trap keyboard focus on
+    // the trigger, so nothing may cancel this one.
+    const tabKeyDown: Event = createEvent.keyDown(trigger, { key: 'Tab' });
+    fireEvent(trigger, tabKeyDown);
+
+    expect(tabKeyDown.defaultPrevented).toBe(false);
+  });
+
+  it('seeds the disclosure closed, with no open frame before the effect', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    // The mount effect re-asserts `false`, so a `true` seed would already be
+    // gone by the time `render` returns. Refs attach during the first commit,
+    // before effects run, which makes that first markup readable from inside one.
+    const expandedPerCommit: (string | null)[] = [];
+    const collect: (node: HTMLSpanElement | null) => void = node => {
+      if (node) {
+        expandedPerCommit.push(screen.getByRole('button').getAttribute('aria-expanded'));
+      }
+    };
+
+    render(
+      <WrapperUiTooltip title={tooltipContent}>
+        <span ref={collect}>{triggerText}</span>
+      </WrapperUiTooltip>
+    );
+
+    expect(firstOf(expandedPerCommit)).toBe('false');
+    expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'false');
   });
 });
