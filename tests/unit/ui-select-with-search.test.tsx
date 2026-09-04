@@ -320,6 +320,16 @@ describe('UiSelectWithSearch — accessibility guidance', () => {
     render(<UiSelectWithSearch aria-label="City" options={options} open disablePortal />);
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
+
+  // The forced-open branch does not pass the listbox slotProps through untouched —
+  // it builds a fresh object that merges them with the frozen-popper override. If
+  // that merge ever stopped carrying the listbox half, a demo-opened dropdown would
+  // silently lose the accessible name a normally opened one has, so assert the name
+  // (the literal 'City' from `aria-label`, not the prop read back) on this branch.
+  it('still names the listbox when the dropdown is force-opened', () => {
+    render(<UiSelectWithSearch aria-label="City" options={options} open disablePortal />);
+    expect(screen.getByRole('listbox')).toHaveAccessibleName('City');
+  });
 });
 
 // A minimal controlled consumer: the accepted option must feed `value` back,

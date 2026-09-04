@@ -2,7 +2,7 @@ import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
 import { useListboxSlotProps, type ListboxSlotProps } from '../field-controls';
-import { GhostOverlay } from '../field-controls';
+import { GhostOverlay } from '../ghost-overlay';
 
 import { createSearchRenderInput } from './render-input';
 import type { UiSearchInputProps } from './types';

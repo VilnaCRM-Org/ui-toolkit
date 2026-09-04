@@ -1,6 +1,7 @@
 # Story 3.3 — Profile Select Card Workflow
 
 - **Issue:** [#21](https://github.com/VilnaCRM-Org/ui-toolkit/issues/21)
+- **PR:** [#121](https://github.com/VilnaCRM-Org/ui-toolkit/pull/121)
 - **Epic:** Epic 3 — Data Presentation and Cards
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 3.3: Profile Select Card Workflow_

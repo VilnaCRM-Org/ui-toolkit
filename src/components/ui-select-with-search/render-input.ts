@@ -1,7 +1,8 @@
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import { createFieldRenderInput, GhostOverlay } from '../field-controls';
+import { createFieldRenderInput } from '../field-controls';
+import { GhostOverlay } from '../ghost-overlay';
 
 import type { UiSelectWithSearchProps } from './types';
 import type { SelectGhost } from './use-select-ghost';

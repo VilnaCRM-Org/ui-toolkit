@@ -62,6 +62,23 @@ describe('UiLink', () => {
     );
   });
 
+  it('drops the empty tokens a padded rel prop splits into', () => {
+    render(
+      <UiLink href={testUrl} target="_blank" rel="  nofollow   sponsored  ">
+        {testText}
+      </UiLink>
+    );
+
+    // Splitting a rel that is padded at either end yields empty tokens around the
+    // real ones, and those survive the Set dedupe as a single '' that joins back
+    // in as a leading space. Dropping them is what keeps the emitted attribute
+    // exactly the token list we promise, so assert the merged value verbatim.
+    expect(screen.getByRole('link', { name: new RegExp(testText) })).toHaveAttribute(
+      'rel',
+      'nofollow sponsored noopener noreferrer'
+    );
+  });
+
   it('omits the new-tab notice when newTabLabel is an empty string', () => {
     render(
       <UiLink href={testUrl} target="_blank" newTabLabel="">

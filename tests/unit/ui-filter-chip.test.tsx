@@ -26,6 +26,7 @@ import {
 } from '../../src/components/ui-filter-chip/use-filter-chip';
 
 import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
 import { keysMatching, type StyleObject, type SxLayers } from './utils/style-layers';
 
@@ -114,6 +115,17 @@ function firstKey(keys: string[]): string {
 
 function glyphBox(): Element {
   return firstMatching(`.${CHIP_GLYPH_CLASS}`);
+}
+
+// The removal suffix is the only absolutely-positioned node either branch ships,
+// so a clipped-span census is the one thing that can see a suffix span rendered
+// EMPTY: a blank one carries no text for `queryByText` to catch.
+function isClipped(span: Element): boolean {
+  return getComputedStyle(span).position === 'absolute';
+}
+
+function clippedSpans(): Element[] {
+  return nodesMatching('span').filter(isClipped);
 }
 
 function layersOf(interactive: boolean, sx: UiFilterChipProps['sx']): SxLayers {
@@ -254,6 +266,26 @@ describe('UiFilterChip — static (unwired) chip', () => {
     // promise assistive tech an action that does not exist.
     expect(screen.queryByText(SUFFIX)).not.toBeInTheDocument();
     expect(nodesMatching('svg')).toHaveLength(1);
+  });
+
+  it('drops the suffix SLOT, not just its text — no blank hidden span survives', () => {
+    const { rerender } = render(chipWith({ onRemove: noop }));
+
+    // The wired branch keeps the census honest: exactly one clipped span, and it
+    // is the suffix. Without this half, a census that saw nothing would satisfy
+    // the static expectation below vacuously.
+    expect(clippedSpans()).toHaveLength(1);
+    expect(firstOf(clippedSpans())).toBe(screen.getByText(SUFFIX));
+
+    rerender(chipWith({}));
+
+    // A static chip passes `removeLabel` as null, and null must skip the element
+    // outright rather than render it blank: a blank hidden span holds no text, so
+    // every SUFFIX text query would still pass while the tree grew a fifth span
+    // that assistive technology walks into for nothing.
+    expect(clippedSpans()).toHaveLength(0);
+    // Exactly the four visible spans: the label row, its two segments, the glyph.
+    expect(nodesMatching('span')).toHaveLength(4);
   });
 
   it('never paints the disabled state, so no grey outlives aria-disabled', () => {

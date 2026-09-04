@@ -10,12 +10,18 @@ import type { SxProps, Theme } from '@mui/material';
  * It lives in `utils/` rather than under `field-controls/` because two component
  * families need it, and the only boundary-legal way to reach across component
  * directories is the target's barrel (`components-public-api`). Importing this
- * one style through `field-controls/index.ts` would pull that whole graph —
- * `GhostOverlay` included — into every consumer's module tree, which makes each
- * skeleton suite a "related test" of every field control and inflates the
- * mutation gate's per-mutant Jest run (38 suites for `ghost-overlay.tsx`, vs 26
- * without this edge). `utils/` is outside the component-boundary rule, so the
- * leaf can be imported directly.
+ * one style through `field-controls/index.ts` would pull that whole graph into
+ * every consumer's module tree, which makes each skeleton suite a "related test"
+ * of every field control and inflates the mutation gate's per-mutant Jest run.
+ * `utils/` is outside the component-boundary rule, so the leaf can be imported
+ * directly.
+ *
+ * The same reasoning later moved `GhostOverlay` out of the `field-controls`
+ * barrel and into its own component directory (`../components/ghost-overlay`):
+ * a `.tsx` file has to stay under `src/components/` to remain in the mutation
+ * scope, so it got a directory and a barrel of its own rather than a home in
+ * `utils/`. Its fan-out went 32 suites -> 9, and shard 1 of the mutation gate
+ * back under its job budget.
  */
 const srOnlySx: SxProps<Theme> = {
   position: 'absolute',

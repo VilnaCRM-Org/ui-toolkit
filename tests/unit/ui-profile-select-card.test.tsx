@@ -1213,6 +1213,24 @@ describe('UiProfileSelectCard — handler identity (Amendment A2)', () => {
     expect(result.current.ctx.open).toBe(true);
     expect(result.current.onActivate).not.toBe(closed.onActivate);
   });
+
+  // The row's click handler is memoised on its own id and on `onActivate`, so a
+  // consumer that swaps `onSelect` must reach the NEW callback: with the
+  // dependency array gone the first render's handler is frozen in, still closed
+  // over the original one. The row instances survive the swap (same items, same
+  // keys), so nothing but the memoisation decides which callback a click hits.
+  it('routes a row click to the onSelect the consumer swapped in', async () => {
+    const user: UserEvent = userEvent.setup();
+    const stale: jest.Mock = jest.fn();
+    const fresh: jest.Mock = jest.fn();
+    const { rerender } = render(cardWith({ open: true, onOpenChange: noop, onSelect: stale }));
+
+    rerender(cardWith({ open: true, onOpenChange: noop, onSelect: fresh }));
+    await user.click(itemNamed(SETTINGS));
+
+    expect(fresh.mock.calls).toEqual([['settings']]);
+    expect(stale).not.toHaveBeenCalled();
+  });
 });
 
 describe('UiProfileSelectCard — accessible names and imagery (§5/§13.9)', () => {

@@ -1,9 +1,23 @@
 import { renderHook } from '@testing-library/react';
 
-import {
-  alignGhostOverlay,
-  useGhostAlignment,
-} from '../../src/components/field-controls/ghost-overlay';
+import { alignGhostOverlay, useGhostAlignment } from '../../src/components/ghost-overlay';
+
+// jsdom performs no layout, so every real rect is a 0x0 box at the origin — and on
+// zeros a subtraction and an addition agree. These stubs put the wrapper and the
+// input at different, non-zero viewport positions so the two disagree.
+function rectAt(left: number, top: number, height: number): DOMRect {
+  return {
+    x: left,
+    y: top,
+    left,
+    top,
+    right: left,
+    bottom: top + height,
+    width: 0,
+    height,
+    toJSON: (): Record<string, number> => ({ left, top, height }),
+  };
+}
 
 describe('alignGhostOverlay', () => {
   it('does nothing when the overlay is not in the DOM', () => {
@@ -35,6 +49,31 @@ describe('alignGhostOverlay', () => {
     expect(overlay).toHaveStyle({ left: '0px' });
     expect(overlay).toHaveStyle({ top: '0px' });
     expect(overlay).toHaveStyle({ height: '0px' });
+    document.body.removeChild(wrapper);
+  });
+
+  it('measures the input box RELATIVE to the wrapper, not away from it', () => {
+    const wrapper: HTMLDivElement = document.createElement('div');
+    const input: HTMLInputElement = document.createElement('input');
+    // Padding pinned to 0 so the offsets below are purely the two rects.
+    input.style.paddingLeft = '0px';
+    wrapper.appendChild(input);
+    const overlay: HTMLDivElement = document.createElement('div');
+    wrapper.appendChild(overlay);
+    document.body.appendChild(wrapper);
+    // The wrapper sits at (30, 20) in viewport space and the input at (100, 50),
+    // so the wrapper-relative offsets are 70/30. Adding the wrapper origin instead
+    // would give 130/70 and throw the completion clear of the field.
+    jest.spyOn(wrapper, 'getBoundingClientRect').mockReturnValue(rectAt(30, 20, 0));
+    jest.spyOn(input, 'getBoundingClientRect').mockReturnValue(rectAt(100, 50, 41));
+
+    alignGhostOverlay(overlay);
+
+    expect(overlay).toHaveStyle({ left: '70px' });
+    expect(overlay).toHaveStyle({ top: '30px' });
+    // The overlay is exactly as tall as the input, so centring the runs inside it
+    // centres them on the value rather than on the taller wrapper.
+    expect(overlay).toHaveStyle({ height: '41px' });
     document.body.removeChild(wrapper);
   });
 
@@ -81,6 +120,34 @@ describe('useGhostAlignment', () => {
   it('is a no-op when the ref holds no element', () => {
     const ref: React.RefObject<HTMLElement | null> = { current: null };
     expect(() => renderHook(() => useGhostAlignment(ref, 'ost'))).not.toThrow();
+  });
+
+  it('re-pins the overlay when the completion changes', () => {
+    const wrapper: HTMLDivElement = document.createElement('div');
+    const input: HTMLInputElement = document.createElement('input');
+    input.style.paddingLeft = '17px';
+    wrapper.appendChild(input);
+    const overlay: HTMLDivElement = document.createElement('div');
+    wrapper.appendChild(overlay);
+    document.body.appendChild(wrapper);
+    const ref: React.RefObject<HTMLElement | null> = { current: overlay };
+
+    const { rerender } = renderHook(
+      ({ completion }: { completion: string }): void => useGhostAlignment(ref, completion),
+      { initialProps: { completion: 'ost' } }
+    );
+    expect(overlay).toHaveStyle({ left: '17px' });
+
+    // A chip landing in the multi-select widens the input's leading inset at the
+    // same moment the completion changes. The completion is what the effect
+    // watches, so only re-running on it picks the new inset up; a frozen
+    // dependency list would leave the ghost at the stale 17px, overlapping the
+    // typed text.
+    input.style.paddingLeft = '41px';
+    rerender({ completion: 'oster' });
+
+    expect(overlay).toHaveStyle({ left: '41px' });
+    document.body.removeChild(wrapper);
   });
 
   it('pins the overlay and registers a resize listener it tears down on unmount', () => {

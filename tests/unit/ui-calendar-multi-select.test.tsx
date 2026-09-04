@@ -16,6 +16,15 @@ const MONTH = '2025-09-15';
 // A completed range (start 5th, end 20th) — the days between are the in-range band.
 const SELECTED: string[] = ['2025-09-05', '2025-09-20'];
 
+// The traced chevron path, written out rather than imported: an expectation that
+// reads the source constant cannot detect a change to it.
+const CHEVRON_RIGHT_D: string = [
+  'M0.246315 9.07131C-0.0812683 8.74604 -0.082204 8.2165 0.244228 7.89007L3.47756 ',
+  '4.65674L0.244229 1.42341C-0.0822029 1.09698 -0.0812676 0.567439 0.246316 0.242163C0.572266 ',
+  '-0.0814923 1.09859 -0.0805625 1.4234 0.244242L5.83589 4.65674L1.42339 9.06924C1.09859 ',
+  '9.39404 0.572265 9.39497 0.246315 9.07131Z',
+].join('');
+
 const noop: (value: string[]) => void = () => undefined;
 
 // Matches a day cell by its date, tolerating the range-role name suffix (e.g.
@@ -511,6 +520,36 @@ describe('UiCalendarMultiSelect — error, helper and required semantics', () =>
     expect(screen.getByRole('alert')).toBeEmptyDOMElement();
   });
 
+  // The helper paragraph is emitted only when there IS helper text for it to carry.
+  // Rendering it unguarded would leave an empty <p id="cal-helper-text"> in the tree:
+  // a dangling aria-describedby target that describes the grid with nothing at all.
+  it('renders no helper-text element at all when helperText is omitted', () => {
+    const { rerender } = render(
+      <UiCalendarMultiSelect label="Dates" id="cal" defaultMonth={MONTH} onChange={noop} />
+    );
+    // `#cal-helper-text` is the component's own public ARIA id, derived from the
+    // `id` prop — not markup internals. The consequence is asserted alongside it:
+    // with no helper paragraph there is nothing for the grid to be described BY.
+    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
+    expect(document.querySelector('#cal-helper-text')).not.toBeInTheDocument();
+    expect(screen.getByRole('grid')).not.toHaveAccessibleDescription();
+
+    // The very same query finds the paragraph once helper text arrives, so the
+    // absence above is a real absence and not a selector that never matches.
+    rerender(
+      <UiCalendarMultiSelect
+        label="Dates"
+        id="cal"
+        defaultMonth={MONTH}
+        helperText="Pick a date"
+        onChange={noop}
+      />
+    );
+    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
+    expect(document.querySelector('#cal-helper-text')).toHaveTextContent('Pick a date');
+    expect(screen.getByRole('grid')).toHaveAccessibleDescription('Pick a date');
+  });
+
   it('treats a blank id as absent so ARIA ids stay unique (no "-helper-text")', () => {
     render(
       <UiCalendarMultiSelect
@@ -824,5 +863,110 @@ describe('UiCalendarMultiSelect — accessibility guidance', () => {
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('accessible name'));
     rerender(<UiCalendarMultiSelect defaultMonth={MONTH} onChange={noop} />);
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
+  });
+});
+
+// The chevrons are decorative — the enclosing IconButton carries the name — so they
+// are reached by node access rather than by role.
+describe('UiCalendarMultiSelect — decorative month chevrons', () => {
+  function chevronOf(buttonName: string): SVGElement {
+    const button: HTMLElement = screen.getByRole('button', { name: buttonName });
+    // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+    const svg: SVGElement | null = button.querySelector('svg');
+    expect(svg).not.toBeNull();
+    return svg as SVGElement;
+  }
+
+  it('hides both chevrons from assistive tech and keeps them out of the tab order', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
+
+    for (const name of ['Previous month', 'Next month']) {
+      const svg: SVGElement = chevronOf(name);
+      expect(svg).toHaveAttribute('aria-hidden', 'true');
+      expect(svg).toHaveAttribute('focusable', 'false');
+      // The 6x10 arrow centred in the 16px Figma icon frame by the viewBox offset.
+      expect(svg).toHaveAttribute('width', '16');
+      expect(svg).toHaveAttribute('height', '16');
+      expect(svg).toHaveAttribute('viewBox', '-5.12 -3.18 16 16');
+      expect(svg).toHaveAttribute('fill', 'none');
+      expect(svg).toHaveAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    }
+  });
+
+  it('draws one traced path, filled with currentColor, for both directions', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
+
+    for (const name of ['Previous month', 'Next month']) {
+      // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+      const path: SVGPathElement | null = chevronOf(name).querySelector<SVGPathElement>('path');
+      expect(path).not.toBeNull();
+      expect(path).toHaveAttribute('d', CHEVRON_RIGHT_D);
+      expect(path).toHaveAttribute('fill', 'currentColor');
+      expect(path).not.toHaveAttribute('stroke');
+    }
+  });
+
+  // One traced arrow serves both directions: the left chevron is the right one
+  // mirrored, so the transform is the ONLY difference between them and dropping it
+  // would silently point both the same way.
+  it('mirrors the left chevron and leaves the right one untransformed', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
+
+    expect(chevronOf('Previous month')).toHaveStyle({ transform: 'scaleX(-1)' });
+    expect(chevronOf('Next month')).not.toHaveStyle({ transform: 'scaleX(-1)' });
+  });
+});
+
+describe('UiCalendarMultiSelect — adjacent-month padding cells', () => {
+  it('keeps them as real, unfocusable gridcells with an aria-hidden day number', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
+
+    // September 2025 begins on a Monday and the grid's rows start on Monday, so the
+    // FIRST row is all in-month (Sep 1-7) and carries no padding at all. The padding
+    // is on the last row: September 30 is a Tuesday, so Oct 1-5 fill it out. The cells
+    // are found by their aria-disabled flag rather than by position for exactly that
+    // reason — which end of the grid pads depends on the month.
+    const cells: HTMLElement[] = screen.getAllByRole('gridcell');
+    const padding: HTMLElement[] = cells.filter(
+      (cell: HTMLElement): boolean => cell.getAttribute('aria-disabled') === 'true'
+    );
+    expect(padding.length).toBeGreaterThan(0);
+
+    for (const cell of padding) {
+      // -1, never a positive index: a padding cell must stay out of the tab order
+      // rather than jump ahead of every other control on the page.
+      expect(cell).toHaveAttribute('tabindex', '-1');
+      expect(cell).not.toHaveAttribute('aria-selected');
+      // The faint day number is hidden, so assistive tech reads an empty cell.
+      // eslint-disable-next-line testing-library/no-node-access -- decorative span, no role
+      const dayNumber: Element | null = cell.querySelector('[aria-hidden="true"]');
+      expect(dayNumber).not.toBeNull();
+      expect(dayNumber?.textContent).toMatch(/^\d+$/);
+    }
+  });
+});
+
+describe('UiCalendarMultiSelect — the visible label', () => {
+  it('paints an aria-hidden asterisk beside a required label', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} required onChange={noop} />);
+
+    // The asterisk is the sighted, non-colour required cue; the accessible name
+    // carries the word instead, which the required-semantics block asserts.
+    expect(screen.getByText('*', { exact: false, selector: '[aria-hidden="true"]' })).toBeVisible();
+    expect(screen.getByRole('group', { name: /Dates.*required/i })).toBeInTheDocument();
+  });
+
+  it('renders no visible label at all when the field is named by aria-label', () => {
+    render(
+      <UiCalendarMultiSelect
+        aria-label="Vacation days"
+        defaultMonth={MONTH}
+        required
+        onChange={noop}
+      />
+    );
+
+    expect(screen.queryByText('*', { selector: '[aria-hidden="true"]' })).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /Vacation days.*required/i })).toBeInTheDocument();
   });
 });

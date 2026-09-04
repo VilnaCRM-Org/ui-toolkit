@@ -60,8 +60,9 @@ const TRIGGER_BASE: object = {
   margin: 0,
   padding: '0.375rem 0.75rem 0.5rem 0.4375rem',
   backgroundColor: palette.white.main,
-  // 1.4.11 decoration-exempt: the boundary carries no information of its own (the
-  // card is legible without it); revisit if it ever becomes a state indicator.
+  // 1.4.11 decoration-exempt (DEV-33): the boundary carries no information of its
+  // own (the card is legible without it); revisit if it ever becomes a state
+  // indicator.
   border: `1px solid ${palette.grey400.main}`,
   borderRadius: '0.5rem',
   textAlign: 'left',
@@ -200,7 +201,7 @@ export const menuItemSx: SxProps<Theme> = {
   letterSpacing: 0,
   overflowWrap: 'anywhere',
   color: palette.darkPrimary.main,
-  // 1.4.11 decoration-exempt: a 1.09:1 tint behind text that already passes.
+  // 1.4.11 decoration-exempt (DEV-34): a 1.09:1 tint behind text that already passes.
   '&:hover': { backgroundColor: palette.backgroundGrey200.main },
   '&:focus-visible': { outline: 'none', boxShadow: FOCUS_RING },
   ...FORCED_COLORS_RING,

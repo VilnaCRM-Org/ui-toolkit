@@ -4,10 +4,10 @@ import React from 'react';
 import {
   createFieldOptionRenderer,
   createFieldRenderInput,
-  GhostOverlay,
   hasText,
   type FieldOptionRenderer,
 } from '../field-controls';
+import { GhostOverlay } from '../ghost-overlay';
 
 import { announceChange } from './announce';
 import { createChipRenderer, type ChipRenderer } from './chip-renderer';

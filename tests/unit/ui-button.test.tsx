@@ -218,3 +218,56 @@ describe('UiButton — link attributes are part of the public type', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 });
+
+describe('UiButton — the to-forwarding guard', () => {
+  // The guard is `isCustomComponent && to !== undefined`, and each half fails
+  // differently, so each needs its own case. This one covers the right half: a
+  // custom component with NO `to`. Assigning `componentProps.to = undefined` is not
+  // the same as never assigning it — the key still reaches the component, and a
+  // router Link that branches on `'to' in props` would take its navigation path
+  // with nothing to navigate to. Presence, not value, is therefore what is asserted.
+  it('omits the to prop entirely from a custom component that was given none', () => {
+    type ProbeProps = { children?: React.ReactNode };
+    const seen: string[] = [];
+    const Probe: React.ForwardRefExoticComponent<
+      ProbeProps & React.RefAttributes<HTMLAnchorElement>
+    > = React.forwardRef<HTMLAnchorElement, ProbeProps>(function Probe(props, ref) {
+      const carriesTo: boolean = Object.prototype.hasOwnProperty.call(props, 'to');
+      seen.push(carriesTo ? 'to-present' : 'to-absent');
+      return (
+        <a ref={ref} href="/resolved-by-router">
+          {props.children}
+        </a>
+      );
+    });
+
+    render(<UiButton component={Probe}>{testText}</UiButton>);
+
+    expect(screen.getByRole('link', { name: testText })).toBeInTheDocument();
+    expect(seen).not.toHaveLength(0);
+    expect(seen).not.toContain('to-present');
+  });
+
+  it('flattens to into href on the built-in anchor instead of forwarding it raw', () => {
+    // Only a custom link component owns navigation via `to`; the built-in `a` has no
+    // such prop, so forwarding it would leak a stray to="/dashboard" attribute into
+    // the DOM. A guard that always forwarded (if (true)) would render that attribute.
+    render(<UiButton to="/dashboard">{testText}</UiButton>);
+
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('href', '/dashboard');
+    expect(link).not.toHaveAttribute('to');
+  });
+
+  it('keeps the native button when the to object is empty rather than forwarding it', () => {
+    // `to={{}}` flattens to an empty string, so UiButton stays a plain <button>.
+    // Forwarding the raw (truthy) object makes MUI's ButtonBase treat the button as a
+    // link and swap the root for its LinkComponent <a>, losing the role and the type.
+    render(<UiButton to={{}}>{testText}</UiButton>);
+
+    const button: HTMLElement = screen.getByRole('button', { name: testText });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).not.toHaveAttribute('to');
+  });
+});

@@ -78,9 +78,9 @@ const CARD_BASE: object = {
   margin: 0,
   padding: 0,
   backgroundColor: palette.backgroundGrey200.main,
-  // 1.4.11 decoration-exempt at rest — it is the same colour as the fill and
-  // carries no information of its own. It DOES become a state indicator on hover
-  // and when selected; that primary tint is inventoried and routed to the
+  // 1.4.11 decoration-exempt (DEV-26) at rest — it is the same colour as the fill
+  // and carries no information of its own. It DOES become a state indicator on
+  // hover and when selected; that primary tint is inventoried and routed to the
   // accessibility-visuals PR, exactly as `UiRadioGroup` already ships.
   border: `1px solid ${palette.backgroundGrey200.main}`,
   borderRadius: '0.5rem',

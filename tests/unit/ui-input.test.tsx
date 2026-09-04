@@ -303,6 +303,21 @@ describe('UiInput — native-input ARIA the consumer can drive', () => {
     expect(input).not.toBeRequired();
   });
 
+  it('does not claim the ARIA slot for a helperText-only field', () => {
+    // Neither `describedBy` nor `required`, so this control owns no ARIA and the
+    // description the consumer set through `slotProps.input` has to survive. Were
+    // ownership claimed anyway, the htmlInput slot would win and overwrite that
+    // value with MUI's derived `<field-id>-helper-text`.
+    render(
+      <UiInput
+        label="Password"
+        helperText="Too short"
+        slotProps={{ input: { 'aria-describedby': 'slot-input-desc' } }}
+      />
+    );
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-describedby', 'slot-input-desc');
+  });
+
   it('does not clobber an aria-describedby passed through the input slot', () => {
     render(
       <UiInput

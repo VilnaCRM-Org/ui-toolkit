@@ -14,6 +14,32 @@ import mockConsoleWarn from './utils/mock-console-warn';
 // the suite and keep a handle for the assertions that check on it.
 const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
 
+// The open-padlock path exactly as Figma traced it (node-for-node with
+// `item-icons.tsx`), written out here rather than imported so a change to the
+// source constant is a test failure instead of a silently updated expectation.
+const PADLOCK_D: string = [
+  'M14.1673 7.50004H7.50065V5.83337C7.49944 5.33853 7.6451 4.85445 7.9192 4.44246C8.1933 ',
+  '4.03046 8.5835 3.70907 9.04039 3.519C9.49727 3.32893 10.0003 3.27872 10.4857 3.37474C10.9712 ',
+  '3.47076 11.4172 3.70868 11.7673 4.05837C12.0806 4.37843 12.3047 4.77489 12.4173 ',
+  '5.20837C12.4447 5.31452 12.4927 5.41424 12.5586 5.50185C12.6245 5.58945 12.707 5.66321 ',
+  '12.8014 5.71893C12.8958 5.77464 13.0002 5.81122 13.1088 5.82656C13.2173 5.84191 13.3278 ',
+  '5.83573 13.434 5.80837C13.5401 5.78101 13.6399 5.73301 13.7275 5.66711C13.8151 5.60121 ',
+  '13.8888 5.51871 13.9445 5.4243C14.0003 5.32989 14.0368 5.22544 14.0522 5.1169C14.0675 ',
+  '5.00835 14.0613 4.89785 14.034 4.7917C13.8441 4.0707 13.4676 3.41248 12.9423 2.88337C12.3591 ',
+  '2.30201 11.6168 1.90648 10.8089 1.74674C10.0011 1.58699 9.1641 1.67019 8.40353 ',
+  '1.98583C7.64297 2.30147 6.99299 2.83539 6.53566 3.52018C6.07833 4.20497 5.83416 5.00991 ',
+  '5.83398 5.83337V7.50004C5.17094 7.50004 4.53506 7.76343 4.06622 8.23227C3.59738 8.70111 ',
+  '3.33398 9.33699 3.33398 10V15.8334C3.33398 16.4964 3.59738 17.1323 4.06622 17.6011C4.53506 ',
+  '18.07 5.17094 18.3334 5.83398 18.3334H14.1673C14.8304 18.3334 15.4662 18.07 15.9351 ',
+  '17.6011C16.4039 17.1323 16.6673 16.4964 16.6673 15.8334V10C16.6673 9.33699 16.4039 8.70111 ',
+  '15.9351 8.23227C15.4662 7.76343 14.8304 7.50004 14.1673 7.50004ZM15.0007 15.8334C15.0007 ',
+  '16.0544 14.9129 16.2663 14.7566 16.4226C14.6003 16.5789 14.3883 16.6667 14.1673 ',
+  '16.6667H5.83398C5.61297 16.6667 5.40101 16.5789 5.24473 16.4226C5.08845 16.2663 5.00065 ',
+  '16.0544 5.00065 15.8334V10C5.00065 9.77902 5.08845 9.56706 5.24473 9.41078C5.40101 9.2545 ',
+  '5.61297 9.1667 5.83398 9.1667H14.1673C14.3883 9.1667 14.6003 9.2545 14.7566 9.41078C14.9129 ',
+  '9.56706 15.0007 9.77902 15.0007 10V15.8334Z',
+].join('');
+
 const noop: () => void = () => undefined;
 
 // The Figma sample endpoint (literal strings, typos preserved). Its accessible
@@ -258,7 +284,10 @@ describe('UiItemRow — decorative icons', () => {
     );
     expect(padlock).not.toBeNull();
     expect(padlock).not.toHaveAttribute('stroke');
-    expect(padlock?.getAttribute('d')).toMatch(/^M14\.1673 7\.50004/);
+    // The WHOLE traced path, not a prefix: the source builds it by joining ~35
+    // segment strings, and a prefix match leaves every segment after the first
+    // free to change without a test noticing.
+    expect(padlock).toHaveAttribute('d', PADLOCK_D);
   });
 });
 

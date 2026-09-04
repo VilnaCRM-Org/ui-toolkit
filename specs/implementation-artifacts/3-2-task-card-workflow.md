@@ -1,6 +1,7 @@
 # Story 3.2 — Task Card Workflow
 
 - **Issue:** [#20](https://github.com/VilnaCRM-Org/ui-toolkit/issues/20)
+- **PR:** [#120](https://github.com/VilnaCRM-Org/ui-toolkit/pull/120)
 - **Epic:** Epic 3 — Data Presentation and Cards
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 3.2: Task Card Workflow_

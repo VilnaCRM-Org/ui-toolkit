@@ -11,6 +11,26 @@ import mockConsoleWarn from './utils/mock-console-warn';
 // it for the whole file and let the dedicated block assert on the spy.
 const warn = mockConsoleWarn();
 
+// The traced magnifier path, written out rather than imported: an expectation
+// that reads the source constant cannot detect a change to it.
+const MAGNIFIER_D: string = [
+  'M16.4424 15.2591L13.3507 12.1924C14.5508 10.6961 15.132 8.79683 14.9748 6.88517C14.8175 ',
+  '4.9735 13.9338 3.19474 12.5054 1.91462C11.0769 0.634506 9.21226 -0.0496579 7.29485 ',
+  '0.00280914C5.37745 0.0552761 3.55302 0.840385 2.1967 2.1967C0.840385 3.55302 0.0552761 ',
+  '5.37745 0.00280914 7.29485C-0.0496579 9.21226 0.634505 11.0769 1.91462 12.5054C3.19474 ',
+  '13.9338 4.9735 14.8175 6.88517 14.9748C8.79683 15.132 10.6961 14.5508 12.1924 ',
+  '13.3508L15.2591 16.4174C15.3366 16.4955 15.4287 16.5575 15.5303 16.5998C15.6318 16.6421 ',
+  '15.7407 16.6639 15.8507 16.6639C15.9608 16.6639 16.0697 16.6421 16.1712 16.5998C16.2728 ',
+  '16.5575 16.3649 16.4955 16.4424 16.4174C16.5926 16.262 16.6766 16.0544 16.6766 ',
+  '15.8383C16.6766 15.6221 16.5926 15.4145 16.4424 15.2591ZM7.51742 13.3508C6.36369 13.3508 ',
+  '5.23588 13.0086 4.27659 12.3677C3.3173 11.7267 2.56963 10.8156 2.12812 9.74974C1.68661 ',
+  '8.68384 1.57109 7.51095 1.79617 6.37939C2.02125 5.24784 2.57682 4.20843 3.39263 ',
+  '3.39263C4.20843 2.57682 5.24783 2.02125 6.37939 1.79617C7.51095 1.57109 8.68384 1.68661 ',
+  '9.74974 2.12812C10.8156 2.56963 11.7267 3.3173 12.3677 4.27659C13.0086 5.23588 13.3507 ',
+  '6.36369 13.3507 7.51742C13.3507 9.06451 12.7362 10.5482 11.6422 11.6422C10.5482 12.7362 ',
+  '9.06451 13.3508 7.51742 13.3508Z',
+].join('');
+
 const noop: (value: string) => void = () => undefined;
 
 const suggestions: string[] = ['Top performers', 'Top sales this month', 'Top sales this year'];
@@ -72,6 +92,19 @@ describe('UiSearchInput — rendering and accessible name', () => {
       combobox.closest('.MuiAutocomplete-root')?.parentElement;
     /* eslint-enable testing-library/no-node-access */
     expect(wrapper).toHaveStyle({ marginTop: '11px' });
+  });
+
+  it('merges a consumer object sx onto the same wrapper as an array sx', () => {
+    render(<UiSearchInput aria-label="Search" sx={{ marginTop: '13px' }} />);
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    // A bare object takes the other branch of the sx merge, so it needs its own case:
+    // the wrapper must keep the flex-column stack AND still pick the consumer value up.
+    /* eslint-disable testing-library/no-node-access -- wrapper Box, no semantic query */
+    const wrapper: HTMLElement | null | undefined =
+      combobox.closest('.MuiAutocomplete-root')?.parentElement;
+    /* eslint-enable testing-library/no-node-access */
+    expect(wrapper).toHaveStyle({ display: 'flex', flexDirection: 'column' });
+    expect(wrapper).toHaveStyle({ marginTop: '13px' });
   });
 
   it('names the combobox from the aria-label prop', () => {
@@ -291,6 +324,13 @@ describe('UiSearchInput — accessibility guidance', () => {
     );
     expect(screen.getByRole('listbox')).toBeInTheDocument();
   });
+
+  it('names the force-opened listbox from the field label', () => {
+    render(<UiSearchInput label="Find" options={suggestions} value="Top" open disablePortal />);
+    // Force-open swaps in a second slotProps object (it also pins the popper); the
+    // listbox aria-label has to survive that swap, not just the typed-open path.
+    expect(screen.getByRole('listbox')).toHaveAccessibleName('Find');
+  });
 });
 
 describe('UiSearchInput — suggestion highlighting', () => {
@@ -330,5 +370,39 @@ describe('UiSearchInput — suggestion highlighting', () => {
     expect(runs[0]!.textContent).toBe('Top performers');
     expect(runs[1]!.textContent).toBe('');
     /* eslint-enable testing-library/no-node-access, jest-dom/prefer-to-have-text-content */
+  });
+});
+
+// The magnifier is decorative — no role, no accessible name — so it is reached by
+// node access, the same way the other glyph suites reach theirs.
+describe('UiSearchInput — decorative magnifier glyph', () => {
+  it('draws the filled magnifier, hidden from assistive tech and never focusable', () => {
+    render(<ControlledSearch />);
+
+    // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+    const svg: SVGElement | null = document.querySelector('svg');
+    expect(svg).not.toBeNull();
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
+    expect(svg).toHaveAttribute('focusable', 'false');
+    // The 17px glyph centred in the 20px icon box by the viewBox offset; the 20px
+    // box is what keeps the theme's responsive svg sizing (24px tablet) working.
+    expect(svg).toHaveAttribute('width', '20');
+    expect(svg).toHaveAttribute('height', '20');
+    expect(svg).toHaveAttribute('viewBox', '-1.5 -1.5 20 20');
+    expect(svg).toHaveAttribute('fill', 'none');
+    expect(svg).toHaveAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  });
+
+  it('pins the whole traced path and fills it with currentColor', () => {
+    render(<ControlledSearch />);
+
+    // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+    const path: SVGPathElement | null = document.querySelector<SVGPathElement>('svg path');
+    expect(path).not.toBeNull();
+    expect(path).toHaveAttribute('d', MAGNIFIER_D);
+    // FILLED, not stroked: `currentColor` is what lets the theme tint it grey at
+    // rest and brand-blue on hover/focus.
+    expect(path).toHaveAttribute('fill', 'currentColor');
+    expect(path).not.toHaveAttribute('stroke');
   });
 });

@@ -91,6 +91,37 @@ describe('Layout', () => {
     expect(getDescriptionMeta()).toBeNull();
   });
 
+  // Blank values must be gated out before they reach the document: an empty
+  // document.title fails WCAG 2.4.2 (Page Titled) and a whitespace-only meta
+  // description is noise, so such props are treated as "not provided" instead
+  // of being written through.
+  it('treats whitespace-only title and description props as not provided', () => {
+    document.title = 'untouched';
+
+    render(
+      <Layout pageTitle="   " metaDescription="  ">
+        <div />
+      </Layout>
+    );
+
+    expect(document.title).toBe('untouched');
+    expect(getDescriptionMeta()).toBeNull();
+  });
+
+  // The meta `content` attribute is stored verbatim, unlike document.title,
+  // which jsdom strips and collapses on read. It is therefore the only surface
+  // that can prove the padding was removed on the way in rather than merely
+  // normalised on the way out.
+  it('trims surrounding whitespace off the applied meta description', () => {
+    render(
+      <Layout metaDescription="  padded description  ">
+        <div />
+      </Layout>
+    );
+
+    expect(getDescriptionContent()).toBe('padded description');
+  });
+
   it('restores the previous document title when unmounted', () => {
     document.title = 'Original Title';
 

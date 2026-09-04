@@ -112,8 +112,8 @@ export const pinCellSx: SxProps<Theme> = {
   letterSpacing: 0,
   color: palette.darkPrimary.main,
   backgroundColor: palette.white.main,
-  // 1.4.11 decoration-exempt at rest: the boundary carries no information of its
-  // own. Always 1px, colour-only swaps — see the module header.
+  // 1.4.11 decoration-exempt (DEV-30) at rest: the boundary carries no information
+  // of its own. Always 1px, colour-only swaps — see the module header.
   border: `1px solid ${palette.brandGray.main}`,
   borderRadius: '0.75rem',
   caretColor: palette.primary.main,
