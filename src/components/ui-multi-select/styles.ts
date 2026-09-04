@@ -49,10 +49,12 @@ export const chipSx: SxProps<Theme> = {
 };
 
 // The delete affordance is the Figma 20px × (node 535:37540) so the badge is the
-// exact design width; removal also has a keyboard path (Backspace / arrow-then-
-// Delete), the WCAG 2.5.8 equivalent-control exception (DEV-24). A plain brand-blue
-// glyph at rest, a filled brand-blue circle with a white glyph on chip hover (from
-// `chipSx`).
+// exact design width. DEV-24 records that this is under SC 2.5.8's 24px minimum
+// with no exception closing it — the "Equivalent" exception needs a different
+// control on the same page that itself meets 24 CSS px — so it is an accepted
+// deviation, mitigated by the keyboard removal path (Backspace / arrow-then-Delete,
+// which is SC 2.1.1). A plain brand-blue glyph at rest, a filled brand-blue circle
+// with a white glyph on chip hover (from `chipSx`).
 export const deleteButtonSx: SxProps<Theme> = {
   display: 'inline-flex',
   alignItems: 'center',

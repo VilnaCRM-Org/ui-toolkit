@@ -366,8 +366,8 @@ styling and no visual baseline is affected.
 
 - [x] Export changes — **not applicable; the `ui-card-item` export gap is owned by Story 5.3.** No
       public export is added, removed or renamed and `src/components/index.ts` is untouched. This
-      story establishes the registry's coverage contract against that entry point (all 47 default
-      exports plus the 9 named theme/breakpoint symbols must have exactly one row) and rules on
+      story establishes the registry's coverage contract against that entry point (all 48 default
+      exports plus the 8 named theme/breakpoint symbols must have exactly one row) and rules on
       which `UiCardItem` implementation is canonical (`DEV-42`), but the export decision itself
       stays with Story 5.3, as Story 5.1 recorded and as the hand-offs section above repeats.
 - [x] No unintended export-surface change. `tests/unit/components-index.test.ts` is unmodified and

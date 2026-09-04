@@ -8,6 +8,7 @@
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.2: Multi-Select Interaction Workflow_
+- **Definition of Done:** deferred to the shared compliance matrix — `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` → `### Matrix`, row `2-2-multi-select-interaction-workflow.md`. This artifact predates `specs/implementation-artifacts/story-dod-template.md`, which was authored with Epic 4 (commit `3c310f9`), so its DoD is instantiated once against the shared template in that matrix rather than restated here. Raised in the PR #126 review.
 
 ## Scope
 
@@ -50,9 +51,12 @@ so the chips follow MUI + toolkit tokens.
   is a named affordance ("Remove Kyiv"), 24×24 (WCAG 2.5.8), and out of the tab order
   (removal is via click, Backspace, or arrow-to-chip + Delete — all MUI-native).
   **Correction (2026-08-06, Story 5.2):** the control shipped at 20×20, not 24×24
-  (`deleteButtonSx`, `src/components/ui-multi-select/styles.ts`); SC 2.5.8 is met through
-  the equivalent keyboard path above — the SC's equivalent-control exception, recorded as
-  `DEV-24` in `specs/planning-artifacts/deviation-ledger.md`.
+  (`deleteButtonSx`, `src/components/ui-multi-select/styles.ts`). **Further correction
+  (PR #126 review):** SC 2.5.8 is not met and no exception closes it — the SC's
+  "Equivalent" exception needs a different control on the same page that itself meets
+  24 CSS px, and the keyboard path above is not one (that is SC 2.1.1). It is an
+  accepted deviation mitigated by that keyboard path, recorded as `DEV-24` in
+  `specs/planning-artifacts/deviation-ledger.md`.
 - Accessibility (specced up-front and reviewed by the accessibility team): listbox
   `aria-multiselectable` + `aria-selected` toggles (selected options stay in the list
   to allow deselect); field-level `error`→`aria-invalid`, `helperText`→

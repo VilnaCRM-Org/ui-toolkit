@@ -5,6 +5,7 @@
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
 - **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.5: Pagination Workflow Component Delivery_
+- **Definition of Done:** deferred to the shared compliance matrix — `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` → `### Matrix`, row `2-5-pagination-workflow-component-delivery.md`. This artifact predates `specs/implementation-artifacts/story-dod-template.md`, which was authored with Epic 4 (commit `3c310f9`), so its DoD is instantiated once against the shared template in that matrix rather than restated here. Raised in the PR #126 review.
 
 ## Scope
 

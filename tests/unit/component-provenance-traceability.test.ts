@@ -1,8 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import * as publicComponents from '../../src/components';
-
+import barrelExportNames from './utils/barrel-export-names';
 import nthOf from './utils/nth-of';
 
 // Story 5.2 (#32) — drift guard for the provenance registry, the deviation
@@ -62,7 +61,14 @@ function readRepoFile(relativePath: string): string {
 const registry: string = readRepoFile(REGISTRY_RELATIVE_PATH);
 const ledger: string = readRepoFile(LEDGER_RELATIVE_PATH);
 const dodArtifact: string = readRepoFile(DOD_RELATIVE_PATH);
-const runtimeExports: string[] = Object.keys(publicComponents);
+// The public barrel is read as TEXT, never imported: `mutation-runner-scope`
+// pins that only its two listed structural guards may import it, because a
+// barrel import makes every suite "related" to every mutant and that is what
+// blew the mutation run out to ~2h before #141/#142. Story 5.1's checklist guard
+// already derives the names this way; the parser is shared with it (PR #126
+// review — this suite imported the barrel and tripped that invariant).
+const BARREL_RELATIVE_PATH: string = 'src/components/index.ts';
+const runtimeExports: string[] = barrelExportNames(readRepoFile(BARREL_RELATIVE_PATH));
 
 // Prettier pads every cell and keeps the outer pipes, and it escapes a pipe that
 // belongs to the prose as `\|` (`size: small\|medium`). Splitting on unescaped
@@ -90,11 +96,23 @@ function backticked(cell: string): string[] {
 // CRM's own tree names its skeleton directory `src/components/skeletons`; the
 // toolkit renamed it to `ui-skeletons`. The Epic 4 rows cite the upstream path as
 // provenance evidence, so it is a citation of another repository and must not be
-// resolved against this one. Elided paths (`…`) are prose, not citations.
+// resolved against this one.
 const UPSTREAM_PATH_PREFIXES: string[] = ['src/components/skeletons/'];
 
+// `specs/` is in the prefix set because the ledger's `Recorded where` column cites
+// governance artifacts far more often than source, and the header promises that a
+// cell naming a file which does not exist fails this guard — a promise the earlier
+// `src|tests` prefix quietly excused for exactly the column it was written for
+// (PR #126 review).
+const REPO_PATH_PREFIX: RegExp = /^(src|tests|specs)\//;
+
+// Prose, not citations: an elided path (`…`) and a schema placeholder
+// (`specs/implementation-artifacts/<key>.md`) both describe a shape rather than
+// name a file, so neither is resolved against the tree.
+const PATH_PLACEHOLDER: RegExp = /…|[<>]/;
+
 function isRepoPathCitation(token: string): boolean {
-  if (!/^(src|tests)\//.test(token) || token.includes('…')) {
+  if (!REPO_PATH_PREFIX.test(token) || PATH_PLACEHOLDER.test(token)) {
     return false;
   }
   return !UPSTREAM_PATH_PREFIXES.some(prefix => token.startsWith(prefix));

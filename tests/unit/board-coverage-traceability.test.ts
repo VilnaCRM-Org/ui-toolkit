@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import barrelExportNames from './utils/barrel-export-names';
+
 // Story 5.1 (#31) — drift guard for the canonical board coverage checklist
 // (`prd.md` FR-01, §5.6, §9.1). The checklist is the release's traceability
 // artifact, so it is machine-checked rather than reviewed by eye.
@@ -28,32 +30,9 @@ const barrel: string = readFileSync(BARREL_PATH, 'utf8');
 // pins a hard invariant that only two structural guards may import it: a barrel
 // import makes every suite "related" to every mutant, which is what blew the
 // mutation run out to ~2h before #141/#142. This guard only needs the export
-// NAMES, and those are derivable from the barrel's own source text.
-function barrelExportNames(): string[] {
-  const names: string[] = [];
-  for (const block of barrel.matchAll(/^export\s+(type\s+)?\{([^}]*)\}/gm)) {
-    // `export type { … }` erases at compile time — not a runtime export.
-    if (block[1] !== undefined) {
-      continue;
-    }
-    for (const specifier of (block[2] ?? '').split(',')) {
-      // `default as UiButton` exports the name after `as`; a bare `sharedPalette`
-      // exports itself.
-      const name: string =
-        specifier
-          .trim()
-          .split(/\s+as\s+/)
-          .pop()
-          ?.trim() ?? '';
-      if (name.length > 0 && name !== 'default') {
-        names.push(name);
-      }
-    }
-  }
-  return [...new Set(names)];
-}
-
-const runtimeExports: string[] = barrelExportNames();
+// NAMES, and those are derivable from the barrel's own source text — by the
+// shared parser, which Story 5.2's registry guard reads the same way.
+const runtimeExports: string[] = barrelExportNames(barrel);
 
 // A checklist row's Export cell, plus the first column of the "exports outside
 // board scope" appendix. Scoped deliberately: matching the NAME anywhere in the
