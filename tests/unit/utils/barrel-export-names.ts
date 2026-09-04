@@ -25,7 +25,12 @@ export default function barrelExportNames(barrelSource: string): string[] {
       // is not a runtime export either. The barrel uses only the block form today;
       // this arm keeps a later inline one from being counted as a component and
       // demanding a registry row for a type (PR #126 review).
-      if (/^type\s/.test(trimmed)) {
+      //
+      // `type as Alias` is NOT that: it is a value binding literally named `type`,
+      // re-exported under another name, and dropping it would let a runtime export
+      // slip past the registry's coverage contract — the failure that matters,
+      // since the other direction only ever costs a spurious row (round 2).
+      if (/^type\s+(?!as\b)/.test(trimmed)) {
         continue;
       }
       // `default as UiButton` exports the name after `as`; a bare `sharedPalette`

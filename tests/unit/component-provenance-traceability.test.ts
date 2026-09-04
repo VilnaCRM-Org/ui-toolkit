@@ -256,6 +256,21 @@ function toLedgerRow(cells: string[]): LedgerRow {
 const ledgerRows: LedgerRow[] = allTableRows(ledger).filter(isLedgerRow).map(toLedgerRow);
 const ledgerIds: string[] = ledgerRows.map(row => row.id);
 
+/**
+ * The highest `DEV-nn` the ledger's PROSE claims to define — its release-review
+ * actions and ratification register both name ranges ("`DEV-44` through
+ * `DEV-50`"), and those sentences are written by a human describing the register
+ * rather than derived from it. Anchoring the contiguity check to this rather than
+ * to the row count is what makes deleting the LAST row a failure: the prose and
+ * the table then disagree, which is the whole point of a register.
+ */
+const declaredHighestDevId: number = Math.max(
+  0,
+  ...[...ledger.matchAll(/DEV-(\d+)/g)].map((match: RegExpMatchArray): number =>
+    Number(nthOf(match, 1))
+  )
+);
+
 function countBy(values: string[], token: string): number {
   return values.filter(value => value === token).length;
 }
@@ -588,11 +603,17 @@ describe('component provenance traceability', () => {
     // Unique is weaker than what the ledger promises. `DEV-01`-`DEV-nn` is a
     // CONTIGUOUS register: a deleted row leaves a hole that uniqueness alone
     // cannot see, and a hole is exactly how an audit record goes missing without
-    // anything turning red. Comparing against the full expected sequence subsumes
-    // the duplicate check and catches the gap too (PR #126 review).
+    // anything turning red (PR #126 review).
+    //
+    // The expected sequence is built from the HIGHEST id the ledger's own prose
+    // declares, not from the rows: derive the length from `ledgerRows` and
+    // deleting the last row simply shortens both sides, which is the one deletion
+    // a from-the-rows check can never see (PR #126 review, round 2).
     it('assigns DEV ids as one contiguous, duplicate-free register', () => {
-      const expected: string[] = ledgerRows.map(
-        (_row: LedgerRow, index: number): string => `DEV-${String(index + 1).padStart(2, '0')}`
+      expect(declaredHighestDevId).toBeGreaterThan(0);
+      const expected: string[] = Array.from(
+        { length: declaredHighestDevId },
+        (_unused: unknown, index: number): string => `DEV-${String(index + 1).padStart(2, '0')}`
       );
       expect(ledgerIds).toEqual(expected);
     });

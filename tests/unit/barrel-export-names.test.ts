@@ -41,6 +41,16 @@ describe('barrelExportNames', () => {
     expect(barrelExportNames(source)).toEqual(['UiFoo', 'bar']);
   });
 
+  // `type as Alias` reads like the inline modifier but is not one: it re-exports a
+  // VALUE binding literally named `type`. Dropping it would let a runtime export
+  // slip past the registry's coverage contract, which is the failure that costs
+  // something — the opposite mistake only ever adds a spurious row.
+  it('keeps a value binding named `type` that is re-exported under an alias', () => {
+    const source: string = "export { type as TypeAlias, default as UiFoo } from './ui-foo';";
+
+    expect(barrelExportNames(source)).toEqual(['TypeAlias', 'UiFoo']);
+  });
+
   it('spans a multi-line block and de-duplicates a name exported twice', () => {
     const source: string = [
       'export {',

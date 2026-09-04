@@ -399,10 +399,11 @@ directory rather than taking `src/utils/` — the escape hatch `srOnlySx` took �
 `scripts/ci/mutation-scope.mjs` collects `.tsx` under `src/components` only, so `utils/` would
 have dropped the file out of the mutation gate entirely. That is a coverage loss, not a fix.
 
-**Score.** 84.77% (796 killed, 143 survived) -> 98.94% (929 killed, 10 survived) against a break
-threshold of 80. The survivors fell in three tranches: 74 traced SVG glyph vectors and the
-geometry around them, 6 more glyph and calendar-cell assertions, and 52 behavioural mutants
-across twenty component groups.
+**Score.** 84.77% (796 killed, 143 survived) -> 99.04% (930 killed, 9 survived) against a break
+threshold of 80. The 143 were closed in four tranches — 74 traced SVG glyph vectors and the
+geometry around them, then 7 more glyph and calendar-cell assertions, then 52 behavioural mutants
+across twenty component groups, then the right half of `UiButton`'s to-forwarding guard — which
+is 134 killed against the 9 equivalents recorded below (74 + 7 + 52 + 1 + 9 = 143).
 
 **The recurring defect.** Most survivors were not untested code. They were assertions that read
 the value under test — `expect(rendered).toHaveAttribute('d', BELL_PATH)` passes whatever

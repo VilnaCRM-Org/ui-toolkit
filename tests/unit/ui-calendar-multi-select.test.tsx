@@ -527,13 +527,15 @@ describe('UiCalendarMultiSelect — error, helper and required semantics', () =>
     const { rerender } = render(
       <UiCalendarMultiSelect label="Dates" id="cal" defaultMonth={MONTH} onChange={noop} />
     );
+    // `#cal-helper-text` is the component's own public ARIA id, derived from the
+    // `id` prop — not markup internals. The consequence is asserted alongside it:
+    // with no helper paragraph there is nothing for the grid to be described BY.
     // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
     expect(document.querySelector('#cal-helper-text')).not.toBeInTheDocument();
-    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
-    expect(document.querySelector('.MuiFormHelperText-root')).not.toBeInTheDocument();
+    expect(screen.getByRole('grid')).not.toHaveAccessibleDescription();
 
-    // The very same queries find the paragraph once helper text arrives, so the
-    // absences above are a real absence and not selectors that never match.
+    // The very same query finds the paragraph once helper text arrives, so the
+    // absence above is a real absence and not a selector that never matches.
     rerender(
       <UiCalendarMultiSelect
         label="Dates"
@@ -545,8 +547,7 @@ describe('UiCalendarMultiSelect — error, helper and required semantics', () =>
     );
     // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
     expect(document.querySelector('#cal-helper-text')).toHaveTextContent('Pick a date');
-    // eslint-disable-next-line testing-library/no-node-access -- the helper <p> has no role
-    expect(document.querySelector('.MuiFormHelperText-root')).toBeInTheDocument();
+    expect(screen.getByRole('grid')).toHaveAccessibleDescription('Pick a date');
   });
 
   it('treats a blank id as absent so ARIA ids stay unique (no "-helper-text")', () => {
