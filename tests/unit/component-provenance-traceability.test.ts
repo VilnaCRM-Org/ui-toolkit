@@ -106,10 +106,10 @@ const UPSTREAM_PATH_PREFIXES: string[] = ['src/components/skeletons/'];
 // (PR #126 review).
 const REPO_PATH_PREFIX: RegExp = /^(src|tests|specs)\//;
 
-// Prose, not citations: an elided path (`…`) and a schema placeholder
-// (`specs/implementation-artifacts/<key>.md`) both describe a shape rather than
-// name a file, so neither is resolved against the tree.
-const PATH_PLACEHOLDER: RegExp = /…|[<>]/;
+// Prose, not citations: an elided path (`…`), a schema placeholder
+// (`specs/implementation-artifacts/<key>.md`) and a glob (`src/**/*.tsx`) all
+// describe a shape rather than name a file, so none is resolved against the tree.
+const PATH_PLACEHOLDER: RegExp = /…|[<>*]/;
 
 function isRepoPathCitation(token: string): boolean {
   if (!REPO_PATH_PREFIX.test(token) || PATH_PLACEHOLDER.test(token)) {

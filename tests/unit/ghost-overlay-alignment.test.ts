@@ -1,9 +1,6 @@
 import { renderHook } from '@testing-library/react';
 
-import {
-  alignGhostOverlay,
-  useGhostAlignment,
-} from '../../src/components/field-controls/ghost-overlay';
+import { alignGhostOverlay, useGhostAlignment } from '../../src/components/ghost-overlay';
 
 describe('alignGhostOverlay', () => {
   it('does nothing when the overlay is not in the DOM', () => {

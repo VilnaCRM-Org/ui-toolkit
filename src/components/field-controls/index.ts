@@ -11,8 +11,6 @@ export { FieldLabel } from './field-label';
 export type { FieldLabelProps } from './field-label';
 export { default as srOnlySx } from '../../utils/sr-only';
 export { firstGhostMatch, isPrefixMatch, isGhostAcceptKey } from './ghost-completion';
-export { GhostOverlay } from './ghost-overlay';
-export type { GhostOverlayProps } from './ghost-overlay';
 export { createFieldOptionRenderer } from './field-option';
 export type { FieldOptionRenderer, OptionProps } from './field-option';
 export { useListboxSlotProps } from './use-listbox-slot-props';

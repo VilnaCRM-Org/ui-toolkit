@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { GhostOverlay } from '../../src/components/field-controls/ghost-overlay';
+import { GhostOverlay } from '../../src/components/ghost-overlay';
 
 describe('GhostOverlay', () => {
   it('renders the typed prefix and the grey completion as separate runs', () => {
