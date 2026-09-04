@@ -402,6 +402,23 @@ describe('UiMultiSelect — removable chips', () => {
     expect(remove).toHaveAttribute('tabindex', '-1');
   });
 
+  it('draws the Figma cross inside the delete control', () => {
+    render(
+      <UiMultiSelect options={options} value={[options[0]]} aria-label="Cities" onChange={noop} />
+    );
+    const remove: HTMLElement = screen.getByRole('button', { name: 'Remove Kyiv' });
+
+    // eslint-disable-next-line testing-library/no-node-access -- decorative glyph, no role
+    const path: SVGPathElement | null = remove.querySelector<SVGPathElement>('svg path');
+    expect(path).not.toBeNull();
+    // Written out rather than imported: an expectation that reads the source
+    // constant passes whatever that constant becomes.
+    expect(path).toHaveAttribute('d', 'M4 4l8 8M12 4l-8 8');
+    expect(path).toHaveAttribute('stroke', 'currentColor');
+    expect(path).toHaveAttribute('stroke-width', '1.5');
+    expect(path).toHaveAttribute('stroke-linecap', 'round');
+  });
+
   it('removes the focused chip with ArrowLeft then Delete', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();

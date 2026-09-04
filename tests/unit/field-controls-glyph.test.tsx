@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { Glyph } from '../../src/components/field-controls';
+import { ChevronDownGlyph, Glyph } from '../../src/components/field-controls';
 
 import firstOf from './utils/first-of';
 
@@ -89,5 +89,23 @@ describe('Glyph — the shared stroked-icon wrapper', () => {
       expect(path).toHaveAttribute('stroke-linecap', 'round');
       expect(path).toHaveAttribute('stroke-linejoin', 'round');
     });
+  });
+});
+
+// The shared popup indicator for the search-style comboboxes. Its own suite,
+// because the two consumers (`UiSelectWithSearch`, `UiMultiSelect`) assert the
+// combobox contract and never the vector itself.
+describe('ChevronDownGlyph — the shared popup indicator', () => {
+  it('draws the thin 1.5px chevron in the 20px box, written out rather than imported', () => {
+    render(<ChevronDownGlyph />);
+
+    expect(dOf()).toEqual(['M5 8l5 5 5-5']);
+    expect(svg()).toHaveAttribute('viewBox', '0 0 20 20');
+    expect(firstOf(paths())).toHaveAttribute('stroke-width', '1.5');
+    // Thin on purpose: `ui-item-row` and `ui-pagination` bake their own chevrons at
+    // 1.667 precisely because this one could not match their export weight.
+    expect(firstOf(paths())).toHaveAttribute('stroke', 'currentColor');
+    expect(svg()).toHaveAttribute('aria-hidden', 'true');
+    expect(svg()).toHaveAttribute('focusable', 'false');
   });
 });

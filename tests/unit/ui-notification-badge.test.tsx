@@ -129,6 +129,18 @@ const DISABLED_KEY: string = '&[aria-disabled="true"]';
 const FOCUS_KEY: string =
   '&:focus-visible, &:focus-visible:not([aria-disabled="true"]):not([aria-expanded="true"])';
 
+// The Untitled UI `bell-01` mark exactly as traced, written out here so a change
+// to the source constant is a failure rather than a silently moved expectation.
+const BELL_D: string = [
+  'M9.3542 21.0001C10.0593 21.6224 10.9855 22 12 22C13.0144 22 13.9407 21.6224 14.6458 ',
+  '21.0001M17.9999 8C17.9999 6.4087 17.3678 4.8826 16.2427 3.7574C15.1174 2.6322 13.5913 2 12 ',
+  '2C10.4087 2 8.8826 2.6322 7.7573 3.7574C6.6321 4.8826 6 6.4087 6 8C6 11.0902 5.2204 13.2059 ',
+  '4.3496 14.6054C3.6151 15.7859 3.2478 16.3761 3.2613 16.5407C3.2762 16.7231 3.3148 16.7926 ',
+  '3.4617 16.9016C3.5944 17 4.1926 17 5.3888 17H18.6111C19.8074 17 20.4055 17 20.5382 ',
+  '16.9016C20.6851 16.7926 20.7237 16.7231 20.7387 16.5407C20.7521 16.3761 20.3848 15.7859 ',
+  '19.6503 14.6054C18.7795 13.2059 17.9999 11.0902 17.9999 8Z  ',
+].join('');
+
 describe('UiNotificationBadge — wired button semantics (S1/S2/§6 role)', () => {
   it('renders the whole badge as ONE native type="button"', () => {
     render(badgeWith({ onActivate: noop }));
@@ -164,7 +176,11 @@ describe('UiNotificationBadge — wired button semantics (S1/S2/§6 role)', () =
 
     const paths: Element[] = nodesMatching('svg path');
     expect(paths).toHaveLength(1);
-    expect(paths[0]).toHaveAttribute('d', BELL_PATH);
+    // Written out rather than compared against BELL_PATH: an expectation that reads
+    // the constant it is checking passes whatever that constant becomes — including
+    // a dropped segment or a changed join separator.
+    expect(paths[0]).toHaveAttribute('d', BELL_D);
+    expect(BELL_PATH).toBe(BELL_D);
     expect(paths[0]).toHaveAttribute('stroke', 'currentColor');
     expect(paths[0]).toHaveAttribute('stroke-width', '1.667');
     // Decorative in every state: the SVG is out of the accessibility tree, and the

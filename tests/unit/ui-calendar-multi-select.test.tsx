@@ -886,3 +886,53 @@ describe('UiCalendarMultiSelect — decorative month chevrons', () => {
     expect(chevronOf('Next month')).not.toHaveStyle({ transform: 'scaleX(-1)' });
   });
 });
+
+describe('UiCalendarMultiSelect — adjacent-month padding cells', () => {
+  it('keeps them as real, unfocusable gridcells with an aria-hidden day number', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} onChange={noop} />);
+
+    // September 2025 starts on a Monday, so the first row carries August padding.
+    const cells: HTMLElement[] = screen.getAllByRole('gridcell');
+    const padding: HTMLElement[] = cells.filter(
+      (cell: HTMLElement): boolean => cell.getAttribute('aria-disabled') === 'true'
+    );
+    expect(padding.length).toBeGreaterThan(0);
+
+    for (const cell of padding) {
+      // -1, never a positive index: a padding cell must stay out of the tab order
+      // rather than jump ahead of every other control on the page.
+      expect(cell).toHaveAttribute('tabindex', '-1');
+      expect(cell).not.toHaveAttribute('aria-selected');
+      // The faint day number is hidden, so assistive tech reads an empty cell.
+      // eslint-disable-next-line testing-library/no-node-access -- decorative span, no role
+      const dayNumber: Element | null = cell.querySelector('[aria-hidden="true"]');
+      expect(dayNumber).not.toBeNull();
+      expect(dayNumber?.textContent).toMatch(/^\d+$/);
+    }
+  });
+});
+
+describe('UiCalendarMultiSelect — the visible label', () => {
+  it('paints an aria-hidden asterisk beside a required label', () => {
+    render(<UiCalendarMultiSelect label="Dates" defaultMonth={MONTH} required onChange={noop} />);
+
+    // The asterisk is the sighted, non-colour required cue; the accessible name
+    // carries the word instead, which the required-semantics block asserts.
+    expect(screen.getByText('*', { exact: false, selector: '[aria-hidden="true"]' })).toBeVisible();
+    expect(screen.getByRole('group', { name: /Dates.*required/i })).toBeInTheDocument();
+  });
+
+  it('renders no visible label at all when the field is named by aria-label', () => {
+    render(
+      <UiCalendarMultiSelect
+        aria-label="Vacation days"
+        defaultMonth={MONTH}
+        required
+        onChange={noop}
+      />
+    );
+
+    expect(screen.queryByText('*', { selector: '[aria-hidden="true"]' })).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /Vacation days.*required/i })).toBeInTheDocument();
+  });
+});
