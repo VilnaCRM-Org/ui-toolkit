@@ -219,7 +219,35 @@ describe('UiButton — link attributes are part of the public type', () => {
   });
 });
 
-describe('UiButton to guard (line 38: isCustomComponent && to !== undefined)', () => {
+describe('UiButton — the to-forwarding guard', () => {
+  // The guard is `isCustomComponent && to !== undefined`, and each half fails
+  // differently, so each needs its own case. This one covers the right half: a
+  // custom component with NO `to`. Assigning `componentProps.to = undefined` is not
+  // the same as never assigning it — the key still reaches the component, and a
+  // router Link that branches on `'to' in props` would take its navigation path
+  // with nothing to navigate to. Presence, not value, is therefore what is asserted.
+  it('omits the to prop entirely from a custom component that was given none', () => {
+    type ProbeProps = { children?: React.ReactNode };
+    const seen: string[] = [];
+    const Probe: React.ForwardRefExoticComponent<
+      ProbeProps & React.RefAttributes<HTMLAnchorElement>
+    > = React.forwardRef<HTMLAnchorElement, ProbeProps>(function Probe(props, ref) {
+      const carriesTo: boolean = Object.prototype.hasOwnProperty.call(props, 'to');
+      seen.push(carriesTo ? 'to-present' : 'to-absent');
+      return (
+        <a ref={ref} href="/resolved-by-router">
+          {props.children}
+        </a>
+      );
+    });
+
+    render(<UiButton component={Probe}>{testText}</UiButton>);
+
+    expect(screen.getByRole('link', { name: testText })).toBeInTheDocument();
+    expect(seen).not.toHaveLength(0);
+    expect(seen).not.toContain('to-present');
+  });
+
   it('flattens to into href on the built-in anchor instead of forwarding it raw', () => {
     // Only a custom link component owns navigation via `to`; the built-in `a` has no
     // such prop, so forwarding it would leak a stray to="/dashboard" attribute into

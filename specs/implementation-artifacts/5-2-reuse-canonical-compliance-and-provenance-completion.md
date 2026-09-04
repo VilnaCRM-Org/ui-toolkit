@@ -307,16 +307,40 @@ only exists in the epic file".
 | `specs/planning-artifacts/deviation-ledger.md`                                               | new      |
 | `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` | new      |
 | `specs/implementation-artifacts/sprint-status.yaml`                                          | modified |
+| `specs/planning-artifacts/board-coverage-checklist.md`                                       | modified |
 | `tests/unit/component-provenance-traceability.test.ts`                                       | new      |
+| `tests/unit/utils/barrel-export-names.ts`                                                    | new      |
+| `tests/unit/barrel-export-names.test.ts`                                                     | new      |
+| `tests/unit/ui-card-list-swiper-pointer-events.test.ts`                                      | new      |
+| `src/components/ghost-overlay/index.tsx`                                                     | moved    |
 | The 18 existing story artifacts in `specs/implementation-artifacts/`                         | modified |
 | Deviation comments under `src/components/`                                                   | modified |
+| 24 suites under `tests/unit/`                                                                | modified |
 
 The 18 story-artifact edits are header/metadata repair only — a `PR` line per header, stale
 `Status` lines corrected to `review`, the wrong-organisation issue URL at
 `3-5-board-a-micro-components.md:3` repointed at `VilnaCRM-Org/ui-toolkit` (it previously 404ed),
 and one dated correction note appended beneath 3-5's exceptions table. No delivered narrative is rewritten: these artifacts are
-the historical record. The `src/components/` edits are comment text only — no runtime code, no
-styling and no visual baseline is affected.
+the historical record.
+
+**Scope beyond the original story (PR #126 review).** The story as written changed no runtime
+code — the `src/components/` edits were comment text only. Two things during review did:
+
+- **`GhostOverlay` moved** out of `field-controls/ghost-overlay.tsx` — a path that no longer
+  exists, so it is named here without a citation — into
+  `src/components/ghost-overlay/index.tsx` (a rename, byte-identical file), with
+  `field-controls/index.ts` no longer re-exporting it and its three consumers
+  (`ui-search-input/use-search-field.ts`, `ui-select-with-search/render-input.ts`,
+  `ui-multi-select/use-multi-select-field.ts`) importing it from the new barrel. Behaviour is
+  unchanged and no visual baseline moves; the reason is the mutation-gate fan-out recorded in the
+  Mutation addendum above.
+- **`board-coverage-checklist.md`** gained the two renamed `GhostOverlay` suite names, which
+  Story 5.1's own drift guard requires. Nothing else in that file is touched — see the boundary
+  note in the Scope section.
+
+Twenty-four existing suites under `tests/unit/` gained assertions (no existing assertion was
+removed, relaxed or skipped), and `sr-only.ts`'s comment was extended to record the second
+application of the same fan-out reasoning.
 
 ## Definition of Done (instantiated from `story-dod-template.md`)
 
@@ -356,6 +380,48 @@ styling and no visual baseline is affected.
       `tests/unit/board-coverage-traceability.test.ts`, which this story must not break) plus the
       formatter/lint chain, run on the host. Coverage, mutation and visual gate closure remain owned
       by the Epic 1-4 closure stories (issues #27-#30) and by Story 5.4.
+
+### Mutation addendum (PR #126 review, 2026-09-04)
+
+The mutation gate was failing this PR on a shard timeout, not on score. Fixing it turned into a
+score exercise, and the numbers are recorded here because the surviving set is now small enough
+to adjudicate one mutant at a time.
+
+**Timeout, and why the shard count was the wrong lever.** `field-controls/ghost-overlay.tsx` was
+re-exported from the `field-controls` barrel, which sixteen component modules import, so Jest's
+`--findRelatedTests` treated 32 of the 99 suites as related to every one of its mutants —
+measured with `jest --listTests --findRelatedTests`, about 85% of shard 1's cost. Raising
+`MUTATION_SHARD_TOTAL` cannot help, because a single file is never split across shards. The
+module moved to its own component directory instead (`src/components/ghost-overlay`), which is
+the boundary-legal way for its three consumers to reach it without dragging it into the other
+thirteen: fan-out 32 -> 9, shard 1 from over its 20-minute budget to 12 minutes. It kept a
+directory rather than taking `src/utils/` — the escape hatch `srOnlySx` took — because
+`scripts/ci/mutation-scope.mjs` collects `.tsx` under `src/components` only, so `utils/` would
+have dropped the file out of the mutation gate entirely. That is a coverage loss, not a fix.
+
+**Score.** 84.77% (796 killed, 143 survived) -> 98.94% (929 killed, 10 survived) against a break
+threshold of 80. The survivors fell in three tranches: 74 traced SVG glyph vectors and the
+geometry around them, 6 more glyph and calendar-cell assertions, and 52 behavioural mutants
+across twenty component groups.
+
+**The recurring defect.** Most survivors were not untested code. They were assertions that read
+the value under test — `expect(rendered).toHaveAttribute('d', BELL_PATH)` passes whatever
+`BELL_PATH` becomes — or that watched a surface the mutation never reaches. Every expected value
+added in this pass is written out as a literal, and each is checked byte for byte against its
+source constant so the two cannot drift apart silently.
+
+**Nine equivalent mutants, accepted and documented**, on the precedent set by
+`specs/ui-error-boundary/implementation-artifacts/1-1-ui-error-boundary-component-and-suites.md`
+(§Mutation addendum), which accepted the same class rather than annotating the source or moving
+a threshold. No `Stryker disable` comment is added and no gate is relaxed; the score is reported
+as it stands.
+
+| Site                                                                                                                                                                                               | Mutation                                                         | Why nothing observable changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/ui-skeleton-table/index.tsx:50`, `table-row.tsx:23`, `table-cell.tsx:55`, `src/components/ui-skeleton-menu/index.tsx:39` and `:79`, `src/components/ui-skeleton-list/index.tsx:33` | the `prefix` argument of `getSkeletonKeys` emptied               | The return value is consumed only as a React `key`. `skeletonKey` builds `${prefix}-${index + 1}`, so an empty prefix yields `-1..-n`: still one distinct key per index. React strips `key` before props and none of the keyed components echoes it, so no attribute, text, accessible name or computed style differs, and no sibling can collide — in each case the mapped array is the only keyed child of its parent.                                                                                                                                                              |
+| `src/components/ui-items-list/index.tsx:60`                                                                                                                                                        | the root key prefix `''` replaced by a constant string           | The literal is prepended to every key at every fragment depth, which is an injective map over the key set: no two rows collide that did not collide already. Being a compile-time constant it is identical on every render, so the identity React reconciles by is unchanged and rows still move rather than remount across a reorder.                                                                                                                                                                                                                                                |
+| `src/components/ui-link/index.tsx:28`                                                                                                                                                              | `/\s+/` replaced by `/\s/`                                       | Masked by the `.filter(Boolean)` on the same line. Splitting on `\s` instead of `\s+` differs only by extra EMPTY tokens for each additional whitespace character, and the filter removes all of them, so both forms yield the identical token array for every input. Verified over padded, doubled, tab and newline fixtures; the same fixtures do separate the `filter` mutant, which is killed.                                                                                                                                                                                    |
+| `src/components/ui-error-boundary/index.tsx:42`                                                                                                                                                    | the left operand `this.state.error === null` replaced by `false` | Only the left half survives — every other mutant on that line is killed. The guard becomes `if (prevState.error === null) return;`, which diverges from the real one in exactly one commit: recovery. There the extra work is a pure `shouldResetFromKeys` read and, at most, a `setState({ error: null })` onto state that already holds it; the props object is reference-identical, so React bails out of the child subtree and no child render, DOM change, callback or log is observable. This is the same equivalent pair the `ui-error-boundary` artifact already adjudicated. |
 
 ### 4. Stories (Storybook) added/updated
 
