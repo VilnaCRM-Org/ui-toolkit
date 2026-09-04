@@ -3,6 +3,8 @@ import { join, resolve } from 'node:path';
 
 import * as publicComponents from '../../src/components';
 
+import nthOf from './utils/nth-of';
+
 // Story 5.2 (#32) — drift guard for the provenance registry, the deviation
 // ledger and the Definition-of-Done compliance matrix (`prd.md` FR-07, §3.2-§3.5;
 // `epics.md` Story 5.2). Before this suite existed nothing in `tests/`, `scripts/`,
@@ -82,7 +84,7 @@ function allTableRows(markdown: string): string[][] {
 
 /** Every backticked span in a cell: `UiButton`, `src/…/styles.ts:12`, `internal`. */
 function backticked(cell: string): string[] {
-  return [...cell.matchAll(/`([^`\n]+)`/g)].map(match => match[1]);
+  return [...cell.matchAll(/`([^`\n]+)`/g)].map(match => nthOf(match, 1));
 }
 
 // CRM's own tree names its skeleton directory `src/components/skeletons`; the
@@ -128,7 +130,7 @@ interface RegistryRow {
 }
 
 function isRegistryRow(cells: string[]): boolean {
-  return cells.length === REGISTRY_COLUMN_COUNT && REGISTRY_ROW_KEY.test(cells[0]);
+  return cells.length === REGISTRY_COLUMN_COUNT && REGISTRY_ROW_KEY.test(nthOf(cells, 0));
 }
 
 // The Component cell also names the symbols a token module re-exports
@@ -139,15 +141,16 @@ function componentNames(cell: string): string[] {
 }
 
 function toRegistryRow(cells: string[]): RegistryRow {
-  const key: RegExpMatchArray = cells[0].match(REGISTRY_ROW_KEY) as RegExpMatchArray;
+  const component: string = nthOf(cells, 0);
+  const key: RegExpMatchArray = component.match(REGISTRY_ROW_KEY) as RegExpMatchArray;
   return {
-    name: key[1],
-    modulePath: key[2],
-    internal: cells[0].includes('`internal`'),
-    source: cells[1],
-    rationale: cells[2],
-    alignment: cells[3],
-    names: componentNames(cells[0]),
+    name: nthOf(key, 1),
+    modulePath: nthOf(key, 2),
+    internal: component.includes('`internal`'),
+    source: nthOf(cells, 1),
+    rationale: nthOf(cells, 2),
+    alignment: nthOf(cells, 3),
+    names: componentNames(component),
   };
 }
 
@@ -163,7 +166,7 @@ function scopeSection(): string {
 }
 
 const scopeExcludedModules: string[] = allTableRows(scopeSection())
-  .flatMap(cells => backticked(cells[0]))
+  .flatMap(cells => backticked(nthOf(cells, 0)))
   .filter(token => token.startsWith('src/components/'));
 
 /** `src/components/<module>` — the module a row or an exclusion is keyed to. */
@@ -217,18 +220,18 @@ interface LedgerRow {
 }
 
 function isLedgerRow(cells: string[]): boolean {
-  return cells.length === LEDGER_COLUMN_COUNT && /^DEV-\d+$/.test(cells[0]);
+  return cells.length === LEDGER_COLUMN_COUNT && /^DEV-\d+$/.test(nthOf(cells, 0));
 }
 
 function toLedgerRow(cells: string[]): LedgerRow {
   return {
-    id: cells[0],
-    module: cells[1],
-    justification: cells[4],
-    kind: cells[5],
-    status: cells[6],
-    owner: cells[7],
-    recordedWhere: cells[8],
+    id: nthOf(cells, 0),
+    module: nthOf(cells, 1),
+    justification: nthOf(cells, 4),
+    kind: nthOf(cells, 5),
+    status: nthOf(cells, 6),
+    owner: nthOf(cells, 7),
+    recordedWhere: nthOf(cells, 8),
   };
 }
 
@@ -260,7 +263,7 @@ function rollUpCount(token: string): number {
 function totalRollUps(): number[] {
   return rollUpRows
     .filter(cells => cells.length === 2 && cells[0] === ROLL_UP_TOTAL_LABEL)
-    .map(cells => Number(cells[1].replace(/\*/g, '')));
+    .map(cells => Number(nthOf(cells, 1).replace(/\*/g, '')));
 }
 
 // The ratification register carries rulings that have no ledger row of their own
@@ -328,6 +331,13 @@ const ALLOWED_UNTAGGED_SITES: AllowedSite[] = [
     file: 'src/components/ui-payment-option-card/payment-card-content.tsx',
     phrase: 'deliberate deviation from `UiIntegrationCard`',
   },
+  // Records why the muted row keeps the website's one dark chevron asset: recolouring
+  // it to brand-gray would resolve to 1.14:1 against the muted tint. That is a
+  // conformance argument for following the upstream asset, not a divergence from it.
+  {
+    file: 'src/components/ui-item-row/recipe.ts',
+    phrase: 'WCAG 1.4.11 wants 3:1 for a meaningful glyph',
+  },
 ];
 
 interface DeviationSite {
@@ -382,7 +392,9 @@ function matrixSection(): string {
 
 function isMatrixRow(cells: string[]): boolean {
   return (
-    cells.length === MATRIX_COLUMN_COUNT && cells[7] !== 'Verdict' && !SEPARATOR_CELL.test(cells[7])
+    cells.length === MATRIX_COLUMN_COUNT &&
+    cells[7] !== 'Verdict' &&
+    !SEPARATOR_CELL.test(nthOf(cells, 7))
   );
 }
 
@@ -390,7 +402,7 @@ const matrixRows: string[][] = allTableRows(matrixSection()).filter(isMatrixRow)
 
 /** The `.md` artifact a matrix row is keyed to; the parity-layer row names none. */
 function matrixArtifact(cells: string[]): string | undefined {
-  return backticked(cells[0]).find(token => token.endsWith('.md'));
+  return backticked(nthOf(cells, 0)).find(token => token.endsWith('.md'));
 }
 
 const matrixArtifacts: string[] = matrixRows
@@ -419,7 +431,7 @@ function matrixRollUpClaim(token: string): number {
 
 function matrixVerdictCount(token: string): number {
   return countBy(
-    matrixRows.map(cells => cells[7]),
+    matrixRows.map(cells => nthOf(cells, 7)),
     `\`${token}\``
   );
 }
@@ -441,7 +453,7 @@ const specFiles: string[] = [PLANNING_DIR, IMPLEMENTATION_DIR].flatMap(specMarkd
 
 function foreignGithubRefs(relativePath: string): string[] {
   return [...readRepoFile(relativePath).matchAll(GITHUB_URL)]
-    .map(match => match[1])
+    .map(match => nthOf(match, 1))
     .filter(ref => !ref.startsWith(CANONICAL_REPO));
 }
 
@@ -453,8 +465,8 @@ interface SprintEntry {
 function sprintEntries(): SprintEntry[] {
   const text: string = readRepoFile(SPRINT_STATUS_RELATIVE_PATH);
   return [...text.matchAll(/^ {2}([a-z0-9-]+): *([a-z-]+)$/gm)].map(match => ({
-    key: match[1],
-    status: match[2],
+    key: nthOf(match, 1),
+    status: nthOf(match, 2),
   }));
 }
 
@@ -641,11 +653,11 @@ describe('component provenance traceability', () => {
     });
 
     it.each(matrixRows)('row %# carries a closed Verdict token', (...cells: string[]) => {
-      expect(isVerdictCell(cells[7])).toBe(true);
+      expect(isVerdictCell(nthOf(cells, 7))).toBe(true);
     });
 
     it.each(matrixRows)('row %# carries a closed token in every section cell', (...cells) => {
-      expect(MATRIX_SECTION_CELLS.filter(index => !isVerdictCell(cells[index]))).toEqual([]);
+      expect(MATRIX_SECTION_CELLS.filter(index => !isVerdictCell(nthOf(cells, index)))).toEqual([]);
     });
 
     it.each(VERDICT_TOKENS)('the roll-up claim for %s matches the parsed rows', token => {
