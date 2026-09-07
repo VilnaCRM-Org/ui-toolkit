@@ -105,18 +105,17 @@ Closure does not silently waive anything; the open items Epic 1 carries are ledg
 
 ## Gate evidence
 
-Run on the host on this branch (the `bun` compose service is a baked image and would run stale
-code), 2026-08-14:
+Measured on the rebased branch at `13e6af5`; the jest, ESLint and dependency-cruiser figures are read back from that head's CI runs (`unit testing`, `static testing`, `dependency-cruiser`) rather than a host run, 2026-09-07:
 
-| Gate                | Command                                                 | Result                                                          |
-| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------- |
-| Type check          | `npx tsc --noEmit -p tsconfig.json`                     | `TypeScript compilation completed`, exit 0                      |
-| ESLint              | `eslint src tests`                                      | 0 errors (77 pre-existing warnings, none in files added here)   |
-| Prettier            | `prettier --check` on every file this story touches     | clean                                                           |
-| Full unit suite     | `npx jest`                                              | 91 suites, 3456 tests, all passed; 100% coverage thresholds met |
-| Closure guard       | `npx jest tests/unit/epic-quality-gate-closure.test.ts` | 100/100 passed (12 artifact-bound assertions failing-first)     |
-| Governance guards   | provenance/board/export suites within the full run      | green — matrix rows and status edits verified                   |
-| Metrics / depcruise | not re-run                                              | no `src/` change in this diff; both gates re-verified in CI     |
+| Gate                | Command                                                 | Result                                                                |
+| ------------------- | ------------------------------------------------------- | --------------------------------------------------------------------- |
+| Type check          | `npx tsc --noEmit -p tsconfig.json`                     | `TypeScript compilation completed`, exit 0                            |
+| ESLint              | `eslint src tests`                                      | 0 errors (89 pre-existing warnings, none in files added here)         |
+| Prettier            | `prettier --check` on every file this story touches     | clean                                                                 |
+| Full unit suite     | `npx jest`                                              | 103 suites, 3817 tests, all passed; 100% coverage on all four metrics |
+| Closure guard       | `npx jest tests/unit/epic-quality-gate-closure.test.ts` | 100/100 passed (12 artifact-bound assertions failing-first)           |
+| Governance guards   | provenance/board/export suites within the full run      | green — matrix rows and status edits verified                         |
+| Metrics / depcruise | run in CI on this head                                  | `rust-code-analysis` green; depcruise 0 errors, 459 modules           |
 
 Mutation, visual, e2e, memory-leak and Lighthouse gates are unaffected by this diff (no `src/`
 or story change) and run as required checks on the PR.

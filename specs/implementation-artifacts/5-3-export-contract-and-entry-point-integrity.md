@@ -212,43 +212,46 @@ _Instantiates `specs/implementation-artifacts/story-dod-template.md`._
 
 ## Gate evidence
 
-Run on the host (the `bun` compose service is a baked image and would run stale code); the metrics
-gate runs in its own `rca` container, and dependency-cruiser in a supported-Node container because
-the host is on Node 25, which it refuses.
+Measured on the rebased branch at `13e6af5`; the jest, ESLint and dependency-cruiser figures are read back from that head's CI runs (`unit testing`, `static testing`, `dependency-cruiser`) rather than a host run, 2026-09-07. Host-side gates (the `bun` compose service is a baked image and would run stale code) are
+marked as such; `node ./build.config.mjs` and `make package` were run in the real `bun` container.
 
-| Gate                           | Command                                                             | Result                                                                                                  |
-| ------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Type check                     | `npx tsc --noEmit -p tsconfig.json`                                 | `TypeScript compilation completed`, exit 0                                                              |
-| ESLint                         | `npx eslint src tests`                                              | 0 errors (77 pre-existing warnings, none in changed files)                                              |
-| Prettier                       | `npx prettier . --check`                                            | All changed files formatted; remaining warnings are untracked `.claude/` and gitignored `.ralph/` paths |
-| Markdown                       | `npx markdownlint "**/*.md"`                                        | `specs/` is markdownlint-ignored (`.markdownlintignore`); no new finding                                |
-| Dependency boundaries          | `depcruise --config .dependency-cruiser.js src` (node:24 container) | **0 errors**, 741 pre-existing warnings, 445 modules cruised                                            |
-| Complexity metrics             | `docker compose run --rm rca make lint-metrics-run`                 | `rust-code-analysis: all hard checks pass`                                                              |
-| Export guard                   | `npx jest tests/unit/export-contract-integrity.test.ts`             | 20/20 passed                                                                                            |
-| Barrel runtime surface         | `npx jest tests/unit/components-index.test.ts`                      | 5/5 passed, unchanged — proves no value export moved                                                    |
-| Ledger guard                   | `npx jest tests/unit/component-provenance-traceability.test.ts`     | 996/996 passed after the `DEV-42` edit and the matrix row                                               |
-| Full unit suite + coverage     | `npx jest`                                                          | **90 suites, 3336 tests, all passed**; coverage thresholds met, exit 0                                  |
-| Package build + `.d.ts` rollup | `node ./build.config.mjs` (esbuild + api-extractor)                 | exit 0, **zero `ae-forgotten-export` warnings** (two before this story)                                 |
+| Gate                           | Command                                                             | Result                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Type check                     | `npx tsc --noEmit -p tsconfig.json`                                 | `TypeScript compilation completed`, exit 0                                                                                           |
+| ESLint                         | `npx eslint src tests`                                              | 0 errors (89 pre-existing warnings, none in changed files)                                                                           |
+| Prettier                       | `npx prettier . --check`                                            | All changed files formatted; remaining warnings are untracked `.claude/` and gitignored `.ralph/` paths                              |
+| Markdown                       | `npx markdownlint "**/*.md"`                                        | `specs/` is markdownlint-ignored (`.markdownlintignore`); no new finding                                                             |
+| Dependency boundaries          | `depcruise --config .dependency-cruiser.js src` (node:24 container) | **0 errors**, 760 pre-existing warnings, 459 modules and 1601 dependencies cruised                                                   |
+| Complexity metrics             | `docker compose run --rm rca make lint-metrics-run`                 | `rust-code-analysis: all hard checks pass`                                                                                           |
+| Export guard                   | `npx jest tests/unit/export-contract-integrity.test.ts`             | 21/21 passed                                                                                                                         |
+| Barrel runtime surface         | `npx jest tests/unit/components-index.test.ts`                      | 5/5 passed, unchanged — proves no value export moved                                                                                 |
+| Ledger guard                   | `npx jest tests/unit/component-provenance-traceability.test.ts`     | 1053/1053 passed after the `DEV-42` edit and the matrix row                                                                          |
+| Full unit suite + coverage     | `npx jest`                                                          | **103 suites, 3817 tests, all passed**; 100% statements/branches/functions/lines                                                     |
+| Package build + `.d.ts` rollup | `node ./build.config.mjs` (esbuild + api-extractor)                 | exit 0 in the `bun` container, **zero `ae-forgotten-export` warnings**; `make package` verifies `dist/vilnacrm-ui-toolkit-0.3.0.tgz` |
 
 ### Guard negative-test evidence
 
 The drift guard was verified to bite, not merely to pass: deleting the `ui-link` row from
-`specs/planning-artifacts/export-contract.md` turned 20/20 green into `4 failed, 16 passed` —
-the module-coverage, value-agreement, type-agreement and props-type assertions all fired. The row
-was restored and the suite re-verified at 20/20.
+`specs/planning-artifacts/export-contract.md` turns 21/21 green into `4 failed, 17 passed` — A1
+(one row per module directory), C1 (barrel runtime surface), D2 (records every type the barrel
+re-exports, reporting `UiLinkProps`) and D7 (bound type surface, 75 against the pinned 76) all fire.
+The row was restored and the suite re-verified at 21/21.
 
 ### Entry-point integrity (T4)
 
-The chain resolves end to end, and the story **found and fixed a real defect in it**:
+The chain resolves end to end. The defect this story surfaced was landed ahead of it, on `main`:
 
 1. `src/index.ts` → `export * from './components'` → `src/components/index.ts`.
 2. `node ./build.config.mjs` emits `build/index.mjs`, `build/index.css` and the fonts, then rolls
    up `build/index.d.ts` through api-extractor from `temp/dts/components/index.d.ts`.
 3. `package.json` `main` / `module` → `./build/index.mjs`, `types` → `./build/index.d.ts`, the
-   `exports` map publishes `.` and `./styles.css`, and `files` ships only `build`. All four are
-   asserted by the guard's group E, so a manifest edit that breaks the entry chain fails the suite.
-4. **Defect found:** before this story the rollup emitted two `ae-forgotten-export` warnings —
+   `exports` map publishes `.`, `./styles.css`, `./package.json` and the per-component `./*`, and
+   `files` ships only `build`. All four are asserted by the guard's group E, so a manifest edit that
+   breaks the entry chain fails the suite.
+4. **Defect surfaced:** the rollup emitted two `ae-forgotten-export` warnings —
    `NeutralActionIconName` and `StaticImageSrc` were named by public types (`ActionIconName`,
    `UiCardItemData.imageSrc`) but not published by the entry point, so a consumer could use those
-   props yet never name their operand types. Both are now exported through their owning modules,
-   and the rollup is warning-free. `build/index.d.ts` publishes all 69 registered type names.
+   props yet never name their operand types. Both were exported through their owning modules before
+   this branch was replayed onto `main`; what this story adds is the rule that keeps them exported
+   and the guard that binds them. The rollup is warning-free and `build/index.d.ts` publishes all 76
+   registered type names.

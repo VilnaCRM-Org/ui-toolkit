@@ -98,7 +98,7 @@ Story 5.4 consumes this artifact via the Story 5.2 DoD compliance matrix row.
 
 Shared with the closure branch — one diff, one gate run, recorded once in
 `1-4-epic-1-quality-gate-closure.md` § Gate evidence and valid for this artifact verbatim:
-type check exit 0, ESLint 0 errors, full unit suite 91 suites / 3456 tests green with 100%
+type check exit 0, ESLint 0 errors, full unit suite 103 suites / 3817 tests green with 100%
 coverage thresholds met, closure guard 100/100 after failing-first, container-only gates
 deferred to CI because the diff contains no `src/` change.
 
