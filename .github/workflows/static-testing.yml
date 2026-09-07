@@ -47,6 +47,15 @@ jobs:
       - name: Verify referenced Makefile and workflow paths exist
         run: make lint-ci-paths
 
+      # No workflow ran `make build` or `make package` before this step existed, so
+      # the only thing that ever executed `build.config.mjs` was a release — and
+      # releases were failing for unrelated reasons. A build-breaking change
+      # therefore sat on main unnoticed until a release tried to pack the tarball.
+      # This runs the real build, including the check that every generated subpath
+      # `.d.ts` is backed by an export the emitted `.mjs` actually has.
+      - name: Build the publishable bundle
+        run: make build
+
       - name: Stop docker test environment
         if: always()
         run: make down
