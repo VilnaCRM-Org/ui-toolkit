@@ -1,5 +1,5 @@
 target	coverage	evidence	details
-build	bats	tests/bats/makefile_targets.bats	Validated as the Docker-backed project build entrypoint.
+build	bats	tests/bats/makefile_targets.bats	Validated as the Docker-backed project build entrypoint; also executed for real by the static testing workflow.
 copy-coverage	bats	tests/bats/makefile_targets.bats	Validated for the missing-container, missing-coverage, and copy-success branches.
 down	ci	.github/workflows/static-testing.yml	Executed directly by multiple pull-request workflows that tear down the Docker environment.
 format-check	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.

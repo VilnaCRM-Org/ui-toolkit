@@ -27,6 +27,7 @@ export type { UiCheckboxProps } from './ui-checkbox/types';
 export { default as UiContainer } from './ui-container';
 export type { UiContainerProps } from './ui-container/index';
 export { default as UiFooter } from './ui-footer';
+export type { UiFooterProps, UiFooterSocialLink } from './ui-footer/types';
 export { default as UiFileUploadInput } from './ui-file-upload-input';
 export type {
   UiFileUploadConstraints,
@@ -110,6 +111,7 @@ export type {
   UiSkeletonWidgetProps,
 } from './ui-skeleton-widget/types';
 export { default as UiToolbar } from './ui-toolbar';
+export type { UiToolbarProps } from './ui-toolbar';
 export { default as UiColorTheme } from './ui-color-theme';
 export { crmColorTheme, sharedPalette, websiteColorTheme } from './ui-color-theme';
 export { default as UiBreakpoints } from './ui-breakpoints';
@@ -121,7 +123,7 @@ export {
   websiteBreakpointsTheme,
 } from './ui-breakpoints';
 export { default as UiTextFieldForm } from './ui-text-field-form';
-export type { CustomTextField, FieldRules } from './ui-text-field-form/types';
+export type { CustomTextField, FieldRules, UiTextFieldFormProps } from './ui-text-field-form/types';
 export { default as UiTooltip } from './ui-tooltip';
 export type { UiTooltipProps } from './ui-tooltip/types';
 export { default as UiErrorBoundary } from './ui-error-boundary';

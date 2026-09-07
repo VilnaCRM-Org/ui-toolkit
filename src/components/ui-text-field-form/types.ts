@@ -14,3 +14,13 @@ export type CustomTextField<T extends FieldValues> = UiInputProps & {
   defaultValue?: PathValue<T, Path<T>> | undefined;
   name: Path<T>;
 };
+
+/**
+ * The conventional props name the export contract's R2 asks of every exported
+ * component (`ui-text-field-form` → `UiTextFieldFormProps`).
+ *
+ * An alias, not a rename: `CustomTextField<T>` is the delivered contract of this
+ * seeded `website` parity module and stays exported, so nothing that names it
+ * today breaks. The two are the same type, so a consumer may use either.
+ */
+export type UiTextFieldFormProps<T extends FieldValues> = CustomTextField<T>;

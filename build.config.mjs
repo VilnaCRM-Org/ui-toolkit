@@ -81,17 +81,34 @@ function barrelNamesFor(barrel, directory) {
   return { defaultExport: defaultAs ? defaultAs[1] : null, values, types };
 }
 
-// The names a built subpath actually exports at runtime, read back off the
-// emitted ESM. esbuild always closes an entry with a single `export { … }`.
-function runtimeExportsOf(directory) {
-  const file = path.resolve(currentDir, 'build', `${directory}.mjs`);
-  if (!existsSync(file)) return null;
-  const matches = [...readFileSync(file, 'utf8').matchAll(/^export \{([^}]*)\};?\s*$/gms)];
-  if (matches.length === 0) return [];
-  return matches[matches.length - 1][1]
-    .split(',')
-    .map(specifier => specifier.trim().split(' as ').pop())
-    .filter(Boolean);
+// The names a built subpath actually exports, taken from esbuild's own metafile.
+//
+// NOT scanned back out of the emitted text. This build is `minify: true`, so
+// esbuild writes each entry as a single line —
+// `import{a}from"./chunks/chunk-….mjs";…;export{a as default};` — which offers a
+// line-anchored scan no `^` to match and no space after `export` to key on. The
+// previous regex therefore found nothing, read that as "the module exports
+// nothing", and failed the build on the first subpath it checked. `make build`
+// and `make package` have been broken that way since the check landed, and no
+// workflow ran either target, so nothing noticed until a release tried to pack.
+//
+// `metafile.outputs[<file>].exports` is esbuild's structured record of what it
+// emitted, so it stays correct whatever the minifier does to the source text.
+function runtimeExportsOf(directory, metafile) {
+  const suffix = `/${directory}.mjs`;
+  const output = Object.entries(metafile.outputs).find(
+    ([file, meta]) => meta.entryPoint !== undefined && file.endsWith(suffix)
+  );
+  // Every directory reaching this point was handed to esbuild as an entry point,
+  // so a miss means the build's own bookkeeping disagrees with itself. Failing
+  // closed is the whole point of the check below.
+  if (output === undefined) {
+    throw new Error(
+      `esbuild emitted no entry output for the '${directory}' subpath, so its ` +
+        'declarations cannot be checked against anything.'
+    );
+  }
+  return output[1].exports;
 }
 
 // Fails the build if a subpath DECLARES a name its module does not export —
@@ -107,9 +124,8 @@ function runtimeExportsOf(directory) {
 // 5.3 exists to keep closed — the rollup does not carry them, so the `.d.ts`
 // could not even name them. Leaving them untyped is what makes them
 // unreachable from TypeScript, which is the intent.
-function assertDeclarationsAreBacked(directory, declared) {
-  const runtime = runtimeExportsOf(directory);
-  if (runtime === null) return;
+function assertDeclarationsAreBacked(directory, declared, metafile) {
+  const runtime = runtimeExportsOf(directory, metafile);
   const missing = declared.filter(name => !runtime.includes(name));
   if (missing.length > 0) {
     throw new Error(
@@ -124,7 +140,7 @@ function assertDeclarationsAreBacked(directory, declared) {
 // which keeps ONE self-contained declaration artifact (and the
 // `ae-forgotten-export` gate that guards it) instead of running API Extractor
 // once per entry.
-function generateSubpathDeclarations(entryPoints) {
+function generateSubpathDeclarations(entryPoints, metafile) {
   const barrel = readFileSync(entryPoint, 'utf8');
   for (const directory of Object.keys(entryPoints)) {
     if (directory === 'index') continue;
@@ -135,7 +151,11 @@ function generateSubpathDeclarations(entryPoints) {
     if (defaultExport) lines.push(`export { ${defaultExport} as default } from './index';`);
     if (values.length) lines.push(`export { ${values.join(', ')} } from './index';`);
     if (types.length) lines.push(`export type { ${types.join(', ')} } from './index';`);
-    assertDeclarationsAreBacked(directory, [...(defaultExport ? ['default'] : []), ...values]);
+    assertDeclarationsAreBacked(
+      directory,
+      [...(defaultExport ? ['default'] : []), ...values],
+      metafile
+    );
     writeFileSync(path.resolve(currentDir, 'build', `${directory}.d.ts`), `${lines.join('\n')}\n`);
   }
 }
@@ -210,6 +230,9 @@ esbuild
     chunkNames: 'chunks/[name]-[hash]',
     bundle: true,
     minify: true,
+    // Read by generateSubpathDeclarations below: the authoritative list of what
+    // each emitted entry exports, which minified output text cannot supply.
+    metafile: true,
     format: 'esm',
     outExtension: { '.js': '.mjs' },
     // Externalize only peer dependencies — the consumer provides them. Swiper is
@@ -242,8 +265,10 @@ esbuild
       'process.env.NODE_ENV': '"production"',
     },
   })
-  .then(generateTypeDeclarations)
-  .then(() => generateSubpathDeclarations(componentEntryPoints()))
+  .then(async result => {
+    await generateTypeDeclarations();
+    generateSubpathDeclarations(componentEntryPoints(), result.metafile);
+  })
   .catch(error => {
     process.stderr.write(`Build failed: ${error.message ?? error}\n`);
     process.exit(1);

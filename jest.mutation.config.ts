@@ -22,14 +22,19 @@ import baseConfig from './jest.config';
 // They are safe to drop from the mutation tier because none of them can kill a
 // mutant: they assert on names and files, never on rendered behaviour. That
 // zero-kill property was verified point-in-time against the baseline mutation
-// report's `killedBy` data (main run 32894014689, 750 mutants: both suites
-// recorded zero kills, sole or shared). The guard test
+// report's `killedBy` data (main run 32894014689, 750 mutants: the two suites
+// that existed then recorded zero kills, sole or shared). The two Story-5
+// guards added afterwards share that property by construction — they compare
+// `Object.keys` of the barrel, on-disk module directories and JSON manifests
+// against markdown registers, and mount nothing. The guard test
 // (`tests/unit/mutation-runner-scope.test.ts`) pins the exclusion list and the
 // no-other-barrel-importer rule, not a live kill count. Dropping a suite from
 // the mutation tier can only ever LOWER the score, never inflate it, so this
 // cannot manufacture a passing gate. All of them still run in the unit gate.
 const STRUCTURAL_GUARDS = [
   '<rootDir>/tests/unit/components-index\\.test\\.ts$',
+  '<rootDir>/tests/unit/epic-quality-gate-closure\\.test\\.ts$',
+  '<rootDir>/tests/unit/export-contract-integrity\\.test\\.ts$',
   '<rootDir>/tests/unit/ui-core-contract\\.test\\.tsx$',
 ];
 
