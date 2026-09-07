@@ -7,6 +7,7 @@ import type {
   AuthSkeletonProps,
   ButtonLinkTarget,
   CustomTextField,
+  FieldRules,
   HeadingLevel,
   IntegrationLogo,
   ItemRowMethod,
@@ -30,6 +31,12 @@ import type {
   UiCardListProps,
   UiCheckboxProps,
   UiContainerProps,
+  UiErrorBoundaryErrorHandler,
+  UiErrorBoundaryFallback,
+  UiErrorBoundaryFallbackRender,
+  UiErrorBoundaryProps,
+  UiErrorBoundaryReset,
+  UiErrorBoundaryState,
   UiFileUploadConstraints,
   UiFileUploadInputProps,
   UiFilterChipProps,
@@ -73,6 +80,9 @@ import type {
   UiTypographyProps,
   UiUploadStatus,
 } from '../../src/components';
+
+import firstOf from './utils/first-of';
+import nthOf from './utils/nth-of';
 
 // Story 5.3 (#33) — drift guard for the export contract
 // (`specs/planning-artifacts/export-contract.md`, rules R1-R5).
@@ -157,20 +167,23 @@ function tableCells(line: string): string[] {
 
 /** `` `A`, `B` `` → `['A', 'B']`; the em-dash placeholder → `[]`. */
 function backtickedList(cell: string): string[] {
-  return [...cell.matchAll(/`([^`]+)`/g)].map(match => match[1]);
+  return [...cell.matchAll(/`([^`]+)`/g)].map(match => nthOf(match, 1));
 }
 
 function isRegisterRow(cells: string[]): boolean {
-  return cells.length === REGISTER_COLUMN_COUNT && /^`[a-z0-9-]+`$/.test(cells[0]);
+  return cells.length === REGISTER_COLUMN_COUNT && /^`[a-z0-9-]+`$/.test(nthOf(cells, 0));
 }
 
+// Every index read below is guarded by `isRegisterRow`, which pins the cell
+// count; `nthOf` states that once and throws loudly if the shape ever changes,
+// rather than silently reading a missing cell as ''.
 function toRegisterRow(cells: string[]): RegisterRow {
   return {
-    module: backtickedList(cells[0])[0],
-    values: backtickedList(cells[1]),
-    types: backtickedList(cells[2]),
-    status: cells[3],
-    reason: cells[4],
+    module: firstOf(backtickedList(nthOf(cells, 0))),
+    values: backtickedList(nthOf(cells, 1)),
+    types: backtickedList(nthOf(cells, 2)),
+    status: nthOf(cells, 3),
+    reason: nthOf(cells, 4),
   };
 }
 
@@ -224,8 +237,8 @@ function barrelTypeExports(): Map<string, string[]> {
   barrelStatements().forEach(statement => {
     const match: RegExpMatchArray | null = statement.match(TYPE_REEXPORT);
     if (match === null) return;
-    const module: string = match[2].split('/')[0];
-    found.set(module, [...(found.get(module) ?? []), ...splitNames(match[1])]);
+    const module: string = firstOf(nthOf(match, 2).split('/'));
+    found.set(module, [...(found.get(module) ?? []), ...splitNames(nthOf(match, 1))]);
   });
   return found;
 }
@@ -244,7 +257,7 @@ function inlineTypeSpecifiers(): string[] {
   return barrelStatements()
     .map(statement => statement.match(VALUE_REEXPORT))
     .filter((match): match is RegExpMatchArray => match !== null)
-    .flatMap(match => splitNames(match[1]))
+    .flatMap(match => splitNames(nthOf(match, 1)))
     .filter(name => /^type\s/.test(name));
 }
 
@@ -271,6 +284,7 @@ type PublicTypeSurface = [
   Named<AuthSkeletonProps>,
   Named<ButtonLinkTarget>,
   Named<CustomTextField<{ field: string }>>,
+  Named<FieldRules<{ field: string }>>,
   Named<HeadingLevel>,
   Named<IntegrationLogo>,
   Named<ItemRowMethod>,
@@ -294,6 +308,12 @@ type PublicTypeSurface = [
   Named<UiCardListProps>,
   Named<UiCheckboxProps>,
   Named<UiContainerProps>,
+  Named<UiErrorBoundaryErrorHandler>,
+  Named<UiErrorBoundaryFallback>,
+  Named<UiErrorBoundaryFallbackRender>,
+  Named<UiErrorBoundaryProps>,
+  Named<UiErrorBoundaryReset>,
+  Named<UiErrorBoundaryState>,
   Named<UiFileUploadConstraints>,
   Named<UiFileUploadInputProps>,
   Named<UiFilterChipProps>,
@@ -337,7 +357,7 @@ type PublicTypeSurface = [
   Named<UiTypographyProps>,
   Named<UiUploadStatus>,
 ];
-const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 69;
+const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 76;
 
 describe('export contract integrity (Story 5.3, #33)', () => {
   describe('A — the register covers the module tree (R1, R4)', () => {
@@ -471,10 +491,17 @@ describe('export contract integrity (Story 5.3, #33)', () => {
       expect(manifest.types).toBe('./build/index.d.ts');
     });
 
-    it('maps the root and stylesheet subpath exports to the same build output', () => {
+    // `toEqual`, not a subset match: a subpath added without a register entry is
+    // a new public entry point, and this assertion is what makes that a review
+    // decision rather than a silent one. `./*` is the per-component subpath
+    // Story 5.1 published; `build.config.mjs` derives its declarations from the
+    // barrel's own names, so it reaches no type the barrel does not re-export.
+    it('maps the root, per-component and stylesheet subpaths to the build output', () => {
       expect(manifest.exports).toEqual({
         '.': { types: './build/index.d.ts', import: './build/index.mjs' },
         './styles.css': './build/index.css',
+        './package.json': './package.json',
+        './*': { types: './build/*.d.ts', import: './build/*.mjs' },
       });
     });
 

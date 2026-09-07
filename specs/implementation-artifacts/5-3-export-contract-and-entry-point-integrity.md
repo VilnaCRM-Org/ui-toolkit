@@ -21,8 +21,11 @@ Close the three export-integrity obligations `epics.md:705-726` places on this s
 2. **AC-2 — contract consistency.** An exported component whose prop type is not exported is not
    consumable: an application team cannot type a wrapper, a `props` variable, or a story fixture
    without reaching into `@vilnacrm/ui-toolkit/src/...`, which the package's `exports` map does not
-   permit. 40 component modules own a `types.ts`; **11** export their types from the barrel. This
-   story states the export-contract rule, applies it to the whole delivered set, and records every
+   permit. 41 component modules own a `types.ts`; on the `main` this branch now sits on, every one
+   except `ui-card-item` (internal) and `ui-footer` already exports its types from the barrel —
+   Stories 5.1 and 5.2 landed most of that surface as they went. This story states the
+   export-contract rule, closes the remainder (`ui-footer`'s two types, and `UiToolbar`'s
+   previously inline props), applies the rule to the whole delivered set, and records every
    deliberate exception with a traceable reason.
 3. **AC-3 — release-review evidence.** The evidence surface is
    `specs/planning-artifacts/export-contract.md`: one row per module under `src/components/`, its
@@ -35,8 +38,9 @@ Boundaries held deliberately:
 - **Story 5.1** owns `board-coverage-checklist.md` and its drift guard; this story cites it and
   never edits it.
 - **Story 5.2** owns `component-provenance.md` and `deviation-ledger.md`. This story writes to the
-  ledger in exactly one place — the `DEV-42` row, whose `Resolution` explicitly defers the export
-  decision to Story 5.3 — and changes nothing else, so
+  ledger in exactly one place — the `DEV-42` row, whose `Justification` deferred the export
+  decision to Story 5.3 ("the **export** decision is Story 5.3's, not this ledger's") — and changes
+  nothing else, so
   `tests/unit/component-provenance-traceability.test.ts` stays the ledger's guard.
 - **Story 5.4** owns the consolidated release-readiness report.
 - The Epic 1-4 quality-gate closure stories ([#27](https://github.com/VilnaCRM-Org/ui-toolkit/issues/27),
@@ -112,11 +116,12 @@ carries the same reason, so the ruling survives without depending on either prio
 - [x] **T1 — Register.** Author `specs/planning-artifacts/export-contract.md`: the R1-R5 rules,
       one row per directory under `src/components/`, and the exception table with reasons and
       tracking refs.
-- [x] **T2 — Barrel type surface (R2/R3).** Export the props type and its reachable types for every
-      publicly exported component that does not already do so. Where the props type exists but is
-      not exported from its owning module (`ButtonLinkTarget`, `UiContainerProps`, `LayoutProps`,
-      `UiBackToMainProps`), add the `export` keyword; where a component declares its props inline
-      (`UiToolbar`), name the type in the module and export it. No other source change.
+- [x] **T2 — Barrel type surface (R2/R3).** Publish the props type and its reachable types for
+      every exported component. Stories 5.1/5.2 landed most of this surface as they went; the
+      remainder is `ui-footer`, whose `UiFooterProps`/`UiFooterSocialLink` are exported by the
+      module but were not re-exported by the barrel, and `UiToolbar`, which declared its props
+      inline — the type is now named `UiToolbarProps` in the module and re-exported. No other
+      source change.
 - [x] **T3 — `ui-card-item` ruling.** Apply the ruling above: register row, and the `DEV-42`
       correction in `specs/planning-artifacts/deviation-ledger.md`. Re-run
       `tests/unit/component-provenance-traceability.test.ts` to confirm the ledger guard still
@@ -128,8 +133,10 @@ carries the same reason, so the ruling survives without depending on either prio
 - [x] **T5 — Drift guard.** Add `tests/unit/export-contract-integrity.test.ts` enforcing R1-R4 from
       the filesystem and the register, and bind the new type exports so a dropped `export type`
       fails the type-check rather than passing silently.
-- [x] **T6 — Gates.** Full local gate: `make lint`, `make lint-tsc`, `make test`, coverage,
-      `make lint-metrics`, `make lint-dup`, and the dependency-cruiser boundary check. Update
+- [x] **T6 — Gates.** Full local gate: `make lint` — which chains `lint-next`, `lint-tsc`,
+      `lint-md`, `format-check`, `lint-dep-ranges`, `lint-test-structure`, `lint-deps`
+      (dependency-cruiser), `lint-metrics` and `lint-ci-paths` — plus `make test-unit` with
+      coverage and `make test-integration`. Update
       `specs/implementation-artifacts/sprint-status.yaml` (`5-3-...`: `backlog` → `review`).
 
 ## Hand-offs recorded, owned elsewhere
@@ -174,12 +181,14 @@ _Instantiates `specs/implementation-artifacts/story-dod-template.md`._
 
 ### 5. Export changes
 
-- [x] Public **type** exports added across the delivered set per R2/R3; every addition is listed in
-      the register. **No value export is added, removed or renamed**, so the runtime key sweep in
+- [x] Public **type** exports completed across the delivered set per R2/R3 — `UiFooterProps`,
+      `UiFooterSocialLink` and `UiToolbarProps` are the remainder after Stories 5.1/5.2 landed the
+      rest of the surface; every published name is listed in the register. **No value export is added, removed or renamed**, so the runtime key sweep in
       `tests/unit/components-index.test.ts` is unchanged and keeps passing as an independent check.
-- [x] No unintended export-surface change: the two R4 exceptions (`ui-card-item`,
+- [x] No unintended export-surface change: the R4 exceptions (`ui-card-item`,
       `ui-skeletons`/`ComposedSkeleton`) plus the internal-only modules (`app-theme`,
-      `field-controls`) are documented in the register with reasons.
+      `field-controls`, `ghost-overlay`, `radio-card-controls`, `theme-scope`) are documented in
+      the register with reasons.
 
 ### 6. Parity evidence
 
@@ -187,22 +196,19 @@ _Instantiates `specs/implementation-artifacts/story-dod-template.md`._
 
 ## Changed files
 
-| File                                                                                         | Change                                                                                                                                            |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `specs/implementation-artifacts/5-3-export-contract-and-entry-point-integrity.md`            | Added — this artifact.                                                                                                                            |
-| `specs/planning-artifacts/export-contract.md`                                                | Added — the export contract register (51 module rows, exceptions, type-export exclusions, entry-point chain).                                     |
-| `specs/planning-artifacts/deviation-ledger.md`                                               | `DEV-42` decided (`deferred-tracked` → `pending-ratification`) with the evidence below; roll-up counts and ratification register kept consistent. |
-| `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` | DoD compliance matrix: Story 5.3 row added, roll-up updated, as Story 5.2's guard requires.                                                       |
-| `specs/implementation-artifacts/sprint-status.yaml`                                          | `5-3-export-contract-and-entry-point-integrity`: `backlog` → `review`.                                                                            |
-| `src/components/index.ts`                                                                    | 46 `export type` additions (R2/R3). No value export added, removed or renamed.                                                                    |
-| `src/components/ui-action-icon-bar/types.ts`                                                 | `NeutralActionIconName` exported — it is named by the public `ActionIconName` union.                                                              |
-| `src/components/ui-back-to-main/index.tsx`                                                   | `UiBackToMainProps` exported.                                                                                                                     |
-| `src/components/ui-button/types.ts`                                                          | `ButtonLinkTarget` exported — it is named by `UiButtonProps.to`.                                                                                  |
-| `src/components/ui-card-list/types.ts`                                                       | `StaticImageSrc` re-exported — it is named by `UiCardItemData.imageSrc`.                                                                          |
-| `src/components/ui-container/index.tsx`                                                      | `UiContainerProps` exported.                                                                                                                      |
-| `src/components/layout/index.tsx`                                                            | `LayoutProps` exported.                                                                                                                           |
-| `src/components/ui-toolbar/index.tsx`                                                        | Inline `{ children }` props replaced by the exported `UiToolbarProps` interface; identical signature and render.                                  |
-| `tests/unit/export-contract-integrity.test.ts`                                               | Added — the R1-R5 drift guard, 20 assertions in five groups.                                                                                      |
+| File                                                                                         | Change                                                                                                                                                                                                                            |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `specs/implementation-artifacts/5-3-export-contract-and-entry-point-integrity.md`            | Added — this artifact.                                                                                                                                                                                                            |
+| `specs/planning-artifacts/export-contract.md`                                                | Added — the export contract register (55 module rows, exceptions, type-export exclusions, entry-point chain).                                                                                                                     |
+| `specs/planning-artifacts/deviation-ledger.md`                                               | `DEV-42` decided (`deferred-tracked` → `pending-ratification`) with the evidence below; roll-up counts and ratification register kept consistent.                                                                                 |
+| `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` | DoD compliance matrix: Story 5.3 row added, roll-up updated, as Story 5.2's guard requires.                                                                                                                                       |
+| `specs/implementation-artifacts/sprint-status.yaml`                                          | `5-3-export-contract-and-entry-point-integrity`: `backlog` → `review`.                                                                                                                                                            |
+| `src/components/index.ts`                                                                    | 2 `export type` re-exports added — `UiFooterProps`, `UiFooterSocialLink`, `UiToolbarProps` (R2/R3). No value export added, removed or renamed.                                                                                    |
+| `src/components/ui-card-list/types.ts`                                                       | Comment recording why `StaticImageSrc` is re-exported (`UiCardItemData.imageSrc` names it, and api-extractor flags a public type that names a non-exported one). The re-export itself already existed — no export-surface change. |
+| `src/components/ui-toolbar/index.tsx`                                                        | Inline `{ children }` props replaced by the exported `UiToolbarProps` interface; identical signature and render.                                                                                                                  |
+| `tests/unit/export-contract-integrity.test.ts`                                               | Added — the R1-R5 drift guard, 21 assertions in five groups.                                                                                                                                                                      |
+| `jest.mutation.config.ts`                                                                    | The new guard joins the barrel-importing structural guards excluded from the mutation tier — it asserts on names and files and can kill no mutant, so excluding it can only lower the score, never inflate it.                    |
+| `tests/unit/mutation-runner-scope.test.ts`                                                   | `STRUCTURAL_GUARD_FILES` extended in lockstep, with the justification recorded inline; the guard's no-other-barrel-importer rule stays fail-closed.                                                                               |
 
 ## Gate evidence
 

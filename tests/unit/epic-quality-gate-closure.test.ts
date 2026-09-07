@@ -3,6 +3,8 @@ import { join, resolve } from 'node:path';
 
 import * as publicComponents from '../../src/components';
 
+import nthOf from './utils/nth-of';
+
 // Stories 1.4, 2.6 and 3.6 (#27/#28/#29) — the epic quality-gate closure guard.
 // Each closure story pins its epic's delivered set to four machine-checked
 // surfaces: a Storybook story module, a behaviour-level unit suite, a public
@@ -76,10 +78,14 @@ interface GatedModule {
 
 /** `ui-select-with-search` → `UiSelectWithSearch` — the barrel naming rule. */
 function exportNameFor(module: string): string {
-  return module
-    .split('-')
-    .map(part => part[0].toUpperCase() + part.slice(1))
-    .join('');
+  return (
+    module
+      .split('-')
+      // `charAt` (not `[0]`) so the in-range read stays a `string` under
+      // `noUncheckedIndexedAccess`; both yield the same UTF-16 unit.
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('')
+  );
 }
 
 function gatedModules(gate: EpicGate): GatedModule[] {
@@ -165,7 +171,7 @@ function artifactBody(gate: EpicGate): string {
 /** Repo-relative `src/…` / `tests/…` / `specs/…` citations with line suffixes dropped. */
 function citedRepoPaths(text: string): string[] {
   return [...text.matchAll(/`((?:src|tests|specs)\/[^`\n]+)`/g)]
-    .map(match => match[1].replace(/:[\d,-]+$/, ''))
+    .map(match => nthOf(match, 1).replace(/:[\d,-]+$/, ''))
     .filter(path => !path.includes('…'));
 }
 

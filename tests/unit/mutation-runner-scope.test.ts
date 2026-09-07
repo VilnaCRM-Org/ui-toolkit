@@ -26,8 +26,18 @@ import jestMutationConfig from '../../jest.mutation.config';
 
 const REPO_ROOT: string = resolve(__dirname, '..', '..');
 
+// Widening this list is exactly the edit the header warns about, so each entry
+// has to earn its place: the suite must need the barrel (which makes it
+// "related" to every mutant) AND be unable to kill a mutant, so excluding it can
+// only ever lower the score. Stories 1.4/2.6/3.6 and 5.3 add the two Story-5
+// guards below; both read names, file paths and JSON manifests only — no suite
+// here renders a component or asserts on behaviour — and both need
+// `Object.keys(publicComponents)` at runtime to compare the register and the
+// epic delivered sets against the barrel's real export surface.
 const STRUCTURAL_GUARD_FILES: readonly string[] = [
   'tests/unit/components-index.test.ts',
+  'tests/unit/epic-quality-gate-closure.test.ts',
+  'tests/unit/export-contract-integrity.test.ts',
   'tests/unit/ui-core-contract.test.tsx',
 ];
 

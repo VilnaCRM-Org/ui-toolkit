@@ -46,8 +46,9 @@ Story coverage per the table above. Unit-test validation for render and core int
 | `ui-pagination`            | `tests/unit/ui-pagination.test.tsx`, `tests/unit/pagination-page-range.test.ts`                                                                         |
 
 The shared `field-controls` internals these components compose are covered by the six
-`field-controls` suites under `tests/unit/` (render input, field option, glyph, and the three
-ghost-overlay suites). The full run for this branch is recorded under
+`field-controls` suites under `tests/unit/` (render input, field label, field option, glyph, helper
+content and ghost completion), plus the two `ghost-overlay` suites covering the shared overlay
+module those fields mount. The full run for this branch is recorded under
 [Gate evidence](#gate-evidence).
 
 ## AC-2 — Export and contract consistency
