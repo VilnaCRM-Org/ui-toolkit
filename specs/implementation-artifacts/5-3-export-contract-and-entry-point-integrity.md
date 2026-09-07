@@ -24,9 +24,9 @@ Close the three export-integrity obligations `epics.md:705-726` places on this s
    permit. 41 component modules own a `types.ts`; on the `main` this branch now sits on, every one
    except `ui-card-item` (internal) and `ui-footer` already exports its types from the barrel —
    Stories 5.1 and 5.2 landed most of that surface as they went. This story states the
-   export-contract rule, closes the remainder (`ui-footer`'s two types, and `UiToolbar`'s
-   previously inline props), applies the rule to the whole delivered set, and records every
-   deliberate exception with a traceable reason.
+   export-contract rule, closes the remainder (`ui-footer`'s two types, `UiToolbar`'s previously
+   inline props, and `UiTextFieldForm`'s R2 name), applies the rule to the whole delivered set, and
+   records every deliberate exception with a traceable reason.
 3. **AC-3 — release-review evidence.** The evidence surface is
    `specs/planning-artifacts/export-contract.md`: one row per module under `src/components/`, its
    public value export, its public type exports, and — for a non-exported module — the exception
@@ -119,9 +119,11 @@ carries the same reason, so the ruling survives without depending on either prio
 - [x] **T2 — Barrel type surface (R2/R3).** Publish the props type and its reachable types for
       every exported component. Stories 5.1/5.2 landed most of this surface as they went; the
       remainder is `ui-footer`, whose `UiFooterProps`/`UiFooterSocialLink` are exported by the
-      module but were not re-exported by the barrel, and `UiToolbar`, which declared its props
-      inline — the type is now named `UiToolbarProps` in the module and re-exported. No other
-      source change.
+      module but were not re-exported by the barrel; `UiToolbar`, which declared its props inline —
+      the type is now named `UiToolbarProps` in the module and re-exported; and
+      `UiTextFieldForm`, which published its props only as `CustomTextField<T>` — R2's
+      `UiTextFieldFormProps<T>` is now exported as an **alias** of it, so the delivered name keeps
+      working and the module needs no R2 exception (PR #127 review). No other source change.
 - [x] **T3 — `ui-card-item` ruling.** Apply the ruling above: register row, and the `DEV-42`
       correction in `specs/planning-artifacts/deviation-ledger.md`. Re-run
       `tests/unit/component-provenance-traceability.test.ts` to confirm the ledger guard still
@@ -182,8 +184,10 @@ _Instantiates `specs/implementation-artifacts/story-dod-template.md`._
 ### 5. Export changes
 
 - [x] Public **type** exports completed across the delivered set per R2/R3 — `UiFooterProps`,
-      `UiFooterSocialLink` and `UiToolbarProps` are the remainder after Stories 5.1/5.2 landed the
-      rest of the surface; every published name is listed in the register. **No value export is added, removed or renamed**, so the runtime key sweep in
+      `UiFooterSocialLink`, `UiToolbarProps` and `UiTextFieldFormProps` are the remainder after
+      Stories 5.1/5.2 landed the rest of the surface; every published name is listed in the
+      register. Only `ui-breakpoints` and `ui-color-theme` remain R2-exempt, and neither owns an
+      `index.tsx` to have props at all. **No value export is added, removed or renamed**, so the runtime key sweep in
       `tests/unit/components-index.test.ts` is unchanged and keeps passing as an independent check.
 - [x] No unintended export-surface change: the R4 exceptions (`ui-card-item`,
       `ui-skeletons`/`ComposedSkeleton`) plus the internal-only modules (`app-theme`,
@@ -203,8 +207,9 @@ _Instantiates `specs/implementation-artifacts/story-dod-template.md`._
 | `specs/planning-artifacts/deviation-ledger.md`                                               | `DEV-42` decided (`deferred-tracked` → `pending-ratification`) with the evidence below; roll-up counts and ratification register kept consistent.                                                                                 |
 | `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` | DoD compliance matrix: Story 5.3 row added, roll-up updated, as Story 5.2's guard requires.                                                                                                                                       |
 | `specs/implementation-artifacts/sprint-status.yaml`                                          | `5-3-export-contract-and-entry-point-integrity`: `backlog` → `review`.                                                                                                                                                            |
-| `src/components/index.ts`                                                                    | 2 `export type` re-exports added — `UiFooterProps`, `UiFooterSocialLink`, `UiToolbarProps` (R2/R3). No value export added, removed or renamed.                                                                                    |
+| `src/components/index.ts`                                                                    | 3 `export type` re-exports added — `UiFooterProps`, `UiFooterSocialLink`, `UiToolbarProps`, `UiTextFieldFormProps` (R2/R3). No value export added, removed or renamed.                                                            |
 | `src/components/ui-card-list/types.ts`                                                       | Comment recording why `StaticImageSrc` is re-exported (`UiCardItemData.imageSrc` names it, and api-extractor flags a public type that names a non-exported one). The re-export itself already existed — no export-surface change. |
+| `src/components/ui-text-field-form/types.ts`                                                 | `UiTextFieldFormProps<T>` added as an alias of the delivered `CustomTextField<T>`, so R2's conventional name exists without renaming the contract consumers already use (PR #127 review).                                         |
 | `src/components/ui-toolbar/index.tsx`                                                        | Inline `{ children }` props replaced by the exported `UiToolbarProps` interface; identical signature and render.                                                                                                                  |
 | `tests/unit/export-contract-integrity.test.ts`                                               | Added — the R1-R5 drift guard, 21 assertions in five groups.                                                                                                                                                                      |
 | `jest.mutation.config.ts`                                                                    | The new guard joins the barrel-importing structural guards excluded from the mutation tier — it asserts on names and files and can kill no mutant, so excluding it can only lower the score, never inflate it.                    |
@@ -234,7 +239,7 @@ marked as such; `node ./build.config.mjs` and `make package` were run in the rea
 The drift guard was verified to bite, not merely to pass: deleting the `ui-link` row from
 `specs/planning-artifacts/export-contract.md` turns 21/21 green into `4 failed, 17 passed` — A1
 (one row per module directory), C1 (barrel runtime surface), D2 (records every type the barrel
-re-exports, reporting `UiLinkProps`) and D7 (bound type surface, 75 against the pinned 76) all fire.
+re-exports, reporting `UiLinkProps`) and D7 (bound type surface, 76 against the pinned 77) all fire.
 The row was restored and the suite re-verified at 21/21.
 
 ### Entry-point integrity (T4)
@@ -253,5 +258,5 @@ The chain resolves end to end. The defect this story surfaced was landed ahead o
    `UiCardItemData.imageSrc`) but not published by the entry point, so a consumer could use those
    props yet never name their operand types. Both were exported through their owning modules before
    this branch was replayed onto `main`; what this story adds is the rule that keeps them exported
-   and the guard that binds them. The rollup is warning-free and `build/index.d.ts` publishes all 76
+   and the guard that binds them. The rollup is warning-free and `build/index.d.ts` publishes all 77
    registered type names.

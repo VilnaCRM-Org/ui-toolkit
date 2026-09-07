@@ -75,6 +75,7 @@ import type {
   UiSkeletonWidgetProps,
   UiStatusBadgeProps,
   UiTaskCardProps,
+  UiTextFieldFormProps,
   UiToolbarProps,
   UiTooltipProps,
   UiTypographyProps,
@@ -111,13 +112,14 @@ const COMPONENT_ENTRY: string = 'index.tsx';
 const MODULE_ENTRIES: string[] = [COMPONENT_ENTRY, 'index.ts'];
 
 // R2 asks every exported component for the props type its directory name
-// implies (`ui-card-list` → `UiCardListProps`). These three exported modules
+// implies (`ui-card-list` → `UiCardListProps`). These two exported modules
 // publish no such name, each for a stated reason, so the register rather than
-// the naming convention carries their contract.
+// the naming convention carries their contract. Neither owns an `index.tsx`, so
+// the R2 assertion below would skip them anyway; they are listed so the register
+// still has to state why, which the assertion after it checks.
 const PROPS_EXEMPT: Record<string, string> = {
   'ui-breakpoints': 'breakpoint token module — exports theme values, takes no props',
   'ui-color-theme': 'colour token module — exports theme values, takes no props',
-  'ui-text-field-form': 'publishes the generic `CustomTextField<T>` instead of a `Props` name',
 };
 
 // R3 — internal-only types: they appear in an internal child signature, never in
@@ -352,12 +354,13 @@ type PublicTypeSurface = [
   Named<UiSkeletonWidgetProps>,
   Named<UiStatusBadgeProps>,
   Named<UiTaskCardProps>,
+  Named<UiTextFieldFormProps<{ field: string }>>,
   Named<UiToolbarProps>,
   Named<UiTooltipProps>,
   Named<UiTypographyProps>,
   Named<UiUploadStatus>,
 ];
-const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 76;
+const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 77;
 
 describe('export contract integrity (Story 5.3, #33)', () => {
   describe('A — the register covers the module tree (R1, R4)', () => {

@@ -123,7 +123,7 @@ export {
   websiteBreakpointsTheme,
 } from './ui-breakpoints';
 export { default as UiTextFieldForm } from './ui-text-field-form';
-export type { CustomTextField, FieldRules } from './ui-text-field-form/types';
+export type { CustomTextField, FieldRules, UiTextFieldFormProps } from './ui-text-field-form/types';
 export { default as UiTooltip } from './ui-tooltip';
 export type { UiTooltipProps } from './ui-tooltip/types';
 export { default as UiErrorBoundary } from './ui-error-boundary';
