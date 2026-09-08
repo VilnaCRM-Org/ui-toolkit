@@ -393,6 +393,14 @@ describe('UiSelectWithSearch — ghost accept closes the popup', () => {
 
     await user.tab();
 
+    // The accept committed a value, so the field now mounts its clear x — and
+    // this control puts that x in the tab order (DEV-63), so it is the field's
+    // own next stop. Landing on it is what proves the second Tab was not
+    // swallowed by the ghost a second time.
+    expect(screen.getByRole('button', { name: 'Очистити Kyiv' })).toHaveFocus();
+
+    await user.tab();
+
     expect(screen.getByRole('link', { name: 'after' })).toHaveFocus();
   });
 });
