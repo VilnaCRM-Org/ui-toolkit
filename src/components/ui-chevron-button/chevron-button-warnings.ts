@@ -1,3 +1,5 @@
+import { hasText } from '../field-controls';
+
 import type { UiChevronButtonProps } from './types';
 
 const BLANK_LABEL_WARNING: string =
@@ -7,5 +9,5 @@ const BLANK_LABEL_WARNING: string =
 
 /** The dev-only accessible-name warning, or null when the label is healthy. */
 export default function chevronButtonWarning(props: UiChevronButtonProps): string | null {
-  return props.label?.trim() ? null : BLANK_LABEL_WARNING;
+  return hasText(props.label) ? null : BLANK_LABEL_WARNING;
 }

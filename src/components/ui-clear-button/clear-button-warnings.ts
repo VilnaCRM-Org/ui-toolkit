@@ -1,3 +1,5 @@
+import { hasText } from '../field-controls';
+
 import type { UiClearButtonProps } from './types';
 
 const BLANK_LABEL_WARNING: string =
@@ -10,5 +12,5 @@ export default function clearButtonWarning(props: UiClearButtonProps): string | 
   if (props.label == null) {
     return null;
   }
-  return props.label.trim() ? null : BLANK_LABEL_WARNING;
+  return hasText(props.label) ? null : BLANK_LABEL_WARNING;
 }

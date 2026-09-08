@@ -1,3 +1,5 @@
+import { hasText } from '../field-controls';
+
 import type { UiCopyFieldProps } from './types';
 
 const BLANK_VALUE_WARNING: string =
@@ -11,7 +13,7 @@ const BLANK_COPY_LABEL_WARNING: string =
 // A blank/whitespace `value` leaves the chip with nothing to copy AND nothing
 // to name itself with beyond the hidden verb.
 function blankValueWarning(props: UiCopyFieldProps): string | null {
-  return props.value?.trim() ? null : BLANK_VALUE_WARNING;
+  return hasText(props.value) ? null : BLANK_VALUE_WARNING;
 }
 
 // A nullish `copyLabel` is not an override — it falls back to the default
@@ -20,7 +22,7 @@ function copyLabelWarning(props: UiCopyFieldProps): string | null {
   if (props.copyLabel == null) {
     return null;
   }
-  return props.copyLabel.trim() ? null : BLANK_COPY_LABEL_WARNING;
+  return hasText(props.copyLabel) ? null : BLANK_COPY_LABEL_WARNING;
 }
 
 /** The first applicable accessible-name warning, or null when all is well. */

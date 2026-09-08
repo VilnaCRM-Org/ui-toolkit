@@ -1,3 +1,5 @@
+import { hasText } from '../field-controls';
+
 import type { UiOptionCardProps } from './types';
 
 const UNWIRED_SELECTED_WARNING: string =
@@ -23,10 +25,10 @@ function unwiredSelectedWarning(props: UiOptionCardProps): string | null {
 // Dev-only backstop for runtime data the strict prop types forbid but CMS/API
 // payloads produce anyway.
 function contentWarning(props: UiOptionCardProps): string | null {
-  if (!props.label?.trim()) {
+  if (!hasText(props.label)) {
     return BLANK_LABEL_WARNING;
   }
-  return !props.valueLabel?.trim() ? BLANK_VALUE_LABEL_WARNING : null;
+  return hasText(props.valueLabel) ? null : BLANK_VALUE_LABEL_WARNING;
 }
 
 /** The first applicable dev warning, or null when all is well. */

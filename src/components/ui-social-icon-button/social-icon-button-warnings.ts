@@ -1,3 +1,5 @@
+import { hasText } from '../field-controls';
+
 import type { UiSocialIconButtonProps } from './types';
 
 const BLANK_LABEL_WARNING: string =
@@ -13,7 +15,7 @@ function blankLabelWarning(props: UiSocialIconButtonProps): string | null {
   if (props.label == null) {
     return null;
   }
-  return props.label.trim() ? null : BLANK_LABEL_WARNING;
+  return hasText(props.label) ? null : BLANK_LABEL_WARNING;
 }
 
 function hrefAndActivateWarning(props: UiSocialIconButtonProps): string | null {
