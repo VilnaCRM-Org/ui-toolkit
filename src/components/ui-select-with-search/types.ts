@@ -36,6 +36,13 @@ export interface UiSelectWithSearchProps {
    * a Tab sequence. `undefined` (the default) opts out entirely and leaves the
    * DOM unchanged.
    */
+  /**
+   * Accessible name for the clear ×, which this control puts in the tab order
+   * (DEV-63). Defaults to `'Очистити'`; when a value is selected the selected
+   * option's label is appended, so several selects on one form do not present
+   * identically-named controls.
+   */
+  clearLabel?: string | undefined;
   loading?: boolean | undefined;
   /**
    * Loading copy: the popup row while options are in flight, and the text the

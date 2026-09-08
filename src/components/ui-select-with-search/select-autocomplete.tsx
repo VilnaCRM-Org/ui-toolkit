@@ -15,10 +15,14 @@ import type { SelectField } from './use-select-field';
 
 const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
 
+/** Default accessible name for the clear × (see `clearText`). */
+const DEFAULT_CLEAR_LABEL: string = 'Очистити';
+
 // While a fetch is in flight the spinner takes the clear ×'s slot, so the ×
-// itself is hidden. Safe rather than merely tidy: MUI gives the clear button
-// `tabIndex={-1}`, so it never sat in the tab order and hiding it cannot break a
-// Tab sequence. Layered UNDER the consumer `sx` so a consumer override still wins.
+// itself is hidden. This control puts that × in the tab order (see
+// CLEAR_SLOT_PROPS below), so hiding it CAN strand focus: `useClearFocusGuard`
+// moves focus to the field's own input when a fetch starts while the × holds it
+// (SC 2.4.3). Layered UNDER the consumer `sx` so a consumer override still wins.
 const HIDE_CLEAR_SX: SystemStyleObject<Theme> = {
   '& .MuiAutocomplete-clearIndicator': { display: 'none' },
 };
@@ -42,10 +46,21 @@ const CLEAR_SLOT_PROPS = { clearIndicator: { tabIndex: 0 } } as const;
 type SelectSlotProps = ListboxSlotProps &
   typeof CLEAR_SLOT_PROPS & { popper?: typeof OPEN_FIELD_POPPER };
 
-// MUI names the button a bare "Clear". With more than one select on a form that
-// is several identically-named controls, so the name says what it clears.
-function clearText(value: UiSelectWithSearchOption | null | undefined): string {
-  return value ? `Clear ${value.label}` : 'Clear';
+/**
+ * MUI names the button a bare "Clear". With more than one select on a form that
+ * is several identically-named controls, so the name says what it clears.
+ *
+ * The default is Ukrainian, like every other built-in string this kit ships
+ * (`Копіювати`, `Завантаження`); `clearLabel` overrides it for a consumer
+ * running another locale, matching the `copyLabel`/`label` props the sibling
+ * controls already expose.
+ */
+function clearText(
+  value: UiSelectWithSearchOption | null | undefined,
+  clearLabel: string | undefined
+): string {
+  const base: string = clearLabel ?? DEFAULT_CLEAR_LABEL;
+  return value ? `${base} ${value.label}` : base;
 }
 
 // Demo-only: the frozen popper override keys off the RAW `control.open` (never
@@ -99,7 +114,7 @@ export function SelectAutocomplete(props: Readonly<SelectAutocompleteProps>): Re
       onClose={field.handleClose}
       disablePortal={control.disablePortal}
       renderInput={field.renderInput}
-      clearText={clearText(control.value)}
+      clearText={clearText(control.value, control.clearLabel)}
       slotProps={selectSlotProps(control, field)}
     />
   );

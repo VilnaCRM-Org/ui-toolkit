@@ -459,3 +459,50 @@ describe('UiSelectWithSearch — clearing a selection', () => {
     expect(combobox).toHaveFocus();
   });
 });
+
+describe('UiSelectWithSearch — clear affordance and the busy focus guard', () => {
+  it('puts the clear button in the tab order and names it after the selection', () => {
+    render(<UiSelectWithSearch options={options} value={options[0]} onChange={noop} />);
+
+    const clear: HTMLElement = screen.getByRole('button', { name: 'Очистити Kyiv' });
+    expect(clear).toHaveAttribute('tabindex', '0');
+  });
+
+  it('names the clear button with the consumer override when one is given', () => {
+    render(
+      <UiSelectWithSearch options={options} value={options[0]} onChange={noop} clearLabel="Clear" />
+    );
+
+    expect(screen.getByRole('button', { name: 'Clear Kyiv' })).toBeInTheDocument();
+  });
+
+  it('keeps focus in the field when a fetch starts while the clear button holds it', () => {
+    // The busy paint hides the clear x with `display: none`, and a focused
+    // element hidden that way drops `document.activeElement` to <body>. The
+    // guard must move focus to the field's own input instead (SC 2.4.3).
+    const { rerender } = render(
+      <UiSelectWithSearch options={options} value={options[0]} onChange={noop} loading={false} />
+    );
+
+    const clear: HTMLElement = screen.getByRole('button', { name: 'Очистити Kyiv' });
+    clear.focus();
+    expect(clear).toHaveFocus();
+
+    rerender(<UiSelectWithSearch options={options} value={options[0]} onChange={noop} loading />);
+
+    expect(screen.getByRole('combobox')).toHaveFocus();
+  });
+
+  it('leaves focus alone when a fetch starts and the clear button is not focused', () => {
+    const { rerender } = render(
+      <UiSelectWithSearch options={options} value={options[0]} onChange={noop} loading={false} />
+    );
+
+    const combobox: HTMLElement = screen.getByRole('combobox');
+    combobox.focus();
+
+    rerender(<UiSelectWithSearch options={options} value={options[0]} onChange={noop} loading />);
+
+    expect(combobox).toHaveFocus();
+  });
+});

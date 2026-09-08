@@ -6,6 +6,7 @@ import { FieldLabel, hasText, srOnlySx } from '../field-controls';
 import { SelectAutocomplete } from './select-autocomplete';
 import selectTheme from './theme';
 import type { UiSelectWithSearchProps } from './types';
+import { useClearFocusGuard } from './use-clear-focus-guard';
 import { useSelectField } from './use-select-field';
 import { useSelectAccessibilityWarnings } from './use-warnings';
 
@@ -14,12 +15,13 @@ const FIELD_STACK_SX = { display: 'flex', flexDirection: 'column' } as const;
 function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.ReactElement {
   useSelectAccessibilityWarnings(props);
   const field: ReturnType<typeof useSelectField> = useSelectField(props);
+  const rootRef: React.RefObject<HTMLDivElement | null> = useClearFocusGuard(props.loading);
   const generatedId: string = React.useId();
   const fieldId: string = props.id ?? generatedId;
 
   return (
     <ThemeProvider theme={selectTheme}>
-      <Box sx={FIELD_STACK_SX}>
+      <Box ref={rootRef} sx={FIELD_STACK_SX}>
         {hasText(props.label) && (
           <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
             {props.label}
