@@ -24,7 +24,7 @@ const OPTIONS: UiSelectWithSearchOption[] = [
 // can still overflow the byte check.
 const COPY: string = 'Вантажимо';
 
-const MULTI: UiMultiSelectOption[] = [
+const MULTI: [UiMultiSelectOption, UiMultiSelectOption] = [
   { label: 'Kyiv', value: 'kyiv' },
   { label: 'Lviv', value: 'lviv' },
 ];

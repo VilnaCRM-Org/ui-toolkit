@@ -46,9 +46,9 @@ const HOVER_SHADOW: string = '0 8px 15px rgba(49, 59, 67, 0.14)';
 const FOCUS_RING: string = `inset 0 0 0 2px ${DARK_PRIMARY}`;
 
 interface CardOverrides {
-  label?: string;
-  valueLabel?: string;
-  selected?: boolean;
+  label?: string | undefined;
+  valueLabel?: string | undefined;
+  selected?: boolean | undefined;
   onSelect?: () => void;
   disabled?: boolean;
   id?: string;
@@ -103,7 +103,9 @@ function layersOf(interactive: boolean, sx: UiOptionCardProps['sx']): SxLayers {
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  const [layer] = layersOf(interactive, undefined);
+  expect(layer).toBeDefined();
+  return layer as StyleObject;
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -208,8 +210,9 @@ describe('UiOptionCard — static (unwired) card', () => {
   it('keeps the identical content tree, including the consumer id and lang', () => {
     render(cardWith({ id: 'static-card', lang: 'en' }));
 
-    const root: Element = nodesMatching('#static-card')[0];
-    expect(root.tagName).toBe('DIV');
+    const [root] = nodesMatching('#static-card');
+    expect(root).toBeDefined();
+    expect((root as Element).tagName).toBe('DIV');
     expect(root).toHaveAttribute('lang', 'en');
     expect(screen.getByText(LABEL)).toBeInTheDocument();
     expect(screen.getByText(VALUE_LABEL)).toBeInTheDocument();
@@ -521,8 +524,9 @@ describe('UiOptionCard — style assembly (styles.ts)', () => {
     expect(base.cursor).toBe('pointer');
     expect((base['&[aria-disabled="true"]'] as StyleObject).cursor).toBe('default');
 
-    const hoverKey: string = keysMatching(base, ':hover')[0];
-    const hover: StyleObject = base[hoverKey] as StyleObject;
+    const [hoverKey] = keysMatching(base, ':hover');
+    expect(hoverKey).toBeDefined();
+    const hover: StyleObject = base[hoverKey as string] as StyleObject;
     expect(hover.borderColor).toBe(GREY400);
     expect(hover.boxShadow).toBe(HOVER_SHADOW);
 

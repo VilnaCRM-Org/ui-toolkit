@@ -34,20 +34,20 @@ export interface UiChevronButtonProps {
   /** Accessible name (`aria-label`); the button's only name channel. */
   label: string;
   /** Which way the glyph points; purely visual. Defaults to `'right'`. */
-  direction?: 'left' | 'right';
+  direction?: 'left' | 'right' | undefined;
   /**
    * Fires on activation. Presence wires the button as a native
    * `<button type="button">`; without it the button is static, non-interactive
    * paint.
    */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /**
    * Disabled status, via the repo `aria-disabled` boundary: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover/active recipes
    * are suppressed and `onActivate` never fires. Native `disabled` is never set.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the button; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

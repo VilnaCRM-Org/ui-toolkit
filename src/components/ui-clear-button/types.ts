@@ -34,23 +34,23 @@ import type { SxProps, Theme } from '@mui/material';
  */
 export interface UiClearButtonProps {
   /** Visible label; defaults to `'Очистити фільтри'`. Names the button. */
-  label?: string;
+  label?: string | undefined;
   /**
    * Requests the clear action. Bare and payload-free: the button has exactly one
    * state-change path in exactly one direction. Presence makes the button wired;
    * without it the button is static content.
    */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"` and `onActivate` never
    * fires. Native `disabled` is never set. Figma ships a disabled column, so it
    * is painted: both the label and the glyph swap to grey300.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the button; lands on the root so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the label's language differs from the page's (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

@@ -35,7 +35,7 @@ const DARK_PRIMARY: string = '#1A1C1E';
 const DARK_SECONDARY: string = '#1B2327';
 
 interface ClearButtonOverrides {
-  label?: string;
+  label?: string | undefined;
   onActivate?: () => void;
   disabled?: boolean;
   id?: string;
@@ -69,7 +69,9 @@ function nodesMatching(selector: string): Element[] {
 }
 
 function glyphBox(): Element {
-  return nodesMatching(`.${GLYPH_CLASS}`)[0];
+  const [box] = nodesMatching(`.${GLYPH_CLASS}`);
+  expect(box).toBeDefined();
+  return box as Element;
 }
 
 // Every hook that would make something else in the button focusable. Exactly
@@ -111,7 +113,9 @@ function layersOf(interactive: boolean, sx: UiClearButtonProps['sx']): SxLayers 
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  const [layer] = layersOf(interactive, undefined);
+  expect(layer).toBeDefined();
+  return layer as StyleObject;
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -161,7 +165,7 @@ describe('UiClearButton — wired button semantics', () => {
     render(buttonWith({ onActivate: noop }));
 
     const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
     expect(box.tagName).toBe('SPAN');
     expect(box).not.toHaveAttribute('role');
     expect(box).not.toHaveAttribute('tabindex');
@@ -205,7 +209,7 @@ describe('UiClearButton — static (unwired) button', () => {
   it('keeps the identical content tree, × included, with the consumer id and lang', () => {
     render(buttonWith({ id: 'static-clear', lang: 'ru' }));
 
-    const root: Element = nodesMatching('#static-clear')[0];
+    const root: Element = nodesMatching('#static-clear')[0] as Element;
     expect(root.tagName).toBe('SPAN');
     expect(root).toHaveAttribute('lang', 'ru');
     expect(root.contains(glyphBox())).toBe(true);
@@ -473,7 +477,7 @@ describe('UiClearButton — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(buttonWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = nodesMatching('#styled')[0] as Element;
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -581,7 +585,7 @@ describe('clearButtonSx — style assembly (pure, mutation-killing)', () => {
 
     expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"])']);
     expect(base['&:hover']).toBeUndefined();
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(base[hoverKeys[0] as string]).toEqual({
       color: DARK_PRIMARY,
       [`& .${GLYPH_CLASS}`]: { color: DARK_PRIMARY },
     });
@@ -592,7 +596,7 @@ describe('clearButtonSx — style assembly (pure, mutation-killing)', () => {
     const activeKeys: string[] = keysMatching(base, ':active');
 
     expect(activeKeys).toEqual(['&:active:not([aria-disabled="true"])']);
-    expect(base[activeKeys[0]]).toEqual({
+    expect(base[activeKeys[0] as string]).toEqual({
       color: DARK_SECONDARY,
       [`& .${GLYPH_CLASS}`]: { color: DARK_SECONDARY },
     });
@@ -713,8 +717,8 @@ describe('ClearGlyph — the leading × (pure recipe)', () => {
   it('renders one decorative 18px svg whose stroke follows currentColor', () => {
     render(<ClearGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0];
-    const path: Element = nodesMatching('svg path')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
+    const path: Element = nodesMatching('svg path')[0] as Element;
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '18');

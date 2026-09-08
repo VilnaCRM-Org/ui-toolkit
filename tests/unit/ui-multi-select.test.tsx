@@ -613,7 +613,9 @@ describe('UiMultiSelect — listbox and multi-selection', () => {
 // each — because a merged node would either drop a chip message that lands during
 // a fetch or re-announce a stale one when the fetch settles.
 function selectionRegion(): HTMLElement {
-  return screen.getAllByRole('status')[0];
+  const [region] = screen.getAllByRole('status');
+  expect(region).toBeDefined();
+  return region as HTMLElement;
 }
 
 describe('UiMultiSelect — status announcements', () => {
@@ -871,7 +873,8 @@ describe('UiMultiSelect — trailing indicator alignment', () => {
   it('fixes the indicator row height so the chevron centres with or without the clear x', () => {
     const overrides: Record<string, Record<string, unknown>> = multiSelectTheme.components
       ?.MuiAutocomplete?.styleOverrides as unknown as Record<string, Record<string, unknown>>;
-    const endAdornment: Record<string, unknown> = overrides.endAdornment;
+    expect(overrides.endAdornment).toBeDefined();
+    const endAdornment: Record<string, unknown> = overrides.endAdornment as Record<string, unknown>;
 
     // `top`/`transform` pin the indicators to the FIRST chip row, so they do not
     // re-centre when chips wrap into a taller field. Because that pin measures

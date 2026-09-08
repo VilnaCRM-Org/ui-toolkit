@@ -64,7 +64,9 @@ function nodesMatching(selector: string): Element[] {
 }
 
 function glyphBox(): Element {
-  return nodesMatching(`.${ADD_BUTTON_GLYPH_CLASS}`)[0];
+  const [box] = nodesMatching(`.${ADD_BUTTON_GLYPH_CLASS}`);
+  expect(box).toBeDefined();
+  return box as Element;
 }
 
 const FOCUSABLE_SELECTOR: string =
@@ -89,7 +91,9 @@ function layersOf(interactive: boolean, sx: UiAddButtonProps['sx']): SxLayers {
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  const [layer] = layersOf(interactive, undefined);
+  expect(layer).toBeDefined();
+  return layer as StyleObject;
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -97,7 +101,9 @@ function keysMatching(base: StyleObject, fragment: string): string[] {
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  return base[keysMatching(base, fragment)[0]] as StyleObject;
+  const [key] = keysMatching(base, fragment);
+  expect(key).toBeDefined();
+  return base[key as string] as StyleObject;
 }
 
 describe('UiAddButton — wired button semantics', () => {
@@ -133,7 +139,7 @@ describe('UiAddButton — wired button semantics', () => {
   it('paints the label as a plain span carrying the class hook, label first', () => {
     render(buttonWith({ onActivate: noop }));
 
-    const label: Element = nodesMatching(`.${ADD_BUTTON_LABEL_CLASS}`)[0];
+    const label: Element = nodesMatching(`.${ADD_BUTTON_LABEL_CLASS}`)[0] as Element;
     expect(label.tagName).toBe('SPAN');
     expect(screen.getByText(LABEL)).toBe(label);
     expect(nodesMatching(`.${ADD_BUTTON_LABEL_CLASS}`)).toHaveLength(1);
@@ -145,7 +151,7 @@ describe('UiAddButton — wired button semantics', () => {
     render(buttonWith({ onActivate: noop }));
 
     const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
     expect(box.tagName).toBe('SPAN');
     expect(box).not.toHaveAttribute('role');
     expect(box).not.toHaveAttribute('tabindex');
@@ -188,7 +194,7 @@ describe('UiAddButton — static (unwired) button', () => {
   it('keeps the identical content tree, plus glyph included, with id and lang', () => {
     render(buttonWith({ id: 'static-add', lang: 'ru' }));
 
-    const root: Element = nodesMatching('#static-add')[0];
+    const root: Element = nodesMatching('#static-add')[0] as Element;
     expect(root.tagName).toBe('SPAN');
     expect(root).toHaveAttribute('lang', 'ru');
     expect(root.contains(glyphBox())).toBe(true);
@@ -395,7 +401,7 @@ describe('UiAddButton — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(buttonWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = nodesMatching('#styled')[0] as Element;
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -440,7 +446,10 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
 
     expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"])']);
     expect(base['&:hover']).toBeUndefined();
-    expect(base[hoverKeys[0]]).toEqual({ borderColor: GREY400, boxShadow: ADD_BUTTON_SHADOW });
+    expect(base[hoverKeys[0] as string]).toEqual({
+      borderColor: GREY400,
+      boxShadow: ADD_BUTTON_SHADOW,
+    });
   });
 
   it('gates :active on the same boundary — active border equals rest, LIGHTER than hover', () => {
@@ -448,7 +457,10 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
     const activeKeys: string[] = keysMatching(base, ':active');
 
     expect(activeKeys).toEqual(['&:active:not([aria-disabled="true"])']);
-    expect(base[activeKeys[0]]).toEqual({ borderColor: BRAND_GRAY, boxShadow: ADD_BUTTON_SHADOW });
+    expect(base[activeKeys[0] as string]).toEqual({
+      borderColor: BRAND_GRAY,
+      boxShadow: ADD_BUTTON_SHADOW,
+    });
   });
 
   it('pins the off-palette Figma drop shadow exactly, doubled from the 7.5px filter blur', () => {
@@ -569,8 +581,8 @@ describe('PlusGlyph — the trailing plus (pure recipe)', () => {
   it('renders one decorative 18px svg whose stroke follows currentColor', () => {
     render(<PlusGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0];
-    const path: Element = nodesMatching('svg path')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
+    const path: Element = nodesMatching('svg path')[0] as Element;
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '18');

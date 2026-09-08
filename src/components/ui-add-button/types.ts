@@ -28,22 +28,22 @@ import type { SxProps, Theme } from '@mui/material';
  */
 export interface UiAddButtonProps {
   /** Visible label, also the accessible name. Defaults to 'Додати стовпець'. */
-  label?: string;
+  label?: string | undefined;
   /**
    * Requests the add action. Bare and payload-free — presence is what makes
    * the button interactive; without it the button renders as static content.
    */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"` and `onActivate` never
    * fires. Native `disabled` is never set. Ignored on the static branch,
    * which carries no ARIA at all.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the button; lands on the root so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the label's language differs from the page's (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

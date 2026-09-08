@@ -52,23 +52,23 @@ export interface UiCopyFieldProps {
    * never to blank it out, which would leave a button whose name reads as a
    * static label (dev-warned).
    */
-  copyLabel?: string;
+  copyLabel?: string | undefined;
   /** Fired with `value` after a successful clipboard write. */
-  onCopy?: (value: string) => void;
+  onCopy?: ((value: string) => void) | undefined;
   /**
    * Fired with the failure reason when the clipboard write rejects, or when
    * `navigator.clipboard` is unavailable. The chip never throws on its own.
    */
-  onCopyError?: (error: unknown) => void;
+  onCopyError?: ((error: unknown) => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"`, the hover and active
    * recipes are suppressed and activation never fires.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the chip; lands on the `<button>` so focus can be re-resolved. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the code's language differs from the page's (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

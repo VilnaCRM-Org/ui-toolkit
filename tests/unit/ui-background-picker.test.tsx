@@ -63,7 +63,6 @@ const GREY400: string = '#D0D4D8';
 const GREY500: string = '#EAECEE';
 const GREY300: string = '#969B9D';
 const DARK_SECONDARY: string = '#1B2327';
-const DARK_PRIMARY: string = '#1A1C1E';
 const PRIMARY: string = '#1EAEFF';
 
 const IMG_SRC: string = 'data:image/png;base64,AAA=';
@@ -85,7 +84,7 @@ const GROUPS: BackgroundOptionGroup[] = [
 ];
 
 interface PickerOverrides {
-  groups?: BackgroundOptionGroup[];
+  groups?: BackgroundOptionGroup[] | undefined;
   label?: string;
   value?: string;
   onChange?: (id: string) => void;
@@ -281,7 +280,7 @@ describe('styles', () => {
 
 describe('backgroundPickerWarning', () => {
   function props(extra: Readonly<PickerOverrides>): UiBackgroundPickerProps {
-    return { groups: GROUPS, ...extra };
+    return { ...extra, groups: GROUPS };
   }
 
   it('is silent for a wired picker with no misconfiguration', () => {

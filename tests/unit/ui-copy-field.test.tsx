@@ -30,8 +30,6 @@ import mockConsoleWarn from './utils/mock-console-warn';
 // Silence them for the suite and keep a handle for the assertions.
 const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
 
-const noop: () => void = () => undefined;
-
 // The Figma Board A sample string, verbatim.
 const VALUE: string = '5POLGOPWQZFCCFEI';
 const SUFFIX: string = 'Копіювати';
@@ -52,8 +50,8 @@ const PRIMARY: string = '#1EAEFF';
 const WHITE: string = '#FFF';
 
 interface FieldOverrides {
-  value?: string;
-  copyLabel?: string;
+  value?: string | undefined;
+  copyLabel?: string | undefined;
   onCopy?: (value: string) => void;
   onCopyError?: (error: unknown) => void;
   disabled?: boolean;
@@ -90,7 +88,9 @@ function nodesMatching(selector: string): Element[] {
 }
 
 function glyphBox(): Element {
-  return nodesMatching(`.${COPY_FIELD_GLYPH_CLASS}`)[0];
+  const [box] = nodesMatching(`.${COPY_FIELD_GLYPH_CLASS}`);
+  expect(box).toBeDefined();
+  return box as Element;
 }
 
 // Every hook that would make something else in the chip focusable. Exactly
@@ -126,7 +126,9 @@ function layersOf(sx: UiCopyFieldProps['sx']): SxLayers {
 }
 
 function baseOf(): StyleObject {
-  return layersOf(undefined)[0];
+  const [layer] = layersOf(undefined);
+  expect(layer).toBeDefined();
+  return layer as StyleObject;
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -134,7 +136,9 @@ function keysMatching(base: StyleObject, fragment: string): string[] {
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  return base[keysMatching(base, fragment)[0]] as StyleObject;
+  const [key] = keysMatching(base, fragment);
+  expect(key).toBeDefined();
+  return base[key as string] as StyleObject;
 }
 
 // Records every node the forwarded callback ref is handed, attach and detach.
@@ -191,7 +195,7 @@ describe('UiCopyField — button semantics', () => {
   it('paints the value as a plain span carrying the class hook', () => {
     render(fieldWith({}));
 
-    const value: Element = nodesMatching(`.${COPY_FIELD_VALUE_CLASS}`)[0];
+    const value: Element = nodesMatching(`.${COPY_FIELD_VALUE_CLASS}`)[0] as Element;
     expect(value.tagName).toBe('SPAN');
     expect(screen.getByText(VALUE)).toBe(value);
     expect(nodesMatching(`.${COPY_FIELD_VALUE_CLASS}`)).toHaveLength(1);
@@ -201,7 +205,7 @@ describe('UiCopyField — button semantics', () => {
     render(fieldWith({}));
 
     const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
     expect(box.tagName).toBe('SPAN');
     expect(box).not.toHaveAttribute('role');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
@@ -512,7 +516,7 @@ describe('UiCopyField — focus and ref forwarding', () => {
     expect(nodesMatching('#copy-3')).toHaveLength(0);
 
     render(fieldWith({ id: 'copy-3' }));
-    const remounted: Element = nodesMatching('#copy-3')[0];
+    const remounted: Element = nodesMatching('#copy-3')[0] as Element;
     expect(remounted).toBe(field());
   });
 });
@@ -712,7 +716,7 @@ describe('copyFieldSx — style assembly (pure, mutation-killing)', () => {
     const hoverKeys: string[] = keysMatching(base, ':hover');
 
     expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"])']);
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(base[hoverKeys[0] as string]).toEqual({
       backgroundColor: WHITE,
       borderColor: GREY400,
       boxShadow: HOVER_SHADOW,
@@ -726,7 +730,7 @@ describe('copyFieldSx — style assembly (pure, mutation-killing)', () => {
     const activeKeys: string[] = keysMatching(base, ':active');
 
     expect(activeKeys).toEqual(['&:active:not([aria-disabled="true"])']);
-    expect(base[activeKeys[0]]).toEqual({
+    expect(base[activeKeys[0] as string]).toEqual({
       backgroundColor: WHITE,
       borderColor: GREY400,
       boxShadow: undefined,
@@ -757,7 +761,7 @@ describe('copyFieldSx — style assembly (pure, mutation-killing)', () => {
 
     expect(ringKeys).toEqual([FOCUS_SELECTORS]);
     expect(FOCUS_SELECTORS).toBe('&:focus-visible, &:focus-visible:not([aria-disabled="true"])');
-    expect(base[ringKeys[0]]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+    expect(base[ringKeys[0] as string]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
@@ -832,8 +836,8 @@ describe('CopyGlyph — the copy-02 icon (pure recipe)', () => {
   it('renders one decorative 20px svg whose stroke follows currentColor', () => {
     render(<CopyGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0];
-    const path: Element = nodesMatching('svg path')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
+    const path: Element = nodesMatching('svg path')[0] as Element;
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '20');

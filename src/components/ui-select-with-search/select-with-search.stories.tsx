@@ -33,6 +33,37 @@ export default meta;
 
 type Story = StoryObj<typeof UiSelectWithSearch>;
 
+// Hoisted so the busy story can reuse it by name: reading it back off the story
+// object types as `render?: … | undefined`, which `exactOptionalPropertyTypes`
+// refuses to assign to another story's own optional `render`.
+// UiSelectWithSearch is controlled, so a stateful wrapper persists the pick — without
+// it the value never updates, so Tab/arrow accept and option clicks appear to do
+// nothing and the transient input text clears on blur. Props are threaded explicitly
+// (the repo forbids prop-spreading); `aria-label` is kept so the label-less combobox
+// retains its accessible name.
+const renderSelectWithSearch: NonNullable<Story['render']> = function Render(
+  args
+): React.ReactElement {
+  const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(args.value ?? null);
+  // The component is fluid (fills its container); Figma "select с пошуком" sizes it in
+  // a 262px frame (node 448:25545), so the demo constrains it to that width — matching
+  // the figma-parity showcase board. maxWidth keeps it responsive on a narrow canvas.
+  return (
+    <div style={{ width: 262, maxWidth: '100%' }}>
+      <UiSelectWithSearch
+        options={args.options}
+        label={args.label}
+        aria-label={args['aria-label']}
+        placeholder={args.placeholder}
+        disabled={args.disabled}
+        loading={args.loading}
+        value={value}
+        onChange={setValue}
+      />
+    </div>
+  );
+};
+
 export const SelectWithSearch: Story = {
   args: {
     options,
@@ -40,31 +71,6 @@ export const SelectWithSearch: Story = {
     // assistive tech via `aria-label`, and the placeholder carries the prompt.
     'aria-label': 'Місто',
     placeholder: 'Оберіть місто',
-  },
-  // UiSelectWithSearch is controlled, so a stateful wrapper persists the pick — without
-  // it the value never updates, so Tab/arrow accept and option clicks appear to do
-  // nothing and the transient input text clears on blur. Props are threaded explicitly
-  // (the repo forbids prop-spreading); `aria-label` is kept so the label-less combobox
-  // retains its accessible name.
-  render: function Render(args): React.ReactElement {
-    const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(args.value ?? null);
-    // The component is fluid (fills its container); Figma "select с пошуком" sizes it in
-    // a 262px frame (node 448:25545), so the demo constrains it to that width — matching
-    // the figma-parity showcase board. maxWidth keeps it responsive on a narrow canvas.
-    return (
-      <div style={{ width: 262, maxWidth: '100%' }}>
-        <UiSelectWithSearch
-          options={args.options}
-          label={args.label}
-          aria-label={args['aria-label']}
-          placeholder={args.placeholder}
-          disabled={args.disabled}
-          loading={args.loading}
-          value={value}
-          onChange={setValue}
-        />
-      </div>
-    );
   },
 };
 
@@ -79,5 +85,5 @@ export const Loading: Story = {
     value: options[0],
     loading: true,
   },
-  render: SelectWithSearch.render,
+  render: renderSelectWithSearch,
 };

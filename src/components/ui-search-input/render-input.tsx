@@ -21,7 +21,7 @@ export type SearchRenderInputConfig = Omit<
   'startAdornment' | 'variant' | 'loadingAdornment'
 > & {
   /** Tri-state busy flag; the trailing slot is built from it here. */
-  loading?: boolean;
+  loading?: boolean | undefined;
 };
 
 // UiSearchInput's renderInput: the shared field renderInput plus the leading

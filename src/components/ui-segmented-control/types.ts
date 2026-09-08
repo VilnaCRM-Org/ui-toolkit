@@ -5,7 +5,7 @@ export interface SegmentedOption {
   value: string;
   label: string;
   /** Disables this option only (the whole group can be disabled via `disabled`). */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 /**
@@ -36,18 +36,18 @@ export interface UiSegmentedControlProps {
    * Controlled selected `value`. Always controlled: `''` (or omitting the
    * prop) means "nothing selected" (the `UiRadioGroup` `value ?? ''` recipe).
    */
-  value?: string;
+  value?: string | undefined;
   /** Called with the newly selected segment's `value`. Presence wires the control. */
-  onChange?: (value: string) => void;
+  onChange?: ((value: string) => void) | undefined;
   /** Visible-less accessible name for the group; loses to `labelledBy`. */
-  label?: string;
+  label?: string | undefined;
   /** `aria-labelledby` for the group; wins over `label` when both are given. */
-  labelledBy?: string;
+  labelledBy?: string | undefined;
   /** Disables every segment (a single segment can also disable via `SegmentedOption.disabled`). */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the root. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the segment text's language differs from the page's (SC 3.1.2). */
-  lang?: string;
-  sx?: SxProps<Theme>;
+  lang?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

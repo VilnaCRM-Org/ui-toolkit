@@ -32,14 +32,14 @@ export interface UiSocialIconButtonProps {
    * 'GitHub', 'Facebook', 'LinkedIn'). An explicitly blank string is a
    * dev-warned misconfiguration, not silently overridden.
    */
-  label?: string;
+  label?: string | undefined;
   /** Present -> renders an `<a href>`; absent -> renders a `<button>`. */
-  href?: string;
+  href?: string | undefined;
   /** Fired on activation in button mode; a no-op while disabled or anchored. */
-  onActivate?: () => void;
+  onActivate?: (() => void) | undefined;
   /** `aria-disabled` boundary; native `disabled` is never set. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the chip; lands on the rendered root element. */
-  id?: string;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

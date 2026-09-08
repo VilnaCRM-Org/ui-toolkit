@@ -24,6 +24,7 @@ import type {
 import {
   useSegmentedControl,
   type SegmentedControlModel,
+  type SegmentModel,
 } from '../../src/components/ui-segmented-control/use-segmented-control';
 
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -51,8 +52,8 @@ const HOVER_FILL: string = 'rgba(255, 255, 255, 0.52)';
 
 interface ControlOverrides {
   options?: readonly SegmentedOption[];
-  value?: string;
-  onChange?: (value: string) => void;
+  value?: string | undefined;
+  onChange?: ((value: string) => void) | undefined;
   label?: string;
   labelledBy?: string;
   disabled?: boolean;
@@ -225,7 +226,6 @@ describe('UiSegmentedControl — selection', () => {
   });
 
   it('does not throw when selecting without an onChange handler', async () => {
-    const user: UserEvent = userEvent.setup();
     render(controlWith({ label: 'Період', value: '', onChange: undefined }));
 
     // Unwired (no onChange): the control is static, so there is nothing to click.
@@ -283,7 +283,7 @@ describe('UiSegmentedControl — static (unwired) control', () => {
 
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
-    const root: Element = nodesMatching('#static-control')[0];
+    const root: Element = nodesMatching('#static-control')[0] as Element;
     expect(root.tagName).toBe('DIV');
     expect(nodesMatching('[role], [tabindex], [aria-checked], [aria-disabled]')).toHaveLength(0);
   });
@@ -308,7 +308,7 @@ describe('UiSegmentedControl — static (unwired) control', () => {
 
   it('applies id and lang on the static root', () => {
     render(controlWith({ id: 'static-control', lang: 'ru' }));
-    const root: Element = nodesMatching('#static-control')[0];
+    const root: Element = nodesMatching('#static-control')[0] as Element;
     expect(root).toHaveAttribute('lang', 'ru');
   });
 });
@@ -340,7 +340,7 @@ describe('UiSegmentedControl — consumer sx', () => {
         sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }],
       })
     );
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = nodesMatching('#styled')[0] as Element;
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -475,6 +475,12 @@ describe('useSegmentedControl — control view model', () => {
       .current;
   }
 
+  function segmentAt(model: SegmentedControlModel, index: number): SegmentModel {
+    const segment: SegmentModel | undefined = model.segments[index];
+    expect(segment).toBeDefined();
+    return segment as SegmentModel;
+  }
+
   it('marks a wired control interactive and an unwired one not', () => {
     expect(modelFor({ onChange: noop }).interactive).toBe(true);
     expect(modelFor({}).interactive).toBe(false);
@@ -505,33 +511,33 @@ describe('useSegmentedControl — control view model', () => {
       { value: 'month', label: 'Месяц', disabled: true },
     ];
     const model: SegmentedControlModel = modelFor({ options: mixed });
-    expect(model.segments[0].ariaDisabled).toBeUndefined();
-    expect(model.segments[1].ariaDisabled).toBe(true);
+    expect(segmentAt(model, 0).ariaDisabled).toBeUndefined();
+    expect(segmentAt(model, 1).ariaDisabled).toBe(true);
   });
 
   it('does not throw when an unwired segment is activated (no onChange to call)', () => {
     const model: SegmentedControlModel = modelFor({});
-    expect(() => model.segments[0].onActivate()).not.toThrow();
+    expect(() => segmentAt(model, 0).onActivate()).not.toThrow();
   });
 
   it('swallows activation while disabled, before onChange runs', () => {
     const onChange: jest.Mock = jest.fn();
     const model: SegmentedControlModel = modelFor({ disabled: true, onChange });
-    model.segments[0].onActivate();
+    segmentAt(model, 0).onActivate();
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('swallows re-activating the already checked segment', () => {
     const onChange: jest.Mock = jest.fn();
     const model: SegmentedControlModel = modelFor({ value: 'week', onChange });
-    model.segments[0].onActivate();
+    segmentAt(model, 0).onActivate();
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('reports the option value exactly once for an enabled, unchecked segment', () => {
     const onChange: jest.Mock = jest.fn();
     const model: SegmentedControlModel = modelFor({ value: 'week', onChange });
-    model.segments[1].onActivate();
+    segmentAt(model, 1).onActivate();
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith('month');
   });
@@ -539,9 +545,9 @@ describe('useSegmentedControl — control view model', () => {
   it('treats an explicit disabled: false exactly like an absent one', () => {
     const onChange: jest.Mock = jest.fn();
     const model: SegmentedControlModel = modelFor({ disabled: false, onChange });
-    model.segments[0].onActivate();
+    segmentAt(model, 0).onActivate();
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(model.segments[0].ariaDisabled).toBeUndefined();
+    expect(segmentAt(model, 0).ariaDisabled).toBeUndefined();
   });
 });
 

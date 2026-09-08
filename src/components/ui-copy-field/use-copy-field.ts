@@ -39,8 +39,8 @@ interface ActivateConfig {
   disabled: boolean;
   value: string;
   onCopied: () => void;
-  onCopy?: (value: string) => void;
-  onCopyError?: (error: unknown) => void;
+  onCopy?: ((value: string) => void) | undefined;
+  onCopyError?: ((error: unknown) => void) | undefined;
 }
 
 // Activation is gated in the model layer, before any DOM concern: a disabled

@@ -30,7 +30,7 @@ const GREY300: string = '#969B9D';
 const DARK_PRIMARY: string = '#1A1C1E';
 
 interface ButtonOverrides {
-  label?: string;
+  label?: string | undefined;
   direction?: UiChevronButtonProps['direction'];
   onActivate?: () => void;
   disabled?: boolean;
@@ -87,7 +87,9 @@ function layersOf(interactive: boolean, sx: UiChevronButtonProps['sx']): SxLayer
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  return layersOf(interactive, undefined)[0];
+  const [layer] = layersOf(interactive, undefined);
+  expect(layer).toBeDefined();
+  return layer as StyleObject;
 }
 
 function keysMatching(base: StyleObject, fragment: string): string[] {
@@ -95,7 +97,9 @@ function keysMatching(base: StyleObject, fragment: string): string[] {
 }
 
 function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  return base[keysMatching(base, fragment)[0]] as StyleObject;
+  const [key] = keysMatching(base, fragment);
+  expect(key).toBeDefined();
+  return base[key as string] as StyleObject;
 }
 
 // Records every node the forwarded callback ref is handed, attach and detach.
@@ -139,7 +143,7 @@ describe('UiChevronButton — wired button semantics', () => {
   it('renders the glyph as an aria-hidden decoration that is never a control', () => {
     render(buttonWith({ onActivate: noop }));
 
-    const svg: Element = nodesMatching('svg')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(nodesMatching('title')).toHaveLength(0);
@@ -172,7 +176,7 @@ describe('UiChevronButton — static (unwired) button', () => {
   it('keeps the identical glyph content, with the consumer id', () => {
     render(buttonWith({ id: 'static-chevron' }));
 
-    const root: Element = nodesMatching('#static-chevron')[0];
+    const root: Element = nodesMatching('#static-chevron')[0] as Element;
     expect(root.tagName).toBe('SPAN');
     expect(nodesMatching('svg')).toHaveLength(1);
   });
@@ -180,7 +184,9 @@ describe('UiChevronButton — static (unwired) button', () => {
   it('honours an explicit direction on the static branch too', () => {
     render(buttonWith({ direction: 'left' }));
 
-    const path: string = nodesMatching('svg path')[0].getAttribute('d') ?? '';
+    const [pathEl] = nodesMatching('svg path');
+    expect(pathEl).toBeDefined();
+    const path: string = (pathEl as Element).getAttribute('d') ?? '';
     expect(path).toBe('M12.5 5L7.5 10L12.5 15');
   });
 
@@ -376,14 +382,18 @@ describe('UiChevronButton — direction (visual only)', () => {
   it('defaults to right, matching the on-canvas Figma render', () => {
     render(buttonWith({ onActivate: noop }));
 
-    const path: string = nodesMatching('svg path')[0].getAttribute('d') ?? '';
+    const [pathEl] = nodesMatching('svg path');
+    expect(pathEl).toBeDefined();
+    const path: string = (pathEl as Element).getAttribute('d') ?? '';
     expect(path).toBe('M7.5 5L12.5 10L7.5 15');
   });
 
   it('flips to left on request', () => {
     render(buttonWith({ direction: 'left', onActivate: noop }));
 
-    const path: string = nodesMatching('svg path')[0].getAttribute('d') ?? '';
+    const [pathEl] = nodesMatching('svg path');
+    expect(pathEl).toBeDefined();
+    const path: string = (pathEl as Element).getAttribute('d') ?? '';
     expect(path).toBe('M12.5 5L7.5 10L12.5 15');
   });
 
@@ -466,7 +476,7 @@ describe('UiChevronButton — consumer sx', () => {
   it('applies array sx layers to the static root', () => {
     render(buttonWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
 
-    const root: Element = nodesMatching('#styled')[0];
+    const root: Element = nodesMatching('#styled')[0] as Element;
     expect(root).toHaveStyle({ marginTop: '1rem' });
     expect(root).toHaveStyle({ paddingTop: '2rem' });
   });
@@ -496,7 +506,7 @@ describe('chevronButtonSx — style assembly (pure, mutation-killing)', () => {
 
     expect(hoverKeys).toEqual(['&:hover:not([aria-disabled="true"])']);
     expect(base['&:hover']).toBeUndefined();
-    expect(base[hoverKeys[0]]).toEqual({
+    expect(base[hoverKeys[0] as string]).toEqual({
       borderColor: GREY300,
       boxShadow: `0 4px 13px 0 ${CHEVRON_HOVER_SHADOW_TINT}`,
     });
@@ -507,7 +517,7 @@ describe('chevronButtonSx — style assembly (pure, mutation-killing)', () => {
     const activeKeys: string[] = keysMatching(base, ':active');
 
     expect(activeKeys).toEqual(['&:active:not([aria-disabled="true"])']);
-    expect(base[activeKeys[0]]).toEqual({ borderColor: GREY300 });
+    expect(base[activeKeys[0] as string]).toEqual({ borderColor: GREY300 });
   });
 
   it('pins the off-palette Figma hover shadow tint exactly', () => {
@@ -583,8 +593,8 @@ describe('ChevronGlyph — the glyph (pure recipe)', () => {
   it('renders one decorative 20px svg whose stroke follows currentColor', () => {
     render(<ChevronGlyph direction="right" />);
 
-    const svg: Element = nodesMatching('svg')[0];
-    const path: Element = nodesMatching('svg path')[0];
+    const svg: Element = nodesMatching('svg')[0] as Element;
+    const path: Element = nodesMatching('svg path')[0] as Element;
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '20');
@@ -602,7 +612,7 @@ describe('ChevronGlyph — the glyph (pure recipe)', () => {
   it('renders the left path when direction is left', () => {
     render(<ChevronGlyph direction="left" />);
 
-    const path: Element = nodesMatching('svg path')[0];
+    const path: Element = nodesMatching('svg path')[0] as Element;
     expect(path).toHaveAttribute('d', 'M12.5 5L7.5 10L12.5 15');
   });
 });

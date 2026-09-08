@@ -12,9 +12,9 @@ export interface BackgroundOption {
   label: string;
   kind: 'image' | 'color';
   /** The board-preview photo (`kind: 'image'`); ignored otherwise. */
-  src?: string;
+  src?: string | undefined;
   /** The swatch fill (`kind: 'color'`); ignored otherwise. */
-  color?: string;
+  color?: string | undefined;
 }
 
 /**
@@ -23,7 +23,7 @@ export interface BackgroundOption {
  * group carries none, only the "Цвет" group does.
  */
 export interface BackgroundOptionGroup {
-  heading?: string;
+  heading?: string | undefined;
   options: readonly BackgroundOption[];
 }
 
@@ -97,15 +97,15 @@ export interface UiBackgroundPickerProps {
   /** The rows, grouped; an empty group array renders a card with no menu. */
   groups: readonly BackgroundOptionGroup[];
   /** Trigger text; constant across every row selection. Defaults to the board copy. */
-  label?: string;
+  label?: string | undefined;
   /** Selected option id (wired pickers only). Always controlled, `value ?? ''`. */
-  value?: string;
+  value?: string | undefined;
   /** Fired with the newly-checked row's id; never fired for a re-pick of the same row. */
-  onChange?: (id: string) => void;
+  onChange?: ((id: string) => void) | undefined;
   /** Menu open state (wired pickers only). Always controlled; defaults to `false`. */
-  open?: boolean;
+  open?: boolean | undefined;
   /** Requests the next open state. Presence makes the picker a wired menu button. */
-  onOpenChange?: (next: boolean) => void;
+  onOpenChange?: ((next: boolean) => void) | undefined;
   /**
    * Disabled status. The repo `aria-disabled` boundary pattern: still a real,
    * focusable `<button>`, but `aria-disabled="true"` and every open path
@@ -113,11 +113,11 @@ export interface UiBackgroundPickerProps {
    * disabled. Native `disabled` is never set. While `disabled`, the closed
    * presentation wins over `open`.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** `id` for the trigger; falls back to a generated one so the menu can name itself. */
-  id?: string;
+  id?: string | undefined;
   /** Only when the picker's language differs from the page language (SC 3.1.2). */
-  lang?: string;
+  lang?: string | undefined;
   /** Merged last on the card root. */
-  sx?: SxProps<Theme>;
+  sx?: SxProps<Theme> | undefined;
 }

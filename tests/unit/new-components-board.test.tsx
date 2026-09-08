@@ -256,8 +256,9 @@ describe('New Components board (Figma parity showcase)', () => {
     expect(screen.getAllByRole('button', { name: 'Cancel' }).length).toBeGreaterThan(0);
     // Activating the unselected, enabled radio exercises the file's own
     // no-op `onSelect` (an already-selected or disabled radio no-ops).
-    const [radio]: HTMLElement[] = screen.getAllByRole('radio');
-    fireEvent.click(radio);
+    const [radio] = screen.getAllByRole('radio');
+    expect(radio).toBeDefined();
+    fireEvent.click(radio as HTMLElement);
     expect(radio).toBeInTheDocument();
   });
 
@@ -277,8 +278,9 @@ describe('New Components board (Figma parity showcase)', () => {
     expect(screen.getAllByRole('button', { name: ADD_BUTTON_LABEL }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: CLEAR_BUTTON_LABEL }).length).toBeGreaterThan(0);
     // Activating one button exercises the file's own no-op `onActivate`.
-    const [addButton]: HTMLElement[] = screen.getAllByRole('button', { name: ADD_BUTTON_LABEL });
-    fireEvent.click(addButton);
+    const [addButton] = screen.getAllByRole('button', { name: ADD_BUTTON_LABEL });
+    expect(addButton).toBeDefined();
+    fireEvent.click(addButton as HTMLElement);
     expect(addButton).toBeInTheDocument();
   });
 
@@ -298,8 +300,9 @@ describe('New Components board (Figma parity showcase)', () => {
     expect(screen.getAllByRole('button', { name: 'Instagram' }).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('radio').length).toBeGreaterThan(0);
     // Activating one chip exercises the file's own no-op `onActivate`.
-    const [instagram]: HTMLElement[] = screen.getAllByRole('button', { name: 'Instagram' });
-    fireEvent.click(instagram);
+    const [instagram] = screen.getAllByRole('button', { name: 'Instagram' });
+    expect(instagram).toBeDefined();
+    fireEvent.click(instagram as HTMLElement);
     expect(instagram).toBeInTheDocument();
   });
 });

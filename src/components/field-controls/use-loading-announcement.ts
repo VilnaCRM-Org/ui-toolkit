@@ -50,8 +50,8 @@ export function useLoadingAnnouncement(
 
 /** The `loading`/`loadingText` slice every field control shares. */
 export interface FieldLoadingProps {
-  loading?: boolean | null;
-  loadingText?: string;
+  loading?: boolean | null | undefined;
+  loadingText?: string | undefined;
 }
 
 /**
