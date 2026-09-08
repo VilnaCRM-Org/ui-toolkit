@@ -811,11 +811,16 @@ describe('useCopiedLatch — a latch that lands after unmount is dropped', () =>
 });
 
 describe('UiCopyField — a consumer error is not a clipboard error', () => {
+  afterEach(() => stubClipboard(undefined));
+
   it('does not call onCopyError when onCopy itself throws', async () => {
     const onCopyError: jest.Mock = jest.fn();
     const onCopy: jest.Mock = jest.fn(() => {
       throw new Error('consumer blew up');
     });
+    // The write has to succeed: the point of the case is that a consumer
+    // exception AFTER a successful copy is not a clipboard failure.
+    stubClipboard((): Promise<void> => Promise.resolve());
     render(<UiCopyField value="5POLGOPWQZFCCFEI" onCopy={onCopy} onCopyError={onCopyError} />);
 
     fireEvent.click(screen.getByRole('button'));
