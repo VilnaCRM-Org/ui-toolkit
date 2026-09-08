@@ -49,6 +49,24 @@ interface ActivateConfig {
 // being dropped when a focused chip flips disabled. The three clipboard paths
 // — success, rejection, missing API — all resolve here into exactly one of
 // `onCopy` or `onCopyError`, never both and never a thrown exception.
+/**
+ * The success path. `onCopy` is a consumer callback, so it may throw — and that
+ * exception is the consumer's bug, not a clipboard failure. It must not reach
+ * `onCopyError`, and it must not be left as an unhandled rejection either, so
+ * it is rethrown clear of the promise chain where the page's own error
+ * reporting sees it unchanged.
+ */
+function reportCopied(config: Readonly<ActivateConfig>): void {
+  config.onCopied();
+  try {
+    config.onCopy?.(config.value);
+  } catch (error: unknown) {
+    setTimeout((): void => {
+      throw error;
+    }, 0);
+  }
+}
+
 function makeActivate(config: Readonly<ActivateConfig>): () => void {
   return (): void => {
     if (config.disabled) return;
@@ -58,10 +76,7 @@ function makeActivate(config: Readonly<ActivateConfig>): () => void {
     // failure — calling both callbacks for one activation, which is exactly
     // what the contract above rules out.
     writeToClipboard(config.value).then(
-      (): void => {
-        config.onCopied();
-        config.onCopy?.(config.value);
-      },
+      (): void => reportCopied(config),
       (error: unknown): void => config.onCopyError?.(error)
     );
   };

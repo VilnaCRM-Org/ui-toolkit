@@ -823,14 +823,23 @@ describe('UiCopyField — a consumer error is not a clipboard error', () => {
     stubClipboard((): Promise<void> => Promise.resolve());
     render(<UiCopyField value="5POLGOPWQZFCCFEI" onCopy={onCopy} onCopyError={onCopyError} />);
 
-    fireEvent.click(screen.getByRole('button'));
-    await act(async () => {
-      await Promise.resolve();
-    });
+    jest.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByRole('button'));
+      await act(async () => {
+        await Promise.resolve();
+      });
 
-    // The rejection handler is bound to the clipboard promise alone, so a
-    // consumer exception cannot be reported back as a failed copy.
-    expect(onCopy).toHaveBeenCalledTimes(1);
-    expect(onCopyError).not.toHaveBeenCalled();
+      // The rejection handler is bound to the clipboard promise alone, so a
+      // consumer exception cannot be reported back as a failed copy.
+      expect(onCopy).toHaveBeenCalledTimes(1);
+      expect(onCopyError).not.toHaveBeenCalled();
+
+      // It is not swallowed either: it is rethrown clear of the promise chain,
+      // so the page's own error reporting still sees it.
+      expect(() => jest.runAllTimers()).toThrow('consumer blew up');
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
