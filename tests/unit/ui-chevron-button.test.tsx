@@ -8,6 +8,7 @@ import { ChevronGlyph } from '../../src/components/ui-chevron-button/chevron-gly
 import {
   CHEVRON_HOVER_SHADOW_TINT,
   FOCUS_RING,
+  FOCUS_SELECTORS,
   chevronButtonSx,
 } from '../../src/components/ui-chevron-button/styles';
 import type { UiChevronButtonProps } from '../../src/components/ui-chevron-button/types';
@@ -340,7 +341,10 @@ describe('chevronButtonSx — style assembly (pure, mutation-killing)', () => {
     });
   });
 
-  it('ships the shared single-layer inset ring, verbatim', () => {
+  it('ships the Amendment A1 two-selector inset ring, verbatim', () => {
+    // The negated copy ties hover's specificity, so a focused-and-hovered disc
+    // keeps its ring rather than losing it to the hover shadow.
+    expect(keysMatching(baseOf(true), ':focus-visible')).toEqual([FOCUS_SELECTORS]);
     expect(ruleAt(baseOf(true), ':focus-visible')).toEqual({
       outline: 'none',
       boxShadow: FOCUS_RING,
@@ -348,9 +352,21 @@ describe('chevronButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
+  it('re-expresses the ring as an outline where forced colors drop shadows', () => {
+    const forced: StyleObject = baseOf(true)['@media (forced-colors: active)'] as StyleObject;
+
+    // The fallback repeats the same selector list: a media query adds no
+    // specificity, so a bare `:focus-visible` here would lose to the negated
+    // copy above that sets `outline: none`.
+    expect(forced[FOCUS_SELECTORS]).toEqual({
+      outline: '2px solid Highlight',
+      outlineOffset: '-2px',
+    });
+  });
+
   describeFocusRingOrder(
     () => baseOf(true),
-    (keys: string[]): number => keys.indexOf('&:focus-visible')
+    (keys: string[]): number => keys.indexOf(FOCUS_SELECTORS)
   );
 
   it('adds cursor and appearance only to the wired branch', () => {

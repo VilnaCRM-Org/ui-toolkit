@@ -17,6 +17,25 @@ const REST_TINT: number = 0.1;
 // Single-layer inset ring, the shared toolkit recipe (the ONLY non-Figma
 // visual this component adds).
 export const FOCUS_RING: string = `inset 0 0 0 2px ${palette.darkPrimary.main}`;
+// Amendment A1, two selectors and one recipe. CSS keeps per-selector specificity
+// inside a selector list, so the bare `:focus-visible` covers the disabled
+// control, while the second copy repeats the hover rule's own negation to reach
+// hover's specificity — declared later, it therefore wins on a control that is
+// focused AND hovered, where the plain rule alone would lose its ring to the
+// hover shadow.
+export const FOCUS_SELECTORS: string =
+  '&:focus-visible, &:focus-visible:not([aria-disabled="true"])';
+
+// Forced-colors discards box-shadow, so the ring is re-expressed as an outline
+// pulled inside the border box. The fallback MUST repeat FOCUS_SELECTORS rather
+// than a bare `:focus-visible`: a media query adds no specificity, so a
+// single-selector rule loses to the negated copy above that declares
+// `outline: none` — and loses on exactly the states a keyboard user is in.
+const FORCED_COLORS_RING: object = {
+  '@media (forced-colors: active)': {
+    [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
+  },
+};
 
 // 40x40, fully round (any radius >= 20px on a 40px box renders a circle — the
 // extraction's own note on the master's literal 36px). No shadow in any of the
@@ -65,7 +84,8 @@ function stateChromeSx(): object {
       color: palette.white.main,
       cursor: 'default',
     },
-    '&:focus-visible': { outline: 'none', boxShadow: FOCUS_RING },
+    [FOCUS_SELECTORS]: { outline: 'none', boxShadow: FOCUS_RING },
+    ...FORCED_COLORS_RING,
   };
 }
 

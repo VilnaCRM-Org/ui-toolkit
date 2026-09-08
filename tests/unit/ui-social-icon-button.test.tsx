@@ -5,7 +5,11 @@ import React from 'react';
 import UiSocialIconButton from '../../src/components/ui-social-icon-button';
 import { SocialGlyph } from '../../src/components/ui-social-icon-button/social-glyph';
 import warning from '../../src/components/ui-social-icon-button/social-icon-button-warnings';
-import { FOCUS_RING, socialIconButtonSx } from '../../src/components/ui-social-icon-button/styles';
+import {
+  FOCUS_RING,
+  FOCUS_SELECTORS,
+  socialIconButtonSx,
+} from '../../src/components/ui-social-icon-button/styles';
 import type { UiSocialIconButtonProps } from '../../src/components/ui-social-icon-button/types';
 import {
   useSocialIconButton,
@@ -266,7 +270,7 @@ describe('socialIconButtonSx', () => {
     expect(disabled.color).toBe(WHITE);
     expect(disabled.cursor).toBe('default');
 
-    const focus: Record<string, unknown> = findRule(sx, '&:focus-visible');
+    const focus: Record<string, unknown> = findRule(sx, FOCUS_SELECTORS);
     expect(focus.boxShadow).toBe(FOCUS_RING);
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });

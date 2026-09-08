@@ -20,6 +20,25 @@ export const CHEVRON_HOVER_SHADOW_TINT: string = 'rgba(0, 0, 0, 0.25)';
 // Single-layer inset ring (repo convention, `00-shared.md`): the button paints
 // its own opaque fill, so a second white layer buys nothing.
 export const FOCUS_RING: string = `inset 0 0 0 2px ${palette.darkPrimary.main}`;
+// Amendment A1, two selectors and one recipe. CSS keeps per-selector specificity
+// inside a selector list, so the bare `:focus-visible` covers the disabled
+// control, while the second copy repeats the hover rule's own negation to reach
+// hover's specificity — declared later, it therefore wins on a control that is
+// focused AND hovered, where the plain rule alone would lose its ring to the
+// hover shadow.
+export const FOCUS_SELECTORS: string =
+  '&:focus-visible, &:focus-visible:not([aria-disabled="true"])';
+
+// Forced-colors discards box-shadow, so the ring is re-expressed as an outline
+// pulled inside the border box. The fallback MUST repeat FOCUS_SELECTORS rather
+// than a bare `:focus-visible`: a media query adds no specificity, so a
+// single-selector rule loses to the negated copy above that declares
+// `outline: none` — and loses on exactly the states a keyboard user is in.
+const FORCED_COLORS_RING: object = {
+  '@media (forced-colors: active)': {
+    [FOCUS_SELECTORS]: { outline: '2px solid Highlight', outlineOffset: '-2px' },
+  },
+};
 
 // The 30x30 circle (radius 20px ⇒ a full pill on a 30px box). Figma strokes
 // inside the frame, so `boxSizing: 'border-box'` keeps the outer box exact.
@@ -55,7 +74,8 @@ function interactiveChevronSx(): object {
       borderColor: 'transparent',
       cursor: 'default',
     },
-    '&:focus-visible': { outline: 'none', boxShadow: FOCUS_RING },
+    [FOCUS_SELECTORS]: { outline: 'none', boxShadow: FOCUS_RING },
+    ...FORCED_COLORS_RING,
   };
 }
 

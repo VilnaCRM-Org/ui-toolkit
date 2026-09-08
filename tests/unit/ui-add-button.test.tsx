@@ -9,6 +9,7 @@ import {
   ADD_BUTTON_LABEL_CLASS,
   ADD_BUTTON_SHADOW,
   FOCUS_RING,
+  FOCUS_SELECTORS,
   addButtonGlyphSx,
   addButtonLabelSx,
   addButtonSx,
@@ -313,18 +314,33 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(disabled.opacity).toBeUndefined();
   });
 
-  it('ships the shared single-selector focus-visible ring, verbatim', () => {
+  it('ships the Amendment A1 two-selector focus-visible ring, verbatim', () => {
     const base: StyleObject = baseOf(true);
     const ringKeys: string[] = keysMatching(base, ':focus-visible');
 
-    expect(ringKeys).toEqual(['&:focus-visible']);
-    expect(base['&:focus-visible']).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+    // Two selectors, one recipe. The bare copy still covers the disabled
+    // button; the negated copy ties hover's specificity so a button that is
+    // focused AND hovered keeps its ring instead of losing it to the shadow.
+    expect(ringKeys).toEqual([FOCUS_SELECTORS]);
+    expect(base[FOCUS_SELECTORS]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
+  });
+
+  it('re-expresses the ring as an outline where forced colors drop shadows', () => {
+    const forced: StyleObject = baseOf(true)['@media (forced-colors: active)'] as StyleObject;
+
+    // The fallback repeats the same selector list: a media query adds no
+    // specificity, so a bare `:focus-visible` here would lose to the negated
+    // copy above that sets `outline: none`.
+    expect(forced[FOCUS_SELECTORS]).toEqual({
+      outline: '2px solid Highlight',
+      outlineOffset: '-2px',
+    });
   });
 
   describeFocusRingOrder(
     () => baseOf(true),
-    (keys: string[]): number => keys.indexOf('&:focus-visible')
+    (keys: string[]): number => keys.indexOf(FOCUS_SELECTORS)
   );
 
   it('adds cursor and appearance only to the wired branch', () => {

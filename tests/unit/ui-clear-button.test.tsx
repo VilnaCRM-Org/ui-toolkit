@@ -13,6 +13,7 @@ import {
   clearButtonLabelSx,
   clearButtonSx,
   FOCUS_RING,
+  FOCUS_SELECTORS,
   GLYPH_CLASS,
 } from '../../src/components/ui-clear-button/styles';
 import type { UiClearButtonProps } from '../../src/components/ui-clear-button/types';
@@ -402,13 +403,27 @@ describe('clearButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(disabled.opacity).toBeUndefined();
   });
 
-  it('ships the shared inset focus ring, verbatim, at a single selector', () => {
+  it('ships the Amendment A1 two-selector inset focus ring, verbatim', () => {
     const base: StyleObject = baseOf(true);
     const ringKeys: string[] = keysMatching(base, ':focus-visible');
 
-    expect(ringKeys).toEqual(['&:focus-visible']);
-    expect(base['&:focus-visible']).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+    // The negated copy ties hover's specificity, so a focused-and-hovered
+    // button keeps its ring rather than losing it to the hover shadow.
+    expect(ringKeys).toEqual([FOCUS_SELECTORS]);
+    expect(base[FOCUS_SELECTORS]).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
+  });
+
+  it('re-expresses the ring as an outline where forced colors drop shadows', () => {
+    const forced: StyleObject = baseOf(true)['@media (forced-colors: active)'] as StyleObject;
+
+    // The fallback repeats the same selector list: a media query adds no
+    // specificity, so a bare `:focus-visible` here would lose to the negated
+    // copy above that sets `outline: none`.
+    expect(forced[FOCUS_SELECTORS]).toEqual({
+      outline: '2px solid Highlight',
+      outlineOffset: '-2px',
+    });
   });
 
   describeFocusRingOrder(
