@@ -1,4 +1,5 @@
 import { render, fireEvent, screen } from '@testing-library/react';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import UiButton from '../../src/components/ui-button';
@@ -356,7 +357,8 @@ describe('UiButton — the to-forwarding guard', () => {
 });
 
 describe('UiButton — the busy state closes the native activation path', () => {
-  it('does not submit its form while busy, from pointer or keyboard', () => {
+  it('does not submit its form while busy, from pointer or keyboard', async () => {
+    const user: UserEvent = userEvent.setup();
     const onSubmit: jest.Mock = jest.fn(e => e.preventDefault());
     render(
       <form onSubmit={onSubmit}>
@@ -369,9 +371,15 @@ describe('UiButton — the busy state closes the native activation path', () => 
     const button: HTMLElement = screen.getByRole('button');
     // `aria-disabled` keeps the control focusable and activatable, and
     // `pointer-events: none` only closes the mouse path — so the keyboard
-    // route is the one that has to be proven shut.
+    // route is the one that has to be proven shut. `fireEvent.keyDown` would
+    // NOT prove it: jsdom does not turn a raw keydown into the button's
+    // default activation, so such a test passes whatever the code does.
+    // `userEvent` does emulate that translation, so Enter and Space here are
+    // real activations.
     fireEvent.click(button);
-    fireEvent.keyDown(button, { key: 'Enter' });
+    button.focus();
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
 
     expect(onSubmit).not.toHaveBeenCalled();
   });

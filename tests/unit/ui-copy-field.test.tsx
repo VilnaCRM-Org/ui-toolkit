@@ -842,4 +842,22 @@ describe('UiCopyField — a consumer error is not a clipboard error', () => {
       jest.useRealTimers();
     }
   });
+
+  it('routes a rejected async onCopy the same way, not to onCopyError', async () => {
+    const onCopyError: jest.Mock = jest.fn();
+    // Typed to return void, but a consumer can hand back a promise anyway —
+    // and a rejection from one would slip past a plain try/catch.
+    const onCopy: jest.Mock = jest.fn(() => Promise.reject(new Error('async blew up')));
+    stubClipboard((): Promise<void> => Promise.resolve());
+    render(<UiCopyField value="5POLGOPWQZFCCFEI" onCopy={onCopy} onCopyError={onCopyError} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(onCopy).toHaveBeenCalledTimes(1);
+    expect(onCopyError).not.toHaveBeenCalled();
+  });
 });

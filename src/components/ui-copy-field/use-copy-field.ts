@@ -56,14 +56,24 @@ interface ActivateConfig {
  * it is rethrown clear of the promise chain where the page's own error
  * reporting sees it unchanged.
  */
+// Re-raises an error clear of the promise chain, where the page's own error
+// reporting sees it, instead of leaving it as an unhandled rejection.
+function rethrowLater(error: unknown): void {
+  setTimeout((): void => {
+    throw error;
+  }, 0);
+}
+
 function reportCopied(config: Readonly<ActivateConfig>): void {
   config.onCopied();
   try {
-    config.onCopy?.(config.value);
+    // `onCopy` is typed to return void, but nothing stops a consumer handing
+    // back a promise — and a rejection from one would sail straight past this
+    // `catch`. Normalising the result routes an async failure exactly like a
+    // synchronous throw: reported, never mistaken for a clipboard error.
+    void Promise.resolve(config.onCopy?.(config.value)).catch(rethrowLater);
   } catch (error: unknown) {
-    setTimeout((): void => {
-      throw error;
-    }, 0);
+    rethrowLater(error);
   }
 }
 
