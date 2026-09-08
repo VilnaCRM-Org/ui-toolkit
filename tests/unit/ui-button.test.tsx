@@ -354,3 +354,85 @@ describe('UiButton — the to-forwarding guard', () => {
     expect(button).not.toHaveAttribute('to');
   });
 });
+
+describe('UiButton — the busy state closes the native activation path', () => {
+  it('does not submit its form while busy, from pointer or keyboard', () => {
+    const onSubmit: jest.Mock = jest.fn(e => e.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <UiButton type="submit" loading>
+          {testText}
+        </UiButton>
+      </form>
+    );
+
+    const button: HTMLElement = screen.getByRole('button');
+    // `aria-disabled` keeps the control focusable and activatable, and
+    // `pointer-events: none` only closes the mouse path — so the keyboard
+    // route is the one that has to be proven shut.
+    fireEvent.click(button);
+    fireEvent.keyDown(button, { key: 'Enter' });
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('cancels the default action so a busy link button cannot navigate', () => {
+    render(
+      <UiButton href="/somewhere" loading>
+        {testText}
+      </UiButton>
+    );
+
+    const link: HTMLElement = screen.getByRole('link');
+    const clicked: boolean = fireEvent.click(link);
+
+    // `fireEvent` returns false once a handler called `preventDefault`, which
+    // is what stops the browser following `href`.
+    expect(clicked).toBe(false);
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('still submits once the busy state clears', () => {
+    const onSubmit: jest.Mock = jest.fn(e => e.preventDefault());
+    const { rerender } = render(
+      <form onSubmit={onSubmit}>
+        <UiButton type="submit" loading>
+          {testText}
+        </UiButton>
+      </form>
+    );
+
+    rerender(
+      <form onSubmit={onSubmit}>
+        <UiButton type="submit" loading={false}>
+          {testText}
+        </UiButton>
+      </form>
+    );
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes the consumer click through when not busy', () => {
+    const onClick: jest.Mock = jest.fn();
+    render(<UiButton onClick={onClick}>{testText}</UiButton>);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('withholds the consumer click while busy', () => {
+    const onClick: jest.Mock = jest.fn();
+    render(
+      <UiButton onClick={onClick} loading>
+        {testText}
+      </UiButton>
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(onClick).not.toHaveBeenCalled();
+  });
+});

@@ -11,9 +11,11 @@ import colorTheme from '../ui-color-theme';
  * `visibility: hidden`, `display: none` or `aria-hidden` on the label: each of
  * those would strip the name and leave a nameless control.
  *
- * `pointerEvents` closes the mouse path; the keyboard path is closed by not
- * wiring `onClick` while busy (see `index.tsx`), because a button that is
- * `aria-disabled` rather than natively disabled still receives Enter/Space.
+ * `pointerEvents` closes the mouse path. It does NOT close the keyboard path:
+ * an `aria-disabled` button still receives Enter/Space, and dropping `onClick`
+ * only removes the consumer's handler — the NATIVE default action survives, so
+ * a `type="submit"` button would still submit its form and a rendered anchor
+ * would still follow its `href`. `useBusyClick` cancels that default.
  */
 const BUSY_SX: SxProps<Theme> = {
   position: 'relative',
@@ -56,6 +58,32 @@ export interface ButtonBusyState {
 export function useButtonBusy(loading?: boolean | null, loadingText?: string): ButtonBusyState {
   const announced: string = useFieldLoadingAnnouncement({ loading, loadingText });
   return { busy: loading === true, announced };
+}
+
+/**
+ * Activation guard for the busy state.
+ *
+ * `aria-disabled` is a promise to assistive technology, not a browser
+ * behaviour: the control stays focusable and still fires its default action.
+ * Simply omitting `onClick` hides the consumer's handler while leaving that
+ * default intact, so a busy submit button would still submit and a busy link
+ * button would still navigate on a keyboard Enter. Preventing the default is
+ * what actually closes the path, for pointer and keyboard alike.
+ */
+export function useBusyClick(
+  busy: boolean,
+  onClick: React.MouseEventHandler<HTMLButtonElement> | undefined
+): React.MouseEventHandler<HTMLButtonElement> {
+  return React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>): void => {
+      if (busy) {
+        event.preventDefault();
+        return;
+      }
+      onClick?.(event);
+    },
+    [busy, onClick]
+  );
 }
 
 /** Layers the busy paint UNDER the consumer `sx`, so a consumer override wins. */

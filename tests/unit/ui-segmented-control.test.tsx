@@ -35,11 +35,18 @@ const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
 
 const noop: (value: string) => void = () => undefined;
 
-// Board B's own three options, verbatim.
+// Board B's own three options, verbatim. Named because Cyrillic costs two
+// bytes a character: inline, several of the assertions below run past the
+// 100-BYTE editorconfig limit while still looking short.
+const WEEK: string = 'Неделя';
+const MONTH: string = 'Месяц';
+const QUARTER: string = 'Квартал';
+const GROUP: string = 'Період';
+
 const options: SegmentedOption[] = [
-  { value: 'week', label: 'Неделя' },
-  { value: 'month', label: 'Месяц' },
-  { value: 'quarter', label: 'Квартал' },
+  { value: 'week', label: WEEK },
+  { value: 'month', label: MONTH },
+  { value: 'quarter', label: QUARTER },
 ];
 
 // Palette literals, pinned rather than imported: a mutation that swaps a token
@@ -91,25 +98,25 @@ function nodesMatching(selector: string): Element[] {
 // always controlled, so a real consumer feeds the next value back via onChange.
 function ControlledControl(): React.ReactElement {
   const [value, setValue] = React.useState<string>('');
-  return <UiSegmentedControl options={options} label="Період" value={value} onChange={setValue} />;
+  return <UiSegmentedControl options={options} label={GROUP} value={value} onChange={setValue} />;
 }
 
 describe('UiSegmentedControl — wired rendering and accessible name', () => {
   it('renders a radiogroup with a radio per option', () => {
-    render(controlWith({ label: 'Період', onChange: noop }));
+    render(controlWith({ label: GROUP, onChange: noop }));
     expect(screen.getByRole('radiogroup')).toBeInTheDocument();
     expect(screen.getAllByRole('radio')).toHaveLength(3);
   });
 
   it('names each radio from its option label', () => {
-    render(controlWith({ label: 'Період', onChange: noop }));
-    expect(screen.getByRole('radio', { name: 'Неделя' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Месяц' })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Квартал' })).toBeInTheDocument();
+    render(controlWith({ label: GROUP, onChange: noop }));
+    expect(screen.getByRole('radio', { name: WEEK })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: MONTH })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: QUARTER })).toBeInTheDocument();
   });
 
   it('names the group from a visible label', () => {
-    render(controlWith({ label: 'Період', onChange: noop }));
+    render(controlWith({ label: GROUP, onChange: noop }));
     expect(screen.getByRole('radiogroup', { name: 'Період' })).toBeInTheDocument();
   });
 
@@ -135,14 +142,14 @@ describe('UiSegmentedControl — wired rendering and accessible name', () => {
   });
 
   it('gives every segment an explicit tab stop, with no roving tabindex', () => {
-    render(controlWith({ label: 'Період', onChange: noop }));
+    render(controlWith({ label: GROUP, onChange: noop }));
     screen.getAllByRole('radio').forEach((radio: HTMLElement) => {
       expect(radio).toHaveAttribute('tabindex', '0');
     });
   });
 
   it('renders each segment as a native type="button"', () => {
-    render(controlWith({ label: 'Період', onChange: noop }));
+    render(controlWith({ label: GROUP, onChange: noop }));
     screen.getAllByRole('radio').forEach((radio: HTMLElement) => {
       expect(radio.tagName).toBe('BUTTON');
       expect(radio).toHaveAttribute('type', 'button');
@@ -150,11 +157,11 @@ describe('UiSegmentedControl — wired rendering and accessible name', () => {
   });
 
   it('applies id and lang only when the consumer supplies them', () => {
-    const { rerender } = render(controlWith({ label: 'Період', onChange: noop }));
+    const { rerender } = render(controlWith({ label: GROUP, onChange: noop }));
     expect(screen.getByRole('radiogroup')).not.toHaveAttribute('id');
     expect(screen.getByRole('radiogroup')).not.toHaveAttribute('lang');
 
-    rerender(controlWith({ label: 'Період', id: 'period', lang: 'ru', onChange: noop }));
+    rerender(controlWith({ label: GROUP, id: 'period', lang: 'ru', onChange: noop }));
     expect(screen.getByRole('radiogroup')).toHaveAttribute('id', 'period');
     expect(screen.getByRole('radiogroup')).toHaveAttribute('lang', 'ru');
   });
@@ -166,41 +173,41 @@ describe('UiSegmentedControl — wired rendering and accessible name', () => {
 
 describe('UiSegmentedControl — selection', () => {
   it('reflects the controlled selected value', () => {
-    render(controlWith({ label: 'Період', value: 'month', onChange: noop }));
-    expect(screen.getByRole('radio', { name: 'Месяц' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Неделя' })).not.toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Квартал' })).not.toBeChecked();
+    render(controlWith({ label: GROUP, value: 'month', onChange: noop }));
+    expect(screen.getByRole('radio', { name: MONTH })).toBeChecked();
+    expect(screen.getByRole('radio', { name: WEEK })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: QUARTER })).not.toBeChecked();
   });
 
   it('stays controlled when nothing is selected (empty, not uncontrolled)', () => {
-    render(controlWith({ label: 'Період', value: '', onChange: noop }));
+    render(controlWith({ label: GROUP, value: '', onChange: noop }));
     screen
       .getAllByRole('radio')
       .forEach((radio: HTMLElement) => expect(radio).toHaveAttribute('aria-checked', 'false'));
   });
 
   it('treats an omitted value exactly like an empty one', () => {
-    render(controlWith({ label: 'Період', onChange: noop }));
+    render(controlWith({ label: GROUP, onChange: noop }));
     screen
       .getAllByRole('radio')
       .forEach((radio: HTMLElement) => expect(radio).toHaveAttribute('aria-checked', 'false'));
   });
 
   it('moves the selection when the controlled value changes', () => {
-    const { rerender } = render(controlWith({ label: 'Період', value: 'week', onChange: noop }));
-    expect(screen.getByRole('radio', { name: 'Неделя' })).toBeChecked();
+    const { rerender } = render(controlWith({ label: GROUP, value: 'week', onChange: noop }));
+    expect(screen.getByRole('radio', { name: WEEK })).toBeChecked();
 
-    rerender(controlWith({ label: 'Період', value: 'quarter', onChange: noop }));
-    expect(screen.getByRole('radio', { name: 'Квартал' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Неделя' })).not.toBeChecked();
+    rerender(controlWith({ label: GROUP, value: 'quarter', onChange: noop }));
+    expect(screen.getByRole('radio', { name: QUARTER })).toBeChecked();
+    expect(screen.getByRole('radio', { name: WEEK })).not.toBeChecked();
   });
 
   it('calls onChange with the option value when a segment is clicked', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
-    render(controlWith({ label: 'Період', value: '', onChange }));
+    render(controlWith({ label: GROUP, value: '', onChange }));
 
-    await user.click(screen.getByRole('radio', { name: 'Месяц' }));
+    await user.click(screen.getByRole('radio', { name: MONTH }));
     expect(onChange).toHaveBeenCalledWith('month');
   });
 
@@ -208,25 +215,25 @@ describe('UiSegmentedControl — selection', () => {
     const user: UserEvent = userEvent.setup();
     render(<ControlledControl />);
 
-    await user.click(screen.getByRole('radio', { name: 'Месяц' }));
-    expect(screen.getByRole('radio', { name: 'Месяц' })).toBeChecked();
+    await user.click(screen.getByRole('radio', { name: MONTH }));
+    expect(screen.getByRole('radio', { name: MONTH })).toBeChecked();
 
-    await user.click(screen.getByRole('radio', { name: 'Квартал' }));
-    expect(screen.getByRole('radio', { name: 'Квартал' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Месяц' })).not.toBeChecked();
+    await user.click(screen.getByRole('radio', { name: QUARTER }));
+    expect(screen.getByRole('radio', { name: QUARTER })).toBeChecked();
+    expect(screen.getByRole('radio', { name: MONTH })).not.toBeChecked();
   });
 
   it('fires nothing when the already-checked segment is re-activated', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
-    render(controlWith({ label: 'Період', value: 'week', onChange }));
+    render(controlWith({ label: GROUP, value: 'week', onChange }));
 
-    await user.click(screen.getByRole('radio', { name: 'Неделя' }));
+    await user.click(screen.getByRole('radio', { name: WEEK }));
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('does not throw when selecting without an onChange handler', async () => {
-    render(controlWith({ label: 'Період', value: '', onChange: undefined }));
+    render(controlWith({ label: GROUP, value: '', onChange: undefined }));
 
     // Unwired (no onChange): the control is static, so there is nothing to click.
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
@@ -235,14 +242,14 @@ describe('UiSegmentedControl — selection', () => {
 
 describe('UiSegmentedControl — disabled (aria-disabled boundary)', () => {
   it('marks every segment aria-disabled when the group is disabled', () => {
-    render(controlWith({ label: 'Період', disabled: true, onChange: noop }));
+    render(controlWith({ label: GROUP, disabled: true, onChange: noop }));
     screen
       .getAllByRole('radio')
       .forEach((radio: HTMLElement) => expect(radio).toHaveAttribute('aria-disabled', 'true'));
   });
 
   it('never sets the native disabled attribute — segments stay focusable', () => {
-    render(controlWith({ label: 'Період', disabled: true, onChange: noop }));
+    render(controlWith({ label: GROUP, disabled: true, onChange: noop }));
     screen.getAllByRole('radio').forEach((radio: HTMLElement) => {
       expect(radio.getAttributeNames()).not.toContain('disabled');
       expect(radio).toBeEnabled();
@@ -254,26 +261,26 @@ describe('UiSegmentedControl — disabled (aria-disabled boundary)', () => {
       { value: 'week', label: 'Неделя' },
       { value: 'month', label: 'Месяц', disabled: true },
     ];
-    render(controlWith({ options: mixed, label: 'Період', onChange: noop }));
-    expect(screen.getByRole('radio', { name: 'Неделя' })).not.toHaveAttribute('aria-disabled');
-    expect(screen.getByRole('radio', { name: 'Месяц' })).toHaveAttribute('aria-disabled', 'true');
+    render(controlWith({ options: mixed, label: GROUP, onChange: noop }));
+    expect(screen.getByRole('radio', { name: WEEK })).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByRole('radio', { name: MONTH })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('no-ops every activation path while disabled', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
-    render(controlWith({ label: 'Період', disabled: true, onChange }));
+    render(controlWith({ label: GROUP, disabled: true, onChange }));
 
-    await user.click(screen.getByRole('radio', { name: 'Неделя' }));
+    await user.click(screen.getByRole('radio', { name: WEEK }));
     expect(onChange).not.toHaveBeenCalled();
   });
 
   it('remains reachable by Tab while disabled', async () => {
     const user: UserEvent = userEvent.setup();
-    render(controlWith({ label: 'Період', disabled: true, onChange: noop }));
+    render(controlWith({ label: GROUP, disabled: true, onChange: noop }));
 
     await user.tab();
-    expect(screen.getByRole('radio', { name: 'Неделя' })).toHaveFocus();
+    expect(screen.getByRole('radio', { name: WEEK })).toHaveFocus();
   });
 });
 
@@ -316,7 +323,7 @@ describe('UiSegmentedControl — static (unwired) control', () => {
 describe('UiSegmentedControl — ref forwarding', () => {
   it('forwards an object ref to the wired root', () => {
     const ref: React.RefObject<HTMLDivElement | null> = React.createRef<HTMLDivElement>();
-    render(controlWith({ label: 'Період', onChange: noop }, ref));
+    render(controlWith({ label: GROUP, onChange: noop }, ref));
     expect(ref.current).toBe(screen.getByRole('radiogroup'));
   });
 
@@ -329,7 +336,7 @@ describe('UiSegmentedControl — ref forwarding', () => {
 
 describe('UiSegmentedControl — consumer sx', () => {
   it('applies an object sx to the wired root, merged last', () => {
-    render(controlWith({ label: 'Період', sx: { marginTop: '1rem' }, onChange: noop }));
+    render(controlWith({ label: GROUP, sx: { marginTop: '1rem' }, onChange: noop }));
     expect(screen.getByRole('radiogroup')).toHaveStyle({ marginTop: '1rem' });
   });
 
@@ -348,20 +355,20 @@ describe('UiSegmentedControl — consumer sx', () => {
 
 describe('UiSegmentedControl — dev warnings (integration)', () => {
   it('stays silent for a healthy wired control and a healthy static one', () => {
-    const { rerender } = render(controlWith({ label: 'Період', value: 'week', onChange: noop }));
+    const { rerender } = render(controlWith({ label: GROUP, value: 'week', onChange: noop }));
     expect(warn.spy).not.toHaveBeenCalled();
 
-    rerender(controlWith({ label: 'Період' }));
+    rerender(controlWith({ label: GROUP }));
     expect(warn.spy).not.toHaveBeenCalled();
   });
 
   it('warns when value is passed without onChange', () => {
-    render(controlWith({ label: 'Період', value: 'week' }));
+    render(controlWith({ label: GROUP, value: 'week' }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('without `onChange`'));
   });
 
   it('warns on an empty options array', () => {
-    render(controlWith({ options: [], label: 'Період', onChange: noop }));
+    render(controlWith({ options: [], label: GROUP, onChange: noop }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('empty `options`'));
   });
 
@@ -375,18 +382,18 @@ describe('UiSegmentedControl — dev warnings (integration)', () => {
       { value: 'week', label: 'Неделя' },
       { value: 'week', label: 'Месяц' },
     ];
-    render(controlWith({ options: dup, label: 'Період', onChange: noop }));
+    render(controlWith({ options: dup, label: GROUP, onChange: noop }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('duplicate option'));
   });
 
   it('warns on a blank option label', () => {
     const blank: SegmentedOption[] = [{ value: 'week', label: '   ' }];
-    render(controlWith({ options: blank, label: 'Період', onChange: noop }));
+    render(controlWith({ options: blank, label: GROUP, onChange: noop }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `label`'));
   });
 
   it('warns when value matches no option', () => {
-    render(controlWith({ label: 'Період', value: 'year', onChange: noop }));
+    render(controlWith({ label: GROUP, value: 'year', onChange: noop }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('matching no option'));
   });
 
@@ -402,7 +409,7 @@ describe('UiSegmentedControl — dev warnings (integration)', () => {
   });
 
   it('re-logs the name warning when the name is removed on re-render', () => {
-    const { rerender } = render(controlWith({ label: 'Період', onChange: noop }));
+    const { rerender } = render(controlWith({ label: GROUP, onChange: noop }));
     expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('no accessible name'));
     rerender(controlWith({ onChange: noop }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('no accessible name'));
@@ -433,7 +440,7 @@ describe('segmented-control-warnings — pure predicates', () => {
   });
 
   it('accessibleNameWarning: satisfied by either label or labelledBy', () => {
-    expect(accessibleNameWarning(props({ label: 'Період' }))).toBeNull();
+    expect(accessibleNameWarning(props({ label: GROUP }))).toBeNull();
     expect(accessibleNameWarning(props({ labelledBy: 'heading' }))).toBeNull();
     expect(accessibleNameWarning(props({}))).toContain('no accessible name');
   });
@@ -487,8 +494,8 @@ describe('useSegmentedControl — control view model', () => {
   });
 
   it('resolves ariaLabel from label only when labelledBy is absent', () => {
-    expect(modelFor({ label: 'Період' }).ariaLabel).toBe('Період');
-    expect(modelFor({ label: 'Період', labelledBy: 'heading' }).ariaLabel).toBeUndefined();
+    expect(modelFor({ label: GROUP }).ariaLabel).toBe('Період');
+    expect(modelFor({ label: GROUP, labelledBy: 'heading' }).ariaLabel).toBeUndefined();
     expect(modelFor({ labelledBy: 'heading' }).ariaLabelledBy).toBe('heading');
   });
 

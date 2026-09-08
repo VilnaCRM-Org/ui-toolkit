@@ -17,7 +17,10 @@ import {
   copyFieldValueSx,
 } from '../../src/components/ui-copy-field/styles';
 import type { UiCopyFieldProps } from '../../src/components/ui-copy-field/types';
-import { COPIED_RESET_MS } from '../../src/components/ui-copy-field/use-copied-latch';
+import {
+  COPIED_RESET_MS,
+  useCopiedLatch,
+} from '../../src/components/ui-copy-field/use-copied-latch';
 import {
   DEFAULT_COPY_LABEL,
   useCopyField,
@@ -769,5 +772,60 @@ describe('useCopyField — field view model', () => {
     const model: CopyFieldModel = modelFor({ value: VALUE });
 
     expect(() => model.onActivate()).not.toThrow();
+  });
+});
+
+describe('useCopiedLatch — a latch that lands after unmount is dropped', () => {
+  it('ignores a latch call once the hook has unmounted', () => {
+    jest.useFakeTimers();
+    try {
+      const { result, unmount } = renderHook(() => useCopiedLatch());
+
+      unmount();
+      // The clipboard write is async, so its `.then` can run after the chip is
+      // gone. Without the mounted guard this would set state on a dead hook and
+      // arm a timer the cleanup has already run past.
+      expect(() => act(() => result.current.latch())).not.toThrow();
+
+      act(() => jest.runOnlyPendingTimers());
+      expect(jest.getTimerCount()).toBe(0);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('still latches and clears while mounted', () => {
+    jest.useFakeTimers();
+    try {
+      const { result } = renderHook(() => useCopiedLatch());
+
+      act(() => result.current.latch());
+      expect(result.current.copied).toBe(true);
+
+      act(() => jest.advanceTimersByTime(COPIED_RESET_MS));
+      expect(result.current.copied).toBe(false);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe('UiCopyField — a consumer error is not a clipboard error', () => {
+  it('does not call onCopyError when onCopy itself throws', async () => {
+    const onCopyError: jest.Mock = jest.fn();
+    const onCopy: jest.Mock = jest.fn(() => {
+      throw new Error('consumer blew up');
+    });
+    render(<UiCopyField value="5POLGOPWQZFCCFEI" onCopy={onCopy} onCopyError={onCopyError} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The rejection handler is bound to the clipboard promise alone, so a
+    // consumer exception cannot be reported back as a failed copy.
+    expect(onCopy).toHaveBeenCalledTimes(1);
+    expect(onCopyError).not.toHaveBeenCalled();
   });
 });

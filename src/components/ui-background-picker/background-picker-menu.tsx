@@ -140,7 +140,10 @@ export function BackgroundPickerMenu({
       sx={menuSx}
     >
       {model.groups.map((group: BackgroundOptionGroup, index: number) => (
-        <React.Fragment key={group.heading ?? index}>
+        // Keyed by position, not by heading: two groups may legitimately carry
+        // the same heading (or none), and a duplicate key makes React reconcile
+        // the wrong group.
+        <React.Fragment key={`${model.menuId}-group-${index}`}>
           <Box component="hr" sx={dividerSx} />
           <GroupSection
             group={group}

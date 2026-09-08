@@ -4,7 +4,13 @@ import React from 'react';
 import { srOnlySx } from '../field-controls';
 import ScopedThemeProvider from '../theme-scope';
 
-import { busySx, ButtonSpinner, useButtonBusy, type ButtonBusyState } from './loading';
+import {
+  busySx,
+  ButtonSpinner,
+  useBusyClick,
+  useButtonBusy,
+  type ButtonBusyState,
+} from './loading';
 import { theme } from './theme';
 import type { UiButtonProps } from './types';
 
@@ -83,6 +89,7 @@ function UiButton({
 }: React.PropsWithChildren<UiButtonProps>): React.ReactElement {
   const elementProps: ButtonElementProps = resolveButtonProps({ to, href, component, type });
   const state: ButtonBusyState = useButtonBusy(loading, loadingText);
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = useBusyClick(state.busy, onClick);
 
   return (
     <ScopedThemeProvider theme={theme}>
@@ -92,7 +99,7 @@ function UiButton({
         {...elementProps}
         {...rest}
         aria-disabled={state.busy ? true : rest['aria-disabled']}
-        onClick={state.busy ? undefined : onClick}
+        onClick={handleClick}
         sx={busySx(state.busy, rest.sx)}
       >
         {children}

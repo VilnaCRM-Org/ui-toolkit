@@ -52,12 +52,18 @@ interface ActivateConfig {
 function makeActivate(config: Readonly<ActivateConfig>): () => void {
   return (): void => {
     if (config.disabled) return;
-    writeToClipboard(config.value)
-      .then((): void => {
+    // The rejection handler is the SECOND argument of `then`, not a trailing
+    // `.catch`: a trailing catch also sees anything the consumer's own
+    // `onCopy` throws, and would then report a successful copy as a clipboard
+    // failure — calling both callbacks for one activation, which is exactly
+    // what the contract above rules out.
+    writeToClipboard(config.value).then(
+      (): void => {
         config.onCopied();
         config.onCopy?.(config.value);
-      })
-      .catch((error: unknown): void => config.onCopyError?.(error));
+      },
+      (error: unknown): void => config.onCopyError?.(error)
+    );
   };
 }
 
