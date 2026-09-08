@@ -18,7 +18,11 @@ import {
   type OptionCardModel,
 } from '../../src/components/ui-option-card/use-option-card';
 
+import { ARIA_SELECTOR, focusables, nodesMatching } from './utils/dom-queries';
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { collectorInto, describeRadioCardContract } from './utils/radio-card-contract';
+import { keysMatching, type StyleObject, type SxLayers } from './utils/style-layers';
 
 // UiOptionCard emits dev-only warnings via console.warn; silence them and keep a
 // handle for the assertions that check them explicitly.
@@ -29,6 +33,11 @@ const noop: () => void = () => undefined;
 const LABEL: string = 'Analytics API';
 const VALUE_LABEL: string = 'Reporting';
 const FULL_NAME: string = `${LABEL} ${VALUE_LABEL}`;
+
+// A second brand, reached by the shared contract's tab-order sweep.
+const SECOND_LABEL: string = 'Billing API';
+const SECOND_VALUE_LABEL: string = 'Invoicing';
+const SECOND_NAME: string = `${SECOND_LABEL} ${SECOND_VALUE_LABEL}`;
 
 // The palette literals the brief pins, asserted as local consts so a token swap
 // in `ui-color-theme` fails this suite rather than silently repainting the card.
@@ -46,21 +55,28 @@ const HOVER_SHADOW: string = '0 8px 15px rgba(49, 59, 67, 0.14)';
 const FOCUS_RING: string = `inset 0 0 0 2px ${DARK_PRIMARY}`;
 
 interface CardOverrides {
+  // UiOptionCard has no `name` prop of its own; `name` is the shared radio-card
+  // contract's field, and its closest honest analogue here is `label` — this
+  // card's caption and identity text.
+  name?: string | undefined;
   label?: string | undefined;
   valueLabel?: string | undefined;
   selected?: boolean | undefined;
-  onSelect?: () => void;
-  disabled?: boolean;
-  id?: string;
-  lang?: string;
-  sx?: UiOptionCardProps['sx'];
+  onSelect?: (() => void) | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  lang?: string | undefined;
+  sx?: UiOptionCardProps['sx'] | undefined;
 }
 
 // Props are applied one by one (the repo forbids JSX spreading). `in` checks keep
 // the "runtime data violates the prop type" fixtures — a missing label — expressible
-// as an explicit `undefined`.
+// as an explicit `undefined`. `name` (the shared contract's field) falls back to
+// `label` only when the caller supplies no explicit `label` override.
 function cardWith(extra: Readonly<CardOverrides>): React.ReactElement {
-  const label: string = ('label' in extra ? extra.label : LABEL) as string;
+  const label: string = (
+    'label' in extra ? extra.label : 'name' in extra ? extra.name : LABEL
+  ) as string;
   const valueLabel: string = ('valueLabel' in extra ? extra.valueLabel : VALUE_LABEL) as string;
   return (
     <UiOptionCard
@@ -80,46 +96,61 @@ function card(): HTMLElement {
   return screen.getByRole('radio');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby]';
-
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
-
 function layersOf(interactive: boolean, sx: UiOptionCardProps['sx']): SxLayers {
   return optionCardSx({ interactive, sx }) as SxLayers;
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  const [layer] = layersOf(interactive, undefined);
-  expect(layer).toBeDefined();
-  return layer as StyleObject;
+  return firstOf(layersOf(interactive, undefined));
 }
 
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
+// The consumer half of the ownership split: the group and its accessible name
+// belong outside the card. UiOptionCard has no radiogroup-context warning to
+// suppress, but the fixture shape mirrors its sibling radio-card suites.
+function inGroup(node: React.ReactElement): React.ReactElement {
+  return <div role="radiogroup">{node}</div>;
 }
 
-// Records every node the forwarded callback ref is handed, attach and detach.
-function collectorInto(
-  seen: (HTMLButtonElement | null)[]
-): (node: HTMLButtonElement | null) => void {
-  return (node: HTMLButtonElement | null): void => {
-    seen.push(node);
-  };
-}
+// The behaviour every radio card in the toolkit shares — role and permanent
+// `aria-checked`, the selection-request gate, the `aria-disabled` boundary, tab
+// order and ref plumbing, the live-region prohibition, the radiogroup teaching
+// warning and the `sx` merge — is asserted once for every card that opts in.
+//
+// UiOptionCard diverges from its `name`/logo-bearing siblings in three ways the
+// contract has no honest stand-in for: it has no `name` prop (its identity text
+// is `label`, so the contract's blank/missing-`name` warning assertions do not
+// match this card's "blank `label`" wording), no logo/mark concept at all (the
+// `unusableLogo` field below is deliberately empty, per the brief), and no
+// radiogroup-ancestor mount check or ref hook (so the shared radiogroup-context-
+// warning `it`s have no wiring to exercise here). Those specific cases are noted
+// in the follow-up report rather than faked. What follows below is what is TRUE
+// OF THIS CARD ALONE.
+describeRadioCardContract({
+  name: 'UiOptionCard',
+  cardWith,
+  inGroup,
+  warn,
+  primaryName: FULL_NAME,
+  secondaryName: SECOND_NAME,
+  remountId: 'option-7',
+  // This card paints no mark, so the mark-warning section does not run; and it
+  // ships no radiogroup mount check, so that section does not either. Its
+  // blank-identity warning names `label`, which is the prop that carries the
+  // caption here.
+  blankIdentityMessage: 'blank `label`',
+  warnsOutsideRadiogroup: false,
+  tabOrderGroup: (): React.ReactElement => (
+    <div role="radiogroup">
+      <UiOptionCard label={LABEL} valueLabel={VALUE_LABEL} onSelect={noop} />
+      <UiOptionCard label="Static" valueLabel="Card" />
+      <UiOptionCard label={SECOND_LABEL} valueLabel={SECOND_VALUE_LABEL} selected onSelect={noop} />
+    </div>
+  ),
+  withRef: (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
+    <UiOptionCard ref={ref} label={LABEL} valueLabel={VALUE_LABEL} onSelect={noop} />
+  ),
+  staticBase: (): StyleObject => baseOf(false),
+});
 
 describe('UiOptionCard — wired radio semantics', () => {
   it('renders the whole card as one native type="button" with role="radio"', () => {
@@ -137,42 +168,6 @@ describe('UiOptionCard — wired radio semantics', () => {
     const root: HTMLElement = card();
     expect(root).toHaveAccessibleName(FULL_NAME);
     expect(nodesMatching('[aria-label], [aria-labelledby]')).toHaveLength(0);
-  });
-
-  it('carries a permanent aria-checked that mirrors `selected` across re-renders', () => {
-    const { rerender } = render(cardWith({ onSelect: noop }));
-
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-    expect(card()).not.toBeChecked();
-
-    rerender(cardWith({ selected: true, onSelect: noop }));
-    expect(card()).toHaveAttribute('aria-checked', 'true');
-    expect(card()).toBeChecked();
-
-    rerender(cardWith({ selected: false, onSelect: noop }));
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-
-    // Nullish coerces to `false` rather than dropping the attribute.
-    rerender(cardWith({ selected: undefined, onSelect: noop }));
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('never ships aria-pressed and never a self-rendered radiogroup', () => {
-    render(cardWith({ selected: true, onSelect: noop }));
-
-    const root: HTMLElement = card();
-    expect(root).not.toHaveAttribute('aria-pressed');
-    expect(root).not.toHaveAttribute('aria-setsize');
-    expect(root).not.toHaveAttribute('aria-posinset');
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
-  });
-
-  it('keeps exactly one focusable element in the tree (no nested interactive)', () => {
-    render(cardWith({ onSelect: noop }));
-
-    expect(focusables()).toHaveLength(1);
-    expect(focusables()[0]).toBe(card());
-    expect(nodesMatching('input')).toHaveLength(0);
   });
 
   it('renders no chevron, radio dot or glyph of any kind', () => {
@@ -237,163 +232,6 @@ describe('UiOptionCard — static (unwired) card', () => {
     render(<UiOptionCard ref={ref} label={LABEL} valueLabel={VALUE_LABEL} />);
 
     expect(ref.current).toBeNull();
-  });
-});
-
-describe('UiOptionCard — selection requests', () => {
-  it('requests selection exactly once per click', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    await user.click(card());
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith();
-  });
-
-  it('requests selection exactly once on Enter (no manual key handler double-fires)', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    card().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it('requests selection exactly once on Space', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    card().focus();
-    await user.keyboard(' ');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it('ignores arrow, Home/End and printable keys — no roving model lives here', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    card().focus();
-    await user.keyboard('{ArrowDown}{ArrowUp}{ArrowRight}{ArrowLeft}{Home}{End}{Escape}a');
-
-    expect(onSelect).not.toHaveBeenCalled();
-  });
-
-  it('fires nothing when an already-selected card is activated by any gesture', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ selected: true, onSelect }));
-
-    await user.click(card());
-    card().focus();
-    await user.keyboard('{Enter} ');
-
-    expect(onSelect).not.toHaveBeenCalled();
-    expect(card()).toBeChecked();
-  });
-
-  it('stays eligible after the consumer DECLINES the selection', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ onSelect }));
-
-    await user.click(card());
-    await user.click(card());
-
-    expect(onSelect).toHaveBeenCalledTimes(2);
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('never self-flips the checked state (always controlled)', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(cardWith({ onSelect: noop }));
-
-    await user.click(card());
-
-    expect(card()).toHaveAttribute('aria-checked', 'false');
-  });
-
-  it('never submits an enclosing form on Enter (type="button")', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSubmit: jest.Mock = jest.fn();
-    const onSelect: jest.Mock = jest.fn();
-    render(<form onSubmit={onSubmit}>{cardWith({ onSelect })}</form>);
-
-    card().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-});
-
-describe('UiOptionCard — disabled (aria-disabled boundary)', () => {
-  it('stays a focusable button with aria-disabled and no native disabled attribute', () => {
-    render(cardWith({ disabled: true, onSelect: noop }));
-
-    const root: HTMLElement = card();
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root.getAttributeNames()).not.toContain('disabled');
-    expect(root).toBeEnabled();
-  });
-
-  it('remains reachable by Tab while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(cardWith({ disabled: true, onSelect: noop }));
-
-    await user.tab();
-    expect(card()).toHaveFocus();
-  });
-
-  it('no-ops every activation path while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    render(cardWith({ disabled: true, onSelect }));
-
-    await user.click(card());
-    card().focus();
-    await user.keyboard('{Enter} ');
-
-    expect(onSelect).not.toHaveBeenCalled();
-  });
-
-  it('retains focus when a focused card flips disabled, then restores selection', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSelect: jest.Mock = jest.fn();
-    const { rerender } = render(cardWith({ onSelect }));
-
-    const root: HTMLElement = card();
-    root.focus();
-    await user.keyboard('{Enter}');
-    expect(onSelect).toHaveBeenCalledTimes(1);
-
-    rerender(cardWith({ disabled: true, onSelect }));
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onSelect).toHaveBeenCalledTimes(1);
-
-    rerender(cardWith({ onSelect }));
-    expect(root).not.toHaveAttribute('aria-disabled');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onSelect).toHaveBeenCalledTimes(2);
-  });
-
-  it('keeps aria-checked on a selected + disabled card, with no false disabled warning', () => {
-    render(cardWith({ selected: true, disabled: true, onSelect: noop }));
-
-    expect(card()).toHaveAttribute('aria-checked', 'true');
-    expect(card()).toHaveAttribute('aria-disabled', 'true');
-    expect(warn.spy).not.toHaveBeenCalledWith(expect.stringContaining('disabled'));
   });
 });
 
