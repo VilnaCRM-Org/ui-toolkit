@@ -78,7 +78,13 @@ function buttonWith(extra: Readonly<Partial<UiAddButtonProps>>): React.ReactElem
 // The activation-control contract only ever varies `disabled`/`id`/`lang`/`sx`;
 // `label` and `onActivate` stay this suite's own concern (see `buttonWith`).
 function wiredWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
-  return buttonWith({ onActivate: noop, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+  return buttonWith({
+    onActivate: noop,
+    disabled: extra.disabled,
+    id: extra.id,
+    lang: extra.lang,
+    sx: extra.sx,
+  });
 }
 
 function staticWith(extra: Readonly<ActivationOverrides>): React.ReactElement {

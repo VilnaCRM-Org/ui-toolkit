@@ -82,6 +82,8 @@ function buttonWith(extra: Readonly<ButtonOverrides>): React.ReactElement {
 // this control (chevron forwards no `lang`); `label` and `onActivate` stay
 // this suite's own concern (see `buttonWith`).
 function wiredWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  // No `lang` here: this control ships no `lang` prop, which is why its
+  // contract sets `hasLang: false`.
   return buttonWith({ onActivate: noop, disabled: extra.disabled, id: extra.id, sx: extra.sx });
 }
 
