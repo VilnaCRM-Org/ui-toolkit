@@ -1,7 +1,9 @@
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { UiAddButton, UiChevronButton, UiClearButton } from '@/components';
+import UiAddButton from '@/components/ui-add-button';
+import UiChevronButton from '@/components/ui-chevron-button';
+import UiClearButton from '@/components/ui-clear-button';
 
 import { ADD_BUTTON_LABEL, CHEVRON_BUTTON_LABEL, CLEAR_BUTTON_LABEL } from './followup-fixtures';
 import {

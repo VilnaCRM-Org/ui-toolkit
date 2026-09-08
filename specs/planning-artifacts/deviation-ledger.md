@@ -61,7 +61,7 @@ marked `superseded` rather than deleted, so the audit trail survives.
 | `pending-ratification` | The ruling is recorded but not yet confirmed by its owner. It has a row in the ratification register below.                |
 | `escalated`            | Raised to the designer or release owner because the source of truth is missing or ambiguous; no ruling exists yet.         |
 | `deferred-tracked`     | Accepted for `v1.0.0` and routed to named follow-up work. Never "closed" — it stays open until the follow-up lands.        |
-| `superseded`           | Replaced by a later row or by delivery. Kept for the audit trail. Unused at `v1.0.0`.                                      |
+| `superseded`           | Replaced by a later row or by delivery. Kept for the audit trail.                                                          |
 
 **No-widening rule.** A failing drift-guard assertion is closed by recording evidence, never by
 widening a token set, relaxing a citation requirement, or deleting a row.
@@ -189,10 +189,10 @@ issue is actually filed.
 | Status                 | Rows   |
 | ---------------------- | ------ |
 | `ratified`             | 33     |
-| `pending-ratification` | 17     |
+| `pending-ratification` | 10     |
 | `escalated`            | 3      |
 | `deferred-tracked`     | 9      |
-| `superseded`           | 2      |
+| `superseded`           | 9      |
 | **Total**              | **64** |
 
 Fourteen of the sixty-four rows carry an `unfiled:` tracking ref; they are enumerated in the

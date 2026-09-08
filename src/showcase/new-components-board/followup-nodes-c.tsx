@@ -2,7 +2,9 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { UiCopyField, UiSegmentedControl, UiSocialIconButton } from '@/components';
+import UiCopyField from '@/components/ui-copy-field';
+import UiSegmentedControl from '@/components/ui-segmented-control';
+import UiSocialIconButton from '@/components/ui-social-icon-button';
 import type { SocialNetwork } from '@/components/ui-social-icon-button/types';
 
 import { COPY_FIELD_SAMPLE, SEGMENTED_LABEL, SEGMENTED_OPTIONS } from './followup-fixtures';

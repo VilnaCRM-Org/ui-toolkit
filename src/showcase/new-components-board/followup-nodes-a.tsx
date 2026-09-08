@@ -2,7 +2,9 @@ import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { UiBackgroundPicker, UiButton, UiOptionCard } from '@/components';
+import UiBackgroundPicker from '@/components/ui-background-picker';
+import UiButton from '@/components/ui-button';
+import UiOptionCard from '@/components/ui-option-card';
 
 import { OPTION_CARD_CAPTION, OPTION_CARD_VALUE, PICKER_GROUPS } from './followup-fixtures';
 import {
