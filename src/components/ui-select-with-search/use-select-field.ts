@@ -33,6 +33,21 @@ export interface SelectField {
   announced: string;
 }
 
+interface PopupMirror {
+  open: boolean;
+  handleOpen: () => void;
+  handleClose: () => void;
+}
+
+// The controlled mirror of MUI's own open/close triggers, in its own hook so the
+// field hook below stays inside the per-function Halstead budget.
+function usePopupMirror(): PopupMirror {
+  const [open, setOpen] = React.useState<boolean>(false);
+  const handleOpen: () => void = React.useCallback((): void => setOpen(true), []);
+  const handleClose: () => void = React.useCallback((): void => setOpen(false), []);
+  return { open, handleOpen, handleClose };
+}
+
 // Derives the change handler, the `renderInput` callback (with the inline ghost
 // overlay and its input handlers), the controlled popup mirror and listbox
 // slotProps for UiSelectWithSearch, keeping the component itself small enough
@@ -40,10 +55,8 @@ export interface SelectField {
 // swallowed key never reaches MUI — can close the popup like a real selection.
 export function useSelectField(props: UiSelectWithSearchProps): SelectField {
   const onChange: UiSelectWithSearchProps['onChange'] = props.onChange;
-  const [popupOpen, setPopupOpen] = React.useState<boolean>(false);
-  const handleOpen: () => void = React.useCallback((): void => setPopupOpen(true), []);
-  const handleClose: () => void = React.useCallback((): void => setPopupOpen(false), []);
-  const ghost: ReturnType<typeof useSelectGhost> = useSelectGhost(props, handleClose);
+  const popup: PopupMirror = usePopupMirror();
+  const ghost: ReturnType<typeof useSelectGhost> = useSelectGhost(props, popup.handleClose);
 
   const handleChange: SelectField['handleChange'] = React.useCallback(
     (_event: React.SyntheticEvent, next: UiSelectWithSearchOption | null): void => {
@@ -59,9 +72,9 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
   return {
     handleChange,
     handleInputChange: ghost.handleInputChange,
-    handleOpen,
-    handleClose,
-    resolvedOpen: props.open ?? popupOpen,
+    handleOpen: popup.handleOpen,
+    handleClose: popup.handleClose,
+    resolvedOpen: props.open ?? popup.open,
     renderInput,
     slotProps,
     announced,

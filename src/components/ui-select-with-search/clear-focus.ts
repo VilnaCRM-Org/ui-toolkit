@@ -3,6 +3,29 @@ import React from 'react';
 const CLEAR_SELECTOR: string = '.MuiAutocomplete-clearIndicator';
 const INPUT_SELECTOR: string = 'input';
 
+function focusFieldInput(root: HTMLElement): void {
+  const input: HTMLInputElement | null = root.querySelector<HTMLInputElement>(INPUT_SELECTOR);
+  if (input !== null) {
+    input.focus();
+  }
+}
+
+/**
+ * Moves focus off the clear × and onto the field's own input, but only while the
+ * × is what currently holds focus. Exported so both halves — "the × has focus"
+ * and "it does not" — can be driven directly, the way `picker-dom.ts` exposes
+ * its own element helpers.
+ */
+export function restoreFieldFocus(root: HTMLElement | null): void {
+  if (root === null) {
+    return;
+  }
+  const clear: Element | null = root.querySelector(CLEAR_SELECTOR);
+  if (clear !== null && document.activeElement === clear) {
+    focusFieldInput(root);
+  }
+}
+
 /**
  * Keeps a keyboard user's place when a fetch starts under the clear ×.
  *
@@ -29,12 +52,8 @@ export function useClearFocusGuard(
   const rootRef: React.RefObject<HTMLDivElement | null> = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect((): void => {
-    const root: HTMLDivElement | null = rootRef.current;
-    const clear: Element | null | undefined = root?.querySelector(CLEAR_SELECTOR);
-    const holdsFocus: boolean =
-      clear !== null && clear !== undefined && document.activeElement === clear;
-    if (loading === true && holdsFocus) {
-      root?.querySelector<HTMLInputElement>(INPUT_SELECTOR)?.focus();
+    if (loading === true) {
+      restoreFieldFocus(rootRef.current);
     }
   }, [loading]);
 

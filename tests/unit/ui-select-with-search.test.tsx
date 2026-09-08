@@ -4,6 +4,7 @@ import React from 'react';
 
 import UiLink from '../../src/components/ui-link';
 import UiSelectWithSearch from '../../src/components/ui-select-with-search';
+import { restoreFieldFocus } from '../../src/components/ui-select-with-search/clear-focus';
 import type { UiSelectWithSearchOption } from '../../src/components/ui-select-with-search/types';
 
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -402,13 +403,14 @@ describe('UiSelectWithSearch — clearing a selection', () => {
       <UiSelectWithSearch options={options} value={options[0]} aria-label="City" onChange={noop} />
     );
     // MUI's stock name is a bare "Clear"; with several selects on one form that is
-    // several identically-named controls.
-    expect(screen.getByRole('button', { name: 'Clear Kyiv' })).toBeInTheDocument();
+    // several identically-named controls. The default is Ukrainian, like every
+    // other built-in string this kit ships.
+    expect(screen.getByRole('button', { name: 'Очистити Kyiv' })).toBeInTheDocument();
   });
 
   it('mounts no clear button while nothing is selected', () => {
     render(<UiSelectWithSearch options={options} value={null} aria-label="City" onChange={noop} />);
-    expect(screen.queryByRole('button', { name: /^Clear/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Очистити/ })).not.toBeInTheDocument();
   });
 
   it('puts the clear button in the tab order, right after the combobox', async () => {
@@ -423,7 +425,7 @@ describe('UiSelectWithSearch — clearing a selection', () => {
     // hover-only convenience; as the primary way to remove a selection it has to
     // be reachable, because the field holds the value's own label so "backspace
     // on an empty input" is not an equivalent path.
-    expect(screen.getByRole('button', { name: 'Clear Kyiv' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Очистити Kyiv' })).toHaveFocus();
   });
 
   it('clears the selection when the clear button is activated from the keyboard', async () => {
@@ -504,5 +506,65 @@ describe('UiSelectWithSearch — clear affordance and the busy focus guard', () 
     rerender(<UiSelectWithSearch options={options} value={options[0]} onChange={noop} loading />);
 
     expect(combobox).toHaveFocus();
+  });
+});
+
+describe("restoreFieldFocus — the guard's element half", () => {
+  const CLEAR_CLASS: string = 'MuiAutocomplete-clearIndicator';
+
+  function ClearButton(): React.ReactElement {
+    return (
+      <button type="button" className={CLEAR_CLASS}>
+        x
+      </button>
+    );
+  }
+
+  it('does nothing when there is no root element yet', () => {
+    expect(() => restoreFieldFocus(null)).not.toThrow();
+  });
+
+  it('does nothing when the field mounts no clear button', () => {
+    const { container } = render(<input aria-label="City" />);
+
+    restoreFieldFocus(container);
+
+    expect(screen.getByRole('textbox')).not.toHaveFocus();
+  });
+
+  it('leaves focus alone when the clear button is not the focused element', () => {
+    const { container } = render(
+      <>
+        <input aria-label="City" />
+        <ClearButton />
+      </>
+    );
+
+    restoreFieldFocus(container);
+
+    expect(screen.getByRole('textbox')).not.toHaveFocus();
+  });
+
+  it('moves focus to the input when the clear button holds it', () => {
+    const { container } = render(
+      <>
+        <input aria-label="City" />
+        <ClearButton />
+      </>
+    );
+    screen.getByRole('button').focus();
+
+    restoreFieldFocus(container);
+
+    expect(screen.getByRole('textbox')).toHaveFocus();
+  });
+
+  it('does not throw when the clear button holds focus but the field has no input', () => {
+    const { container } = render(<ClearButton />);
+    const clear: HTMLElement = screen.getByRole('button');
+    clear.focus();
+
+    expect(() => restoreFieldFocus(container)).not.toThrow();
+    expect(clear).toHaveFocus();
   });
 });

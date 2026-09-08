@@ -614,7 +614,7 @@ describe('UiMultiSelect — listbox and multi-selection', () => {
 // a fetch or re-announce a stale one when the fetch settles.
 function selectionRegion(): HTMLElement {
   const [region] = screen.getAllByRole('status');
-  expect(region).toBeDefined();
+  expect(region).toBeInTheDocument();
   return region as HTMLElement;
 }
 
