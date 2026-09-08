@@ -87,7 +87,12 @@ function GroupRows({
 }
 
 // A headed group wraps its rows in `role="group"` whose first child is the
-// visible heading; a headless group renders its rows directly (no wrapper).
+// visible heading. A headless group keeps the same layout wrapper but gives it
+// no role: `sectionSx` is the 14px row gap Figma paints, so the element is load-
+// bearing visually. It costs nothing semantically — a div with no role, name or
+// semantics is flattened out of the accessible tree (WAI-ARIA 1.2 §5.3), so the
+// `menuitemradio` rows still resolve as children of the owning `role="menu"`.
+// Verified with the accessibility team rather than assumed.
 function GroupSection({
   group,
   headingId,

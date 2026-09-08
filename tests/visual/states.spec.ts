@@ -766,3 +766,356 @@ test.describe('Visual states (Figma state grid) — notification badge', () => {
     await shoot(page, 'notification-badge-focus.png');
   });
 });
+
+// --- Story 3.7 board follow-up controls ------------------------------------
+// One block per control delivered by Story 3.7, to the same contract as the
+// blocks above: rest, real pointer hover, the active/selected state with its
+// ARIA channel asserted BEFORE the shot, disabled where the design paints it,
+// and `:focus-visible` reached with a real Tab press (never a programmatic
+// `.focus()`, which does not set `:focus-visible` — the 3.3 gotcha).
+
+test.describe('Visual states (Figma state grid) — add button', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 320, height: 120 } });
+
+  const STORY_ID: string = 'uicomponents-uiaddbutton--add-button';
+
+  test('add button rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await shoot(page, 'add-button-rest.png');
+  });
+
+  test('add button hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('button').hover();
+    await shoot(page, 'add-button-hover.png');
+  });
+
+  test('add button disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    // `aria-disabled`, never the native attribute: the button stays focusable
+    // so a keyboard user can still reach and read it.
+    await expect(page.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'add-button-disabled.png');
+  });
+
+  test('add button focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'add-button-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — clear button', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 320, height: 120 } });
+
+  const STORY_ID: string = 'uicomponents-uiclearbutton--clear-button';
+
+  test('clear button rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await shoot(page, 'clear-button-rest.png');
+  });
+
+  test('clear button hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('button').hover();
+    await shoot(page, 'clear-button-hover.png');
+  });
+
+  test('clear button disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await expect(page.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'clear-button-disabled.png');
+  });
+
+  test('clear button focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'clear-button-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — chevron button', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 200, height: 120 } });
+
+  const STORY_ID: string = 'uicomponents-uichevronbutton--chevron-button';
+
+  test('chevron button rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await shoot(page, 'chevron-button-rest.png');
+  });
+
+  test('chevron button hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('button').hover();
+    await shoot(page, 'chevron-button-hover.png');
+  });
+
+  test('chevron button left direction', async ({ page }) => {
+    // The only non-state variant the design paints: the same disc mirrored.
+    await openStory(page, STORY_ID, 'direction:left');
+    await shoot(page, 'chevron-button-left.png');
+  });
+
+  test('chevron button disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await expect(page.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'chevron-button-disabled.png');
+  });
+
+  test('chevron button focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'chevron-button-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — social icon button', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 200, height: 120 } });
+
+  const STORY_ID: string = 'uicomponents-uisocialiconbutton--social-icon-button';
+
+  test('social icon button rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await shoot(page, 'social-icon-button-rest.png');
+  });
+
+  test('social icon button hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('link').or(page.getByRole('button')).first().hover();
+    await shoot(page, 'social-icon-button-hover.png');
+  });
+
+  test('social icon button disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await expect(page.getByRole('link').or(page.getByRole('button')).first()).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+    await shoot(page, 'social-icon-button-disabled.png');
+  });
+
+  test('social icon button focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'social-icon-button-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — danger button', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 320, height: 120 } });
+
+  const STORY_ID: string = 'uicomponents-uibutton--danger';
+
+  test('danger button rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await shoot(page, 'danger-button-rest.png');
+  });
+
+  test('danger button hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('button').hover();
+    await shoot(page, 'danger-button-hover.png');
+  });
+
+  test('danger button disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await shoot(page, 'danger-button-disabled.png');
+  });
+
+  test('danger button focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'danger-button-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — copy field', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 420, height: 140 } });
+
+  const STORY_ID: string = 'uicomponents-uicopyfield--copy-field';
+
+  test('copy field rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await shoot(page, 'copy-field-rest.png');
+  });
+
+  test('copy field hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('button').hover();
+    await shoot(page, 'copy-field-hover.png');
+  });
+
+  test('copy field disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await expect(page.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'copy-field-disabled.png');
+  });
+
+  test('copy field focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'copy-field-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — option card', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 420, height: 160 } });
+
+  const STORY_ID: string = 'uicomponents-uioptioncard--option-card';
+
+  test('option card rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await expect(page.getByRole('radio')).not.toBeChecked();
+    await shoot(page, 'option-card-rest.png');
+  });
+
+  test('option card hover', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.getByRole('radio').hover();
+    await shoot(page, 'option-card-hover.png');
+  });
+
+  test('option card selected', async ({ page }) => {
+    await openStory(page, STORY_ID, 'selected:!true');
+    // `role="radio"` + `aria-checked` is the state channel, so assert it before
+    // locking the selected fill rather than trusting the paint alone.
+    await expect(page.getByRole('radio')).toBeChecked();
+    await shoot(page, 'option-card-selected.png');
+  });
+
+  test('option card disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await expect(page.getByRole('radio')).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'option-card-disabled.png');
+  });
+
+  test('option card focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'option-card-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — segmented control', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 420, height: 120 } });
+
+  const STORY_ID: string = 'uicomponents-uisegmentedcontrol--segmented-control';
+
+  test('segmented control rest', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    // The track is a `radiogroup` of `radio` buttons; exactly one is checked.
+    await expect(page.getByRole('radiogroup')).toBeVisible();
+    await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
+    await shoot(page, 'segmented-control-rest.png');
+  });
+
+  test('segmented control hover on an unselected segment', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    // Hover must read on an UNSELECTED segment: on the selected one the active
+    // fill already wins, so hovering it would prove nothing.
+    await page.getByRole('radio', { checked: false }).first().hover();
+    await shoot(page, 'segmented-control-hover.png');
+  });
+
+  test('segmented control disabled', async ({ page }) => {
+    await openStory(page, STORY_ID, 'disabled:!true');
+    await expect(page.getByRole('radio').first()).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'segmented-control-disabled.png');
+  });
+
+  test('segmented control focus-visible', async ({ page }) => {
+    await openStory(page, STORY_ID);
+    // One Tab reaches the group's roving tabstop, which is the checked segment.
+    await page.keyboard.press('Tab');
+    await shoot(page, 'segmented-control-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — background picker', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  test.use({ viewport: { width: 420, height: 560 } });
+
+  const CLOSED_ID: string = 'uicomponents-uibackgroundpicker--background-picker';
+  const OPEN_ID: string = 'uicomponents-uibackgroundpicker--open';
+
+  test('background picker rest', async ({ page }) => {
+    await openStory(page, CLOSED_ID);
+    await expect(page.getByRole('button')).toHaveAttribute('aria-expanded', 'false');
+    await shoot(page, 'background-picker-rest.png');
+  });
+
+  test('background picker hover', async ({ page }) => {
+    await openStory(page, CLOSED_ID);
+    await page.getByRole('button').hover();
+    await shoot(page, 'background-picker-hover.png');
+  });
+
+  test('background picker open', async ({ page }) => {
+    await openStory(page, OPEN_ID);
+    // The trigger owns the menu, so assert the expanded channel and the menu's
+    // own rows before locking the open surface.
+    await expect(page.getByRole('button').first()).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('menu')).toBeVisible();
+    // Every row publishes the `aria-checked` channel even when nothing is
+    // picked — this fixture passes no `value`, so the open surface is the
+    // unselected one and no row may claim otherwise.
+    await expect(page.getByRole('menuitemradio').first()).toHaveAttribute('aria-checked', 'false');
+    await shoot(page, 'background-picker-open.png');
+  });
+
+  test('background picker disabled', async ({ page }) => {
+    await openStory(page, CLOSED_ID, 'disabled:!true');
+    await expect(page.getByRole('button')).toHaveAttribute('aria-disabled', 'true');
+    await shoot(page, 'background-picker-disabled.png');
+  });
+
+  test('background picker focus-visible', async ({ page }) => {
+    await openStory(page, CLOSED_ID);
+    await page.keyboard.press('Tab');
+    await shoot(page, 'background-picker-focus.png');
+  });
+});
