@@ -1,4 +1,5 @@
 import { addButtonNode } from './followup-nodes-b';
+import { fourStates } from './four-states';
 import type { GroupSpec } from './types';
 
 // The Figma "plus" chip hugs its own board copy at 178px (Board A y=1640,
@@ -9,11 +10,11 @@ export const ADD_BUTTON_GROUPS: GroupSpec[] = [
   {
     title: 'Кнопка додавання',
     width: 178,
-    states: [
-      { label: 'Rest', node: addButtonNode({}) },
-      { label: 'Hover', node: addButtonNode({ hover: true }) },
-      { label: 'Active', node: addButtonNode({ active: true }) },
-      { label: 'Disabled', node: addButtonNode({ disabled: true }) },
-    ],
+    states: fourStates({
+      rest: addButtonNode({}),
+      hover: addButtonNode({ hover: true }),
+      third: { label: 'Active', node: addButtonNode({ active: true }) },
+      disabled: addButtonNode({ disabled: true }),
+    }),
   },
 ];

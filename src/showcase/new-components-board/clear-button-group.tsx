@@ -1,4 +1,5 @@
 import { clearButtonNode } from './followup-nodes-b';
+import { fourStates } from './four-states';
 import type { GroupSpec } from './types';
 
 // The Figma clear row hugs its own board copy at 152px (Board A y=1699,
@@ -9,11 +10,11 @@ export const CLEAR_BUTTON_GROUPS: GroupSpec[] = [
   {
     title: 'Очистити фільтри',
     width: 152,
-    states: [
-      { label: 'Rest', node: clearButtonNode({}) },
-      { label: 'Hover', node: clearButtonNode({ hover: true }) },
-      { label: 'Active', node: clearButtonNode({ active: true }) },
-      { label: 'Disabled', node: clearButtonNode({ disabled: true }) },
-    ],
+    states: fourStates({
+      rest: clearButtonNode({}),
+      hover: clearButtonNode({ hover: true }),
+      third: { label: 'Active', node: clearButtonNode({ active: true }) },
+      disabled: clearButtonNode({ disabled: true }),
+    }),
   },
 ];

@@ -1,7 +1,6 @@
-import { Box } from '@mui/material';
-import React from 'react';
+import type React from 'react';
 
-import { FieldSpinner, loadingSlotSx } from '../field-controls';
+import { slotAdornment } from '../field-controls';
 
 /**
  * The spinner takes the clear ×'s place at the field's trailing edge.
@@ -22,12 +21,5 @@ const SLOT_TOP: string = '50%';
  * consumer that never opts in keeps today's DOM and today's baselines.
  */
 export function selectLoadingAdornment(loading: boolean | undefined): React.ReactNode {
-  if (loading === undefined) {
-    return null;
-  }
-  return (
-    <Box sx={loadingSlotSx(SLOT_RIGHT, SLOT_TOP, loading)}>
-      <FieldSpinner />
-    </Box>
-  );
+  return slotAdornment(SLOT_RIGHT, SLOT_TOP, loading);
 }

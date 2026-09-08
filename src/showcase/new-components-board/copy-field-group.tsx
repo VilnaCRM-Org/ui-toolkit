@@ -1,4 +1,5 @@
 import { copyFieldNode } from './followup-nodes-c';
+import { fourStates } from './four-states';
 import type { GroupSpec } from './types';
 
 // The Figma chip hugs its own board copy at 226px (Board A y=1729, node
@@ -9,11 +10,11 @@ export const COPY_FIELD_GROUPS: GroupSpec[] = [
   {
     title: 'Поле копіювання коду',
     width: 226,
-    states: [
-      { label: 'Rest', node: copyFieldNode({}) },
-      { label: 'Hover', node: copyFieldNode({ hover: true }) },
-      { label: 'Active', node: copyFieldNode({ active: true }) },
-      { label: 'Disabled', node: copyFieldNode({ disabled: true }) },
-    ],
+    states: fourStates({
+      rest: copyFieldNode({}),
+      hover: copyFieldNode({ hover: true }),
+      third: { label: 'Active', node: copyFieldNode({ active: true }) },
+      disabled: copyFieldNode({ disabled: true }),
+    }),
   },
 ];

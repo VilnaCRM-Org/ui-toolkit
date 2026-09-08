@@ -1,7 +1,6 @@
-import { Box } from '@mui/material';
-import React from 'react';
+import type React from 'react';
 
-import { FieldSpinner, loadingSlotSx } from '../field-controls';
+import { slotAdornment } from '../field-controls';
 
 /**
  * The arc takes the clear-all ×'s slot and the × is hidden underneath — the same
@@ -24,12 +23,5 @@ const SLOT_TOP: string = '1.375rem';
  * consumer that never opts in keeps today's DOM and today's baselines.
  */
 export function multiSelectLoadingAdornment(loading: boolean | undefined): React.ReactNode {
-  if (loading === undefined) {
-    return null;
-  }
-  return (
-    <Box sx={loadingSlotSx(SLOT_RIGHT, SLOT_TOP, loading)}>
-      <FieldSpinner />
-    </Box>
-  );
+  return slotAdornment(SLOT_RIGHT, SLOT_TOP, loading);
 }

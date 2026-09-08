@@ -1,4 +1,5 @@
 import { optionCardNode } from './followup-nodes-a';
+import { fourStates } from './four-states';
 import type { GroupSpec } from './types';
 
 // The Figma value box is 262px wide (Board A y=1486, node 439:19838 rest /
@@ -8,11 +9,11 @@ export const OPTION_CARD_GROUPS: GroupSpec[] = [
   {
     title: 'Картка опції',
     width: 262,
-    states: [
-      { label: 'Rest', node: optionCardNode({}) },
-      { label: 'Hover', node: optionCardNode({ hover: true }) },
-      { label: 'Selected', node: optionCardNode({ selected: true }) },
-      { label: 'Disabled', node: optionCardNode({ disabled: true }) },
-    ],
+    states: fourStates({
+      rest: optionCardNode({}),
+      hover: optionCardNode({ hover: true }),
+      third: { label: 'Selected', node: optionCardNode({ selected: true }) },
+      disabled: optionCardNode({ disabled: true }),
+    }),
   },
 ];

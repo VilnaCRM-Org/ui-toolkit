@@ -1,4 +1,5 @@
 import { chevronButtonNode } from './followup-nodes-b';
+import { fourStates } from './four-states';
 import type { GroupSpec } from './types';
 
 // The Figma circle is 30x30 (Board A y=1622, node 451:25765 rest / 451:25768
@@ -8,11 +9,11 @@ export const CHEVRON_BUTTON_GROUPS: GroupSpec[] = [
   {
     title: 'Кнопка-шеврон',
     width: 30,
-    states: [
-      { label: 'Rest', node: chevronButtonNode({}) },
-      { label: 'Hover', node: chevronButtonNode({ hover: true }) },
-      { label: 'Active', node: chevronButtonNode({ active: true }) },
-      { label: 'Disabled', node: chevronButtonNode({ disabled: true }) },
-    ],
+    states: fourStates({
+      rest: chevronButtonNode({}),
+      hover: chevronButtonNode({ hover: true }),
+      third: { label: 'Active', node: chevronButtonNode({ active: true }) },
+      disabled: chevronButtonNode({ disabled: true }),
+    }),
   },
 ];
