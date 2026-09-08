@@ -40,7 +40,13 @@ function addGroupSize(sum: number, group: BackgroundOptionGroup): number {
 }
 
 function countOptions(groups: readonly BackgroundOptionGroup[]): number {
-  return groups.reduce(addGroupSize, 0);
+  // Called through an arrow rather than passed straight to `reduce`: `reduce`
+  // hands the callback four arguments, so a named function silently picks up
+  // whatever its later parameters happen to be (Sonar S7727).
+  return groups.reduce(
+    (sum: number, group: BackgroundOptionGroup): number => addGroupSize(sum, group),
+    0
+  );
 }
 
 interface PickerState {
