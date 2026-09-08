@@ -12,7 +12,29 @@ import {
 } from '../../src/components/ui-chevron-button/styles';
 import type { UiChevronButtonProps } from '../../src/components/ui-chevron-button/types';
 
+import {
+  describeActivationRequests,
+  describeAriaDisabledFocusable,
+  describeButtonRoot,
+  describeConsumerSx,
+  describeFocusRingOrder,
+  describeGlyphDecoration,
+  describeNoAriaState,
+  describeNoOpsWhileDisabled,
+  describeRetainsFocusAcrossDisabledFlip,
+  describeSilentInProduction,
+  describeStaticBranch,
+  describeStaticRefIsNull,
+  describeTabOrderAndRefs,
+  describeWarnSequence,
+  ruleAt,
+  type ActivationOverrides,
+  type SxLayers,
+} from './utils/activation-control-contract';
+import { nodesMatching } from './utils/dom-queries';
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject } from './utils/style-layers';
 
 // UiChevronButton emits one dev-only accessible-name warning via console.warn.
 // Silence it for the suite and keep a handle for the assertions.
@@ -32,9 +54,9 @@ const DARK_PRIMARY: string = '#1A1C1E';
 interface ButtonOverrides {
   label?: string | undefined;
   direction?: UiChevronButtonProps['direction'];
-  onActivate?: () => void;
-  disabled?: boolean;
-  id?: string;
+  onActivate?: (() => void) | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
   sx?: UiChevronButtonProps['sx'];
 }
 
@@ -55,261 +77,69 @@ function buttonWith(extra: Readonly<ButtonOverrides>): React.ReactElement {
   );
 }
 
+// The activation-control contract only ever varies `disabled`/`id`/`sx` for
+// this control (chevron forwards no `lang`); `label` and `onActivate` stay
+// this suite's own concern (see `buttonWith`).
+function wiredWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return buttonWith({ onActivate: noop, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
+function staticWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return buttonWith({ disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
+function withActivation(
+  onActivate: (() => void) | undefined,
+  extra: Readonly<ActivationOverrides>
+): React.ReactElement {
+  return buttonWith({ onActivate, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
 function chevronButton(): HTMLElement {
   return screen.getByRole('button');
 }
-
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
-// Every hook that would make something else in the button focusable.
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-// Every ARIA/interactivity hook the static branch must not ship.
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby], [aria-haspopup], [aria-expanded], [aria-controls]';
-
-// `chevronButtonSx` is typed as the broad `SxProps` union; in practice it always
-// returns the `[base, ...consumerSx]` array. Narrow it once so the layer
-// assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
 
 function layersOf(interactive: boolean, sx: UiChevronButtonProps['sx']): SxLayers {
   return chevronButtonSx({ interactive, sx }) as SxLayers;
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  const [layer] = layersOf(interactive, undefined);
-  expect(layer).toBeDefined();
-  return layer as StyleObject;
+  return firstOf(layersOf(interactive, undefined));
 }
 
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
-}
+// The behaviour every plain activation control in the toolkit shares — native
+// button semantics, the aria-disabled boundary, tab-order/ref plumbing, the
+// `sx` merge and the dev-warning shape — is asserted once in
+// `activation-control-contract.tsx`. What follows below is what is TRUE OF
+// THIS BUTTON ALONE: its content tree, its glyph geometry, its own palette.
+const contract = {
+  wiredWith,
+  staticWith,
+  withActivation,
+  root: chevronButton,
+  accessibleName: LABEL,
+  component: UiChevronButton,
+  expectedDisplayName: 'UiChevronButton',
+  hasLang: false,
+  warn,
+  baseOf,
+};
 
-function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  const [key] = keysMatching(base, fragment);
-  expect(key).toBeDefined();
-  return base[key as string] as StyleObject;
-}
-
-// Records every node the forwarded callback ref is handed, attach and detach.
-function collectorInto(
-  seen: (HTMLButtonElement | null)[]
-): (node: HTMLButtonElement | null) => void {
-  return (node: HTMLButtonElement | null): void => {
-    seen.push(node);
-  };
-}
-
-describe('UiChevronButton — wired button semantics', () => {
-  it('renders the circle as ONE native type="button" named by aria-label', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const root: HTMLElement = chevronButton();
-    expect(root.tagName).toBe('BUTTON');
-    expect(root).toHaveAttribute('type', 'button');
-    expect(root).not.toHaveAttribute('role');
-    expect(root).toHaveAccessibleName(LABEL);
-  });
-
-  it('ships no ARIA state beyond aria-label/aria-disabled — a plain action button', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const root: HTMLElement = chevronButton();
-    expect(root).not.toHaveAttribute('aria-pressed');
-    expect(root).not.toHaveAttribute('aria-expanded');
-    expect(root).not.toHaveAttribute('aria-haspopup');
-    expect(root).not.toHaveAttribute('aria-disabled');
-  });
-
-  it('keeps exactly one focusable element', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    expect(focusables()).toHaveLength(1);
-    expect(focusables()[0]).toBe(chevronButton());
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-  });
-
-  it('renders the glyph as an aria-hidden decoration that is never a control', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    expect(svg).toHaveAttribute('aria-hidden', 'true');
-    expect(svg).toHaveAttribute('focusable', 'false');
-    expect(nodesMatching('title')).toHaveLength(0);
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
-
-  it('applies id only when the consumer supplies it', () => {
-    const { rerender } = render(buttonWith({ onActivate: noop }));
-
-    expect(chevronButton()).not.toHaveAttribute('id');
-
-    rerender(buttonWith({ id: 'next-page', onActivate: noop }));
-    expect(chevronButton()).toHaveAttribute('id', 'next-page');
-  });
-
-  it('exposes its display name', () => {
-    expect(UiChevronButton.displayName).toBe('UiChevronButton');
-  });
+describe('UiChevronButton — root semantics', () => {
+  describeButtonRoot(contract);
+  describeNoAriaState(contract);
+  describeGlyphDecoration(contract);
 });
 
 describe('UiChevronButton — static (unwired) button', () => {
-  it('exposes zero buttons, zero focusable elements and zero ARIA hooks', () => {
-    render(buttonWith({}));
-
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(focusables()).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
-  });
-
-  it('keeps the identical glyph content, with the consumer id', () => {
-    render(buttonWith({ id: 'static-chevron' }));
-
-    const root: Element = nodesMatching('#static-chevron')[0] as Element;
-    expect(root.tagName).toBe('SPAN');
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
+  describeStaticBranch(contract);
 
   it('honours an explicit direction on the static branch too', () => {
     render(buttonWith({ direction: 'left' }));
 
-    const [pathEl] = nodesMatching('svg path');
-    expect(pathEl).toBeDefined();
-    const path: string = (pathEl as Element).getAttribute('d') ?? '';
+    const pathEl: Element = firstOf(nodesMatching('svg path'));
+    const path: string = pathEl.getAttribute('d') ?? '';
     expect(path).toBe('M12.5 5L7.5 10L12.5 15');
-  });
-
-  it('never paints the disabled state, so no grey outlives aria-disabled', () => {
-    render(buttonWith({ disabled: true }));
-
-    expect(nodesMatching('[aria-disabled]')).toHaveLength(0);
-    expect(baseOf(false)['&[aria-disabled="true"]']).toBeUndefined();
-  });
-
-  it('never fires anything, because there is nothing to activate', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(buttonWith({ id: 'static-chevron' }));
-
-    const root: HTMLElement = nodesMatching('#static-chevron')[0] as HTMLElement;
-    await user.click(root);
-    await user.tab();
-
-    expect(root).not.toHaveFocus();
-    expect(document.body).toHaveFocus();
-  });
-});
-
-describe('UiChevronButton — activation', () => {
-  it('activates exactly once per click, with no payload', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    await user.click(chevronButton());
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-    expect(onActivate).toHaveBeenCalledWith();
-  });
-
-  it('activates exactly once on Enter (no manual key handler double-fires)', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    chevronButton().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-  });
-
-  it('activates exactly once on Space', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    chevronButton().focus();
-    await user.keyboard(' ');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-  });
-
-  it('never submits an enclosing form on Enter (type="button")', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSubmit: jest.Mock = jest.fn();
-    const onActivate: jest.Mock = jest.fn();
-    render(<form onSubmit={onSubmit}>{buttonWith({ onActivate })}</form>);
-
-    chevronButton().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-});
-
-describe('UiChevronButton — disabled (aria-disabled boundary)', () => {
-  it('stays a focusable button with aria-disabled and no native disabled attribute', () => {
-    render(buttonWith({ disabled: true, onActivate: noop }));
-
-    const root: HTMLElement = chevronButton();
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root.getAttributeNames()).not.toContain('disabled');
-    expect(root).toBeEnabled();
-  });
-
-  it('remains reachable by Tab while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(buttonWith({ disabled: true, onActivate: noop }));
-
-    await user.tab();
-    expect(chevronButton()).toHaveFocus();
-  });
-
-  it('no-ops every activation path while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ disabled: true, onActivate }));
-
-    await user.click(chevronButton());
-    chevronButton().focus();
-    await user.keyboard('{Enter} ');
-
-    expect(onActivate).not.toHaveBeenCalled();
-  });
-
-  it('retains focus across a disabled flip, and re-activates once re-enabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    const { rerender } = render(buttonWith({ onActivate }));
-
-    const root: HTMLElement = chevronButton();
-    root.focus();
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ disabled: true, onActivate }));
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ onActivate }));
-    expect(root).not.toHaveAttribute('aria-disabled');
-
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(2);
   });
 
   it('leaves aria-disabled off a disabled but UNWIRED button', () => {
@@ -320,29 +150,37 @@ describe('UiChevronButton — disabled (aria-disabled boundary)', () => {
   });
 });
 
+describe('UiChevronButton — activation', () => {
+  describeActivationRequests(contract);
+});
+
+describe('UiChevronButton — disabled (aria-disabled boundary)', () => {
+  describeAriaDisabledFocusable(contract);
+  describeNoOpsWhileDisabled(contract);
+  describeRetainsFocusAcrossDisabledFlip(contract);
+});
+
 describe('UiChevronButton — focus and refs', () => {
-  it('adds no explicit tabindex, so every wired button is one native tab stop', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(
+  describeTabOrderAndRefs({
+    ...contract,
+    tabOrderSiblings: (): React.ReactElement => (
       <div>
         <UiChevronButton label="Перша" onActivate={noop} />
         <UiChevronButton label="Статична" />
         <UiChevronButton label="Друга" onActivate={noop} />
       </div>
-    );
-
-    expect(nodesMatching('[tabindex]')).toHaveLength(0);
-
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Перша' })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Друга' })).toHaveFocus();
+    ),
+    firstName: 'Перша',
+    secondName: 'Друга',
+    withRef: (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
+      <UiChevronButton ref={ref} label={LABEL} onActivate={noop} />
+    ),
   });
 
   it('keeps focus on the button after activation — it never moves focus itself', async () => {
     const user: UserEvent = userEvent.setup();
     const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
+    render(withActivation(onActivate, {}));
 
     const root: HTMLElement = chevronButton();
     root.focus();
@@ -352,48 +190,27 @@ describe('UiChevronButton — focus and refs', () => {
     expect(root).toHaveFocus();
   });
 
-  it('forwards an object ref to the button itself, never a wrapper', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    render(<UiChevronButton ref={ref} label={LABEL} onActivate={noop} />);
-
-    expect(ref.current).toBe(chevronButton());
-    expect(ref.current?.tagName).toBe('BUTTON');
-  });
-
-  it('forwards a callback ref to the same node and releases it on unmount', () => {
-    const seen: (HTMLButtonElement | null)[] = [];
-    const collect: (node: HTMLButtonElement | null) => void = collectorInto(seen);
-    const { unmount } = render(<UiChevronButton ref={collect} label={LABEL} onActivate={noop} />);
-
-    expect(seen[0]).toBe(chevronButton());
-    unmount();
-    expect(seen[seen.length - 1]).toBeNull();
-  });
-
-  it('hands back nothing on a static button — there is no focusable node to return', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    render(<UiChevronButton ref={ref} label={LABEL} />);
-
-    expect(ref.current).toBeNull();
-  });
+  describeStaticRefIsNull(
+    (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
+      <UiChevronButton ref={ref} label={LABEL} />
+    )
+  );
 });
 
 describe('UiChevronButton — direction (visual only)', () => {
   it('defaults to right, matching the on-canvas Figma render', () => {
     render(buttonWith({ onActivate: noop }));
 
-    const [pathEl] = nodesMatching('svg path');
-    expect(pathEl).toBeDefined();
-    const path: string = (pathEl as Element).getAttribute('d') ?? '';
+    const pathEl: Element = firstOf(nodesMatching('svg path'));
+    const path: string = pathEl.getAttribute('d') ?? '';
     expect(path).toBe('M7.5 5L12.5 10L7.5 15');
   });
 
   it('flips to left on request', () => {
     render(buttonWith({ direction: 'left', onActivate: noop }));
 
-    const [pathEl] = nodesMatching('svg path');
-    expect(pathEl).toBeDefined();
-    const path: string = (pathEl as Element).getAttribute('d') ?? '';
+    const pathEl: Element = firstOf(nodesMatching('svg path'));
+    const path: string = pathEl.getAttribute('d') ?? '';
     expect(path).toBe('M12.5 5L7.5 10L12.5 15');
   });
 
@@ -406,13 +223,10 @@ describe('UiChevronButton — direction (visual only)', () => {
 });
 
 describe('UiChevronButton — dev warnings', () => {
-  it('stays silent for a healthy wired button and a healthy static one', () => {
-    const { rerender } = render(buttonWith({ onActivate: noop }));
-    expect(warn.spy).not.toHaveBeenCalled();
-
-    rerender(buttonWith({}));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
+  describeWarnSequence(warn, 'stays silent for a healthy wired button and a healthy static one', [
+    { render: (): React.ReactElement => wiredWith({}), expectedCallCount: 0 },
+    { render: (): React.ReactElement => staticWith({}), expectedCallCount: 0 },
+  ]);
 
   it('warns when the label is blank', () => {
     render(buttonWith({ label: '  ', onActivate: noop }));
@@ -432,27 +246,24 @@ describe('UiChevronButton — dev warnings', () => {
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `label`'));
   });
 
-  it('warns once per warning state, not once per render', () => {
-    const { rerender } = render(buttonWith({ label: '', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
+  describeWarnSequence(warn, 'warns once per warning state, not once per render', [
+    {
+      render: (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ label: '   ', onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ onActivate: noop }),
+      expectedCallCount: 1,
+    },
+  ]);
 
-    rerender(buttonWith({ label: '   ', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-  });
-
-  it('emits nothing in production', () => {
-    const originalEnv: string | undefined = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      render(buttonWith({ label: '', onActivate: noop }));
-      expect(warn.spy).not.toHaveBeenCalled();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
-  });
+  describeSilentInProduction(warn, [
+    (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+  ]);
 });
 
 describe('chevronButtonWarning — pure warning selector', () => {
@@ -468,17 +279,9 @@ describe('chevronButtonWarning — pure warning selector', () => {
 });
 
 describe('UiChevronButton — consumer sx', () => {
-  it('applies an object sx to the wired root, merged last', () => {
-    render(buttonWith({ sx: { marginTop: '1rem' }, onActivate: noop }));
-    expect(chevronButton()).toHaveStyle({ marginTop: '1rem' });
-  });
-
-  it('applies array sx layers to the static root', () => {
-    render(buttonWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
-
-    const root: Element = nodesMatching('#styled')[0] as Element;
-    expect(root).toHaveStyle({ marginTop: '1rem' });
-    expect(root).toHaveStyle({ paddingTop: '2rem' });
+  describeConsumerSx(contract, {
+    render: (sx): React.ReactElement => staticWith({ id: 'styled', sx }),
+    target: (): Element => firstOf(nodesMatching('#styled')),
   });
 });
 
@@ -534,20 +337,18 @@ describe('chevronButtonSx — style assembly (pure, mutation-killing)', () => {
     });
   });
 
-  it('ships the shared single-layer inset ring, declared after hover/active/disabled', () => {
-    const base: StyleObject = baseOf(true);
-    const keys: string[] = Object.keys(base);
-    const hover: number = keys.findIndex((key: string) => key.includes(':hover'));
-    const active: number = keys.findIndex((key: string) => key.includes(':active'));
-    const disabled: number = keys.indexOf('&[aria-disabled="true"]');
-    const ring: number = keys.indexOf('&:focus-visible');
-
-    expect(active).toBeGreaterThan(hover);
-    expect(disabled).toBeGreaterThan(active);
-    expect(ring).toBeGreaterThan(disabled);
-    expect(ruleAt(base, ':focus-visible')).toEqual({ outline: 'none', boxShadow: FOCUS_RING });
+  it('ships the shared single-layer inset ring, verbatim', () => {
+    expect(ruleAt(baseOf(true), ':focus-visible')).toEqual({
+      outline: 'none',
+      boxShadow: FOCUS_RING,
+    });
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
+
+  describeFocusRingOrder(
+    () => baseOf(true),
+    (keys: string[]): number => keys.indexOf('&:focus-visible')
+  );
 
   it('adds cursor and appearance only to the wired branch', () => {
     expect(baseOf(true).cursor).toBe('pointer');
@@ -593,8 +394,8 @@ describe('ChevronGlyph — the glyph (pure recipe)', () => {
   it('renders one decorative 20px svg whose stroke follows currentColor', () => {
     render(<ChevronGlyph direction="right" />);
 
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    const path: Element = nodesMatching('svg path')[0] as Element;
+    const svg: Element = firstOf(nodesMatching('svg'));
+    const path: Element = firstOf(nodesMatching('svg path'));
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '20');
@@ -612,7 +413,7 @@ describe('ChevronGlyph — the glyph (pure recipe)', () => {
   it('renders the left path when direction is left', () => {
     render(<ChevronGlyph direction="left" />);
 
-    const path: Element = nodesMatching('svg path')[0] as Element;
+    const path: Element = firstOf(nodesMatching('svg path'));
     expect(path).toHaveAttribute('d', 'M12.5 5L7.5 10L12.5 15');
   });
 });

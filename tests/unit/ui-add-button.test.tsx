@@ -1,5 +1,4 @@
 import { render, renderHook, screen } from '@testing-library/react';
-import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import addButtonWarning from '../../src/components/ui-add-button/add-button-warnings';
@@ -21,7 +20,27 @@ import {
   type AddButtonModel,
 } from '../../src/components/ui-add-button/use-add-button';
 
+import {
+  describeActivationRequests,
+  describeAriaDisabledFocusable,
+  describeButtonRoot,
+  describeConsumerSx,
+  describeFocusRingOrder,
+  describeGlyphDecoration,
+  describeNoAriaState,
+  describeNoOpsWhileDisabled,
+  describeRetainsFocusAcrossDisabledFlip,
+  describeSilentInProduction,
+  describeStaticBranch,
+  describeWarnSequence,
+  ruleAt,
+  type ActivationOverrides,
+  type SxLayers,
+} from './utils/activation-control-contract';
+import { nodesMatching } from './utils/dom-queries';
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject } from './utils/style-layers';
 
 // UiAddButton emits one dev-only accessible-name warning via console.warn.
 // Silence it for the suite and keep a handle for the assertions.
@@ -55,91 +74,70 @@ function buttonWith(extra: Readonly<Partial<UiAddButtonProps>>): React.ReactElem
   );
 }
 
+// The activation-control contract only ever varies `disabled`/`id`/`lang`/`sx`;
+// `label` and `onActivate` stay this suite's own concern (see `buttonWith`).
+function wiredWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return buttonWith({ onActivate: noop, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
+function staticWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return buttonWith({ disabled: extra.disabled, id: extra.id, lang: extra.lang, sx: extra.sx });
+}
+
+function withActivation(
+  onActivate: (() => void) | undefined,
+  extra: Readonly<ActivationOverrides>
+): React.ReactElement {
+  return buttonWith({ onActivate, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
 function button(): HTMLElement {
   return screen.getByRole('button');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 function glyphBox(): Element {
-  const [box] = nodesMatching(`.${ADD_BUTTON_GLYPH_CLASS}`);
-  expect(box).toBeDefined();
-  return box as Element;
+  return firstOf(nodesMatching(`.${ADD_BUTTON_GLYPH_CLASS}`));
 }
-
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby], [aria-haspopup], [aria-expanded], [aria-controls]';
-
-// `addButtonSx` is typed as the broad `SxProps` union; in practice it always
-// returns the `[base, ...consumerSx]` array. Narrow it once here so the layer
-// assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
 
 function layersOf(interactive: boolean, sx: UiAddButtonProps['sx']): SxLayers {
   return addButtonSx({ interactive, sx }) as SxLayers;
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  const [layer] = layersOf(interactive, undefined);
-  expect(layer).toBeDefined();
-  return layer as StyleObject;
+  return firstOf(layersOf(interactive, undefined));
 }
 
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
-}
+// The behaviour every plain activation control in the toolkit shares — native
+// button semantics, the aria-disabled boundary, tab-order/ref plumbing, the
+// `sx` merge and the dev-warning shape — is asserted once in
+// `activation-control-contract.tsx`. What follows below is what is TRUE OF
+// THIS BUTTON ALONE: its content tree, its glyph geometry, its own palette.
+const contract = {
+  wiredWith,
+  staticWith,
+  withActivation,
+  root: button,
+  accessibleName: LABEL,
+  component: UiAddButton,
+  expectedDisplayName: 'UiAddButton',
+  hasLang: true,
+  warn,
+  glyphBox,
+  contentText: LABEL,
+  baseOf,
+};
 
-function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  const [key] = keysMatching(base, fragment);
-  expect(key).toBeDefined();
-  return base[key as string] as StyleObject;
-}
+describe('UiAddButton — root semantics', () => {
+  describeButtonRoot(contract);
+  describeNoAriaState(contract, ['aria-label']);
+  describeGlyphDecoration(contract, { glyphBox, checkTabindex: true });
+});
 
 describe('UiAddButton — wired button semantics', () => {
-  it('renders the whole pill as ONE native type="button" with no implicit role hack', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const root: HTMLElement = button();
-    expect(root.tagName).toBe('BUTTON');
-    expect(root).toHaveAttribute('type', 'button');
-    expect(root).not.toHaveAttribute('role');
-    expect(root).toHaveAccessibleName(LABEL);
-  });
-
-  it('ships no ARIA state at all — a plain action button', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const root: HTMLElement = button();
-    expect(root).not.toHaveAttribute('aria-pressed');
-    expect(root).not.toHaveAttribute('aria-expanded');
-    expect(root).not.toHaveAttribute('aria-haspopup');
-    expect(root).not.toHaveAttribute('aria-disabled');
-    expect(root).not.toHaveAttribute('aria-label');
-  });
-
-  it('keeps exactly one focusable element', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    expect(focusables()).toHaveLength(1);
-    expect(focusables()[0]).toBe(button());
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-  });
-
   it('paints the label as a plain span carrying the class hook, label first', () => {
     render(buttonWith({ onActivate: noop }));
 
-    const label: Element = nodesMatching(`.${ADD_BUTTON_LABEL_CLASS}`)[0] as Element;
+    const label: Element = firstOf(nodesMatching(`.${ADD_BUTTON_LABEL_CLASS}`));
     expect(label.tagName).toBe('SPAN');
     expect(screen.getByText(LABEL)).toBe(label);
     expect(nodesMatching(`.${ADD_BUTTON_LABEL_CLASS}`)).toHaveLength(1);
@@ -147,192 +145,31 @@ describe('UiAddButton — wired button semantics', () => {
     expect(order & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('renders the plus as an aria-hidden decoration that is never a control', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    expect(box.tagName).toBe('SPAN');
-    expect(box).not.toHaveAttribute('role');
-    expect(box).not.toHaveAttribute('tabindex');
-    expect(svg).toHaveAttribute('aria-hidden', 'true');
-    expect(svg).toHaveAttribute('focusable', 'false');
-    expect(nodesMatching('title')).toHaveLength(0);
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
-
-  it('applies id and lang only when the consumer supplies them', () => {
-    const { rerender } = render(buttonWith({ onActivate: noop }));
-
-    expect(button()).not.toHaveAttribute('id');
-    expect(button()).not.toHaveAttribute('lang');
-
-    rerender(buttonWith({ id: 'add-column', lang: 'ru', onActivate: noop }));
-    expect(button()).toHaveAttribute('id', 'add-column');
-    expect(button()).toHaveAttribute('lang', 'ru');
-  });
-
   it('uses the built-in Ukrainian default label when none is supplied', () => {
     render(<UiAddButton onActivate={noop} />);
     expect(button()).toHaveAccessibleName(DEFAULT_LABEL);
   });
-
-  it('exposes its display name', () => {
-    expect(UiAddButton.displayName).toBe('UiAddButton');
-  });
 });
 
 describe('UiAddButton — static (unwired) button', () => {
-  it('exposes zero buttons, zero focusable elements and zero ARIA hooks', () => {
-    render(buttonWith({}));
-
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(focusables()).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
-  });
-
-  it('keeps the identical content tree, plus glyph included, with id and lang', () => {
-    render(buttonWith({ id: 'static-add', lang: 'ru' }));
-
-    const root: Element = nodesMatching('#static-add')[0] as Element;
-    expect(root.tagName).toBe('SPAN');
-    expect(root).toHaveAttribute('lang', 'ru');
-    expect(root.contains(glyphBox())).toBe(true);
-    expect(screen.getByText(LABEL)).toBeInTheDocument();
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
-
-  it('never paints the disabled state, so no grey outlives aria-disabled', () => {
-    render(buttonWith({ disabled: true }));
-
-    expect(nodesMatching('[aria-disabled]')).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
-    expect(baseOf(false)['&[aria-disabled="true"]']).toBeUndefined();
-  });
-
-  it('never fires anything, because there is nothing to activate', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(buttonWith({ id: 'static-add' }));
-
-    const root: HTMLElement = nodesMatching('#static-add')[0] as HTMLElement;
-    await user.click(root);
-    await user.tab();
-
-    expect(root).not.toHaveFocus();
-    expect(document.body).toHaveFocus();
-  });
+  describeStaticBranch(contract);
 });
 
 describe('UiAddButton — activation', () => {
-  it('requests activation exactly once per click, with no payload', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    await user.click(button());
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-    expect(onActivate).toHaveBeenCalledWith();
-  });
-
-  it('requests activation exactly once on Enter (no manual key handler double-fires)', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    button().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-  });
-
-  it('requests activation exactly once on Space', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    button().focus();
-    await user.keyboard(' ');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-  });
-
-  it('never submits an enclosing form on Enter (type="button")', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSubmit: jest.Mock = jest.fn();
-    const onActivate: jest.Mock = jest.fn();
-    render(<form onSubmit={onSubmit}>{buttonWith({ onActivate })}</form>);
-
-    button().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
+  describeActivationRequests(contract);
 });
 
 describe('UiAddButton — disabled (aria-disabled boundary)', () => {
-  it('stays a focusable button with aria-disabled and no native disabled attribute', () => {
-    render(buttonWith({ disabled: true, onActivate: noop }));
-
-    const root: HTMLElement = button();
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root.getAttributeNames()).not.toContain('disabled');
-    expect(root).toBeEnabled();
-  });
-
-  it('remains reachable by Tab while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(buttonWith({ disabled: true, onActivate: noop }));
-
-    await user.tab();
-    expect(button()).toHaveFocus();
-  });
-
-  it('no-ops every activation path while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ disabled: true, onActivate }));
-
-    await user.click(button());
-    button().focus();
-    await user.keyboard('{Enter} ');
-
-    expect(onActivate).not.toHaveBeenCalled();
-  });
-
-  it('retains focus when a focused button flips disabled, then re-enables', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    const { rerender } = render(buttonWith({ onActivate }));
-
-    const root: HTMLElement = button();
-    root.focus();
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ disabled: true, onActivate }));
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ onActivate }));
-    expect(root).not.toHaveAttribute('aria-disabled');
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(2);
-  });
+  describeAriaDisabledFocusable(contract);
+  describeNoOpsWhileDisabled(contract);
+  describeRetainsFocusAcrossDisabledFlip(contract);
 });
 
 describe('UiAddButton — dev warnings', () => {
-  it('stays silent for a healthy wired button and a healthy static one', () => {
-    const { rerender } = render(buttonWith({ onActivate: noop }));
-    expect(warn.spy).not.toHaveBeenCalled();
-
-    rerender(buttonWith({}));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
+  describeWarnSequence(warn, 'stays silent for a healthy wired button and a healthy static one', [
+    { render: (): React.ReactElement => wiredWith({}), expectedCallCount: 0 },
+    { render: (): React.ReactElement => staticWith({}), expectedCallCount: 0 },
+  ]);
 
   it('stays silent when label is omitted — the default fills in', () => {
     render(<UiAddButton onActivate={noop} />);
@@ -351,27 +188,24 @@ describe('UiAddButton — dev warnings', () => {
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('explicitly blank'));
   });
 
-  it('warns once per warning state, not once per render', () => {
-    const { rerender } = render(buttonWith({ label: '', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
+  describeWarnSequence(warn, 'warns once per warning state, not once per render', [
+    {
+      render: (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ label: '   ', onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ label: LABEL, onActivate: noop }),
+      expectedCallCount: 1,
+    },
+  ]);
 
-    rerender(buttonWith({ label: '   ', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ label: LABEL, onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-  });
-
-  it('emits nothing in production', () => {
-    const originalEnv: string | undefined = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      render(buttonWith({ label: '', onActivate: noop }));
-      expect(warn.spy).not.toHaveBeenCalled();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
-  });
+  describeSilentInProduction(warn, [
+    (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+  ]);
 });
 
 describe('addButtonWarning — first-applicable selector (pure)', () => {
@@ -393,17 +227,9 @@ describe('addButtonWarning — first-applicable selector (pure)', () => {
 });
 
 describe('UiAddButton — consumer sx', () => {
-  it('applies an object sx to the wired root, merged last', () => {
-    render(buttonWith({ sx: { marginTop: '1rem' }, onActivate: noop }));
-    expect(button()).toHaveStyle({ marginTop: '1rem' });
-  });
-
-  it('applies array sx layers to the static root', () => {
-    render(buttonWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
-
-    const root: Element = nodesMatching('#styled')[0] as Element;
-    expect(root).toHaveStyle({ marginTop: '1rem' });
-    expect(root).toHaveStyle({ paddingTop: '2rem' });
+  describeConsumerSx(contract, {
+    render: (sx): React.ReactElement => staticWith({ id: 'styled', sx }),
+    target: (): Element => firstOf(nodesMatching('#styled')),
   });
 });
 
@@ -489,17 +315,10 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
-  it('declares the ring AFTER hover, active and disabled', () => {
-    const keys: string[] = Object.keys(baseOf(true));
-    const hover: number = keys.findIndex((key: string) => key.includes(':hover'));
-    const active: number = keys.findIndex((key: string) => key.includes(':active'));
-    const disabled: number = keys.indexOf('&[aria-disabled="true"]');
-    const ring: number = keys.indexOf('&:focus-visible');
-
-    expect(active).toBeGreaterThan(hover);
-    expect(disabled).toBeGreaterThan(active);
-    expect(ring).toBeGreaterThan(disabled);
-  });
+  describeFocusRingOrder(
+    () => baseOf(true),
+    (keys: string[]): number => keys.indexOf('&:focus-visible')
+  );
 
   it('adds cursor and appearance only to the wired branch', () => {
     expect(baseOf(true).cursor).toBe('pointer');
@@ -581,8 +400,8 @@ describe('PlusGlyph — the trailing plus (pure recipe)', () => {
   it('renders one decorative 18px svg whose stroke follows currentColor', () => {
     render(<PlusGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    const path: Element = nodesMatching('svg path')[0] as Element;
+    const svg: Element = firstOf(nodesMatching('svg'));
+    const path: Element = firstOf(nodesMatching('svg path'));
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '18');

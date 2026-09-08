@@ -24,7 +24,24 @@ import {
   type CopyFieldModel,
 } from '../../src/components/ui-copy-field/use-copy-field';
 
+import {
+  describeAriaDisabledFocusable,
+  describeButtonRoot,
+  describeConsumerSx,
+  describeFocusRingOrder,
+  describeGlyphDecoration,
+  describeNoAriaState,
+  describeSilentInProduction,
+  describeTabOrderAndRefs,
+  describeWarnSequence,
+  ruleAt,
+  type ActivationOverrides,
+  type SxLayers,
+} from './utils/activation-control-contract';
+import { expectNoLiveRegion, nodesMatching } from './utils/dom-queries';
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject } from './utils/style-layers';
 
 // UiCopyField emits the two dev-only accessible-name warnings via console.warn.
 // Silence them for the suite and keep a handle for the assertions.
@@ -52,11 +69,11 @@ const WHITE: string = '#FFF';
 interface FieldOverrides {
   value?: string | undefined;
   copyLabel?: string | undefined;
-  onCopy?: (value: string) => void;
-  onCopyError?: (error: unknown) => void;
-  disabled?: boolean;
-  id?: string;
-  lang?: string;
+  onCopy?: ((value: string) => void) | undefined;
+  onCopyError?: ((error: unknown) => void) | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  lang?: string | undefined;
   sx?: UiCopyFieldProps['sx'];
 }
 
@@ -79,75 +96,26 @@ function fieldWith(extra: Readonly<FieldOverrides>): React.ReactElement {
   );
 }
 
+// The chip is always wired — there is no unwired branch — so the shared
+// activation-control contract only ever varies `disabled`/`id`/`lang`/`sx`.
+function wiredWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return fieldWith({ disabled: extra.disabled, id: extra.id, lang: extra.lang, sx: extra.sx });
+}
+
 function field(): HTMLElement {
   return screen.getByRole('button');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 function glyphBox(): Element {
-  const [box] = nodesMatching(`.${COPY_FIELD_GLYPH_CLASS}`);
-  expect(box).toBeDefined();
-  return box as Element;
+  return firstOf(nodesMatching(`.${COPY_FIELD_GLYPH_CLASS}`));
 }
-
-// Every hook that would make something else in the chip focusable. Exactly
-// one match is allowed.
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-// `copyFieldSx` is typed as the broad `SxProps` union; in practice it always
-// returns the `[base, ...consumerSx]` array. Narrow it once here so the layer
-// assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
 
 function layersOf(sx: UiCopyFieldProps['sx']): SxLayers {
   return copyFieldSx(sx) as SxLayers;
 }
 
 function baseOf(): StyleObject {
-  const [layer] = layersOf(undefined);
-  expect(layer).toBeDefined();
-  return layer as StyleObject;
-}
-
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
-}
-
-function ruleAt(base: StyleObject, fragment: string): StyleObject {
-  const [key] = keysMatching(base, fragment);
-  expect(key).toBeDefined();
-  return base[key as string] as StyleObject;
-}
-
-// Records every node the forwarded callback ref is handed, attach and detach.
-function collectorInto(
-  seen: (HTMLButtonElement | null)[]
-): (node: HTMLButtonElement | null) => void {
-  return (node: HTMLButtonElement | null): void => {
-    seen.push(node);
-  };
+  return firstOf(layersOf(undefined));
 }
 
 // Stubs `navigator.clipboard` for the three activation branches the contract
@@ -161,72 +129,36 @@ function stubClipboard(writeText: ((value: string) => Promise<void>) | undefined
   });
 }
 
+// The behaviour every plain activation control in the toolkit shares — native
+// button semantics, the aria-disabled boundary, tab-order/ref plumbing, the
+// `sx` merge and the dev-warning shape — is asserted once in
+// `activation-control-contract.tsx`. What follows below is what is TRUE OF
+// THIS CHIP ALONE: its clipboard-driven activation, its copy latch, its
+// two-part accessible name.
+const contract = {
+  wiredWith,
+  root: field,
+  accessibleName: FIELD_NAME,
+  component: UiCopyField,
+  expectedDisplayName: 'UiCopyField',
+  hasLang: true,
+  warn,
+};
+
 describe('UiCopyField — button semantics', () => {
   afterEach(() => stubClipboard(undefined));
 
-  it('renders the whole pill as ONE native type="button" with no implicit role hack', () => {
-    render(fieldWith({}));
-
-    const root: HTMLElement = field();
-    expect(root.tagName).toBe('BUTTON');
-    expect(root).toHaveAttribute('type', 'button');
-    expect(root).not.toHaveAttribute('role');
-    expect(root).toHaveAccessibleName(FIELD_NAME);
-  });
-
-  it('ships no ARIA state beyond the disabled boundary', () => {
-    render(fieldWith({}));
-
-    const root: HTMLElement = field();
-    expect(root).not.toHaveAttribute('aria-pressed');
-    expect(root).not.toHaveAttribute('aria-expanded');
-    expect(root.getAttributeNames()).not.toContain('aria-checked');
-    expect(root).not.toHaveAttribute('aria-disabled');
-  });
-
-  it('keeps exactly one focusable element', () => {
-    render(fieldWith({}));
-
-    expect(focusables()).toHaveLength(1);
-    expect(focusables()[0]).toBe(field());
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-  });
+  describeButtonRoot(contract);
+  describeNoAriaState(contract, ['aria-checked']);
+  describeGlyphDecoration(contract, { glyphBox });
 
   it('paints the value as a plain span carrying the class hook', () => {
     render(fieldWith({}));
 
-    const value: Element = nodesMatching(`.${COPY_FIELD_VALUE_CLASS}`)[0] as Element;
+    const value: Element = firstOf(nodesMatching(`.${COPY_FIELD_VALUE_CLASS}`));
     expect(value.tagName).toBe('SPAN');
     expect(screen.getByText(VALUE)).toBe(value);
     expect(nodesMatching(`.${COPY_FIELD_VALUE_CLASS}`)).toHaveLength(1);
-  });
-
-  it('renders the glyph as an aria-hidden decoration that is never a control', () => {
-    render(fieldWith({}));
-
-    const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    expect(box.tagName).toBe('SPAN');
-    expect(box).not.toHaveAttribute('role');
-    expect(svg).toHaveAttribute('aria-hidden', 'true');
-    expect(svg).toHaveAttribute('focusable', 'false');
-    expect(nodesMatching('title')).toHaveLength(0);
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
-
-  it('applies id and lang only when the consumer supplies them', () => {
-    const { rerender } = render(fieldWith({}));
-
-    expect(field()).not.toHaveAttribute('id');
-    expect(field()).not.toHaveAttribute('lang');
-
-    rerender(fieldWith({ id: 'copy-token', lang: 'en' }));
-    expect(field()).toHaveAttribute('id', 'copy-token');
-    expect(field()).toHaveAttribute('lang', 'en');
-  });
-
-  it('exposes its display name', () => {
-    expect(UiCopyField.displayName).toBe('UiCopyField');
   });
 });
 
@@ -415,22 +347,7 @@ describe('UiCopyField — copy confirmation latch', () => {
 describe('UiCopyField — disabled (aria-disabled boundary)', () => {
   afterEach(() => stubClipboard(undefined));
 
-  it('stays a focusable button with aria-disabled and no native disabled attribute', () => {
-    render(fieldWith({ disabled: true }));
-
-    const root: HTMLElement = field();
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root.getAttributeNames()).not.toContain('disabled');
-    expect(root).toBeEnabled();
-  });
-
-  it('remains reachable by Tab while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(fieldWith({ disabled: true }));
-
-    await user.tab();
-    expect(field()).toHaveFocus();
-  });
+  describeAriaDisabledFocusable(contract);
 
   it('no-ops every activation path while disabled, without touching the clipboard', async () => {
     const user: UserEvent = userEvent.setup();
@@ -467,45 +384,24 @@ describe('UiCopyField — disabled (aria-disabled boundary)', () => {
 
   it('keeps the full accessible name while disabled', () => {
     render(fieldWith({ disabled: true }));
-
     expect(field()).toHaveAccessibleName(FIELD_NAME);
   });
 });
 
 describe('UiCopyField — focus and ref forwarding', () => {
-  it('adds no explicit tabindex, so the chip is one native tab stop', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(
+  describeTabOrderAndRefs({
+    ...contract,
+    tabOrderSiblings: (): React.ReactElement => (
       <div>
         <UiCopyField value="AAA" />
         <UiCopyField value="BBB" />
       </div>
-    );
-
-    expect(nodesMatching('[tabindex]')).toHaveLength(0);
-
-    await user.tab();
-    expect(screen.getByRole('button', { name: /AAA/ })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('button', { name: /BBB/ })).toHaveFocus();
-  });
-
-  it('forwards an object ref to the chip button itself', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    render(<UiCopyField ref={ref} value={VALUE} />);
-
-    expect(ref.current).toBe(field());
-    expect(ref.current?.tagName).toBe('BUTTON');
-  });
-
-  it('forwards a callback ref to the same node and releases it on unmount', () => {
-    const seen: (HTMLButtonElement | null)[] = [];
-    const collect: (node: HTMLButtonElement | null) => void = collectorInto(seen);
-    const { unmount } = render(<UiCopyField ref={collect} value={VALUE} />);
-
-    expect(seen[0]).toBe(field());
-    unmount();
-    expect(seen[seen.length - 1]).toBeNull();
+    ),
+    firstName: /AAA/,
+    secondName: /BBB/,
+    withRef: (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
+      <UiCopyField ref={ref} value={VALUE} />
+    ),
   });
 
   it('re-resolves the chip by id after a remount', () => {
@@ -516,7 +412,7 @@ describe('UiCopyField — focus and ref forwarding', () => {
     expect(nodesMatching('#copy-3')).toHaveLength(0);
 
     render(fieldWith({ id: 'copy-3' }));
-    const remounted: Element = nodesMatching('#copy-3')[0] as Element;
+    const remounted: Element = firstOf(nodesMatching('#copy-3'));
     expect(remounted).toBe(field());
   });
 });
@@ -576,10 +472,9 @@ describe('UiCopyField — live-region prohibition', () => {
 });
 
 describe('UiCopyField — dev warnings', () => {
-  it('stays silent for a healthy field', () => {
-    render(fieldWith({}));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
+  describeWarnSequence(warn, 'stays silent for a healthy field', [
+    { render: (): React.ReactElement => fieldWith({}), expectedCallCount: 0 },
+  ]);
 
   it('warns when value is blank — nothing to copy', () => {
     render(fieldWith({ value: '  ' }));
@@ -590,7 +485,6 @@ describe('UiCopyField — dev warnings', () => {
 
   it('warns when value is entirely absent', () => {
     render(fieldWith({ value: undefined }));
-
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('nothing to copy'));
   });
 
@@ -613,29 +507,20 @@ describe('UiCopyField — dev warnings', () => {
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('nothing to copy'));
   });
 
-  it('warns once per warning state, not once per render', () => {
-    const { rerender } = render(fieldWith({ value: '' }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
+  describeWarnSequence(warn, 'warns once per warning state, not once per render', [
+    { render: (): React.ReactElement => fieldWith({ value: '' }), expectedCallCount: 1 },
+    { render: (): React.ReactElement => fieldWith({ value: '   ' }), expectedCallCount: 1 },
+    {
+      render: (): React.ReactElement => fieldWith({ copyLabel: '' }),
+      expectedCallCount: 2,
+      expectedMessageFragment: 'blank `copyLabel`',
+    },
+  ]);
 
-    rerender(fieldWith({ value: '   ' }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    rerender(fieldWith({ copyLabel: '' }));
-    expect(warn.spy).toHaveBeenCalledTimes(2);
-    expect(warn.spy).toHaveBeenLastCalledWith(expect.stringContaining('blank `copyLabel`'));
-  });
-
-  it('emits nothing in production, for either warning', () => {
-    const originalEnv: string | undefined = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      const { rerender } = render(fieldWith({ value: '' }));
-      rerender(fieldWith({ copyLabel: '' }));
-      expect(warn.spy).not.toHaveBeenCalled();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
-  });
+  describeSilentInProduction(warn, [
+    (): React.ReactElement => fieldWith({ value: '' }),
+    (): React.ReactElement => fieldWith({ copyLabel: '' }),
+  ]);
 });
 
 describe('copyFieldWarning — first-applicable selector (pure)', () => {
@@ -666,16 +551,9 @@ describe('copyFieldWarning — first-applicable selector (pure)', () => {
 });
 
 describe('UiCopyField — consumer sx', () => {
-  it('applies an object sx to the root, merged last', () => {
-    render(fieldWith({ sx: { marginTop: '1rem' } }));
-    expect(field()).toHaveStyle({ marginTop: '1rem' });
-  });
-
-  it('applies array sx layers to the root', () => {
-    render(fieldWith({ sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
-
-    expect(field()).toHaveStyle({ marginTop: '1rem' });
-    expect(field()).toHaveStyle({ paddingTop: '2rem' });
+  describeConsumerSx(contract, {
+    render: (sx): React.ReactElement => wiredWith({ sx }),
+    target: (): Element => field(),
   });
 });
 
@@ -765,18 +643,9 @@ describe('copyFieldSx — style assembly (pure, mutation-killing)', () => {
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
-  it('declares the ring AFTER hover, active and disabled', () => {
-    const keys: string[] = Object.keys(baseOf());
-    const hover: number = keys.findIndex((key: string) => key.includes(':hover'));
-    const active: number = keys.findIndex((key: string) => key.includes(':active'));
-    const disabled: number = keys.indexOf('&[aria-disabled="true"]');
-    const ring: number = keys.findIndex((key: string) => key.includes(':focus-visible'));
-
-    expect(hover).toBeGreaterThanOrEqual(0);
-    expect(active).toBeGreaterThan(hover);
-    expect(disabled).toBeGreaterThan(active);
-    expect(ring).toBeGreaterThan(disabled);
-  });
+  describeFocusRingOrder(baseOf, (keys: string[]): number =>
+    keys.findIndex((key: string) => key.includes(':focus-visible'))
+  );
 
   it('re-expresses the ring as an outline under forced colors', () => {
     expect(baseOf()['@media (forced-colors: active)']).toEqual({
@@ -836,8 +705,8 @@ describe('CopyGlyph — the copy-02 icon (pure recipe)', () => {
   it('renders one decorative 20px svg whose stroke follows currentColor', () => {
     render(<CopyGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    const path: Element = nodesMatching('svg path')[0] as Element;
+    const svg: Element = firstOf(nodesMatching('svg'));
+    const path: Element = firstOf(nodesMatching('svg path'));
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '20');
@@ -876,7 +745,6 @@ describe('useCopyField — field view model', () => {
 
   it('adopts a copyLabel override instead of the default suffix', () => {
     const model: CopyFieldModel = modelFor({ value: VALUE, copyLabel: 'Скопіювати' });
-
     expect(model.copyLabel).toBe('Скопіювати');
   });
 

@@ -1,5 +1,4 @@
 import { render, renderHook, screen } from '@testing-library/react';
-import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import clearButtonWarning from '../../src/components/ui-clear-button/clear-button-warnings';
@@ -18,7 +17,28 @@ import {
 } from '../../src/components/ui-clear-button/styles';
 import type { UiClearButtonProps } from '../../src/components/ui-clear-button/types';
 
+import {
+  describeActivationRequests,
+  describeAriaDisabledFocusable,
+  describeButtonRoot,
+  describeConsumerSx,
+  describeFocusRingOrder,
+  describeGlyphDecoration,
+  describeNoAriaState,
+  describeNoOpsWhileDisabled,
+  describeRetainsFocusAcrossDisabledFlip,
+  describeSilentInProduction,
+  describeStaticBranch,
+  describeStaticRefIsNull,
+  describeTabOrderAndRefs,
+  describeWarnSequence,
+  type ActivationOverrides,
+  type SxLayers,
+} from './utils/activation-control-contract';
+import { expectNoLiveRegion, nodesMatching } from './utils/dom-queries';
+import firstOf from './utils/first-of';
 import mockConsoleWarn from './utils/mock-console-warn';
+import { keysMatching, type StyleObject } from './utils/style-layers';
 
 // UiClearButton emits its one dev-only accessible-name warning via console.warn.
 // Silence it for the suite and keep a handle for the assertions.
@@ -36,10 +56,10 @@ const DARK_SECONDARY: string = '#1B2327';
 
 interface ClearButtonOverrides {
   label?: string | undefined;
-  onActivate?: () => void;
-  disabled?: boolean;
-  id?: string;
-  lang?: string;
+  onActivate?: (() => void) | undefined;
+  disabled?: boolean | undefined;
+  id?: string | undefined;
+  lang?: string | undefined;
   sx?: UiClearButtonProps['sx'];
 }
 
@@ -60,331 +80,104 @@ function buttonWith(extra: Readonly<ClearButtonOverrides>): React.ReactElement {
   );
 }
 
+// The activation-control contract only ever varies `disabled`/`id`/`lang`/`sx`;
+// `label` and `onActivate` stay this suite's own concern (see `buttonWith`).
+function wiredWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return buttonWith({ onActivate: noop, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
+function staticWith(extra: Readonly<ActivationOverrides>): React.ReactElement {
+  return buttonWith({ disabled: extra.disabled, id: extra.id, lang: extra.lang, sx: extra.sx });
+}
+
+function withActivation(
+  onActivate: (() => void) | undefined,
+  extra: Readonly<ActivationOverrides>
+): React.ReactElement {
+  return buttonWith({ onActivate, disabled: extra.disabled, id: extra.id, sx: extra.sx });
+}
+
 function clearButton(): HTMLElement {
   return screen.getByRole('button');
 }
 
-function nodesMatching(selector: string): Element[] {
-  return Array.from(document.querySelectorAll(selector));
-}
-
 function glyphBox(): Element {
-  const [box] = nodesMatching(`.${GLYPH_CLASS}`);
-  expect(box).toBeDefined();
-  return box as Element;
+  return firstOf(nodesMatching(`.${GLYPH_CLASS}`));
 }
-
-// Every hook that would make something else in the button focusable. Exactly
-// one match is allowed in the wired tree and zero in the static one.
-const FOCUSABLE_SELECTOR: string =
-  'a[href], button, input, select, textarea, [tabindex], [contenteditable]';
-
-function focusables(): Element[] {
-  return nodesMatching(FOCUSABLE_SELECTOR);
-}
-
-// Every ARIA/interactivity hook the static branch must not ship. `aria-hidden`
-// is excluded on purpose: the decorative × carries it in BOTH branches.
-const ARIA_SELECTOR: string =
-  '[role], [tabindex], [aria-checked], [aria-disabled], [aria-pressed], [aria-label], ' +
-  '[aria-labelledby], [aria-describedby], [aria-haspopup], [aria-expanded], [aria-controls]';
-
-function liveRegionNodes(): Element[] {
-  return Array.from(
-    document.querySelectorAll('[aria-live], [aria-atomic], [aria-relevant], output')
-  );
-}
-
-function expectNoLiveRegion(): void {
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  expect(screen.queryByRole('log')).not.toBeInTheDocument();
-  expect(liveRegionNodes()).toHaveLength(0);
-}
-
-// `clearButtonSx` is typed as the broad `SxProps` union; in practice it always
-// returns the `[base, ...consumerSx]` array. Narrow it once here so the layer
-// assertions can index into the produced style objects.
-type StyleObject = Record<string, unknown>;
-type SxLayers = StyleObject[];
 
 function layersOf(interactive: boolean, sx: UiClearButtonProps['sx']): SxLayers {
   return clearButtonSx({ interactive, sx }) as SxLayers;
 }
 
 function baseOf(interactive: boolean): StyleObject {
-  const [layer] = layersOf(interactive, undefined);
-  expect(layer).toBeDefined();
-  return layer as StyleObject;
+  return firstOf(layersOf(interactive, undefined));
 }
 
-function keysMatching(base: StyleObject, fragment: string): string[] {
-  return Object.keys(base).filter((key: string) => key.includes(fragment));
-}
+// The behaviour every plain activation control in the toolkit shares — native
+// button semantics, the aria-disabled boundary, tab-order/ref plumbing, the
+// `sx` merge and the dev-warning shape — is asserted once in
+// `activation-control-contract.tsx`. What follows below is what is TRUE OF
+// THIS BUTTON ALONE: its content tree, its glyph geometry, its own palette.
+const contract = {
+  wiredWith,
+  staticWith,
+  withActivation,
+  root: clearButton,
+  accessibleName: DEFAULT_LABEL,
+  component: UiClearButton,
+  expectedDisplayName: 'UiClearButton',
+  hasLang: true,
+  warn,
+  glyphBox,
+  contentText: DEFAULT_LABEL,
+  baseOf,
+};
 
-// Records every node the forwarded callback ref is handed, attach and detach.
-function collectorInto(
-  seen: (HTMLButtonElement | null)[]
-): (node: HTMLButtonElement | null) => void {
-  return (node: HTMLButtonElement | null): void => {
-    seen.push(node);
-  };
-}
-
-describe('UiClearButton — wired button semantics', () => {
-  it('renders the whole row as ONE native type="button" with no implicit role hack', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const root: HTMLElement = clearButton();
-    expect(root.tagName).toBe('BUTTON');
-    expect(root).toHaveAttribute('type', 'button');
-    expect(root).not.toHaveAttribute('role');
-    expect(root).toHaveAccessibleName(DEFAULT_LABEL);
-  });
-
-  it('ships no ARIA state at all — a plain action button', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const root: HTMLElement = clearButton();
-    expect(root).not.toHaveAttribute('aria-pressed');
-    expect(root.getAttributeNames()).not.toContain('aria-checked');
-    expect(root).not.toHaveAttribute('aria-expanded');
-    expect(root).not.toHaveAttribute('aria-haspopup');
-    expect(root).not.toHaveAttribute('aria-disabled');
-  });
-
-  it('keeps exactly one focusable element', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    expect(focusables()).toHaveLength(1);
-    expect(focusables()[0]).toBe(clearButton());
-    expect(screen.getAllByRole('button')).toHaveLength(1);
-  });
-
-  it('renders the × as an aria-hidden decoration that is never a control', () => {
-    render(buttonWith({ onActivate: noop }));
-
-    const box: Element = glyphBox();
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    expect(box.tagName).toBe('SPAN');
-    expect(box).not.toHaveAttribute('role');
-    expect(box).not.toHaveAttribute('tabindex');
-    expect(svg).toHaveAttribute('aria-hidden', 'true');
-    expect(svg).toHaveAttribute('focusable', 'false');
-    expect(nodesMatching('title')).toHaveLength(0);
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
-
-  it('applies id and lang only when the consumer supplies them', () => {
-    const { rerender } = render(buttonWith({ onActivate: noop }));
-
-    expect(clearButton()).not.toHaveAttribute('id');
-    expect(clearButton()).not.toHaveAttribute('lang');
-
-    rerender(buttonWith({ id: 'clear-filters', lang: 'ru', onActivate: noop }));
-    expect(clearButton()).toHaveAttribute('id', 'clear-filters');
-    expect(clearButton()).toHaveAttribute('lang', 'ru');
-  });
-
-  it('exposes its display name', () => {
-    expect(UiClearButton.displayName).toBe('UiClearButton');
-  });
+describe('UiClearButton — root semantics', () => {
+  describeButtonRoot(contract);
+  describeNoAriaState(contract, ['aria-checked']);
+  describeGlyphDecoration(contract, { glyphBox, checkTabindex: true });
 
   it('renders a custom label as the accessible name', () => {
     render(buttonWith({ label: 'Скинути все', onActivate: noop }));
-
     expect(clearButton()).toHaveAccessibleName('Скинути все');
   });
 });
 
 describe('UiClearButton — static (unwired) button', () => {
-  it('exposes zero buttons, zero focusable elements and zero ARIA hooks', () => {
-    render(buttonWith({}));
-
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(focusables()).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
-  });
-
-  it('keeps the identical content tree, × included, with the consumer id and lang', () => {
-    render(buttonWith({ id: 'static-clear', lang: 'ru' }));
-
-    const root: Element = nodesMatching('#static-clear')[0] as Element;
-    expect(root.tagName).toBe('SPAN');
-    expect(root).toHaveAttribute('lang', 'ru');
-    expect(root.contains(glyphBox())).toBe(true);
-    expect(screen.getByText(DEFAULT_LABEL)).toBeInTheDocument();
-    expect(nodesMatching('svg')).toHaveLength(1);
-  });
-
-  it('never paints the disabled state, so no grey outlives aria-disabled', () => {
-    render(buttonWith({ disabled: true }));
-
-    expect(nodesMatching('[aria-disabled]')).toHaveLength(0);
-    expect(nodesMatching(ARIA_SELECTOR)).toHaveLength(0);
-    expect(baseOf(false)['&[aria-disabled="true"]']).toBeUndefined();
-  });
-
-  it('never fires anything, because there is nothing to activate', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(buttonWith({ id: 'static-clear' }));
-
-    const root: HTMLElement = nodesMatching('#static-clear')[0] as HTMLElement;
-    await user.click(root);
-    await user.tab();
-
-    expect(root).not.toHaveFocus();
-    expect(document.body).toHaveFocus();
-  });
+  describeStaticBranch(contract);
 });
 
 describe('UiClearButton — activation requests', () => {
-  it('requests activation exactly once per click, with no payload', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    await user.click(clearButton());
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-    expect(onActivate).toHaveBeenCalledWith();
-  });
-
-  it('requests activation exactly once on Enter (no manual key handler double-fires)', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    clearButton().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-  });
-
-  it('requests activation exactly once on Space', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ onActivate }));
-
-    clearButton().focus();
-    await user.keyboard(' ');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-  });
-
-  it('never submits an enclosing form on Enter (type="button")', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onSubmit: jest.Mock = jest.fn();
-    const onActivate: jest.Mock = jest.fn();
-    render(<form onSubmit={onSubmit}>{buttonWith({ onActivate })}</form>);
-
-    clearButton().focus();
-    await user.keyboard('{Enter}');
-
-    expect(onActivate).toHaveBeenCalledTimes(1);
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
+  describeActivationRequests(contract);
 });
 
 describe('UiClearButton — disabled (aria-disabled boundary)', () => {
-  it('stays a focusable button with aria-disabled and no native disabled attribute', () => {
-    render(buttonWith({ disabled: true, onActivate: noop }));
-
-    const root: HTMLElement = clearButton();
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root.getAttributeNames()).not.toContain('disabled');
-    expect(root).toBeEnabled();
-  });
-
-  it('remains reachable by Tab while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(buttonWith({ disabled: true, onActivate: noop }));
-
-    await user.tab();
-    expect(clearButton()).toHaveFocus();
-  });
-
-  it('no-ops every activation path while disabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    render(buttonWith({ disabled: true, onActivate }));
-
-    await user.click(clearButton());
-    clearButton().focus();
-    await user.keyboard('{Enter} ');
-
-    expect(onActivate).not.toHaveBeenCalled();
-  });
-
-  it('retains focus across a disabled flip, then activates again once re-enabled', async () => {
-    const user: UserEvent = userEvent.setup();
-    const onActivate: jest.Mock = jest.fn();
-    const { rerender } = render(buttonWith({ onActivate }));
-
-    const root: HTMLElement = clearButton();
-    root.focus();
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ disabled: true, onActivate }));
-    expect(root).toHaveAttribute('aria-disabled', 'true');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ onActivate }));
-    expect(root).not.toHaveAttribute('aria-disabled');
-    expect(root).toHaveFocus();
-
-    await user.keyboard('{Enter}');
-    expect(onActivate).toHaveBeenCalledTimes(2);
-  });
+  describeAriaDisabledFocusable(contract);
+  describeNoOpsWhileDisabled(contract);
+  describeRetainsFocusAcrossDisabledFlip(contract);
 });
 
 describe('UiClearButton — focus and ref forwarding', () => {
-  it('adds no explicit tabindex, so every wired button is one native tab stop', async () => {
-    const user: UserEvent = userEvent.setup();
-    render(
+  describeTabOrderAndRefs({
+    ...contract,
+    tabOrderSiblings: (): React.ReactElement => (
       <div>
         <UiClearButton label="Перший" onActivate={noop} />
         <UiClearButton label="Статичний" />
         <UiClearButton label="Другий" onActivate={noop} />
       </div>
-    );
-
-    expect(nodesMatching('[tabindex]')).toHaveLength(0);
-
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Перший' })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Другий' })).toHaveFocus();
+    ),
+    firstName: 'Перший',
+    secondName: 'Другий',
+    withRef: (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
+      <UiClearButton ref={ref} onActivate={noop} />
+    ),
   });
 
-  it('forwards an object ref to the button itself, never a wrapper', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    render(<UiClearButton ref={ref} onActivate={noop} />);
-
-    expect(ref.current).toBe(clearButton());
-    expect(ref.current?.tagName).toBe('BUTTON');
-  });
-
-  it('forwards a callback ref to the same node and releases it on unmount', () => {
-    const seen: (HTMLButtonElement | null)[] = [];
-    const collect: (node: HTMLButtonElement | null) => void = collectorInto(seen);
-    const { unmount } = render(<UiClearButton ref={collect} onActivate={noop} />);
-
-    expect(seen[0]).toBe(clearButton());
-    unmount();
-    expect(seen[seen.length - 1]).toBeNull();
-  });
-
-  it('hands back nothing on a static button — there is no focusable node to return', () => {
-    const ref: React.RefObject<HTMLButtonElement | null> = React.createRef<HTMLButtonElement>();
-    render(<UiClearButton ref={ref} />);
-
-    expect(ref.current).toBeNull();
-  });
+  describeStaticRefIsNull(
+    (ref: React.Ref<HTMLButtonElement>): React.ReactElement => <UiClearButton ref={ref} />
+  );
 });
 
 describe('UiClearButton — live-region prohibition', () => {
@@ -401,13 +194,10 @@ describe('UiClearButton — live-region prohibition', () => {
 });
 
 describe('UiClearButton — dev warnings', () => {
-  it('stays silent for a healthy wired button and a healthy static one', () => {
-    const { rerender } = render(buttonWith({ onActivate: noop }));
-    expect(warn.spy).not.toHaveBeenCalled();
-
-    rerender(buttonWith({}));
-    expect(warn.spy).not.toHaveBeenCalled();
-  });
+  describeWarnSequence(warn, 'stays silent for a healthy wired button and a healthy static one', [
+    { render: (): React.ReactElement => wiredWith({}), expectedCallCount: 0 },
+    { render: (): React.ReactElement => staticWith({}), expectedCallCount: 0 },
+  ]);
 
   it('warns when the label is explicitly blank', () => {
     render(buttonWith({ label: '   ', onActivate: noop }));
@@ -421,33 +211,33 @@ describe('UiClearButton — dev warnings', () => {
     expect(warn.spy).not.toHaveBeenCalled();
   });
 
-  it('warns once per warning state, not once per render', () => {
-    const { rerender } = render(buttonWith({ label: '', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ label: '  ', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    rerender(buttonWith({ label: undefined, onActivate: noop }));
-    rerender(buttonWith({ label: '', onActivate: noop }));
-    expect(warn.spy).toHaveBeenCalledTimes(2);
-  });
+  describeWarnSequence(warn, 'warns once per warning state, not once per render', [
+    {
+      render: (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ label: '  ', onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ label: undefined, onActivate: noop }),
+      expectedCallCount: 1,
+    },
+    {
+      render: (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+      expectedCallCount: 2,
+    },
+  ]);
 
   it('warns on the static branch too — a nameless button is nameless either way', () => {
     render(buttonWith({ label: '' }));
     expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `label`'));
   });
 
-  it('emits nothing in production', () => {
-    const originalEnv: string | undefined = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
-    try {
-      render(buttonWith({ label: '', onActivate: noop }));
-      expect(warn.spy).not.toHaveBeenCalled();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
-  });
+  describeSilentInProduction(warn, [
+    (): React.ReactElement => buttonWith({ label: '', onActivate: noop }),
+  ]);
 });
 
 describe('clearButtonWarning — first-applicable selector (pure)', () => {
@@ -469,17 +259,9 @@ describe('clearButtonWarning — first-applicable selector (pure)', () => {
 });
 
 describe('UiClearButton — consumer sx', () => {
-  it('applies an object sx to the wired root, merged last', () => {
-    render(buttonWith({ sx: { marginTop: '1rem' }, onActivate: noop }));
-    expect(clearButton()).toHaveStyle({ marginTop: '1rem' });
-  });
-
-  it('applies array sx layers to the static root', () => {
-    render(buttonWith({ id: 'styled', sx: [{ marginTop: '1rem' }, { paddingTop: '2rem' }] }));
-
-    const root: Element = nodesMatching('#styled')[0] as Element;
-    expect(root).toHaveStyle({ marginTop: '1rem' });
-    expect(root).toHaveStyle({ paddingTop: '2rem' });
+  describeConsumerSx(contract, {
+    render: (sx): React.ReactElement => staticWith({ id: 'styled', sx }),
+    target: (): Element => firstOf(nodesMatching('#styled')),
   });
 });
 
@@ -622,18 +404,10 @@ describe('clearButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(FOCUS_RING).toBe(`inset 0 0 0 2px ${DARK_PRIMARY}`);
   });
 
-  it('declares the ring AFTER hover, active and disabled', () => {
-    const keys: string[] = Object.keys(baseOf(true));
-    const hover: number = keys.findIndex((key: string) => key.includes(':hover'));
-    const active: number = keys.findIndex((key: string) => key.includes(':active'));
-    const disabled: number = keys.indexOf('&[aria-disabled="true"]');
-    const ring: number = keys.findIndex((key: string) => key.includes(':focus-visible'));
-
-    expect(hover).toBeGreaterThanOrEqual(0);
-    expect(active).toBeGreaterThan(hover);
-    expect(disabled).toBeGreaterThan(active);
-    expect(ring).toBeGreaterThan(disabled);
-  });
+  describeFocusRingOrder(
+    () => baseOf(true),
+    (keys: string[]): number => keys.findIndex((key: string) => key.includes(':focus-visible'))
+  );
 
   it('adds cursor and appearance only to the wired branch', () => {
     expect(baseOf(true).cursor).toBe('pointer');
@@ -717,8 +491,8 @@ describe('ClearGlyph — the leading × (pure recipe)', () => {
   it('renders one decorative 18px svg whose stroke follows currentColor', () => {
     render(<ClearGlyph />);
 
-    const svg: Element = nodesMatching('svg')[0] as Element;
-    const path: Element = nodesMatching('svg path')[0] as Element;
+    const svg: Element = firstOf(nodesMatching('svg'));
+    const path: Element = firstOf(nodesMatching('svg path'));
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg).toHaveAttribute('focusable', 'false');
     expect(svg).toHaveAttribute('width', '18');
