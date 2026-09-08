@@ -183,9 +183,9 @@ describe('UiClearButton — focus and ref forwarding', () => {
     ),
   });
 
-  describeStaticRefIsNull(
-    (ref: React.Ref<HTMLButtonElement>): React.ReactElement => <UiClearButton ref={ref} />
-  );
+  describeStaticRefIsNull((ref: React.Ref<HTMLButtonElement>): React.ReactElement => {
+    return <UiClearButton ref={ref} />;
+  });
 });
 
 describe('UiClearButton — live-region prohibition', () => {

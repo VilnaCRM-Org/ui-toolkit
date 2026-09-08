@@ -61,8 +61,8 @@ export function socialIconButtonRowNode(
   ];
   return (
     <Box sx={ROW_SX}>
-      {NETWORKS.map(
-        (network: SocialNetwork): React.ReactElement => (
+      {NETWORKS.map((network: SocialNetwork): React.ReactElement => {
+        return (
           <UiSocialIconButton
             key={network}
             network={network}
@@ -70,8 +70,8 @@ export function socialIconButtonRowNode(
             onActivate={noop}
             sx={sx}
           />
-        )
-      )}
+        );
+      })}
     </Box>
   );
 }

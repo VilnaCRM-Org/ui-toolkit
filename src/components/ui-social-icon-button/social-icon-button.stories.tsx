@@ -45,11 +45,9 @@ export const SocialIconButton: Story = {
 function renderRow(args: UiSocialIconButtonProps): React.ReactElement {
   return (
     <Box sx={ROW_SX}>
-      {NETWORKS.map(
-        (network: SocialNetwork): React.ReactElement => (
-          <UiSocialIconButton key={network} network={network} disabled={args.disabled} />
-        )
-      )}
+      {NETWORKS.map((network: SocialNetwork): React.ReactElement => {
+        return <UiSocialIconButton key={network} network={network} disabled={args.disabled} />;
+      })}
     </Box>
   );
 }

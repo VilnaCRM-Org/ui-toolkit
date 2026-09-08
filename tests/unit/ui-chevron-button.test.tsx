@@ -194,11 +194,9 @@ describe('UiChevronButton — focus and refs', () => {
     expect(root).toHaveFocus();
   });
 
-  describeStaticRefIsNull(
-    (ref: React.Ref<HTMLButtonElement>): React.ReactElement => (
-      <UiChevronButton ref={ref} label={LABEL} />
-    )
-  );
+  describeStaticRefIsNull((ref: React.Ref<HTMLButtonElement>): React.ReactElement => {
+    return <UiChevronButton ref={ref} label={LABEL} />;
+  });
 });
 
 describe('UiChevronButton — direction (visual only)', () => {

@@ -89,8 +89,8 @@ export function useSegmentedControl(props: UiSegmentedControlProps): SegmentedCo
     interactive: props.onChange != null,
     ariaLabel: props.labelledBy == null ? props.label : undefined,
     ariaLabelledBy: props.labelledBy,
-    segments: props.options.map(
-      (option: SegmentedOption): SegmentModel => buildSegment(option, ctx)
-    ),
+    segments: props.options.map((option: SegmentedOption): SegmentModel => {
+      return buildSegment(option, ctx);
+    }),
   };
 }
