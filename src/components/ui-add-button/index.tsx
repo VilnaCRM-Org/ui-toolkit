@@ -1,6 +1,7 @@
-import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
+
+import { LabelButtonShell, LabelStaticShell } from '../field-controls';
 
 import { AddButtonContent } from './add-button-content';
 import { addButtonSx } from './styles';
@@ -29,18 +30,16 @@ function WiredAddButton({
   sx,
 }: Readonly<AddButtonShellProps>): React.ReactElement {
   return (
-    <Box
-      component="button"
-      type="button"
+    <LabelButtonShell
       id={button.id}
       lang={button.lang}
-      aria-disabled={model.ariaDisabled}
-      onClick={model.onActivate}
-      ref={buttonRef}
+      ariaDisabled={model.ariaDisabled}
+      onActivate={model.onActivate}
+      buttonRef={buttonRef}
       sx={sx}
     >
       <AddButtonContent label={model.label} />
-    </Box>
+    </LabelButtonShell>
   );
 }
 
@@ -51,9 +50,9 @@ function WiredAddButton({
 // cannot expose programmatically.
 function StaticAddButton({ button, model, sx }: Readonly<AddButtonShellProps>): React.ReactElement {
   return (
-    <Box component="span" id={button.id} lang={button.lang} sx={sx}>
+    <LabelStaticShell id={button.id} lang={button.lang} sx={sx}>
       <AddButtonContent label={model.label} />
-    </Box>
+    </LabelStaticShell>
   );
 }
 

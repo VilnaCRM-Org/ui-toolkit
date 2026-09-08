@@ -4,6 +4,8 @@ import React from 'react';
 
 import { useDevWarning } from '@/utils/dev-warn';
 
+import { LabelButtonShell, LabelStaticShell } from '../field-controls';
+
 import clearButtonWarning from './clear-button-warnings';
 import { ClearGlyph } from './clear-glyph';
 import { clearButtonGlyphSx, clearButtonLabelSx, clearButtonSx, GLYPH_CLASS } from './styles';
@@ -75,18 +77,16 @@ function WiredClearButton({
   sx,
 }: Readonly<ClearButtonShellProps>): React.ReactElement {
   return (
-    <Box
-      component="button"
-      type="button"
+    <LabelButtonShell
       id={button.id}
       lang={button.lang}
-      aria-disabled={model.ariaDisabled}
-      onClick={model.onActivate}
-      ref={buttonRef}
+      ariaDisabled={model.ariaDisabled}
+      onActivate={model.onActivate}
+      buttonRef={buttonRef}
       sx={sx}
     >
       <ClearButtonContent label={model.label} />
-    </Box>
+    </LabelButtonShell>
   );
 }
 
@@ -99,9 +99,9 @@ function StaticClearButton({
   sx,
 }: Readonly<ClearButtonShellProps>): React.ReactElement {
   return (
-    <Box component="span" id={button.id} lang={button.lang} sx={sx}>
+    <LabelStaticShell id={button.id} lang={button.lang} sx={sx}>
       <ClearButtonContent label={model.label} />
-    </Box>
+    </LabelStaticShell>
   );
 }
 
