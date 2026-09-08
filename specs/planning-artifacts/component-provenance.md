@@ -91,9 +91,11 @@ the toolkit ships these binaries are unrecorded. That gap is DEV-43.
 Deviations are enumerated in `specs/planning-artifacts/deviation-ledger.md`, the
 single enumerable deviation surface for the release: `DEV-01`–`DEV-18` mirror
 `board-coverage-checklist.md`'s `D-01`–`D-18` one-for-one, `DEV-19`–`DEV-50`
-are the entries first enumerated by Story 5.2, and `DEV-51`–`DEV-60` are the
+are the entries first enumerated by Story 5.2, and `DEV-51`–`DEV-64` are the
 Story 3.7 ([#149](https://github.com/VilnaCRM-Org/ui-toolkit/issues/149))
-board follow-up controls. Rows below cite ids only.
+rows: `DEV-51`–`DEV-60` for the board follow-up controls themselves, then
+`DEV-61`–`DEV-64` for the cross-control work the same story delivered (the
+shared busy paint, the persistent clear affordance and the picker tint). Rows below cite ids only.
 
 ### Epic 0 — Seeded parity baseline
 

@@ -21,7 +21,7 @@ ledger, is the durable record.
 ## Scope
 
 Nine board-painted controls that no toolkit component expressed before this
-story. Eight are new modules under `src/components/<name>/`; one
+story. Eight are new modules under `src/components/` (one directory each); one
 (`ui-button-danger`) is a new `danger` variant on the existing `UiButton`
 module — no new directory.
 
@@ -240,12 +240,21 @@ a stroked glyph. Fill-based brand marks (`ui-social-icon-button`) cannot use
 
 ### Tests
 
-`tests/unit/ui-<kebab>.test.tsx` (or the extended `ui-button*.test.tsx` for
+a kebab-named suite under `tests/unit/` (or the extended `tests/unit/ui-button.test.tsx` for
 the danger variant), 100% statements/branches/functions/lines. Semantic
 queries only; never `*ByTestId`. Palette literals asserted as local consts so
 a token swap fails the test. A pure style-assembly `describe` calls the
 `styles.ts` builders directly. Console warnings (where a brief defines any)
 use `mockConsoleWarn` from `./utils/mock-console-warn`.
+
+**Four-surface enforcement.** The eight new modules are pinned by
+`tests/unit/epic-quality-gate-closure.test.ts`, the same machine-checked guard
+the epic closure stories use: each module must keep a Storybook story module, a
+dedicated behaviour-level unit suite, a public barrel export and a registered
+visual baseline. Story 3.6 closed Epic 3 before these controls existed, so its
+own delivered set is deliberately left untouched — this story gets its own gate
+entry instead, and a failure there is closed by restoring the missing surface,
+never by dropping a module from the set.
 
 ---
 
@@ -379,7 +388,7 @@ Figma: rest `439:19822` · hover `439:19824` · active `439:19826` · disabled
 `439:19828` (Board A y=1354, 98×42 each). Edits land **only** in
 `src/components/ui-button/theme.ts` (+ `types.ts`/`index.tsx` if the variant
 name needs declaring) and `src/components/ui-button/button.stories.tsx`, plus
-a test block in `tests/unit/ui-button*.test.tsx`. `baseButtonStyles` already
+a test block in `tests/unit/ui-button.test.tsx`. `baseButtonStyles` already
 carries Golos Text 500 / 0.938rem / 1.125rem line-height / 3.563rem radius —
 all four already match Figma; nothing new is authored there.
 
@@ -417,7 +426,7 @@ boundary introduced here (the one deliberate exception to this story's
 ### File plan
 
 `src/components/ui-button/theme.ts` (extended), `src/components/ui-button/button.stories.tsx`
-(new `Danger` story), `tests/unit/ui-button-danger.test.tsx` (new) or an
+(new `Danger` story), a danger block appended to `tests/unit/ui-button.test.tsx` or an
 appended block in the existing button test file.
 
 ### Test plan
@@ -431,9 +440,16 @@ composition asserted by computed value, not by a pasted hex; native
 ### Showcase plan
 
 `Danger` story in `button.stories.tsx`, label "Cancel", `disabled` control.
-No new showcase-board group — `UiButton` variants are not tiled in
-`src/showcase/new-components-board/` (3.5 precedent: only new modules get a
-board group).
+
+**Amended during delivery — the variant DOES get a board group.** The plan first
+read the 3.5 precedent as "only new modules get a board group" and recorded no
+tile. That was overturned once the coverage checklist booked the danger paint
+(`439:19822`) as a Board A element in its own right: the parity board's contract
+is that every element the checklist marks `Done` is painted there for
+verification, so a covered element with no tile would leave the board unable to
+prove its own row. `button-danger-group.tsx` therefore ships and is wired into
+`GROUPS`. The 3.5 precedent still holds for variants the checklist does not book
+as elements.
 
 ---
 
@@ -967,47 +983,11 @@ options and a `disabled` control.
 
 ### §1. Changed files
 
-The delivery touches 103 files: 64 new module files across eight new component
-directories, the `ui-button` danger styling, the barrel, the parity showcase board,
-the unit suites, the visual story manifest, and the governance registers.
-
-**New module — `ui-background-picker`**
-
-- `src/components/ui-background-picker/background-picker-content.tsx`
-- `src/components/ui-background-picker/background-picker-menu.tsx`
-- `src/components/ui-background-picker/background-picker-trigger.tsx`
-- `src/components/ui-background-picker/background-picker-warnings.ts`
-- `src/components/ui-background-picker/background-picker.stories.tsx`
-- `src/components/ui-background-picker/index.tsx`
-- `src/components/ui-background-picker/picker-actions.ts`
-- `src/components/ui-background-picker/picker-dom.ts`
-- `src/components/ui-background-picker/picker-keyboard.ts`
-- `src/components/ui-background-picker/picker-refs.ts`
-- `src/components/ui-background-picker/styles.ts`
-- `src/components/ui-background-picker/types.ts`
-- `src/components/ui-background-picker/use-background-picker.ts`
-- `src/components/ui-background-picker/use-menu-handlers.ts`
-- `src/components/ui-background-picker/use-picker-effects.ts`
-- `src/components/ui-background-picker/use-trigger-handlers.ts`
-
-**New module — `ui-option-card`**
-
-- `src/components/ui-option-card/index.tsx`
-- `src/components/ui-option-card/option-card-content.tsx`
-- `src/components/ui-option-card/option-card-warnings.ts`
-- `src/components/ui-option-card/option-card.stories.tsx`
-- `src/components/ui-option-card/styles.ts`
-- `src/components/ui-option-card/types.ts`
-- `src/components/ui-option-card/use-option-card.ts`
-
-**New module — `ui-chevron-button`**
-
-- `src/components/ui-chevron-button/chevron-button-warnings.ts`
-- `src/components/ui-chevron-button/chevron-button.stories.tsx`
-- `src/components/ui-chevron-button/chevron-glyph.tsx`
-- `src/components/ui-chevron-button/index.tsx`
-- `src/components/ui-chevron-button/styles.ts`
-- `src/components/ui-chevron-button/types.ts`
+The delivery touches 158 files: 67 new module files across the eight new
+component directories, the `ui-button` danger styling and shared busy paint, the barrel, the
+parity showcase board, the unit suites, the visual story manifest and its baselines, and the
+governance registers. This inventory is generated from `git diff --name-only main...HEAD`, so it
+is the whole change set rather than a hand-kept subset.
 
 **New module — `ui-add-button`**
 
@@ -1019,6 +999,36 @@ the unit suites, the visual story manifest, and the governance registers.
 - `src/components/ui-add-button/styles.ts`
 - `src/components/ui-add-button/types.ts`
 - `src/components/ui-add-button/use-add-button.ts`
+
+**New module — `ui-background-picker`**
+
+- `src/components/ui-background-picker/background-picker-content.tsx`
+- `src/components/ui-background-picker/background-picker-menu.tsx`
+- `src/components/ui-background-picker/background-picker-trigger.tsx`
+- `src/components/ui-background-picker/background-picker-warnings.ts`
+- `src/components/ui-background-picker/background-picker.stories.tsx`
+- `src/components/ui-background-picker/index.tsx`
+- `src/components/ui-background-picker/menu-styles.ts`
+- `src/components/ui-background-picker/picker-actions.ts`
+- `src/components/ui-background-picker/picker-dom.ts`
+- `src/components/ui-background-picker/picker-keyboard.ts`
+- `src/components/ui-background-picker/picker-refs.ts`
+- `src/components/ui-background-picker/styles.ts`
+- `src/components/ui-background-picker/trigger-chevron.tsx`
+- `src/components/ui-background-picker/types.ts`
+- `src/components/ui-background-picker/use-background-picker.ts`
+- `src/components/ui-background-picker/use-menu-handlers.ts`
+- `src/components/ui-background-picker/use-picker-effects.ts`
+- `src/components/ui-background-picker/use-trigger-handlers.ts`
+
+**New module — `ui-chevron-button`**
+
+- `src/components/ui-chevron-button/chevron-button-warnings.ts`
+- `src/components/ui-chevron-button/chevron-button.stories.tsx`
+- `src/components/ui-chevron-button/chevron-glyph.tsx`
+- `src/components/ui-chevron-button/index.tsx`
+- `src/components/ui-chevron-button/styles.ts`
+- `src/components/ui-chevron-button/types.ts`
 
 **New module — `ui-clear-button`**
 
@@ -1038,7 +1048,27 @@ the unit suites, the visual story manifest, and the governance registers.
 - `src/components/ui-copy-field/index.tsx`
 - `src/components/ui-copy-field/styles.ts`
 - `src/components/ui-copy-field/types.ts`
+- `src/components/ui-copy-field/use-copied-latch.ts`
 - `src/components/ui-copy-field/use-copy-field.ts`
+
+**New module — `ui-option-card`**
+
+- `src/components/ui-option-card/index.tsx`
+- `src/components/ui-option-card/option-card-content.tsx`
+- `src/components/ui-option-card/option-card-warnings.ts`
+- `src/components/ui-option-card/option-card.stories.tsx`
+- `src/components/ui-option-card/styles.ts`
+- `src/components/ui-option-card/types.ts`
+- `src/components/ui-option-card/use-option-card.ts`
+
+**New module — `ui-segmented-control`**
+
+- `src/components/ui-segmented-control/index.tsx`
+- `src/components/ui-segmented-control/segmented-control-warnings.ts`
+- `src/components/ui-segmented-control/segmented-control.stories.tsx`
+- `src/components/ui-segmented-control/styles.ts`
+- `src/components/ui-segmented-control/types.ts`
+- `src/components/ui-segmented-control/use-segmented-control.ts`
 
 **New module — `ui-social-icon-button`**
 
@@ -1050,23 +1080,79 @@ the unit suites, the visual story manifest, and the governance registers.
 - `src/components/ui-social-icon-button/types.ts`
 - `src/components/ui-social-icon-button/use-social-icon-button.ts`
 
-**New module — `ui-segmented-control`**
+**Existing module — `field-controls`**
 
-- `src/components/ui-segmented-control/index.tsx`
-- `src/components/ui-segmented-control/segmented-control-warnings.ts`
-- `src/components/ui-segmented-control/segmented-control.stories.tsx`
-- `src/components/ui-segmented-control/styles.ts`
-- `src/components/ui-segmented-control/types.ts`
-- `src/components/ui-segmented-control/use-segmented-control.ts`
+- `src/components/field-controls/compose-end-adornment.ts`
+- `src/components/field-controls/field-spinner-styles.ts`
+- `src/components/field-controls/field-spinner.tsx`
+- `src/components/field-controls/index.ts`
+- `src/components/field-controls/render-input.tsx`
+- `src/components/field-controls/use-loading-announcement.ts`
 
-**Existing module — `ui-button` (new `danger` styling)**
+**Existing module — `ui-back-to-main`**
+
+- `src/components/ui-back-to-main/styles.ts`
+
+**Existing module — `ui-button`**
 
 - `src/components/ui-button/button.stories.tsx`
+- `src/components/ui-button/index.tsx`
+- `src/components/ui-button/loading.tsx`
 - `src/components/ui-button/theme.ts`
+- `src/components/ui-button/types.ts`
 
-**Barrel**
+**Existing module — `ui-checkbox`**
 
-- `src/components/index.ts`
+- `src/components/ui-checkbox/index.tsx`
+- `src/components/ui-checkbox/styles.ts`
+
+**Existing module — `ui-form`**
+
+- `src/components/ui-form/styles.ts`
+
+**Existing module — `ui-input`**
+
+- `src/components/ui-input/theme.ts`
+
+**Existing module — `ui-multi-select`**
+
+- `src/components/ui-multi-select/combobox.tsx`
+- `src/components/ui-multi-select/index.tsx`
+- `src/components/ui-multi-select/loading-adornment.tsx`
+- `src/components/ui-multi-select/multi-select.stories.tsx`
+- `src/components/ui-multi-select/theme.ts`
+- `src/components/ui-multi-select/types.ts`
+- `src/components/ui-multi-select/use-multi-select-field.ts`
+
+**Existing module — `ui-search-input`**
+
+- `src/components/ui-search-input/index.tsx`
+- `src/components/ui-search-input/loading-adornment.tsx`
+- `src/components/ui-search-input/render-input.tsx`
+- `src/components/ui-search-input/search-autocomplete.tsx`
+- `src/components/ui-search-input/search-input.stories.tsx`
+- `src/components/ui-search-input/theme.ts`
+- `src/components/ui-search-input/types.ts`
+- `src/components/ui-search-input/use-search-field.ts`
+
+**Existing module — `ui-select-with-search`**
+
+- `src/components/ui-select-with-search/index.tsx`
+- `src/components/ui-select-with-search/loading-adornment.tsx`
+- `src/components/ui-select-with-search/render-input.ts`
+- `src/components/ui-select-with-search/select-autocomplete.tsx`
+- `src/components/ui-select-with-search/select-with-search.stories.tsx`
+- `src/components/ui-select-with-search/theme.ts`
+- `src/components/ui-select-with-search/types.ts`
+- `src/components/ui-select-with-search/use-select-field.ts`
+
+**Existing module — `ui-tooltip`**
+
+- `src/components/ui-tooltip/theme.ts`
+
+**Existing module — `ui-typography`**
+
+- `src/components/ui-typography/theme.ts`
 
 **Showcase parity board**
 
@@ -1091,20 +1177,34 @@ the unit suites, the visual story manifest, and the governance registers.
 
 - `tests/unit/components-index.test.ts`
 - `tests/unit/export-contract-integrity.test.ts`
+- `tests/unit/field-controls-loading.test.tsx`
+- `tests/unit/field-loading-state.test.tsx`
 - `tests/unit/new-components-board.test.tsx`
 - `tests/unit/ui-add-button.test.tsx`
 - `tests/unit/ui-background-picker.test.tsx`
 - `tests/unit/ui-button.test.tsx`
+- `tests/unit/ui-check-box.test.tsx`
 - `tests/unit/ui-chevron-button.test.tsx`
 - `tests/unit/ui-clear-button.test.tsx`
 - `tests/unit/ui-copy-field.test.tsx`
+- `tests/unit/ui-multi-select.test.tsx`
 - `tests/unit/ui-option-card.test.tsx`
 - `tests/unit/ui-segmented-control.test.tsx`
+- `tests/unit/ui-select-with-search.test.tsx`
 - `tests/unit/ui-social-icon-button.test.tsx`
 
-**Visual manifest**
+**Visual manifest and specs**
 
 - `tests/visual/stories.json`
+
+**Visual baselines**
+
+- `tests/visual/visual.spec.ts-snapshots/uicomponents-uibutton--loading-chromium-linux.png`
+- `tests/visual/visual.spec.ts-snapshots/uicomponents-uimultiselect--loading-chromium-linux.png`
+- `tests/visual/visual.spec.ts-snapshots/uicomponents-uisearchinput--loading-chromium-linux.png`
+- `tests/visual/visual.spec.ts-snapshots/uicomponents-uiselectwithsearch--loading-chromium-linux.png`
+- `tests/visual/visual.spec.ts-snapshots/uicomponents-uisocialiconbutton--row-chromium-linux.png`
+- `tests/visual/visual.spec.ts-snapshots/uicomponents-uisocialiconbutton--social-icon-button-chromium-linux.png`
 
 **Planning artifacts**
 
@@ -1118,6 +1218,15 @@ the unit suites, the visual story manifest, and the governance registers.
 - `specs/implementation-artifacts/3-7-board-follow-up-controls.md`
 - `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md`
 - `specs/implementation-artifacts/sprint-status.yaml`
+
+**Barrel**
+
+- `src/components/index.ts`
+
+**Storybook configuration**
+
+- `.storybook/preview.css`
+- `.storybook/preview.ts`
 
 ### Barrel exports — `src/components/index.ts`
 
