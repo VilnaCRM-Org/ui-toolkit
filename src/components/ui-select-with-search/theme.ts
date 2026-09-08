@@ -87,6 +87,19 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           color: colorTheme.palette.grey300.main,
           marginRight: '0.5rem',
         },
+        // MUI ships the clear × `visibility: hidden` and reveals it only on hover or
+        // while the field is focused, which makes removing a selection undiscoverable
+        // the moment focus leaves. Keep it visible whenever there IS a selection
+        // (MUI mounts it only when the field is dirty, so an empty field still shows
+        // nothing). Same slot-level override `ui-multi-select` uses — but the box is
+        // deliberately left at MUI's own 28px (20px glyph + 4px padding), which clears
+        // the SC 2.5.8 target-size floor on its own (DEV-63); do NOT shrink it to the
+        // multi-select's 24px chip treatment now that this is the primary way to
+        // clear the field.
+        clearIndicator: {
+          visibility: 'visible',
+          color: colorTheme.palette.grey300.main,
+        },
         // Open popup (Figma node 448:25553): the options list joins flush under the
         // field — top corners square (it butts against the field, whose bottom edge is
         // the divider), bottom corners 8px — so field + list read as one rounded card,

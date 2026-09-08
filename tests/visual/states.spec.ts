@@ -766,3 +766,227 @@ test.describe('Visual states (Figma state grid) — notification badge', () => {
     await shoot(page, 'notification-badge-focus.png');
   });
 });
+
+// --- Story 3.7 board follow-up controls ------------------------------------
+// One block per control delivered by Story 3.7, to the same contract as the
+// blocks above: rest, real pointer hover, the active/selected state with its
+// ARIA channel asserted BEFORE the shot, disabled where the design paints it,
+// and `:focus-visible` reached with a real Tab press (never a programmatic
+// `.focus()`, which does not set `:focus-visible` — the 3.3 gotcha).
+//
+// These nine share one shape, so the four common states are described from a
+// spec rather than written out nine times; anything a control paints on top of
+// them goes in its own `extra` block.
+
+interface ControlStates {
+  /** Reads into both the test titles and the baseline file names. */
+  name: string;
+  slug: string;
+  storyId: string;
+  viewport: { width: number; height: number };
+  /** The control's own interactive element, whatever role it publishes. */
+  locate: (page: Page) => Locator;
+  /** Storybook args that force the disabled paint. */
+  disabledArgs: string;
+  /**
+   * Whether the disabled paint publishes `aria-disabled`. The danger button is
+   * the exception: it is MUI's native `disabled` attribute, not the toolkit's
+   * aria-disabled boundary.
+   */
+  ariaDisabled: boolean;
+  /** Extra assertion for the rest shot, where the control has a state channel. */
+  assertRest?: (page: Page) => Promise<void>;
+}
+
+function commonStateTests(spec: ControlStates): void {
+  test(`${spec.name} rest`, async ({ page }) => {
+    await openStory(page, spec.storyId);
+    await spec.assertRest?.(page);
+    await shoot(page, `${spec.slug}-rest.png`);
+  });
+
+  test(`${spec.name} hover`, async ({ page }) => {
+    await openStory(page, spec.storyId);
+    await spec.locate(page).hover();
+    await shoot(page, `${spec.slug}-hover.png`);
+  });
+
+  test(`${spec.name} disabled`, async ({ page }) => {
+    await openStory(page, spec.storyId, spec.disabledArgs);
+    if (spec.ariaDisabled) {
+      // `aria-disabled`, never the native attribute: the control stays
+      // focusable so a keyboard user can still reach and read it.
+      await expect(spec.locate(page)).toHaveAttribute('aria-disabled', 'true');
+    }
+    await shoot(page, `${spec.slug}-disabled.png`);
+  });
+
+  test(`${spec.name} focus-visible`, async ({ page }) => {
+    await openStory(page, spec.storyId);
+    await page.keyboard.press('Tab');
+    await shoot(page, `${spec.slug}-focus.png`);
+  });
+}
+
+function describeControl(spec: ControlStates, extra: () => void = (): void => undefined): void {
+  test.describe(`Visual states (Figma state grid) — ${spec.name}`, () => {
+    test.skip(
+      ({ browserName }) => browserName !== 'chromium',
+      'pixel baselines are generated for chromium only'
+    );
+    test.use({ viewport: spec.viewport });
+    commonStateTests(spec);
+    extra();
+  });
+}
+
+const DISABLED: string = 'disabled:!true';
+
+function firstButton(page: Page): Locator {
+  return page.getByRole('button').first();
+}
+
+function onlyRadio(page: Page): Locator {
+  return page.getByRole('radio');
+}
+
+describeControl({
+  name: 'add button',
+  slug: 'add-button',
+  storyId: 'uicomponents-uiaddbutton--add-button',
+  viewport: { width: 320, height: 120 },
+  locate: firstButton,
+  disabledArgs: DISABLED,
+  ariaDisabled: true,
+});
+
+describeControl({
+  name: 'clear button',
+  slug: 'clear-button',
+  storyId: 'uicomponents-uiclearbutton--clear-button',
+  viewport: { width: 320, height: 120 },
+  locate: firstButton,
+  disabledArgs: DISABLED,
+  ariaDisabled: true,
+});
+
+describeControl(
+  {
+    name: 'chevron button',
+    slug: 'chevron-button',
+    storyId: 'uicomponents-uichevronbutton--chevron-button',
+    viewport: { width: 200, height: 120 },
+    locate: firstButton,
+    disabledArgs: DISABLED,
+    ariaDisabled: true,
+  },
+  (): void => {
+    test('chevron button left direction', async ({ page }) => {
+      // The only non-state variant the design paints: the same disc mirrored.
+      await openStory(page, 'uicomponents-uichevronbutton--chevron-button', 'direction:left');
+      await shoot(page, 'chevron-button-left.png');
+    });
+  }
+);
+
+describeControl({
+  name: 'social icon button',
+  slug: 'social-icon-button',
+  storyId: 'uicomponents-uisocialiconbutton--social-icon-button',
+  viewport: { width: 200, height: 120 },
+  // Renders as an `<a>` when given an href and a `<button>` otherwise.
+  locate: (page: Page): Locator => page.getByRole('link').or(page.getByRole('button')).first(),
+  disabledArgs: DISABLED,
+  ariaDisabled: true,
+});
+
+describeControl({
+  name: 'danger button',
+  slug: 'danger-button',
+  storyId: 'uicomponents-uibutton--danger',
+  viewport: { width: 320, height: 120 },
+  locate: firstButton,
+  disabledArgs: DISABLED,
+  // MUI's native `disabled` attribute, not the toolkit's aria-disabled boundary.
+  ariaDisabled: false,
+});
+
+describeControl({
+  name: 'copy field',
+  slug: 'copy-field',
+  storyId: 'uicomponents-uicopyfield--copy-field',
+  viewport: { width: 420, height: 140 },
+  locate: firstButton,
+  disabledArgs: DISABLED,
+  ariaDisabled: true,
+});
+
+describeControl(
+  {
+    name: 'option card',
+    slug: 'option-card',
+    storyId: 'uicomponents-uioptioncard--option-card',
+    viewport: { width: 420, height: 160 },
+    locate: onlyRadio,
+    disabledArgs: DISABLED,
+    ariaDisabled: true,
+    assertRest: async (page: Page): Promise<void> => {
+      await expect(onlyRadio(page)).not.toBeChecked();
+    },
+  },
+  (): void => {
+    test('option card selected', async ({ page }) => {
+      await openStory(page, 'uicomponents-uioptioncard--option-card', 'selected:!true');
+      // `role="radio"` + `aria-checked` is the state channel, so assert it
+      // before locking the selected fill rather than trusting the paint alone.
+      await expect(onlyRadio(page)).toBeChecked();
+      await shoot(page, 'option-card-selected.png');
+    });
+  }
+);
+
+describeControl({
+  name: 'segmented control',
+  slug: 'segmented-control',
+  storyId: 'uicomponents-uisegmentedcontrol--segmented-control',
+  viewport: { width: 420, height: 120 },
+  // Hover must read on an UNSELECTED segment: on the selected one the active
+  // fill already wins, so hovering it would prove nothing.
+  locate: (page: Page): Locator => page.getByRole('radio', { checked: false }).first(),
+  disabledArgs: DISABLED,
+  ariaDisabled: true,
+  assertRest: async (page: Page): Promise<void> => {
+    // The track is a `radiogroup` of `radio` buttons; exactly one is checked.
+    await expect(page.getByRole('radiogroup')).toBeVisible();
+    await expect(page.getByRole('radio', { checked: true })).toHaveCount(1);
+  },
+});
+
+describeControl(
+  {
+    name: 'background picker',
+    slug: 'background-picker',
+    storyId: 'uicomponents-uibackgroundpicker--background-picker',
+    viewport: { width: 420, height: 560 },
+    locate: firstButton,
+    disabledArgs: DISABLED,
+    ariaDisabled: true,
+    assertRest: async (page: Page): Promise<void> => {
+      await expect(firstButton(page)).toHaveAttribute('aria-expanded', 'false');
+    },
+  },
+  (): void => {
+    test('background picker open', async ({ page }) => {
+      await openStory(page, 'uicomponents-uibackgroundpicker--open');
+      // The trigger owns the menu, so assert the expanded channel and the
+      // menu's own rows before locking the open surface.
+      await expect(firstButton(page)).toHaveAttribute('aria-expanded', 'true');
+      await expect(page.getByRole('menu')).toBeVisible();
+      // Every row publishes the `aria-checked` channel even when nothing is
+      // picked — this fixture passes no `value`, so the open surface is the
+      // unselected one and no row may claim otherwise.
+      await expect(page.getByRole('menuitemradio').first()).not.toBeChecked();
+      await shoot(page, 'background-picker-open.png');
+    });
+  }
+);

@@ -68,6 +68,23 @@ const EPIC_GATES: EpicGate[] = [
       'ui-notification-badge',
     ],
   },
+  // Story 3.7 (#149) landed after Epic 3 was signed off, so its controls are not
+  // part of Story 3.6's delivered set and must not be added to it. They get their
+  // own entry so the same four surfaces are enforced for them too.
+  {
+    epic: 'Story 3.7',
+    artifact: '3-7-board-follow-up-controls.md',
+    modules: [
+      'ui-background-picker',
+      'ui-option-card',
+      'ui-chevron-button',
+      'ui-add-button',
+      'ui-clear-button',
+      'ui-copy-field',
+      'ui-social-icon-button',
+      'ui-segmented-control',
+    ],
+  },
 ];
 
 interface GatedModule {

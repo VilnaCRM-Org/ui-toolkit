@@ -1,7 +1,7 @@
 import { Box, ThemeProvider } from '@mui/material';
 import React from 'react';
 
-import { FieldLabel, hasText } from '../field-controls';
+import { FieldLabel, hasText, srOnlySx } from '../field-controls';
 
 import { renderSearchAutocomplete } from './search-autocomplete';
 import theme from './theme';
@@ -25,6 +25,12 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
           </FieldLabel>
         )}
         {renderSearchAutocomplete(props, field, fieldId)}
+      </Box>
+      {/* The spinner is aria-hidden, so this is the only channel that speaks the
+          busy state. Mounted from the first render with an empty string — a
+          region created and filled in one commit is routinely dropped. */}
+      <Box role="status" aria-atomic="true" sx={srOnlySx}>
+        {field.announced}
       </Box>
     </ThemeProvider>
   );

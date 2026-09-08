@@ -80,6 +80,16 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
         endAdornment: {
           top: '1rem',
           transform: 'none',
+          // The pin above is measured from the row's TOP, so the row has to have
+          // a stable height or the chevron drifts with its contents. The clear-X
+          // is a 32px box and the chevron only 24px, so a filled field centred
+          // the chevron inside that 32px row (+4px) while an empty field — which
+          // mounts no clear-X — collapsed the row to 24px and left the chevron
+          // 4px high. Fixing the row at the clear-X's own 32px and centring in it
+          // makes both states land on the same baseline.
+          height: '2rem',
+          display: 'flex',
+          alignItems: 'center',
         },
         // Open dropdown (Figma "Multiselect" node 535:37501): a detached card with a
         // grey400 stroke, 8px radius and the deep "landing" shadow, dropped ~9px

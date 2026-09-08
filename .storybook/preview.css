@@ -1,0 +1,12 @@
+/*
+ * Storybook canvas only -- never bundled into the published package.
+ *
+ * The toolkit has no global base font: every component declares its own
+ * family, so any text the stories themselves render (section headings, notes,
+ * layout scaffolding) inherits the browser default and lands in Times New
+ * Roman. This supplies the same base the typography theme uses so scaffolding
+ * matches the components around it. Components still set their own family.
+ */
+body {
+  font-family: 'Golos Text', sans-serif;
+}

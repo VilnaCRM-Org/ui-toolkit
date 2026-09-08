@@ -47,8 +47,24 @@ export interface RadioCardContract {
   withRef: (ref: React.Ref<HTMLButtonElement>) => React.ReactElement;
   /** The `id` the remount / focus-return test re-resolves the card by. */
   remountId: string;
-  /** Overrides producing an unusable mark bundle, for the warning assertions. */
-  unusableLogo: Readonly<RadioCardOverrides>;
+  /**
+   * Overrides producing an unusable mark bundle, for the warning assertions.
+   * Omit for a card that paints no mark — the mark-specific cases then do not
+   * run rather than being faked against a card that cannot fail them.
+   */
+  unusableLogo?: Readonly<RadioCardOverrides> | undefined;
+  /**
+   * Message fragment of the card's blank-identity warning. Cards name that
+   * identity differently — the payment card calls it `name`, the option card
+   * `label` — so the fragment travels with the card. Defaults to 'blank `name`'.
+   */
+  blankIdentityMessage?: string | undefined;
+  /**
+   * Whether the card warns when it is mounted wired but outside a
+   * `role="radiogroup"`. Defaults to true; set false for a card that ships no
+   * such mount check, so the section is skipped instead of asserted falsely.
+   */
+  warnsOutsideRadiogroup?: boolean | undefined;
   /** The STATIC branch's base style layer. */
   staticBase: () => StyleObject;
 }
@@ -423,8 +439,30 @@ function describeLiveRegionProhibition(contract: RadioCardContract): void {
   });
 }
 
+// The mark-bundle warnings, for the cards that paint a mark at all.
+function describeMarkWarnings(contract: RadioCardContract): void {
+  const { cardWith, inGroup, warn } = contract;
+  const unusableLogo: Readonly<RadioCardOverrides> = contract.unusableLogo ?? {};
+
+  it('warns for an unusable logo bundle', () => {
+    render(inGroup(cardWith({ ...unusableLogo, onSelect: noop })));
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('usable `src`'));
+  });
+
+  it('re-reports when the card changes into a different warning state', () => {
+    const { rerender } = render(inGroup(cardWith({ name: '   ', onSelect: noop })));
+    expect(warn.spy).toHaveBeenCalledTimes(1);
+
+    rerender(inGroup(cardWith({ ...unusableLogo, onSelect: noop })));
+    expect(warn.spy).toHaveBeenCalledTimes(2);
+    expect(warn.spy).toHaveBeenLastCalledWith(expect.stringContaining('usable `src`'));
+  });
+}
+
 function describeSharedDevWarnings(contract: RadioCardContract): void {
-  const { cardWith, inGroup, warn, unusableLogo } = contract;
+  const { cardWith, inGroup, warn } = contract;
+  const unusableLogo: Readonly<RadioCardOverrides> = contract.unusableLogo ?? {};
+  const blankIdentity: string = contract.blankIdentityMessage ?? 'blank `name`';
 
   it('stays silent for a healthy wired card inside a radiogroup', () => {
     render(inGroup(cardWith({ onSelect: noop })));
@@ -448,17 +486,12 @@ function describeSharedDevWarnings(contract: RadioCardContract): void {
 
   it('warns for a whitespace-only name', () => {
     render(inGroup(cardWith({ name: '   ', onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `name`'));
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining(blankIdentity));
   });
 
   it('warns for a name missing entirely', () => {
     render(inGroup(cardWith({ name: undefined, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('blank `name`'));
-  });
-
-  it('warns for an unusable logo bundle', () => {
-    render(inGroup(cardWith({ ...unusableLogo, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('usable `src`'));
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining(blankIdentity));
   });
 
   it('warns once per warning state, not once per render', () => {
@@ -471,11 +504,6 @@ function describeSharedDevWarnings(contract: RadioCardContract): void {
     rerender(inGroup(cardWith({ name: undefined, onSelect: noop })));
     rerender(inGroup(cardWith({ name: '', selected: false, onSelect: noop })));
     expect(warn.spy).toHaveBeenCalledTimes(1);
-
-    // A change INTO a different warning state does re-report.
-    rerender(inGroup(cardWith({ ...unusableLogo, onSelect: noop })));
-    expect(warn.spy).toHaveBeenCalledTimes(2);
-    expect(warn.spy).toHaveBeenLastCalledWith(expect.stringContaining('usable `src`'));
   });
 
   it('reports the unwired-selected misconfiguration ahead of the content ones', () => {
@@ -573,8 +601,16 @@ export function describeRadioCardContract(contract: RadioCardContract): void {
   describe(`${name} — focus and tab order`, () => describeFocusAndTabOrder(contract));
   describe(`${name} — live-region prohibition`, () => describeLiveRegionProhibition(contract));
   describe(`${name} — shared dev warnings`, () => describeSharedDevWarnings(contract));
-  describe(`${name} — radiogroup context warning`, () =>
-    describeRadiogroupContextWarning(contract));
+  // Both of these describe behaviour a card may simply not ship: a mark bundle
+  // to be unusable, and a radiogroup mount check to fire. Running them anyway
+  // would assert a contract the card never signed.
+  if (contract.unusableLogo !== undefined) {
+    describe(`${name} — mark warnings`, () => describeMarkWarnings(contract));
+  }
+  if (contract.warnsOutsideRadiogroup !== false) {
+    describe(`${name} — radiogroup context warning`, () =>
+      describeRadiogroupContextWarning(contract));
+  }
   describe(`${name} — consumer sx`, () => describeConsumerSx(contract));
 }
 

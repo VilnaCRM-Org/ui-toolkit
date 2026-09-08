@@ -66,3 +66,26 @@ export const SocialButton: Story = {
     name: 'socialButton',
   },
 };
+
+export const Danger: Story = {
+  args: {
+    children: t('Cancel'),
+    variant: 'contained',
+    size: 'small',
+    name: 'danger',
+  },
+};
+
+// `loading` is rendered as `aria-disabled` plus a guarded activation path, never
+// MUI's native-disabled loading branch: a focused element that becomes disabled
+// drops focus to `<body>`, losing a keyboard user's place the moment their own
+// click starts the fetch. The label keeps its ink transparent (not hidden), so
+// the button keeps its width and its accessible name.
+export const Loading: Story = {
+  args: {
+    children: t('header.actions.try_it_out'),
+    variant: 'contained',
+    size: 'small',
+    loading: true,
+  },
+};

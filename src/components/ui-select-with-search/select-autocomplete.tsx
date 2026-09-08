@@ -1,12 +1,75 @@
 import { Autocomplete } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
-import { ChevronDownGlyph, OPEN_FIELD_POPPER } from '../field-controls';
+import {
+  ChevronDownGlyph,
+  DEFAULT_LOADING_TEXT,
+  OPEN_FIELD_POPPER,
+  type ListboxSlotProps,
+} from '../field-controls';
 
 import type { UiSelectWithSearchOption, UiSelectWithSearchProps } from './types';
 import type { SelectField } from './use-select-field';
 
 const POPUP_ICON: React.ReactElement = <ChevronDownGlyph />;
+
+/** Default accessible name for the clear × (see `clearText`). */
+const DEFAULT_CLEAR_LABEL: string = 'Очистити';
+
+// While a fetch is in flight the spinner takes the clear ×'s slot, so the ×
+// itself is hidden. This control puts that × in the tab order (see
+// CLEAR_SLOT_PROPS below), so hiding it CAN strand focus: `useClearFocusGuard`
+// moves focus to the field's own input when a fetch starts while the × holds it
+// (SC 2.4.3). Layered UNDER the consumer `sx` so a consumer override still wins.
+const HIDE_CLEAR_SX: SystemStyleObject<Theme> = {
+  '& .MuiAutocomplete-clearIndicator': { display: 'none' },
+};
+
+export function selectRootSx(control: UiSelectWithSearchProps): SxProps<Theme> | undefined {
+  if (control.loading !== true) {
+    return control.sx;
+  }
+  const consumerSx: SxProps<Theme> = control.sx ?? {};
+  return [HIDE_CLEAR_SX, ...(Array.isArray(consumerSx) ? consumerSx : [consumerSx])];
+}
+
+// MUI gives the clear button `tabIndex={-1}`, which was fine while it was a
+// hover-only convenience next to a fully keyboard-operable field. Now that it is
+// the primary way to remove a selection it has to be reachable: the field's own
+// value text sits in the input after a pick, so "backspace on an empty input"
+// is not an equivalent path — the user would have to delete the whole label
+// while the ghost typeahead consumes the same keystrokes.
+const CLEAR_SLOT_PROPS = { clearIndicator: { tabIndex: 0 } } as const;
+
+type SelectSlotProps = ListboxSlotProps &
+  typeof CLEAR_SLOT_PROPS & { popper?: typeof OPEN_FIELD_POPPER };
+
+/**
+ * MUI names the button a bare "Clear". With more than one select on a form that
+ * is several identically-named controls, so the name says what it clears.
+ *
+ * The default is Ukrainian, like every other built-in string this kit ships
+ * (`Копіювати`, `Завантаження`); `clearLabel` overrides it for a consumer
+ * running another locale, matching the `copyLabel`/`label` props the sibling
+ * controls already expose.
+ */
+function clearText(
+  value: UiSelectWithSearchOption | null | undefined,
+  clearLabel: string | undefined
+): string {
+  const base: string = clearLabel ?? DEFAULT_CLEAR_LABEL;
+  return value ? `${base} ${value.label}` : base;
+}
+
+// Demo-only: the frozen popper override keys off the RAW `control.open` (never
+// `field.resolvedOpen`) — a real open must keep Popper flip and overflow handling
+// or the listbox clips near the viewport edge.
+function selectSlotProps(control: UiSelectWithSearchProps, field: SelectField): SelectSlotProps {
+  const base: SelectSlotProps = { ...field.slotProps, ...CLEAR_SLOT_PROPS };
+  return control.open ? { ...base, popper: OPEN_FIELD_POPPER } : base;
+}
 
 function isOptionEqualToValue(
   option: UiSelectWithSearchOption,
@@ -36,8 +99,13 @@ export function SelectAutocomplete(props: Readonly<SelectAutocompleteProps>): Re
       onChange={field.handleChange}
       onInputChange={field.handleInputChange}
       disabled={control.disabled}
+      // A loading combobox stays fully operable — no `disabled`, no `readOnly`
+      // (SC 2.1.1 / 3.2.2). MUI's `loading` only swaps the popup's empty row for
+      // `loadingText`, so a running fetch no longer reads as "no options".
+      loading={control.loading}
+      loadingText={control.loadingText ?? DEFAULT_LOADING_TEXT}
       size={control.size}
-      sx={control.sx}
+      sx={selectRootSx(control)}
       id={fieldId}
       isOptionEqualToValue={isOptionEqualToValue}
       popupIcon={POPUP_ICON}
@@ -46,10 +114,8 @@ export function SelectAutocomplete(props: Readonly<SelectAutocompleteProps>): Re
       onClose={field.handleClose}
       disablePortal={control.disablePortal}
       renderInput={field.renderInput}
-      // Demo-only: the frozen popper override keys off the RAW `control.open`
-      // (never `field.resolvedOpen`) — a real open must keep Popper flip and
-      // overflow handling or the listbox clips near the viewport edge.
-      slotProps={control.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps}
+      clearText={clearText(control.value, control.clearLabel)}
+      slotProps={selectSlotProps(control, field)}
     />
   );
 }
