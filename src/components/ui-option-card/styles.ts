@@ -116,6 +116,12 @@ function interactiveCardSx(): object {
       color: palette.grey400.main,
     },
     '&:focus-visible': { outline: 'none', boxShadow: FOCUS_RING },
+    // Forced-colors discards box-shadow, so the ring is re-expressed as an
+    // inset outline. Same selector as the ring above, declared after it, so it
+    // ties specificity and wins inside the query.
+    '@media (forced-colors: active)': {
+      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+    },
   };
 }
 

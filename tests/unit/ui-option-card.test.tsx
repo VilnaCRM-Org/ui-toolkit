@@ -395,12 +395,24 @@ describe('UiOptionCard — style assembly (styles.ts)', () => {
     expect(ring.boxShadow).toBe(FOCUS_RING);
   });
 
+  it('re-expresses the ring as an outline where forced colors drop shadows', () => {
+    const forced: StyleObject = baseOf(true)['@media (forced-colors: active)'] as StyleObject;
+
+    // Forced-colors mode discards box-shadow, so without this the card would
+    // have no visible keyboard focus indicator at all.
+    expect(forced['&:focus-visible']).toEqual({
+      outline: '2px solid Highlight',
+      outlineOffset: '-2px',
+    });
+  });
+
   it('leaves the static base with no interactive chrome at all', () => {
     const base: StyleObject = baseOf(false);
 
     expect(base.cursor).toBeUndefined();
     expect(base['&:hover:not([aria-checked="true"]):not([aria-disabled="true"])']).toBeUndefined();
     expect(base['&:focus-visible']).toBeUndefined();
+    expect(base['@media (forced-colors: active)']).toBeUndefined();
   });
 
   it('merges a single consumer sx object last', () => {

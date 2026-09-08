@@ -659,6 +659,11 @@ describe('styles — segmentSx and trackSx (pure, mutation-killing)', () => {
       outline: 'none',
       boxShadow: `inset 0 0 0 2px ${DARK_PRIMARY}`,
     });
+    // Forced-colors mode discards box-shadow, so the ring is re-expressed as
+    // an inset outline or a keyboard user is left with no indicator at all.
+    expect(base['@media (forced-colors: active)']).toEqual({
+      '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+    });
   });
 
   it('ships no transition and no animation, so nothing can move between states', () => {

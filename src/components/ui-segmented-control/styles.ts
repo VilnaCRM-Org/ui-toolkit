@@ -23,6 +23,12 @@ const FOCUS_RING: object = {
     outline: 'none',
     boxShadow: `inset 0 0 0 2px ${palette.darkPrimary.main}`,
   },
+  // Forced-colors discards box-shadow, so the ring is re-expressed as an inset
+  // outline. Same selector as the ring above, declared after it, so it ties
+  // specificity and wins inside the query.
+  '@media (forced-colors: active)': {
+    '&:focus-visible': { outline: '2px solid Highlight', outlineOffset: '-2px' },
+  },
 };
 
 // 339x50 master: 4px padding on every side, no border, no shadow. Extraction
