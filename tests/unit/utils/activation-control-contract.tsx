@@ -10,6 +10,26 @@ import { keysMatching, type StyleObject } from './style-layers';
 /** The `[base, ...consumerSx]` array every `*Sx` factory produces. */
 export type SxLayers = StyleObject[];
 
+/**
+ * The consumer `sx` always lands last, whatever form it arrives in. Every
+ * `*Sx` factory in the kit returns `[base, ...consumerSx]`, so this holds for
+ * any control whose factory takes `{ interactive, sx }`.
+ */
+export function describeSxLayerMerge(
+  layersOf: (interactive: boolean, sx: SxProps<Theme> | undefined) => SxLayers
+): void {
+  it('merges the consumer sx last, in object, array and absent forms', () => {
+    expect(layersOf(true, undefined)).toHaveLength(2);
+    expect(layersOf(true, undefined)[1]).toEqual({});
+    expect(layersOf(true, { marginTop: '1rem' })[1]).toEqual({ marginTop: '1rem' });
+
+    const layers: SxLayers = layersOf(false, [{ marginTop: '1rem' }, { paddingTop: '2rem' }]);
+    expect(layers).toHaveLength(3);
+    expect(layers[1]).toEqual({ marginTop: '1rem' });
+    expect(layers[2]).toEqual({ paddingTop: '2rem' });
+  });
+}
+
 /** The first selector key of `base` containing `fragment`, as its rule object. */
 export function ruleAt(base: StyleObject, fragment: string): StyleObject {
   const [key] = keysMatching(base, fragment);

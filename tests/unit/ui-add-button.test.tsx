@@ -32,6 +32,7 @@ import {
   describeRetainsFocusAcrossDisabledFlip,
   describeSilentInProduction,
   describeStaticBranch,
+  describeSxLayerMerge,
   describeWarnSequence,
   ruleAt,
   type ActivationOverrides,
@@ -351,16 +352,7 @@ describe('addButtonSx — style assembly (pure, mutation-killing)', () => {
     expect(serialised).not.toMatch(/animation/i);
   });
 
-  it('merges the consumer sx last, in object, array and absent forms', () => {
-    expect(layersOf(true, undefined)).toHaveLength(2);
-    expect(layersOf(true, undefined)[1]).toEqual({});
-    expect(layersOf(true, { marginTop: '1rem' })[1]).toEqual({ marginTop: '1rem' });
-
-    const layers: SxLayers = layersOf(false, [{ marginTop: '1rem' }, { paddingTop: '2rem' }]);
-    expect(layers).toHaveLength(3);
-    expect(layers[1]).toEqual({ marginTop: '1rem' });
-    expect(layers[2]).toEqual({ paddingTop: '2rem' });
-  });
+  describeSxLayerMerge(layersOf);
 });
 
 describe('add-button styles — content recipes (pure, mutation-killing)', () => {
