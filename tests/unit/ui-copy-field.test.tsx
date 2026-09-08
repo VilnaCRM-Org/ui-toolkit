@@ -849,15 +849,24 @@ describe('UiCopyField — a consumer error is not a clipboard error', () => {
     // and a rejection from one would slip past a plain try/catch.
     const onCopy: jest.Mock = jest.fn(() => Promise.reject(new Error('async blew up')));
     stubClipboard((): Promise<void> => Promise.resolve());
-    render(<UiCopyField value="5POLGOPWQZFCCFEI" onCopy={onCopy} onCopyError={onCopyError} />);
+    // Fake timers for the same reason as the synchronous case: the rejection is
+    // deliberately rethrown from a timeout, so under real timers it would fire
+    // mid-test and be reported as an unhandled error rather than asserted.
+    jest.useFakeTimers();
+    try {
+      render(<UiCopyField value="5POLGOPWQZFCCFEI" onCopy={onCopy} onCopyError={onCopyError} />);
 
-    fireEvent.click(screen.getByRole('button'));
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+      fireEvent.click(screen.getByRole('button'));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
 
-    expect(onCopy).toHaveBeenCalledTimes(1);
-    expect(onCopyError).not.toHaveBeenCalled();
+      expect(onCopy).toHaveBeenCalledTimes(1);
+      expect(onCopyError).not.toHaveBeenCalled();
+      expect(() => jest.runAllTimers()).toThrow('async blew up');
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
