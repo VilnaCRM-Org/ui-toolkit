@@ -1,8 +1,31 @@
 export { default as outlinedFieldTheme } from './theme';
 export { ChevronDownGlyph } from './chevron-down';
+export { Glyph } from './glyph';
+export type { GlyphProps } from './glyph';
+export { hasHelperContent } from './has-helper-content';
+export { helperTextSx } from './helper-text';
 export { hasText } from './has-text';
 export { createFieldRenderInput } from './render-input';
 export type { FieldRenderInputConfig } from './render-input';
+export { FieldSpinner } from './field-spinner';
+export type { FieldSpinnerProps } from './field-spinner';
+// Only the tokens other modules actually consume are re-exported here; the rest
+// stay module-local, because an un-imported barrel re-export is instrumented as a
+// phantom uncovered function by esbuild-jest.
+// `loadingSlotSx` is deliberately NOT re-exported: `slotAdornment` is now the
+// only consumer and imports it directly. A barrel re-export nothing imports
+// THROUGH the barrel counts as an uncovered function under the esbuild
+// transform and fails the 100% functions gate.
+export { slotAdornment } from './slot-adornment';
+export { LabelButtonShell, LabelStaticShell } from './label-button-shell';
+export { useFieldLoadingAnnouncement, DEFAULT_LOADING_TEXT } from './use-loading-announcement';
+export { FieldLabel } from './field-label';
+export type { FieldLabelProps } from './field-label';
+export { default as srOnlySx } from '../../utils/sr-only';
+export { firstGhostMatch, isPrefixMatch, isGhostAcceptKey } from './ghost-completion';
+export { createFieldOptionRenderer } from './field-option';
+export type { FieldOptionRenderer, OptionProps } from './field-option';
 export { useListboxSlotProps } from './use-listbox-slot-props';
 export type { ListboxSlotProps } from './use-listbox-slot-props';
+export { OPEN_FIELD_POPPER } from './open-field-popper';
 export { useFieldAccessibilityWarnings } from './use-field-warnings';

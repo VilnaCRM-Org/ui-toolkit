@@ -35,12 +35,19 @@ export const baseSkeletonStyle: {
   backgroundSize: string;
   animation: string;
   '@media (prefers-reduced-motion: reduce)': { animation: string };
+  '@media (forced-colors: active)': { outline: string; outlineOffset: string };
 } = {
   backgroundImage: shimmerGradient,
   backgroundSize: '200% 100%',
   animation: `${shimmerAnimation} 1.5s ease-in-out infinite alternate`,
-  // Honour the OS "reduce motion" preference (WCAG 2.3.3 / 2.2.2): every
-  // skeleton primitive routes through this base, so one guard stops the
-  // shimmer for all of them when the user opts out of motion.
+  // Honour the OS "reduce motion" preference (WCAG 2.2.2 Pause, Stop, Hide —
+  // pre-load/essential exception, technique C39): every skeleton primitive
+  // routes through this base, so one guard stops the shimmer for all of them.
   '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+  // Contrast Themes drop the gradient and shadows, so the shapes would vanish;
+  // a system-colour outline keeps their geometry perceivable.
+  '@media (forced-colors: active)': {
+    outline: '1px solid GrayText',
+    outlineOffset: '-1px',
+  },
 };

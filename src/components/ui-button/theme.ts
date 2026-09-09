@@ -1,4 +1,5 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
@@ -48,7 +49,37 @@ export const outlinedStyles: Interpolation<{ theme: Theme }> = {
   },
 };
 
+// Board A y=1354, danger `Cancel` pill (rest 439:19822 / hover 439:19824 /
+// active 439:19826 / disabled 439:19828). Border stays declared at 1px in every
+// state (transparent where Figma paints none) so the 98x42 box never shifts.
+export const dangerStyles: Interpolation<{ theme: Theme }> = {
+  ...baseButtonStyles,
+  padding: '0.75rem 1.5rem',
+  backgroundColor: alpha(colorTheme.palette.error.main, 0.1),
+  border: `1px solid ${colorTheme.palette.strokeDanger.main}`,
+  color: colorTheme.palette.error.main,
+  '&:hover': {
+    backgroundColor: colorTheme.palette.error.main,
+    border: '1px solid transparent',
+    color: colorTheme.palette.white.main,
+  },
+  '&:active': {
+    backgroundColor: colorTheme.palette.strokeDanger.main,
+    border: '1px solid transparent',
+    color: colorTheme.palette.white.main,
+  },
+  '&:disabled': {
+    backgroundColor: colorTheme.palette.brandGray.main,
+    border: '1px solid transparent',
+    color: colorTheme.palette.white.main,
+  },
+};
+
 export const theme: Theme = createTheme({
+  // Base family for the slots the variants below do not name themselves —
+  // without it MUI's stock Roboto wins, and Roboto is not a face the toolkit
+  // ships. Same family the contained/outlined button text already uses.
+  typography: { fontFamily: 'Golos Text' },
   components: {
     MuiButton: {
       variants: [
@@ -122,6 +153,14 @@ export const theme: Theme = createTheme({
               },
             },
           },
+        },
+        {
+          props: {
+            name: 'danger',
+            variant: 'contained',
+            size: 'small',
+          },
+          style: dangerStyles,
         },
       ],
     },

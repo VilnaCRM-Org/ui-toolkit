@@ -13,5 +13,5 @@ export default function UiSkeletonButton({
     ? sx
     : [sx];
 
-  return <Box id={id} sx={[styles.buttonSkeleton, ...additionalSx]} />;
+  return <Box id={id} aria-hidden="true" sx={[styles.buttonSkeleton, ...additionalSx]} />;
 }

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { hasText } from './has-text';
 
-export type ListboxSlotProps = { listbox: { 'aria-label'?: string } };
+export type ListboxSlotProps = { listbox: { 'aria-label'?: string | undefined } };
 
 // Names the Autocomplete popup listbox from the field's visible label, falling
 // back to its `aria-label` (including when `label` is empty/whitespace). Shared

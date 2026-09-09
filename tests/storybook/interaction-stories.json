@@ -12,10 +12,10 @@
     "exportName": "ClickInvokesHandler"
   },
   {
-    "id": "uicomponents-uicalendarmultiselect--day-toggle-updates-selection",
+    "id": "uicomponents-uicalendarmultiselect--range-clicks-set-endpoints",
     "title": "UiComponents/UiCalendarMultiSelect",
-    "name": "Day Toggle Updates Selection",
-    "exportName": "DayToggleUpdatesSelection"
+    "name": "Range Clicks Set Endpoints",
+    "exportName": "RangeClicksSetEndpoints"
   },
   {
     "id": "uicomponents-uicheckbox--click-toggles-checked-state",

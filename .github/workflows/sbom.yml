@@ -1,0 +1,117 @@
+name: sbom
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: package SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Create the SBOM output directory
+        run: mkdir -p sbom
+
+      # syft reads bun.lock directly (javascript-bun-lock-entry), but only from
+      # v1.46.0 onwards; the action bundles 1.42.3, which silently catalogues
+      # nothing from a bun lockfile, so the version is pinned explicitly here.
+      # A directory scan yields the declared dependency set, not the ~2100
+      # resolved packages; the fully resolved tree is inventoried by the bun
+      # image SBOM below, which scans the image after `bun install`. The floor
+      # sits well under the declared count and far above the zero a
+      # lockfile-blind run produces.
+      - name: Generate the CycloneDX SBOM for the npm package
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom/ui-toolkit-package.cyclonedx.json
+          syft-version: v1.51.0
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Assert the package SBOM inventoried the dependency tree
+        run: bash scripts/ci/assert-sbom.sh sbom/ui-toolkit-package.cyclonedx.json 50
+
+      - name: Upload the package SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom-package
+          path: sbom/ui-toolkit-package.cyclonedx.json
+          retention-days: 90
+          if-no-files-found: error
+
+  image:
+    name: ${{ matrix.name }} image SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: bun
+            dockerfile: Dockerfile
+          - name: playwright
+            dockerfile: Dockerfile.playwright
+          - name: rca
+            dockerfile: Dockerfile.rca
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Create the SBOM output directory
+        run: mkdir -p sbom
+
+      - name: Build the ${{ matrix.name }} image
+        env:
+          DOCKERFILE: ${{ matrix.dockerfile }}
+          IMAGE: ui-toolkit-sbom-${{ matrix.name }}:${{ github.sha }}
+        run: docker build --file "$DOCKERFILE" --tag "$IMAGE" .
+
+      - name: Generate the CycloneDX SBOM for the ${{ matrix.name }} image
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ui-toolkit-sbom-${{ matrix.name }}:${{ github.sha }}
+          format: cyclonedx-json
+          output-file: sbom/ui-toolkit-${{ matrix.name }}-image.cyclonedx.json
+          syft-version: v1.51.0
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Assert the ${{ matrix.name }} image SBOM inventoried the image
+        env:
+          SBOM_PATH: sbom/ui-toolkit-${{ matrix.name }}-image.cyclonedx.json
+        run: bash scripts/ci/assert-sbom.sh "$SBOM_PATH"
+
+      - name: Upload the ${{ matrix.name }} image SBOM
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sbom-image-${{ matrix.name }}
+          path: sbom/ui-toolkit-${{ matrix.name }}-image.cyclonedx.json
+          retention-days: 90
+          if-no-files-found: error

@@ -12,13 +12,13 @@ export interface CalendarField {
   captionId: string;
   helperId: string;
   hasVisibleLabel: boolean;
-  labelledBy?: string;
-  ariaLabel?: string;
+  labelledBy?: string | undefined;
+  ariaLabel?: string | undefined;
   disabled: boolean;
   required: boolean;
   invalid: boolean;
   size: CalendarSize;
-  describedBy?: string;
+  describedBy?: string | undefined;
   sx: SxProps<Theme>;
 }
 

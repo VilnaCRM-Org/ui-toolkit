@@ -3,7 +3,10 @@ import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 import type { SubmitHandler } from 'react-hook-form';
 
-import { UiButton, UiErrorBoundary, UiForm, UiInput } from '../../../src/components';
+import UiButton from '../../../src/components/ui-button';
+import UiErrorBoundary from '../../../src/components/ui-error-boundary';
+import UiForm from '../../../src/components/ui-form';
+import UiInput from '../../../src/components/ui-input';
 import mockConsoleError from '../../unit/utils/mock-console-error';
 import mockConsoleWarn from '../../unit/utils/mock-console-warn';
 

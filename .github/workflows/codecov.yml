@@ -5,6 +5,8 @@ on:
     branches:
       - main
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -12,45 +14,31 @@ concurrency:
 jobs:
   codecov:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Detect runtime project files
-        id: project
-        run: |
-          if [[ -f package.json && -f bun.lock ]]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip codecov
-        if: steps.project.outputs.present != 'true'
-        run: echo "Skipping codecov because this bootstrap PR does not include the project runtime files yet."
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Start docker test environment
-        if: steps.project.outputs.present == 'true'
         run: make start-bun
 
       - name: Run unit tests
-        if: steps.project.outputs.present == 'true'
         run: make test-unit
 
       - name: Export coverage
-        if: steps.project.outputs.present == 'true'
         run: make copy-coverage
 
       - name: Stop docker test environment
-        if: always() && steps.project.outputs.present == 'true'
+        if: always()
         run: make down
 
       - name: Upload coverage to Codecov
-        if: steps.project.outputs.present == 'true'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info

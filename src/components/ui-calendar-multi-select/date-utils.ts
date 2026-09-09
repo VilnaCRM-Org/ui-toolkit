@@ -21,15 +21,19 @@ export function isValidISO(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return false;
   }
-  const [year, month, day]: number[] = value.split('-').map(Number);
-  const date: Date = new Date(year, month - 1, day);
   // Round-tripping catches overflow (e.g. `2026-02-30` rolls into March).
-  return formatISO(date) === value;
+  return formatISO(parseISO(value)) === value;
 }
 
-/** Parses a `YYYY-MM-DD` string to a local-midnight `Date`. */
+/**
+ * Parses a `YYYY-MM-DD` string to a local-midnight `Date`. The tuple assertion
+ * rests on that contract: every caller passes a string already shape-checked by
+ * `isValidISO` (directly, or through `sanitizeSelection` / `toBoundISO`), so the
+ * split always yields three parts. Malformed input still yields missing parts and
+ * therefore an `Invalid Date` — exactly what the previous destructure produced.
+ */
 export function parseISO(value: string): Date {
-  const [year, month, day]: number[] = value.split('-').map(Number);
+  const [year, month, day] = value.split('-').map(Number) as [number, number, number];
   return new Date(year, month - 1, day);
 }
 

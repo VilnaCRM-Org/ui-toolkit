@@ -4,6 +4,9 @@
 
 review
 
+- **PR:** [#68](https://github.com/VilnaCRM-Org/ui-toolkit/pull/68)
+- **Definition of Done:** deferred to the shared compliance matrix — `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` → `### Matrix`, row `1-2-core-control-state-parity-completion.md`. This artifact predates `specs/implementation-artifacts/story-dod-template.md`, which was authored with Epic 4 (commit `3c310f9`), so its DoD is instantiated once against the shared template in that matrix rather than restated here. Raised in the PR #126 review.
+
 ## Story
 
 As a product-team developer,

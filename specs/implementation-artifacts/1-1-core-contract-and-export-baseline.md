@@ -4,6 +4,15 @@
 
 review
 
+- **PR:** n/a — landed via the four-PR stack
+  [#37](https://github.com/VilnaCRM-Org/ui-toolkit/pull/37),
+  [#38](https://github.com/VilnaCRM-Org/ui-toolkit/pull/38),
+  [#39](https://github.com/VilnaCRM-Org/ui-toolkit/pull/39) and
+  [#46](https://github.com/VilnaCRM-Org/ui-toolkit/pull/46);
+  [#8](https://github.com/VilnaCRM-Org/ui-toolkit/pull/8) and
+  [#9](https://github.com/VilnaCRM-Org/ui-toolkit/pull/9) were closed unmerged.
+- **Definition of Done:** deferred to the shared compliance matrix — `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` → `### Matrix`, row `1-1-core-contract-and-export-baseline.md`. This artifact predates `specs/implementation-artifacts/story-dod-template.md`, which was authored with Epic 4 (commit `3c310f9`), so its DoD is instantiated once against the shared template in that matrix rather than restated here. Raised in the PR #126 review.
+
 ## Story
 
 As a consumer-team developer,

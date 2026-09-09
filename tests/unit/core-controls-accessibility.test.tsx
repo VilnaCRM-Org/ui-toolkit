@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiButton, UiCheckbox, UiInput, UiLink } from '../../src/components';
+import UiButton from '../../src/components/ui-button';
+import UiCheckbox from '../../src/components/ui-checkbox';
+import UiInput from '../../src/components/ui-input';
+import UiLink from '../../src/components/ui-link';
 
 import { testText } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -173,6 +176,35 @@ describe('Core controls accessibility — disabled semantics are consistent', ()
     await expectSkippedInTabOrder(
       userEvent.setup(),
       <UiCheckbox disabled label="terms" onChange={noop} />
+    );
+  });
+
+  it('marks a disabled link as disabled through aria-disabled', () => {
+    render(
+      <UiLink href="/docs" disabled>
+        docs
+      </UiLink>
+    );
+
+    // An anchor has no `disabled` attribute, so UiLink states the condition
+    // through ARIA while keeping its role, href and accessible name.
+    const link: HTMLElement = screen.getByRole('link', { name: 'docs' });
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+    expect(link).toHaveAttribute('href', '/docs');
+  });
+
+  it('leaves an enabled link without a disabled flag', () => {
+    render(<UiLink href="/docs">docs</UiLink>);
+
+    expect(screen.getByRole('link', { name: 'docs' })).not.toHaveAttribute('aria-disabled');
+  });
+
+  it('removes a disabled link from the keyboard tab order', async () => {
+    await expectSkippedInTabOrder(
+      userEvent.setup(),
+      <UiLink href="/docs" disabled>
+        docs
+      </UiLink>
     );
   });
 });

@@ -4,7 +4,7 @@ import React from 'react';
 import { labelSx, srOnlySx } from './styles';
 
 export interface CalendarLabelProps {
-  label?: string;
+  label?: string | undefined;
   required: boolean;
   show: boolean;
   id: string;

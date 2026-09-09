@@ -46,8 +46,8 @@ export interface FocusSeed {
   visibleMonth: Date;
   selectedSorted: string[];
   today: Date;
-  minISO?: string;
-  maxISO?: string;
+  minISO?: string | undefined;
+  maxISO?: string | undefined;
 }
 
 /**
@@ -83,11 +83,11 @@ export function clampMonthToRange(month: Date, minISO?: string, maxISO?: string)
 }
 
 export interface CalendarSeed {
-  defaultMonth?: string;
+  defaultMonth?: string | undefined;
   selectedSorted: string[];
   today: Date;
-  minISO?: string;
-  maxISO?: string;
+  minISO?: string | undefined;
+  maxISO?: string | undefined;
 }
 
 /** Initial (uncontrolled) visible month + roving-focus day, both clamped into [min, max]. */
