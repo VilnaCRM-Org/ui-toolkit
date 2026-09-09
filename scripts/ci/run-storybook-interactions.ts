@@ -44,6 +44,12 @@ const UNREADABLE: string = 'the interaction manifest is missing or is not valid 
 // bare `..` prefix would also reject an in-root file or directory merely named
 // `..something`.
 const PARENT_SEGMENT: string = `..${sep}`;
+// `wait-on` bounds only /iframe.html, so a server that accepts the /index.json
+// connection but never answers would hang the gate until the CI job's own
+// timeout. The request is aborted instead, and the timer is cleared only once the
+// response body has been read.
+const INDEX_TIMEOUT_MS: number = 60_000;
+const INDEX_TIMED_OUT: string = `the Storybook index did not answer within ${INDEX_TIMEOUT_MS}ms`;
 
 /** Aborts the gate; every failure funnels through `main`'s handler. */
 function fail(message: string): never {
@@ -109,14 +115,29 @@ function trimTrailingSlashes(url: string): string {
   return url.slice(0, end);
 }
 
-async function fetchLiveStories(url: string): Promise<InteractionStory[]> {
-  const response: Response = await fetch(`${url}/index.json`);
-
+async function readIndex(response: Response): Promise<InteractionStory[]> {
   if (!response.ok) {
     return fail(`the Storybook index request failed with status ${response.status}`);
   }
 
   return liveInteractionStories(await response.json());
+}
+
+async function fetchLiveStories(url: string): Promise<InteractionStory[]> {
+  const controller: AbortController = new AbortController();
+  const timer: ReturnType<typeof setTimeout> = setTimeout(
+    () => controller.abort(),
+    INDEX_TIMEOUT_MS
+  );
+
+  try {
+    return await readIndex(await fetch(`${url}/index.json`, { signal: controller.signal }));
+  } catch (error: unknown) {
+    const reason: string = error instanceof Error ? error.message : 'unknown error';
+    return fail(controller.signal.aborted ? INDEX_TIMED_OUT : reason);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function assertManifestMatchesIndex(manifest: InteractionStory[], live: InteractionStory[]): void {
