@@ -117,7 +117,10 @@ function decodeXml(value: string): string {
  */
 export function junitPlayTestKeys(report: string): string[] {
   return [...report.matchAll(TEST_CASE)]
-    .map(match => ({ name: decodeXml(CASE_NAME.exec(match[1])?.[1] ?? ''), body: match[2] ?? '' }))
+    .map(match => ({
+      name: decodeXml(CASE_NAME.exec(match[1] ?? '')?.[1] ?? ''),
+      body: match[2] ?? '',
+    }))
     .filter(entry => entry.name.endsWith(PLAY_TEST_SUFFIX) && !NOT_PASSED.test(entry.body))
     .map(entry => entry.name.slice(0, -PLAY_TEST_SUFFIX.length))
     .sort((a, b) => a.localeCompare(b));
