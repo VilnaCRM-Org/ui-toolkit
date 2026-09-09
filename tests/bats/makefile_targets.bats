@@ -77,6 +77,22 @@ EOF
   [ "$(grep -c -F -- 'docker compose rm -sf storybook' "$COMMAND_LOG")" -eq 2 ]
 }
 
+@test "test-storybook runs the interaction gate instead of a Playwright spec run" {
+  reset_command_log
+  run_make_target test-storybook
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose run --rm playwright bun scripts/ci/run-storybook-interactions.ts'
+  assert_log_not_contains 'bun x playwright test'
+}
+
+@test "the shared helper still defaults to the Playwright runner for other targets" {
+  reset_command_log
+  run_make_target test-e2e
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose run --rm playwright bun x playwright test ./tests/e2e'
+  assert_log_not_contains 'run-storybook-interactions.ts'
+}
+
 @test "storybook-backed and memory targets preserve their current shell flows" {
   while IFS='|' read -r target expected_one expected_two expected_three expected_four; do
     [ -n "$target" ] || continue
@@ -89,6 +105,7 @@ EOF
     assert_log_contains "$expected_three"
     [ -z "$expected_four" ] || assert_log_contains "$expected_four"
   done <<'EOF'
+test-storybook|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun scripts/ci/run-storybook-interactions.ts tests/storybook/interaction-stories.json
 test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
 test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --project=chromium
 test-memory-leak|docker compose build bun|bun x storybook dev --ci --host 0.0.0.0 -p 3000|bun x wait-on --timeout 180000 http://127.0.0.1:3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/run-memlab-tests.js
@@ -168,6 +185,7 @@ EOF
   done <<'EOF'
 test-e2e|docker compose -f docker-compose.override.yml build playwright
 test-visual|docker compose -f docker-compose.override.yml build playwright
+test-storybook|docker compose -f docker-compose.override.yml build playwright
 EOF
 }
 

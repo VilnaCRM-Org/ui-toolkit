@@ -39,7 +39,7 @@ PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
 # tests/bats/aggregate_gate_targets.bats holds the two definitions together: it
 # fails when a workflow runs a gate `verify` cannot reach.
 CI_GATES = lint build test-unit test-integration test-bats
-VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-memory-leak lighthouse-desktop lighthouse-mobile
+VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop lighthouse-mobile
 VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
 GATE_SET_NAME = gates
 GATE_SET =
@@ -51,6 +51,7 @@ MAKE_GATE = $(MAKE) --no-print-directory
 .PHONY: help build package lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual test-visual-update \
+	test-storybook \
 	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
 	lint-dep-ranges lint-deps lint-metrics lint-metrics-run lint-ci-paths \
@@ -59,6 +60,9 @@ MAKE_GATE = $(MAKE) --no-print-directory
 
 PLAYWRIGHT_TEST_ARGS =
 PLAYWRIGHT_RUN_FLAGS =
+# Command the shared helper runs against the booted Storybook. Playwright specs are
+# the default; `test-storybook` swaps in the Storybook interaction-suite gate.
+PLAYWRIGHT_RUN_CMD ?= bun x playwright test
 
 run-storybook-playwright:
 	@test -n "$(PLAYWRIGHT_TEST_TARGET)"
@@ -71,7 +75,7 @@ run-storybook-playwright:
 			$(DOCKER_COMPOSE) logs storybook; \
 			exit 1; \
 		fi; \
-		$(DOCKER_COMPOSE) run --rm $(PLAYWRIGHT_RUN_FLAGS) playwright bun x playwright test $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
+		$(DOCKER_COMPOSE) run --rm $(PLAYWRIGHT_RUN_FLAGS) playwright $(PLAYWRIGHT_RUN_CMD) $(PLAYWRIGHT_TEST_TARGET) $(PLAYWRIGHT_TEST_ARGS)
 
 help:
 	@printf "\033[33mUsage:\033[0m\n  make [target] [arg=\"val\"...]\n\n\033[33mTargets:\033[0m\n"
@@ -310,6 +314,11 @@ test-visual-update: PLAYWRIGHT_TEST_ARGS = --project=chromium --update-snapshots
 test-visual-update: PLAYWRIGHT_RUN_FLAGS = --volume $(CURDIR)/tests:/app/tests
 test-visual-update: ## Start Storybook and update the Playwright visual snapshots (chromium) inside a Docker container.
 	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)" PLAYWRIGHT_RUN_FLAGS="$(PLAYWRIGHT_RUN_FLAGS)"
+
+test-storybook: PLAYWRIGHT_RUN_CMD = bun scripts/ci/run-storybook-interactions.ts
+test-storybook: PLAYWRIGHT_TEST_TARGET = tests/storybook/interaction-stories.json
+test-storybook: ## Start Storybook and run the story interaction (play function) tests in a Docker container.
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_RUN_CMD="$(PLAYWRIGHT_RUN_CMD)" PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)"
 
 up: ## Start the docker hub (Bun).
 	$(DOCKER_COMPOSE) up -d --build

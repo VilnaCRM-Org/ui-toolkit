@@ -36,12 +36,38 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true \
 
 WORKDIR /app
 
-COPY . .
+# Explicit paths instead of `COPY . .`: a recursive build-context copy is refused
+# by SonarCloud (docker:S6470), and --chown here replaces the `chown -R /app` that
+# rewrote every inode and made overlayfs duplicate the whole tree into the next
+# layer (dive wasted-bytes gate). Every tracked top-level entry is listed; .env and
+# .qlty are the only omissions and .dockerignore already excludes both.
+COPY --chown=appuser:appuser .github ./.github
+COPY --chown=appuser:appuser .husky ./.husky
+COPY --chown=appuser:appuser .storybook ./.storybook
+COPY --chown=appuser:appuser config ./config
+COPY --chown=appuser:appuser i18n ./i18n
+COPY --chown=appuser:appuser scripts ./scripts
+COPY --chown=appuser:appuser specs ./specs
+COPY --chown=appuser:appuser src ./src
+COPY --chown=appuser:appuser tests ./tests
+COPY --chown=appuser:appuser \
+      .dependency-cruiser.js .dive-ci .dockerignore .editorconfig .env.example .gitignore \
+      .hadolint.yaml .markdownlint.yaml .markdownlintignore .prettierignore .prettierrc \
+      CLAUDE.md CONSUMING.md CONTRIBUTING.md Dockerfile Dockerfile.playwright \
+      Dockerfile.rca LICENSE Makefile README.md SECURITY.md agents.md api-extractor.json \
+      babel.config.js build.config.mjs bun.lock checkNodeVersion.js commitlint.config.js \
+      docker-compose.yml eslint.config.mjs i18n.js jest.config.ts \
+      jest.integration.config.ts jest.mutation.config.ts jest.setup.ts lighthouserc.js \
+      package.json playwright.config.ts robots.txt stryker.config.mjs \
+      stryker.shard.config.mjs tsconfig.api-extractor.json tsconfig.dts.json tsconfig.json \
+      tsconfig.paths.json tsconfig.stryker.json \
+      ./
 
 RUN if [ -f package.json ]; then \
       bun install --frozen-lockfile; \
     fi \
-    && chown -R appuser:appuser /app
+    && chown appuser:appuser /app \
+    && if [ -d node_modules ]; then chown -R appuser:appuser node_modules; fi
 
 USER appuser
 

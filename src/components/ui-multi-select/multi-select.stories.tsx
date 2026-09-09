@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { expect, screen, userEvent, within } from 'storybook/test';
 
 import {
   booleanControlArgType,
@@ -24,6 +25,26 @@ const options: [
   { label: 'Дизайнер', value: 'design' },
   { label: 'Менеджер', value: 'manager' },
 ];
+const interactionLabel: string = 'Роль';
+const interactionPlaceholder: string = 'Почніть вводити';
+const firstPick: string = options[1].label;
+const secondPick: string = options[2].label;
+
+// The combobox is fully controlled, so the interaction story owns the chip set and
+// starts from an empty selection.
+function MultiSelectInteractionStory(): React.ReactElement {
+  const [value, setValue] = React.useState<UiMultiSelectOption[]>([]);
+
+  return (
+    <UiMultiSelect
+      options={options}
+      value={value}
+      label={interactionLabel}
+      placeholder={interactionPlaceholder}
+      onChange={setValue}
+    />
+  );
+}
 
 const meta: Meta<typeof UiMultiSelect> = {
   title: 'UiComponents/UiMultiSelect',
@@ -74,8 +95,8 @@ export const MultiSelect: Story = {
     options,
     // Two preselected chips give the visual baseline something to render.
     value: [options[0], options[2]],
-    label: 'Роль',
-    placeholder: 'Почніть вводити',
+    label: interactionLabel,
+    placeholder: interactionPlaceholder,
   },
 };
 
@@ -86,9 +107,27 @@ export const Loading: Story = {
   args: {
     options,
     value: [options[0], options[2]],
-    label: 'Роль',
-    placeholder: 'Почніть вводити',
+    label: interactionLabel,
+    placeholder: interactionPlaceholder,
     loading: true,
   },
   render: renderMultiSelect,
+};
+
+// Interaction story (`interaction` tag): proves picking two options turns them into
+// chips inside the field. The listbox is portalled outside the story canvas, so it
+// is queried from `screen`. See tests/storybook/README.md.
+export const PickingOptionsAddsChips: Story = {
+  tags: ['interaction', '!autodocs'],
+  render: MultiSelectInteractionStory,
+  play: async ({ canvasElement }): Promise<void> => {
+    const canvas: ReturnType<typeof within> = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('combobox', { name: interactionLabel }));
+    await userEvent.click(await screen.findByRole('option', { name: firstPick }));
+    await userEvent.click(await screen.findByRole('option', { name: secondPick }));
+
+    await expect(canvas.getByText(firstPick)).toBeVisible();
+    await expect(canvas.getByText(secondPick)).toBeVisible();
+  },
 };

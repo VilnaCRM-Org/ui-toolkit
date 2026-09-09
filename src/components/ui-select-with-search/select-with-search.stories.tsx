@@ -5,6 +5,7 @@ import {
   booleanControlArgType,
   textControlArgType,
 } from '../../../.storybook/field-story-arg-types';
+import { expectTypeaheadNarrowsAndSelects } from '../../../.storybook/field-typeahead-interactions';
 
 import type { UiSelectWithSearchOption } from './types';
 
@@ -16,6 +17,26 @@ const options: UiSelectWithSearchOption[] = [
   { label: 'Одеса', value: 'odesa' },
   { label: 'Харків', value: 'kharkiv' },
 ];
+const cityLabel: string = 'Місто';
+const cityPlaceholder: string = 'Оберіть місто';
+const typedQuery: string = 'Льв';
+const chosenCity: string = 'Львів';
+const filteredOutCity: string = 'Одеса';
+
+// The combobox is fully controlled, so the interaction story owns the selection.
+function SelectWithSearchInteractionStory(): React.ReactElement {
+  const [value, setValue] = React.useState<UiSelectWithSearchOption | null>(null);
+
+  return (
+    <UiSelectWithSearch
+      options={options}
+      aria-label={cityLabel}
+      placeholder={cityPlaceholder}
+      value={value}
+      onChange={setValue}
+    />
+  );
+}
 
 const meta: Meta<typeof UiSelectWithSearch> = {
   title: 'UiComponents/UiSelectWithSearch',
@@ -69,8 +90,8 @@ export const SelectWithSearch: Story = {
     options,
     // Figma "select с поиском" has no visible top label — the field is named for
     // assistive tech via `aria-label`, and the placeholder carries the prompt.
-    'aria-label': 'Місто',
-    placeholder: 'Оберіть місто',
+    'aria-label': cityLabel,
+    placeholder: cityPlaceholder,
   },
 };
 
@@ -80,10 +101,26 @@ export const SelectWithSearch: Story = {
 export const Loading: Story = {
   args: {
     options,
-    'aria-label': 'Місто',
-    placeholder: 'Оберіть місто',
+    'aria-label': cityLabel,
+    placeholder: cityPlaceholder,
     value: options[0],
     loading: true,
   },
   render: renderSelectWithSearch,
+};
+
+// Interaction story (`interaction` tag): proves the search text narrows the
+// listbox and the picked option becomes the field's value.
+export const SearchNarrowsAndSelectsOption: Story = {
+  tags: ['interaction', '!autodocs'],
+  render: SelectWithSearchInteractionStory,
+  play: async ({ canvasElement }): Promise<void> => {
+    await expectTypeaheadNarrowsAndSelects({
+      canvasElement,
+      fieldName: cityLabel,
+      query: typedQuery,
+      chosenOption: chosenCity,
+      filteredOutOption: filteredOutCity,
+    });
+  },
 };
