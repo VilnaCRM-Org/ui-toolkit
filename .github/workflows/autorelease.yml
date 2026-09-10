@@ -8,6 +8,8 @@ on:
       - 'package.json'
       - 'CHANGELOG.md'
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
@@ -15,44 +17,132 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     permissions:
       contents: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-        with:
-          persist-credentials: false
-
-      - name: Detect release manifest
-        id: check_manifest
+      # Fails with a remedy instead of `create-github-app-token`'s bare "Input
+      # required and not supplied: app-id" when the organisation secrets are not
+      # visible to this repository. Reads only the emptiness of the values.
+      - name: Verify the release App credentials are available
+        env:
+          APP_ID: ${{ secrets.VILNACRM_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
         run: |
-          if [[ -f package.json ]]; then
-            echo "manifest_exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "manifest_exists=false" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+
+          if [ -z "$APP_ID" ] || [ -z "$APP_PRIVATE_KEY" ]; then
+            echo "::error::VILNACRM_APP_ID and VILNACRM_APP_PRIVATE_KEY must be" \
+              "visible to this repository. They are organisation secrets; the crm" \
+              "and website repositories already release with them. Grant this" \
+              "repository access to both before re-running."
+            exit 1
           fi
 
-      - name: Skip release preparation
-        if: steps.check_manifest.outputs.manifest_exists != 'true'
-        run: echo "Skipping release because package.json is not present on this branch."
+      # secrets.GITHUB_TOKEN cannot push to main: branch protection answers
+      # `GH006: Protected branch update failed ... protected branch hook declined`,
+      # which is what stopped every release from 2026-08-24 onwards. The changelog
+      # action's `git push origin main --follow-tags` is not atomic, so each of
+      # those runs still landed its tag and left it orphaned, and the next run then
+      # died on `fatal: tag 'v0.4.0' already exists`.
+      #
+      # The VilnaCRM App is a bypass actor on the protected branch, so the release
+      # commit lands. crm and website already release exactly this way.
+      - name: Generate a token for the release App
+        id: generate_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          # `app-id`, not the newer `client-id`: the organisation secret holds the
+          # App ID. Switching inputs would need a new secret.
+          app-id: ${{ secrets.VILNACRM_APP_ID }}
+          private-key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
+          # Without this the minted token inherits every permission the App
+          # installation holds. The release flow only commits the changelog and
+          # version bump, pushes the tag, and creates the release — all `contents`.
+          permission-contents: write
+
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          # The changelog range and the version preflight below both need the full
+          # history AND every tag. At depth 1 the preflight cannot see the tags it
+          # exists to compare against, so it would pass vacuously.
+          fetch-depth: 0
+          # Dropped, like every other workflow in this repo. The changelog action
+          # does NOT use the checkout credential: its `init()` rewrites `origin`
+          # to https://x-access-token:<github-token>@... before it pulls, commits
+          # or pushes, so it authenticates the version bump and the tag with the
+          # token passed to it below. Persisting a contents:write credential here
+          # would leave it in .git/config for the docker build and `make package`
+          # steps that run after this job's release steps.
+          persist-credentials: false
+
+      # Deliberately before the changelog action. `git tag` aborts with exit 128
+      # when the computed tag already exists, but only after the changelog has been
+      # committed, so a collision that is not caught here corrupts a release
+      # mid-flight and leaves another orphaned tag behind for the next run.
+      - name: Check the release version cannot collide with an existing tag
+        run: bash scripts/ci/check-release-version.sh .
 
       - name: Conventional Changelog Action
-        if: steps.check_manifest.outputs.manifest_exists == 'true'
         id: changelog
-        uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f
+        uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f # v4.1.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.generate_token.outputs.token }}
           output-file: 'CHANGELOG.md'
           version-file: 'package.json'
 
+      # The changelog step bumps package.json in the working tree before the image
+      # is built, so the packed tarball carries the version that is being released.
+      - name: Start docker build environment
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        run: make start-bun
+
+      - name: Pack the publishable tarball
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        run: make package
+
+      # softprops/action-gh-release is archived. `gh` is the runner's own CLI, which
+      # keeps the most privileged step in the repository free of third-party code
+      # instead of swapping one archived action for another.
+      #
+      # The tag, the notes and the repository reach the script through `env:`, never
+      # through `${{ }}` interpolation inside `run:`, so a crafted commit message
+      # cannot be read as shell or as a gh flag. The tarball is resolved and counted
+      # rather than glob-expanded into the command line: releasing zero assets, or
+      # two, would both silently break `release-asset-check.yml`, which asserts that
+      # the newest tag ships exactly `vilnacrm-ui-toolkit-<version>.tgz`.
       - name: Create Release
-        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.changelog.outputs.tag }}
-          release_name: ${{ steps.changelog.outputs.tag }}
-          body: ${{ steps.changelog.outputs.clean_changelog }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.changelog.outputs.tag }}
+          RELEASE_NOTES: ${{ steps.changelog.outputs.clean_changelog }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          tarballs=(dist/*.tgz)
+          if [ "${#tarballs[@]}" -ne 1 ]; then
+            echo "::error::expected exactly one tarball in dist/, found ${#tarballs[@]};" \
+              "the make package step did not produce the release asset"
+            exit 1
+          fi
+
+          # Scratch goes to the runner temp dir, not the workspace: a repo-root
+          # release-notes.md would read to the referenced-path guard
+          # (scripts/ci/check-referenced-paths.ts) as a committed file that is missing.
+          notes="$RUNNER_TEMP/release-notes.md"
+          printf '%s\n' "$RELEASE_NOTES" > "$notes"
+
+          gh release create "$RELEASE_TAG" "${tarballs[0]}" \
+            --title "$RELEASE_TAG" \
+            --notes-file "$notes"
+
+      - name: Stop docker build environment
+        if: ${{ always() && steps.changelog.outputs.skipped == 'false' }}
+        run: make down

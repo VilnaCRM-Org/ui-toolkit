@@ -36,6 +36,7 @@ function renderOption(option: UiRadioOption, control: React.ReactElement): React
       disabled={option.disabled}
       control={control}
       label={option.label}
+      sx={radioStyles.option}
     />
   );
 }
@@ -65,6 +66,7 @@ function renderRadioGroup(
       name={props.name}
       value={props.value ?? ''}
       onChange={field.handleChange}
+      sx={radioStyles.group}
       aria-labelledby={field.named ? field.labelId : undefined}
       aria-label={field.ariaLabel}
       aria-describedby={field.helperTextId}

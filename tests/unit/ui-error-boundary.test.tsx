@@ -4,7 +4,8 @@ import { createInstance, type BackendModule, type i18n as I18nInstance } from 'i
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 
-import { UiErrorBoundary, sharedPalette } from '../../src/components';
+import { sharedPalette } from '../../src/components/ui-color-theme';
+import UiErrorBoundary from '../../src/components/ui-error-boundary';
 import {
   FALLBACK_KEY,
   FALLBACK_MESSAGE,

@@ -9,6 +9,7 @@ import {
 
 import UiInput from '../ui-input';
 
+import { toControllerRules, type ControllerRules } from './controller-rules';
 import type { CustomTextField } from './types';
 
 type RenderArgs<T extends FieldValues> = {
@@ -53,12 +54,13 @@ function createRenderField<T extends FieldValues>(
 
 function UiTextFieldForm<T extends FieldValues>({
   control,
-  rules,
+  rules: providedRules,
   defaultValue,
   name,
   ...inputProps
 }: CustomTextField<T>): React.ReactElement {
   const renderField: (args: RenderArgs<T>) => React.ReactElement = createRenderField<T>(inputProps);
+  const rules: ControllerRules<T> = toControllerRules<T>(providedRules);
 
   if (defaultValue !== undefined) {
     return (

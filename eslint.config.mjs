@@ -54,8 +54,14 @@ const devDependencyPatterns = [
 // the CRM's TextField/FormProvider allow-list for this repo.
 const propSpreadingExceptions = ['TextField', 'FormProvider', 'Button', 'Typography', 'UiInput'];
 
+// swiper is deliberately absent from build.config.mjs's `external` list, so esbuild
+// inlines it (and its carousel CSS) into the published bundle. It therefore lives in
+// devDependencies — consumers never resolve it — and the one module importing it is
+// spared the extraneous-dependency check rather than forcing a bogus runtime range.
+const bundledDependencyImporters = ['src/components/ui-card-list/card-swiper.tsx'];
+
 const importNoExtraneousDependenciesOptions = {
-  devDependencies: devDependencyPatterns,
+  devDependencies: [...devDependencyPatterns, ...bundledDependencyImporters],
   packageDir: [rootDir],
 };
 

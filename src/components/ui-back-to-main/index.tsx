@@ -9,7 +9,7 @@ import UiTypography from '../ui-typography';
 
 import getBackToMainStyles from './styles';
 
-type UiBackToMainProps = {
+export type UiBackToMainProps = {
   to?: string;
   label?: React.ReactNode;
   icon?: React.ReactNode;

@@ -40,7 +40,10 @@ const buildIcon: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Them
 
 const buildBackText: (theme: Theme) => SxProps<Theme> = (theme: Theme): SxProps<Theme> => ({
   marginLeft: theme.spacing(1),
-  fontFamily: theme.typography.fontFamily,
+  // No `fontFamily` here on purpose. `useTheme()` resolves the AMBIENT theme,
+  // which outside a consumer's ThemeProvider is MUI's default — so pinning
+  // `theme.typography.fontFamily` forced the label to Roboto. Leaving it unset
+  // lets the UiTypography wrapper's own theme supply the toolkit family.
   fontWeight: 500,
   fontSize: theme.typography.pxToRem(15),
   lineHeight: theme.typography.pxToRem(18),

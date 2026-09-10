@@ -35,6 +35,7 @@ more than one. Match the change to the suite and run its verification command.
 | Integration       | Composed components rendered with real children | `make test-integration` |
 | End-to-end (e2e)  | Storybook-driven component behavior end to end  | `make test-e2e`         |
 | Visual regression | Any change to rendered UI, layout, or styling   | `make test-visual`      |
+| Interaction       | Behaviour demonstrated by a story `play` fn     | `make test-storybook`   |
 
 Unit tests run on Jest with React Testing Library in a jsdom env; specs are centralized in
 `tests/unit/**/*.test.tsx` (and `*.test.ts` for non-render logic). Integration specs live in
@@ -55,16 +56,32 @@ component MUST ship stories that render its full state matrix (see Step 2); e2e 
 suites run against those stories, so missing states are missing coverage. Provenance for each
 component must also be recorded per `specs/planning-artifacts/architecture.md`.
 
+Interactive components must also DEMONSTRATE their behaviour: add a dedicated story tagged
+`['interaction', '!autodocs']` whose `play` function drives the component with `userEvent` and
+asserts with `expect` (both from `storybook/test`), register it in
+`tests/storybook/interaction-stories.json`, and run `make test-storybook`. Never attach `play`
+to an existing story — Storybook autoplays it, which would destabilise that story's visual
+baseline. See `tests/storybook/README.md`.
+
 Add a specialized suite when the change touches its concern: `make test-mutation` (test
 strength, Stryker), `make test-bats` (Makefile and CI shell flows), `make test-memory-leak`
-(leaks), `make load-tests` (traffic, K6), and `make lighthouse-desktop` /
-`make lighthouse-mobile` (performance, accessibility, best practices).
+(leaks), and `make lighthouse-desktop` / `make lighthouse-mobile` (performance, accessibility,
+best practices). `make load-tests` reports the deliberately omitted load tier — a component
+library exposes no runtime endpoint to load-test; see `tests/load/README.md`.
 
 `make test-mutation` runs the full, gated Stryker suite locally. In CI it is sharded across a
-parallel matrix (`make test-mutation-shard`) and a final job merges the per-shard reports and
-re-enforces the same `break` threshold (`make merge-mutation-reports`) — same gate, much faster.
-Every workflow cancels superseded runs via `concurrency`, so a new push aborts the previous one.
-See CONTRIBUTING.md ("CI speed and the mutation-testing gate") for the full flow.
+parallel matrix (`make test-mutation-shard`), bin-packed by file size, and a final job merges the
+per-shard reports and re-enforces the same `break` threshold (`make merge-mutation-reports`) —
+same gate, much faster. Each mutant's Jest run is scoped to the suites that actually reach the
+mutated module, so a component-behaviour test must deep-import the component under test rather
+than the public barrel `'../../src/components'`, or it stays "related" to every mutant and the
+gate slows back down. Exception: structural guard suites whose subject IS the public surface
+(`components-index`, `ui-core-contract`) may import the barrel, and are excluded from the
+mutation tier for exactly that reason. Every CI workflow cancels superseded runs via
+`concurrency`, so a new push aborts the previous one — the exceptions are the release publishers
+(`autorelease`, `autoprerelease`) and `scorecard`, which set `cancel-in-progress: false` so a run
+that may already have tagged, published or uploaded is never killed half-way. See CONTRIBUTING.md
+("CI speed and the mutation-testing gate") for the full flow.
 
 ### Step 2 — Cover Every Applicable Scenario Class
 
@@ -121,8 +138,9 @@ bun x prettier . --write   # Auto-format (lint runs format-check, so format firs
 make test-unit             # Jest unit suite (jsdom)
 make test-integration      # Jest composition suite (for cross-component changes)
 make test-e2e              # Storybook-driven behavior (for behavior changes)
+make test-storybook        # Story interaction tests (for interactive behavior changes)
 make test-visual           # Visual regression (for UI or styling changes)
-make lint                  # Full gate: ESLint, TypeScript, markdownlint, and format-check
+make lint                  # Full gate: ESLint, TypeScript, markdownlint, format, CI paths
 ```
 
 Run only the suites the change affects, but never skip a suite that does apply. When you want

@@ -1,9 +1,9 @@
 import type React from 'react';
 
-import { formatMonthCaption, isSameMonth } from './calendar-month';
+import { DEFAULT_LOCALE, formatDayLabel, formatMonthCaption, isSameMonth } from './calendar-month';
 import { addMonths, addMonthsKeepDay, formatISO, parseISO, startOfMonth } from './date-utils';
 import { SELECT_KEYS, nextFocusedDate } from './keyboard';
-import { toggleSelection } from './selection';
+import { applyRangeEndpoint, type RangeSelection } from './selection';
 import type { UiCalendarMultiSelectProps } from './types';
 import type { CalendarModel } from './use-calendar-model';
 import type { RovingFocus } from './use-roving-focus';
@@ -23,9 +23,26 @@ function canSelectDay(iso: string, model: CalendarModel): boolean {
   return (minISO == null || iso >= minISO) && (maxISO == null || iso <= maxISO);
 }
 
+// Polite live-region text for the two-step range protocol (WCAG 4.1.3): a pending
+// start prompts for the end; a completed range confirms both endpoints. `next`
+// always carries one or two endpoints (never empty) as it comes from the reducer.
+function rangeAnnouncement(next: RangeSelection, locale: string): string {
+  const startLabel: string = formatDayLabel(parseISO(next[0]), locale);
+  if (next.length === 1) {
+    return `Start date ${startLabel} selected, choose an end date`;
+  }
+  return `Range ${startLabel} to ${formatDayLabel(parseISO(next[1]), locale)} selected`;
+}
+
 export function selectDay(ctx: ActionContext, iso: string): void {
-  ctx.props.onChange?.(toggleSelection(ctx.model.selectedSorted, iso));
   ctx.model.setFocusedISO(iso);
+  const { onChange } = ctx.props;
+  if (onChange == null) {
+    return; // read-only calendar: value cannot change, so announce nothing
+  }
+  const next: RangeSelection = applyRangeEndpoint(ctx.model.selectedSorted, iso);
+  onChange(next);
+  ctx.model.setAnnouncement(rangeAnnouncement(next, ctx.props.locale ?? DEFAULT_LOCALE));
 }
 
 /** Prev/next month via the nav buttons: focus stays on the button, so announce. */
@@ -33,7 +50,7 @@ export function stepMonth(ctx: ActionContext, delta: number): void {
   const next: Date = addMonths(ctx.model.visibleMonth, delta);
   ctx.model.setVisibleMonth(next);
   ctx.model.setFocusedISO(formatISO(addMonthsKeepDay(parseISO(ctx.model.focusedISO), delta)));
-  ctx.model.setAnnouncement(formatMonthCaption(next));
+  ctx.model.setAnnouncement(formatMonthCaption(next, ctx.props.locale ?? DEFAULT_LOCALE));
 }
 
 function moveFocus(ctx: ActionContext, next: Date): void {
@@ -86,12 +103,28 @@ function tryNavigateKey(ctx: ActionContext, event: React.KeyboardEvent): void {
   moveFocus(ctx, next);
 }
 
+// Escape cancels a PENDING range (one endpoint chosen, awaiting the second): it
+// clears the pending start and stays put. With nothing pending it is a no-op that
+// bubbles, so a containing dialog can still close on Escape (no 2.1.2 trap).
+function tryCancelKey(ctx: ActionContext, event: React.KeyboardEvent): boolean {
+  const { onChange } = ctx.props;
+  if (onChange == null || event.key !== 'Escape' || ctx.model.selectedSorted.length !== 1) {
+    return false;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  onChange([]);
+  ctx.model.setAnnouncement('Range selection cancelled');
+  return true;
+}
+
 export function handleGridKey(ctx: ActionContext, event: React.KeyboardEvent): void {
   if (ctx.props.disabled) {
     return;
   }
-  if (trySelectKey(ctx, event)) {
-    return;
+  // Cancel wins over select, select over navigate; each helper reports whether it
+  // consumed the key, so the short-circuit leaves the original precedence intact.
+  if (!tryCancelKey(ctx, event) && !trySelectKey(ctx, event)) {
+    tryNavigateKey(ctx, event);
   }
-  tryNavigateKey(ctx, event);
 }

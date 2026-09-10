@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import UiButton from './index';
+
+const clickableLabel: string = t('header.actions.try_it_out');
 
 const meta: Meta<typeof UiButton> = {
   title: 'UiComponents/UiButton',
@@ -64,5 +67,49 @@ export const SocialButton: Story = {
     variant: 'outlined',
     size: 'medium',
     name: 'socialButton',
+  },
+};
+
+export const Danger: Story = {
+  args: {
+    children: t('Cancel'),
+    variant: 'contained',
+    size: 'small',
+    name: 'danger',
+  },
+};
+
+// `loading` is rendered as `aria-disabled` plus a guarded activation path, never
+// MUI's native-disabled loading branch: a focused element that becomes disabled
+// drops focus to `<body>`, losing a keyboard user's place the moment their own
+// click starts the fetch. The label keeps its ink transparent (not hidden), so
+// the button keeps its width and its accessible name.
+export const Loading: Story = {
+  args: {
+    children: t('header.actions.try_it_out'),
+    variant: 'contained',
+    size: 'small',
+    loading: true,
+  },
+};
+
+// Interaction story (`interaction` tag): proves the demoed button actually
+// dispatches `onClick` in a real browser. See tests/storybook/README.md.
+export const ClickInvokesHandler: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    children: clickableLabel,
+    variant: 'contained',
+    size: 'small',
+    onClick: fn(),
+  },
+  play: async ({ args, canvasElement }): Promise<void> => {
+    const button: HTMLElement = within(canvasElement).getByRole('button', {
+      name: clickableLabel,
+    });
+
+    await userEvent.click(button);
+
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
   },
 };

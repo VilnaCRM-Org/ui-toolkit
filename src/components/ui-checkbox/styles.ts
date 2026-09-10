@@ -42,6 +42,21 @@ const baseCheckbox: SxProps<Theme> = {
   },
 };
 
+// Applied to the `FormControlLabel` WRAPPER, not the `Checkbox`: the label text
+// is a sibling of the input, so it cannot be reached from the checkbox `sx`.
+// It carried no family of its own and so resolved to MUI's stock Roboto — a
+// face the toolkit never ships. Inter matches the `field-controls`
+// label/helper-text convention every other field control uses.
+export const formControlLabelSx: SxProps<Theme> = {
+  '& .MuiFormControlLabel-label': { fontFamily: 'Inter' },
+};
+
+/** The wrapper `sx`: the label recipe first, the consumer's layers merged last. */
+export function formControlLabelSxWith(sx: SxProps<Theme> | undefined): SxProps<Theme> {
+  const extra: SxProps<Theme> = sx ?? {};
+  return [formControlLabelSx, ...(Array.isArray(extra) ? extra : [extra])];
+}
+
 export default {
   checkbox: {
     ...baseCheckbox,

@@ -3,7 +3,7 @@ import React from 'react';
 
 import styles from './styles';
 
-type UiContainerProps = {
+export type UiContainerProps = {
   children: React.ReactNode;
 };
 

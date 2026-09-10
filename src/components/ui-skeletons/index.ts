@@ -3,3 +3,6 @@
 // animations, base styles, and constants through this barrel rather than
 // reaching into ./base directly (components-public-api boundary rule).
 export * from './base';
+export * from './composed';
+export * from './counts';
+export { default as ComposedSkeleton } from './composed';

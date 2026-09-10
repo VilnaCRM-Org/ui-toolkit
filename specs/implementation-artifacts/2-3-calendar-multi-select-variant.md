@@ -1,9 +1,11 @@
 # Story 2.3 — Calendar Multi-Select Variant
 
 - **Issue:** [#15](https://github.com/VilnaCRM-Org/ui-toolkit/issues/15)
+- **PR:** [#107](https://github.com/VilnaCRM-Org/ui-toolkit/pull/107)
 - **Epic:** Epic 2 — Selection, Search, and Input Workflows
-- **Status:** in-progress
+- **Status:** review
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 2.3: Calendar Multi-Select Variant_
+- **Definition of Done:** deferred to the shared compliance matrix — `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md` → `### Matrix`, row `2-3-calendar-multi-select-variant.md`. This artifact predates `specs/implementation-artifacts/story-dod-template.md`, which was authored with Epic 4 (commit `3c310f9`), so its DoD is instantiated once against the shared template in that matrix rather than restated here. Raised in the PR #126 review.
 
 ## Scope
 

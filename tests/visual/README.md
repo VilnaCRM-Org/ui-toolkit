@@ -11,6 +11,11 @@ Pixel baselines for every Storybook story, asserted with Playwright
   `test.skip` on any non-chromium project.
 - One snapshot per story. The story list lives in `stories.json`, derived from the
   Storybook index and committed so the run is identical locally and in Docker.
+- **Except interaction stories.** Stories registered in
+  `../storybook/interaction-stories.json` autoplay a `play` function that mutates
+  their own canvas, so a screenshot would race the interaction. They are pixel-exempt
+  and proven behaviourally by `make test-storybook`; `visual.spec.ts` asserts the
+  exempt set and that registry are identical, so a story can never fall out of both.
 - Shots are deterministic: `prefers-reduced-motion: reduce` is emulated (which also
   exercises the skeleton reduced-motion guard) and an injected stylesheet disables
   every `animation`/`transition`, so shimmer/pulse never flake the diff.

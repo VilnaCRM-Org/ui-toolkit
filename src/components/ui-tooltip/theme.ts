@@ -4,6 +4,10 @@ import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
 const theme: Theme = createTheme({
+  // This theme declared no family at all, so the tooltip trigger and bubble
+  // both fell back to MUI's stock Roboto. Inter is the toolkit's dominant UI
+  // family (the `field-controls` label/helper-text convention).
+  typography: { fontFamily: 'Inter' },
   components: {
     MuiTooltip: {
       styleOverrides: {

@@ -5,7 +5,11 @@ import ScopedThemeProvider from '../theme-scope';
 
 import theme from './theme';
 
-function UiToolbar({ children }: { children: React.ReactNode }): React.ReactElement {
+export interface UiToolbarProps {
+  children: React.ReactNode;
+}
+
+function UiToolbar({ children }: UiToolbarProps): React.ReactElement {
   return (
     <ScopedThemeProvider theme={theme}>
       <Toolbar>{children}</Toolbar>

@@ -24,32 +24,54 @@ export interface UiMultiSelectProps {
   /** Selectable options. */
   options: UiMultiSelectOption[];
   /** Controlled selected options (empty array when nothing is selected). */
-  value?: UiMultiSelectOption[];
+  value?: UiMultiSelectOption[] | undefined;
   /** Called with the full next selection whenever an option is added or removed. */
-  onChange?: (value: UiMultiSelectOption[]) => void;
-  disabled?: boolean;
-  error?: boolean;
+  onChange?: (value: UiMultiSelectOption[]) => void | undefined;
+  /**
+   * Marks the options as being fetched. The toolkit is presentational — it never
+   * fetches; the consuming app owns the request and drives this flag.
+   *
+   * While loading, the arc takes the clear-all ×'s slot and the × is hidden
+   * underneath — the same treatment every other field in the kit uses, so a
+   * busy field looks the same wherever it appears. The × is Figma-mandated
+   * always-visible in the RESTING field (node 622:44553) and stays so; it is
+   * suppressed only for the duration of the fetch. `undefined` (the default)
+   * opts out entirely and leaves the DOM unchanged.
+   */
+  loading?: boolean | undefined;
+  /**
+   * Loading copy: the popup row while options are in flight, and the text the
+   * field's polite `role="status"` region speaks once a fetch has run long
+   * enough to be worth announcing. Defaults to `'Завантаження'`.
+   */
+  loadingText?: string | undefined;
+  disabled?: boolean | undefined;
+  error?: boolean | undefined;
   /**
    * Marks the control required for assistive technology via the native
    * `required` attribute while the selection is empty (a required multi-value
    * field is satisfied once at least one chip exists). The MUI `TextField`
    * renders the native required asterisk; no extra visual treatment is added.
    */
-  required?: boolean;
-  size?: 'small' | 'medium';
-  variant?: 'outlined' | 'filled' | 'standard';
-  sx?: SxProps<Theme>;
+  required?: boolean | undefined;
+  size?: 'small' | 'medium' | undefined;
+  variant?: 'outlined' | 'filled' | 'standard' | undefined;
+  sx?: SxProps<Theme> | undefined;
   /** Visible label — the preferred accessible name (WCAG 2.4.6 / 3.3.2). */
-  label?: string;
+  label?: string | undefined;
   /** Accessible name used only when there is no visible `label`. */
-  'aria-label'?: string;
-  placeholder?: string;
+  'aria-label'?: string | undefined;
+  placeholder?: string | undefined;
   /**
    * Description — typically the reason the field is invalid. Rendered in a
    * `FormHelperText` and linked to the input via `aria-describedby`, so screen
    * readers announce *why* the control is in error alongside `aria-invalid`.
    */
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   /** Associates an external `<label htmlFor>`; also seeds the combobox/listbox ids. */
-  id?: string;
+  id?: string | undefined;
+  /** Forces the dropdown open. For demos/visual states only; omit in app use. */
+  open?: boolean | undefined;
+  /** Renders the dropdown inline instead of in a portal. Pairs with `open` for demos. */
+  disablePortal?: boolean | undefined;
 }
