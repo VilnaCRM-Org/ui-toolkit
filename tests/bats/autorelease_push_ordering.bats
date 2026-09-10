@@ -90,7 +90,22 @@ code_line() {
   [ "$preflight_line" -lt "$changelog_line" ]
 }
 
+# Belt-and-braces only, and honest about it. The gate that actually protects a
+# release is the preflight STEP in autorelease.yml, which runs against a full
+# checkout with fetch-depth: 0. This assertion re-runs it against the working
+# tree so a bump that raises a tag without raising package.json is caught on a
+# developer machine, before it reaches main.
+#
+# It cannot gate CI: Dockerfile copies explicit paths and never `.git`, so inside
+# the bats image the script fails closed on `could not list git tags` -- the
+# repository is not a git repository there at all. Skipping is reported rather
+# than silently passing, and the sibling suite check_release_version.bats covers
+# the script's logic on purpose-built fixture repositories in every environment.
 @test "package.json is at or above every release tag, so the next bump cannot collide" {
+  if ! git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
+    skip "no .git in the build context; the release-time preflight covers this"
+  fi
+
   run bash "$PROJECT_ROOT/scripts/ci/check-release-version.sh" "$PROJECT_ROOT"
   [ "$status" -eq 0 ]
 }
