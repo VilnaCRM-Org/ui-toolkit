@@ -35,21 +35,30 @@ jobs:
 
           if [ -z "$APP_ID" ] || [ -z "$APP_PRIVATE_KEY" ]; then
             echo "::error::VILNACRM_APP_ID and VILNACRM_APP_PRIVATE_KEY must be" \
-              "visible to this repository. They are organisation secrets; the crm" \
-              "and website repositories already release with them. Grant this" \
-              "repository access to both before re-running."
+              "visible to this repository. They are organisation secrets. Grant" \
+              "this repository access to both before re-running."
             exit 1
           fi
 
       # secrets.GITHUB_TOKEN cannot push to main: branch protection answers
-      # `GH006: Protected branch update failed ... protected branch hook declined`,
-      # which is what stopped every release from 2026-08-24 onwards. The changelog
-      # action's `git push origin main --follow-tags` is not atomic, so each of
-      # those runs still landed its tag and left it orphaned, and the next run then
-      # died on `fatal: tag 'v0.4.0' already exists`.
+      # `GH006: Protected branch update failed ... protected branch hook declined`.
+      # The App token is what is supposed to get past that, because the App can be
+      # a bypass actor on the protected branch where the default token cannot.
       #
-      # The VilnaCRM App is a bypass actor on the protected branch, so the release
-      # commit lands. crm and website already release exactly this way.
+      # It is NOT past it here yet. Run 34278680478 minted the token successfully
+      # and still took `GH006 ... Changes must be made through a pull request`, so
+      # this repository's main ruleset does not list the App as a bypass actor.
+      # Measured, not assumed: ui-toolkit has never landed a `chore(release)`
+      # commit on main and has never had a successful autorelease run. The grant
+      # itself does work somewhere -- php-service-template's main is protected and
+      # this same action pushed `chore(release): v1.11.0` to it on 2026-04-12 --
+      # so the fix is an admin comparing the two rulesets. Enumerating bypass
+      # actors needs admin; `repos/.../rulesets` 404s otherwise.
+      #
+      # Do not restate here that any sibling repository "already releases this
+      # way". That claim was carried in this comment and is false: crm has zero
+      # release commits on main and no successful run in its last 79, and
+      # website's last one was 2026-01-20.
       - name: Generate a token for the release App
         id: generate_token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
