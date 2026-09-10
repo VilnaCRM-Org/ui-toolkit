@@ -461,6 +461,18 @@ type ButtonVariantRule = {
   style: Record<string, unknown>;
 };
 
+function namedRule(name: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) => rule.props.name === name
+  );
+  if (!match) {
+    throw new Error(`no ${name} button variant is registered`);
+  }
+  return match.style;
+}
+
 function mediumRule(variant: string): Record<string, unknown> {
   const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
     []) as ButtonVariantRule[];
@@ -502,6 +514,26 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
   it('keeps the shared base line box at the small size, which Figma still measures 18px', () => {
     expect(containedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
     expect(outlinedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+  });
+
+  // MUI applies every matching variant rule, not only the most specific one, so
+  // the plain outlined/medium rule also lands on the socialButton — which is how
+  // that button gets an 18px font size it never declares. Without its own line
+  // box it would inherit the CTA's 22px and grow 4px, breaking its baseline.
+  it('does not let the CTA label box reach the socialButton, a 58px pill', () => {
+    expect(namedRule('socialButton')).toMatchObject({
+      lineHeight: `${SMALL_LABEL_BOX / 16}rem`,
+    });
+  });
+
+  it('registers socialButton as an outlined medium button, which is why it is exposed', () => {
+    const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+      []) as ButtonVariantRule[];
+    const social: ButtonVariantRule = rules.find(
+      (rule: ButtonVariantRule) => rule.props.name === 'socialButton'
+    ) as ButtonVariantRule;
+
+    expect(social.props).toMatchObject({ variant: 'outlined', size: 'medium' });
   });
 
   it('leaves the sub-640px mobile CTA on the 18px line box it is drawn with', () => {

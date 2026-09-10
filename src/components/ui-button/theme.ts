@@ -134,9 +134,18 @@ export const theme: Theme = createTheme({
             variant: 'outlined',
             size: 'medium',
           },
+          // MUI applies EVERY matching variant rule, not just the most specific
+          // one, so the plain outlined/medium rule above also lands on this
+          // button -- which is how it picks up the 18px font size it never
+          // declares. That made it inherit the medium CTA's label box too, and
+          // this pill is 189x58 around a 22px content row (Figma 439:19329), not
+          // a 171x62 CTA. It declares its own line box so the CTA's cannot reach
+          // it; without this line the button grows 4px and its visual baseline
+          // breaks.
           style: {
             fontFamily: 'Golos Text',
             textTransform: 'none',
+            lineHeight: '1.125rem',
             borderRadius: '0.75rem',
             padding: '1.125rem',
             gap: '0.563rem',
