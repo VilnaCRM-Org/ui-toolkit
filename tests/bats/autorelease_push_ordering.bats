@@ -31,6 +31,18 @@ code_line() {
   workflow_code | grep -E "$1" | head -n 1 | cut -d: -f1
 }
 
+# The executable lines of ONE step: its `- name:` line through the line before
+# the next step's. Three later steps carry the same skip condition as the push
+# step, so an assertion read over the whole workflow still passes when the push
+# step alone loses its `if` -- the condition has to be read inside this block.
+step_code() {
+  workflow_code | awk -v name="$1" '
+    $0 ~ ("^[0-9]+: +- name: " name "$") { inside = 1; print; next }
+    inside && /^[0-9]+: +- name: / { exit }
+    inside { print }
+  '
+}
+
 @test "the autorelease workflow exists" {
   run test -f "$(WORKFLOW)"
   [ "$status" -eq 0 ]
@@ -76,7 +88,23 @@ code_line() {
 }
 
 @test "the push step is skipped when the changelog action produced no release" {
-  [ -n "$(code_line "^[0-9]+: +if: \\\$\{\{ steps\.changelog\.outputs\.skipped == 'false' \}\}$")" ]
+  local step
+  step="$(step_code 'Push the release commit, then its tag')"
+
+  [ -n "$step" ]
+  printf '%s\n' "$step" | grep -qE "^[0-9]+: +if: \\\$\{\{ steps\.changelog\.outputs\.skipped == 'false' \}\}$"
+}
+
+@test "step_code stops at the next step, so the scoping above is real (fail-open guard)" {
+  local step
+  step="$(step_code 'Push the release commit, then its tag')"
+
+  # Its own body is in range ...
+  printf '%s\n' "$step" | grep -qE 'git push .*refs/tags/'
+  # ... and the next step's name and body are not, which is the whole point: the
+  # following steps repeat this step's skip condition verbatim.
+  run grep -E 'Start docker build environment|make start-bun' <<< "$step"
+  [ "$status" -ne 0 ]
 }
 
 @test "the version preflight still runs before the changelog action" {
