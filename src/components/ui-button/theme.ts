@@ -4,6 +4,10 @@ import { alpha } from '@mui/material/styles';
 import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
+// The 18px line box is the SMALL button's: Figma 439:19257 is 137x50 around an
+// 89x18 label inset 24/16 (24+89+24=137, 16+18+16=50), and the danger pill
+// 439:19822 is 98x42 around the same 18px label inset 24/12. The medium button
+// has a taller label box and overrides it below.
 const baseButtonStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
@@ -14,6 +18,17 @@ const baseButtonStyles: Interpolation<{ theme: Theme }> = {
   letterSpacing: '0',
   borderRadius: '3.563rem',
 };
+
+// Desktop medium CTA, Figma 439:19253: a 171x62 pill around a 107x22 label inset
+// 32px horizontally and 20px vertically (32+107+32=171, 20+22+20=62). The height
+// is the label's line box plus that padding, so lineHeight carries the 22px --
+// inheriting the base 18px above renders the pill 58px tall, 4px short.
+const mediumLabelBox = {
+  fontWeight: '600',
+  fontSize: '1.125rem',
+  lineHeight: '1.375rem',
+  padding: '1.25rem 2rem',
+} as const;
 
 export const containedStyles: Interpolation<{ theme: Theme }> = {
   ...baseButtonStyles,
@@ -91,10 +106,9 @@ export const theme: Theme = createTheme({
           props: { variant: 'contained', size: 'medium' },
           style: {
             ...containedStyles,
+            ...mediumLabelBox,
             alignSelf: 'center',
-            fontWeight: '600',
-            fontSize: '1.125rem',
-            padding: '1.25rem 2rem',
+            // The mobile CTA is a different box and keeps the 18px line.
             [`@media (max-width: ${breakpointsTheme.breakpoints.values.sm}px)`]: {
               fontSize: '0.9375rem',
               fontWeight: '400',
@@ -111,9 +125,7 @@ export const theme: Theme = createTheme({
           props: { variant: 'outlined', size: 'medium' },
           style: {
             ...outlinedStyles,
-            fontWeight: '600',
-            fontSize: '1.125rem',
-            padding: '1.25rem 2rem',
+            ...mediumLabelBox,
           },
         },
         {

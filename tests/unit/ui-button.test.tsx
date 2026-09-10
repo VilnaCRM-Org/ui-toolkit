@@ -7,6 +7,7 @@ import {
   containedStyles,
   dangerStyles,
   outlinedStyles,
+  theme as buttonTheme,
 } from '../../src/components/ui-button/theme';
 
 import { testText } from './constants';
@@ -442,5 +443,71 @@ describe('UiButton — the busy state closes the native activation path', () => 
     fireEvent.click(screen.getByRole('button'));
 
     expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+// Ui kit page: the medium CTA (439:19253) is a 171x62 pill around a 107x22 label
+// inset 32/20, and the small button (439:19257) a 137x50 pill around an 89x18
+// label inset 24/16. Both boxes are `label line box + 2 x padding`, so the two
+// sizes cannot share one line-height -- doing so rendered every desktop medium
+// CTA 58px tall (issue #157).
+const MEDIUM_LABEL_BOX: number = 22;
+const SMALL_LABEL_BOX: number = 18;
+const MEDIUM_VERTICAL_PADDING: number = 20;
+const MEDIUM_FIGMA_HEIGHT: number = 62;
+
+type ButtonVariantRule = {
+  props: { variant?: string; size?: string; name?: string };
+  style: Record<string, unknown>;
+};
+
+function mediumRule(variant: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) =>
+      rule.props.variant === variant &&
+      rule.props.size === 'medium' &&
+      rule.props.name === undefined
+  );
+  if (!match) {
+    throw new Error(`no ${variant}/medium button variant is registered`);
+  }
+  return match.style;
+}
+
+describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
+  it.each(['contained', 'outlined'])(
+    "gives the %s medium button the 22px label line box, not the small size's 18px",
+    (variant: string) => {
+      expect(mediumRule(variant)).toMatchObject({
+        lineHeight: `${MEDIUM_LABEL_BOX / 16}rem`,
+        fontSize: '1.125rem',
+        fontWeight: '600',
+        padding: `${MEDIUM_VERTICAL_PADDING / 16}rem 2rem`,
+      });
+    }
+  );
+
+  it.each(['contained', 'outlined'])(
+    'lays the %s medium label box and padding out to the 62px Figma pill',
+    (variant: string) => {
+      const style: Record<string, unknown> = mediumRule(variant);
+      const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
+      const padding: number = parseFloat(String(style.padding)) * 16;
+      expect(lineBox + 2 * padding).toBe(MEDIUM_FIGMA_HEIGHT);
+    }
+  );
+
+  it('keeps the shared base line box at the small size, which Figma still measures 18px', () => {
+    expect(containedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+    expect(outlinedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+  });
+
+  it('leaves the sub-640px mobile CTA on the 18px line box it is drawn with', () => {
+    const mobile: Record<string, unknown> = mediumRule('contained')[
+      '@media (max-width: 640px)'
+    ] as Record<string, unknown>;
+    expect(mobile).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
   });
 });
