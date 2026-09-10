@@ -143,6 +143,19 @@ EOF
   assert_output_contains 'devDependencies.lint'
 }
 
+# `$` is a legal JavaScript identifier character, so a name that abuts one is
+# part of a longer identifier rather than a reference to the package.
+@test "the gate does not count a dollar-joined identifier as a reference" {
+  local fixture="$BATS_TEST_TMPDIR/dollar-joined"
+  write_fixture "$fixture" "$IMPLICITLY_USED_DEV_DEPENDENCIES, \"semver\": \"^1.0.0\""
+  printf "export const unused\$semver = 'x';\nexport const semver\$dead = 'y';\n" \
+    > "$fixture/src/dollar.ts"
+
+  run bash -c "cd '$fixture' && bun '$GATE_SCRIPT'"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'devDependencies.semver'
+}
+
 # The bun image bakes no git binary, so a fixture that carries a .git index must
 # hit the fail-closed branch instead of silently walking a divergent corpus.
 @test "the gate exits 2 when a git index exists but no git binary does" {
