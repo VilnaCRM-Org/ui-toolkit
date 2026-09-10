@@ -123,9 +123,30 @@ export const theme: Theme = createTheme({
         },
         {
           props: { variant: 'outlined', size: 'medium' },
+          // The contained CTA above IS the 171x62 pill and carries no stroke, so
+          // its 20/32 padding is the whole inset. This rule adds `outlinedStyles`'
+          // 1px border, and CSS draws a border OUTSIDE the padding box on an
+          // auto-sized element -- `boxSizing` cannot absorb it, because
+          // border-box only bites when a length is declared and both axes here
+          // are `auto`. Reusing the CTA's padding verbatim therefore renders
+          // 173x64, 2px over its contained sibling on both axes. Figma strokes
+          // INSIDE the frame, so the border is subtracted from the padding
+          // instead: 19/31 plus the 1px border reproduces the 20/32 inset and
+          // lands the box back on 171x62 (1+19+22+19+1 = 62). Same compensation
+          // `ui-add-button`, `ui-filter-chip`, `ui-task-card` and
+          // `ui-integration-card` already apply.
           style: {
             ...outlinedStyles,
             ...mediumLabelBox,
+            padding: '1.1875rem 1.9375rem',
+            // A transparent 1px rather than `outlinedStyles`' `border: none`, so
+            // the compensated padding holds in every state and the box does not
+            // jitter when the button is disabled -- the danger pill's convention.
+            '&:disabled': {
+              backgroundColor: colorTheme.palette.brandGray.main,
+              color: colorTheme.palette.white.main,
+              border: '1px solid transparent',
+            },
           },
         },
         {
