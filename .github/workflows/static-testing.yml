@@ -41,6 +41,9 @@ jobs:
       - name: Run dependency range linter
         run: make lint-dep-ranges
 
+      - name: Run unused dependency linter
+        run: make lint-unused-deps
+
       - name: Enforce test directory structure
         run: make lint-test-structure
 

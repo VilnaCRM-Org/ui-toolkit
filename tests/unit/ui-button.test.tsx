@@ -7,6 +7,7 @@ import {
   containedStyles,
   dangerStyles,
   outlinedStyles,
+  theme as buttonTheme,
 } from '../../src/components/ui-button/theme';
 
 import { testText } from './constants';
@@ -442,5 +443,152 @@ describe('UiButton — the busy state closes the native activation path', () => 
     fireEvent.click(screen.getByRole('button'));
 
     expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+// Ui kit page: the medium CTA (439:19253) is a 171x62 pill around a 107x22 label
+// inset 32/20, and the small button (439:19257) a 137x50 pill around an 89x18
+// label inset 24/16. Both boxes are `label line box + 2 x padding`, so the two
+// sizes cannot share one line-height -- doing so rendered every desktop medium
+// CTA 58px tall (issue #157).
+const MEDIUM_LABEL_BOX: number = 22;
+const SMALL_LABEL_BOX: number = 18;
+const MEDIUM_VERTICAL_PADDING: number = 20;
+const MEDIUM_HORIZONTAL_PADDING: number = 32;
+const MEDIUM_FIGMA_HEIGHT: number = 62;
+
+// The 20px inset is measured from the pill's OUTER edge, because Figma strokes
+// inside the frame. The contained CTA has no stroke and spends the whole inset on
+// padding; the outlined rule spends 1px of it on the CSS border, which is drawn
+// outside the padding box, so its padding is 1px short on each edge. Both land
+// the same 62px outer box, which is what these tests measure.
+const OUTLINED_BORDER: number = 1;
+
+type MediumBox = { padding: string; border: number };
+
+const MEDIUM_BOXES: ReadonlyMap<string, MediumBox> = new Map<string, MediumBox>([
+  ['contained', { padding: '1.25rem 2rem', border: 0 }],
+  ['outlined', { padding: '1.1875rem 1.9375rem', border: OUTLINED_BORDER }],
+]);
+
+function mediumBox(variant: string): MediumBox {
+  const box: MediumBox | undefined = MEDIUM_BOXES.get(variant);
+  if (!box) {
+    throw new Error(`no medium box is documented for the ${variant} variant`);
+  }
+  return box;
+}
+
+type ButtonVariantRule = {
+  props: { variant?: string; size?: string; name?: string };
+  style: Record<string, unknown>;
+};
+
+function namedRule(name: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) => rule.props.name === name
+  );
+  if (!match) {
+    throw new Error(`no ${name} button variant is registered`);
+  }
+  return match.style;
+}
+
+function mediumRule(variant: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) =>
+      rule.props.variant === variant &&
+      rule.props.size === 'medium' &&
+      rule.props.name === undefined
+  );
+  if (!match) {
+    throw new Error(`no ${variant}/medium button variant is registered`);
+  }
+  return match.style;
+}
+
+describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
+  it.each(['contained', 'outlined'])(
+    "gives the %s medium button the 22px label line box, not the small size's 18px",
+    (variant: string) => {
+      expect(mediumRule(variant)).toMatchObject({
+        lineHeight: `${MEDIUM_LABEL_BOX / 16}rem`,
+        fontSize: '1.125rem',
+        fontWeight: '600',
+        padding: mediumBox(variant).padding,
+      });
+    }
+  );
+
+  it.each(['contained', 'outlined'])(
+    'lays the %s medium label box, padding and border out to the 62px Figma pill',
+    (variant: string) => {
+      const style: Record<string, unknown> = mediumRule(variant);
+      const border: number = mediumBox(variant).border;
+      const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
+      const padding: number = parseFloat(String(style.padding)) * 16;
+
+      // The border is drawn outside the padding box, so it counts toward the
+      // rendered height exactly as the padding does.
+      expect(lineBox + 2 * padding + 2 * border).toBe(MEDIUM_FIGMA_HEIGHT);
+      // And the padding still reproduces Figma's inset once the border is in it.
+      expect(padding + border).toBe(MEDIUM_VERTICAL_PADDING);
+    }
+  );
+
+  it('carries the 32px horizontal Figma inset on both medium variants, border included', () => {
+    const horizontalInset = (variant: string): number => {
+      const shorthand: string[] = String(mediumRule(variant).padding).split(' ');
+      const horizontal: string = shorthand[1] ?? '';
+      return parseFloat(horizontal) * 16 + mediumBox(variant).border;
+    };
+
+    expect(horizontalInset('contained')).toBe(MEDIUM_HORIZONTAL_PADDING);
+    expect(horizontalInset('outlined')).toBe(MEDIUM_HORIZONTAL_PADDING);
+  });
+
+  // `outlinedStyles` drops the border entirely when disabled, which would undo
+  // the compensation above and shrink the pill 2px on both axes the moment the
+  // button goes disabled. The medium rule keeps a transparent 1px instead.
+  it('keeps a transparent 1px border on the disabled outlined medium, so it cannot jitter', () => {
+    expect(mediumRule('outlined')['&:disabled']).toMatchObject({
+      border: '1px solid transparent',
+    });
+  });
+
+  it('keeps the shared base line box at the small size, which Figma still measures 18px', () => {
+    expect(containedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+    expect(outlinedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+  });
+
+  // MUI applies every matching variant rule, not only the most specific one, so
+  // the plain outlined/medium rule also lands on the socialButton — which is how
+  // that button gets an 18px font size it never declares. Without its own line
+  // box it would inherit the CTA's 22px and grow 4px, breaking its baseline.
+  it('does not let the CTA label box reach the socialButton, a 58px pill', () => {
+    expect(namedRule('socialButton')).toMatchObject({
+      lineHeight: `${SMALL_LABEL_BOX / 16}rem`,
+    });
+  });
+
+  it('registers socialButton as an outlined medium button, which is why it is exposed', () => {
+    const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+      []) as ButtonVariantRule[];
+    const social: ButtonVariantRule = rules.find(
+      (rule: ButtonVariantRule) => rule.props.name === 'socialButton'
+    ) as ButtonVariantRule;
+
+    expect(social.props).toMatchObject({ variant: 'outlined', size: 'medium' });
+  });
+
+  it('leaves the sub-640px mobile CTA on the 18px line box it is drawn with', () => {
+    const mobile: Record<string, unknown> = mediumRule('contained')[
+      '@media (max-width: 640px)'
+    ] as Record<string, unknown>;
+    expect(mobile).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
   });
 });

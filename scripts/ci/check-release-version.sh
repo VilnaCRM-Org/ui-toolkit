@@ -8,13 +8,22 @@
 # written and committed, so the job dies half-way through a release with an
 # opaque "The process '/usr/bin/git' failed with exit code 128".
 #
-# That is exactly how releases stopped here. The action's push is not atomic:
+# That is exactly how releases stopped here. The action's push was not atomic:
 # `git push origin main --follow-tags` sends the tag ref and the branch ref
-# separately, so when branch protection rejected the branch ref (GH006, before
-# the release App token below) the tag still landed. v0.2.0 and v0.4.0 were
-# orphaned that way -- neither is an ancestor of main, neither has a GitHub
-# release -- while package.json stayed at 0.3.0. Every later push to main then
-# recomputed 0.3.0 -> 0.4.0 and died on the tag, from 2026-08-24 onwards.
+# separately, so when branch protection rejected the branch ref (GH006 -- the
+# release App is not a bypass actor on this repository's main ruleset, so the
+# pull-request requirement declines the push even with a valid App token) the tag
+# still landed. v0.2.0 and v0.4.0 were stranded that way while package.json
+# stayed at 0.3.0, and every later push to main recomputed 0.3.0 -> 0.4.0 and
+# died on the tag, from 2026-08-24 onwards. autorelease.yml now runs the action
+# with `git-push: false` and pushes the branch ref before the tag ref, so a
+# rejected push leaves nothing behind (issue #160).
+#
+# The two stray tags differ in what the remedy below is for them. v0.2.0 was
+# orphaned outright and was deleted. v0.4.0 was not: a GitHub release was later
+# published on it, carrying the vilnacrm-ui-toolkit-0.4.0.tgz asset, so deleting
+# the tag would unpublish a real release. package.json was raised to 0.4.0
+# instead -- the second remedy the failure message offers.
 #
 # The invariant that makes any bump safe is simple and total: package.json's
 # version must be at least as high as every existing tag. Then the next

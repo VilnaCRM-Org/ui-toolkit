@@ -40,6 +40,13 @@ jobs:
       # image SBOM below, which scans the image after `bun install`. The floor
       # sits well under the declared count and far above the zero a
       # lockfile-blind run produces.
+      #
+      # It tracks the manifest and has to move when the manifest does. It was 50
+      # against the 67 npm components this scan produced before the 13 dead
+      # devDependencies were removed (issues #92/#93); the scan now yields 46, so
+      # the floor is re-derived at the same three-quarters margin (46 x 50/67 =
+      # 34). Same strength, same purpose -- a lockfile-blind run still produces
+      # zero and is still caught.
       - name: Generate the CycloneDX SBOM for the npm package
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
@@ -51,7 +58,7 @@ jobs:
           upload-release-assets: false
 
       - name: Assert the package SBOM inventoried the dependency tree
-        run: bash scripts/ci/assert-sbom.sh sbom/ui-toolkit-package.cyclonedx.json 50
+        run: bash scripts/ci/assert-sbom.sh sbom/ui-toolkit-package.cyclonedx.json 34
 
       - name: Upload the package SBOM
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
