@@ -87,6 +87,23 @@ jobs:
       - name: Check the release version cannot collide with an existing tag
         run: bash scripts/ci/check-release-version.sh .
 
+      # `git-push: false` is load-bearing, not a preference. The action's own push
+      # is `git push origin <branch> --follow-tags` (src/helpers/git.js), which
+      # sends the tag ref and the branch ref in one command but NOT in one
+      # transaction. When branch protection rejects the branch ref the tag still
+      # lands, and the run ends with a tag on the remote and no commit behind it:
+      #
+      #   [command] git push origin main --follow-tags
+      #   remote: error: GH006: Protected branch update failed for refs/heads/main.
+      #   remote: - Changes must be made through a pull request.
+      #    * [new tag]         v0.4.0 -> v0.4.0
+      #    ! [remote rejected] main -> main (protected branch hook declined)
+      #
+      # That is how v0.2.0 and v0.4.0 were stranded (issues #81, #160). One failed
+      # release then wedges every later one, because the version preflight above
+      # correctly refuses to bump under a tag that already exists. With the push
+      # disabled here the action only commits and tags LOCALLY; the step below
+      # sends the refs in an order where a rejection leaves nothing behind.
       - name: Conventional Changelog Action
         id: changelog
         uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f # v4.1.0
@@ -94,6 +111,32 @@ jobs:
           github-token: ${{ steps.generate_token.outputs.token }}
           output-file: 'CHANGELOG.md'
           version-file: 'package.json'
+          git-push: false
+
+      # Branch ref first, on its own, and the tag only once it has landed. The two
+      # failure modes are not symmetric: a stranded tag blocks every future release
+      # until someone deletes it by hand, while a landed commit whose tag failed to
+      # push costs one skipped version number and self-heals on the next run. So the
+      # irreversible ref goes last.
+      #
+      # The remote URL is rebuilt from the App token rather than reusing `origin`.
+      # Checkout ran with persist-credentials: false, and while the changelog action
+      # does rewrite `origin` to an authenticated URL inside its own init(), relying
+      # on that side effect would leave this step silently dependent on the action's
+      # internals. The token reaches git through env, and Actions masks it in logs.
+      - name: Push the release commit, then its tag
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          RELEASE_TOKEN: ${{ steps.generate_token.outputs.token }}
+          RELEASE_TAG: ${{ steps.changelog.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          remote="https://x-access-token:${RELEASE_TOKEN}@github.com/${REPOSITORY}.git"
+
+          git push "$remote" "HEAD:${GITHUB_REF}"
+          git push "$remote" "refs/tags/${RELEASE_TAG}"
 
       # The changelog step bumps package.json in the working tree before the image
       # is built, so the packed tarball carries the version that is being released.
