@@ -68,11 +68,12 @@ widening a token set, relaxing a citation requirement, or deleting a row.
 
 ## Release-review action list
 
-Story 5.2 filed no GitHub issues (not authorised for this pass), so twenty rows below carry the
-`unfiled:` fallback instead of an issue number. They are listed here so `epics.md:698` ("the
-decision is visible for release review") is satisfied without depending on the tracker. Story 5.3's
-artifact repeats this list as its release-review action list; both must be updated together when an
-issue is actually filed.
+Story 5.2 filed no GitHub issues (not authorised for this pass), so its rows carry the `unfiled:`
+fallback instead of an issue number — fifteen of the sixty-six rows today, after Story 3.7 moved
+eight of the original twenty to `#149` and #138 added `DEV-66`. They are listed here so
+`epics.md:698` ("the decision is visible for release review") is satisfied without depending on the
+tracker. Story 5.3's artifact repeats this list as its release-review action list; both must be
+updated together when an issue is actually filed.
 
 - **Accessibility-visuals PR — `unfiled:accessibility-lead`.** The largest single bucket, and the
   one with no ticket at all: `DEV-03` (focus-ring visuals and colour-contrast remediation across the
