@@ -245,6 +245,33 @@ describe('UiForm integration (real composed inputs)', () => {
   });
 });
 
+const SERVER_FAILURE_MESSAGE: string = 'backend rejected the login';
+
+const rejectLogin: SubmitHandler<LoginForm> = (): Promise<void> =>
+  Promise.reject(new Error(SERVER_FAILURE_MESSAGE));
+
+// A consumer wired the documented way: the rejection lands in onSubmitError,
+// and the consumer's own state feeds it back through the `error` display prop.
+function LoginSurfacingServerError(): React.ReactElement {
+  const [error, setError] = React.useState<string | null>(null);
+  const surfaceFailure: (failure: unknown) => void = React.useCallback((failure: unknown): void => {
+    setError(failure instanceof Error ? failure.message : String(failure));
+  }, []);
+
+  return (
+    <UiForm<LoginForm>
+      onSubmit={rejectLogin}
+      onSubmitError={surfaceFailure}
+      defaultValues={DEFAULT_VALUES}
+      submitLabel={SUBMIT_LABEL}
+      title={FORM_TITLE}
+      error={error}
+    >
+      <LoginFields />
+    </UiForm>
+  );
+}
+
 describe('UiForm rejection containment (real composed inputs)', () => {
   it('routes a rejected onSubmit to onSubmitError and keeps the typed values', async () => {
     const failure: Error = new Error('backend rejected the login');
@@ -257,6 +284,21 @@ describe('UiForm rejection containment (real composed inputs)', () => {
     await waitFor((): void => expect(onSubmitError).toHaveBeenCalledTimes(1));
     expect(onSubmitError).toHaveBeenCalledWith(failure);
     expect(screen.getByLabelText(EMAIL_LABEL)).toHaveValue('ada@example.com');
+  });
+
+  it('moves focus to the error banner once the consumer surfaces the rejection', async () => {
+    render(<LoginSurfacingServerError />);
+    await fillValidLoginAndSubmit();
+
+    // The real path end to end: the click runs react-hook-form's submit, the
+    // rejection reaches onSubmitError, the consumer's state renders the banner,
+    // and the banner takes focus — so the failure is announced AND brought into
+    // view without the user hunting for it.
+    const alert: HTMLElement = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(SERVER_FAILURE_MESSAGE);
+    // The focus target is the banner box wrapping the alert, not the alert.
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(alert.parentElement).toHaveFocus();
   });
 
   it('warns through the dev channel when a rejection arrives with no handler', async () => {
