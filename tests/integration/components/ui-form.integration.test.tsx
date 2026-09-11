@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
@@ -342,8 +342,16 @@ describe('UiForm submitting state', () => {
       </UiForm>
     );
 
-    expect(screen.getByRole('button')).toBeDisabled();
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    // UiButton's busy contract: the control stays focusable behind
+    // `aria-disabled`, paints the kit's decorative arc (no accessible
+    // progressbar) and the form itself is marked busy.
+    const button: HTMLElement = screen.getByRole('button');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toBeEnabled();
+    expect(within(button).getByRole('progressbar', { hidden: true })).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(button.closest('form')).toHaveAttribute('aria-busy', 'true');
   });
 });
 

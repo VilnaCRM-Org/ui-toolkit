@@ -1,8 +1,12 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
+import {
+  DEFAULT_LOADING_TEXT,
+  LOADING_ANNOUNCE_DELAY_MS,
+} from '../../src/components/field-controls/use-loading-announcement';
 import UiForm from '../../src/components/ui-form';
 
 type FormValues = {
@@ -120,7 +124,7 @@ describe('UiForm', () => {
     expect(screen.queryByText('Use your work email')).not.toBeInTheDocument();
   });
 
-  it('shows the in-button spinner and disables submit while submitting is forced on', () => {
+  it('renders the kit spinner inside a focusable, aria-disabled submit while submitting', () => {
     render(
       <UiForm<FormValues>
         onSubmit={jest.fn()}
@@ -133,16 +137,22 @@ describe('UiForm', () => {
       </UiForm>
     );
 
-    // CRM parity: the spinner renders inside the button (aria-hidden — the
-    // status region below is what announces), so there is no progressbar role.
+    // The busy state is UiButton's contract: `aria-disabled` (never native
+    // `disabled`, which would drop a keyboard user's focus) and the shared
+    // decorative arc — so there is no accessible progressbar, only the polite
+    // status region below.
     const button: HTMLElement = screen.getByRole('button', { name: 'Submit' });
-    expect(button).toBeDisabled();
-    // eslint-disable-next-line testing-library/no-node-access
-    expect(button.querySelector('.MuiCircularProgress-root')).not.toBeNull();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toBeEnabled();
+    expect(within(button).getByRole('progressbar', { hidden: true })).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    );
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
-  it('marks the form busy and announces the submitting state politely', () => {
+  it('marks the form busy and announces submittingLabel once the delay elapses', () => {
+    jest.useFakeTimers();
     render(
       <UiForm<FormValues>
         onSubmit={jest.fn()}
@@ -156,14 +166,40 @@ describe('UiForm', () => {
       </UiForm>
     );
 
-    const status: HTMLElement = screen.getByRole('status');
-    expect(status).toHaveTextContent('Signing you in');
-    expect(status).toHaveAttribute('aria-atomic', 'true');
     // eslint-disable-next-line testing-library/no-node-access
     expect(screen.getByRole('button', { name: 'Submit' }).closest('form')).toHaveAttribute(
       'aria-busy',
       'true'
     );
+    const status: HTMLElement = screen.getByRole('status');
+    expect(status).toHaveTextContent('');
+    React.act((): void => {
+      jest.advanceTimersByTime(LOADING_ANNOUNCE_DELAY_MS);
+    });
+    expect(status).toHaveTextContent('Signing you in');
+    expect(status).toHaveAttribute('aria-atomic', 'true');
+    jest.useRealTimers();
+  });
+
+  it('falls back to the kit loading copy when no submittingLabel is given', () => {
+    jest.useFakeTimers();
+    render(
+      <UiForm<FormValues>
+        onSubmit={jest.fn()}
+        defaultValues={{ email: '' }}
+        submitLabel="Submit"
+        title="Sign in"
+        isSubmitting
+      >
+        <RegisteredField />
+      </UiForm>
+    );
+
+    React.act((): void => {
+      jest.advanceTimersByTime(LOADING_ANNOUNCE_DELAY_MS);
+    });
+    expect(screen.getByRole('status')).toHaveTextContent(DEFAULT_LOADING_TEXT);
+    jest.useRealTimers();
   });
 
   it('keeps the status region empty while idle', () => {
@@ -201,8 +237,69 @@ describe('UiForm', () => {
 
     const button: HTMLElement = screen.getByRole('button', { name: 'Submit' });
     expect(button).toBeDisabled();
-    // eslint-disable-next-line testing-library/no-node-access
-    expect(button.querySelector('.MuiCircularProgress-root')).toBeNull();
+    expect(within(button).queryByRole('progressbar', { hidden: true })).not.toBeInTheDocument();
+  });
+});
+
+type ErrorFormProps = { error?: string | null };
+
+function ErrorForm({ error }: ErrorFormProps): React.ReactElement {
+  return (
+    <UiForm<FormValues>
+      onSubmit={jest.fn()}
+      defaultValues={{ email: '' }}
+      submitLabel="Submit"
+      title="Sign in"
+      error={error}
+    >
+      <RegisteredField />
+    </UiForm>
+  );
+}
+
+function banner(): HTMLElement {
+  // The focus target is the banner box wrapping the alert, not the alert itself.
+  return screen.getByRole('alert').parentElement as HTMLElement;
+}
+
+describe('UiForm error banner focus', () => {
+  it('leaves focus alone when the form mounts with an error already set', () => {
+    render(<ErrorForm error="Stale failure" />);
+
+    expect(banner()).toHaveAttribute('tabindex', '-1');
+    expect(banner()).not.toHaveFocus();
+  });
+
+  it('moves focus to the banner when a submit failure first sets the error', () => {
+    const { rerender } = render(<ErrorForm error={null} />);
+    screen.getByRole('textbox', { name: 'Email' }).focus();
+
+    rerender(<ErrorForm error="Invalid email or password" />);
+
+    expect(banner()).toHaveFocus();
+  });
+
+  it('refocuses the banner when a later failure replaces the message', () => {
+    const { rerender } = render(<ErrorForm error={null} />);
+    rerender(<ErrorForm error="First failure" />);
+    screen.getByRole('textbox', { name: 'Email' }).focus();
+
+    rerender(<ErrorForm error="Second failure" />);
+
+    expect(banner()).toHaveTextContent('Second failure');
+    expect(banner()).toHaveFocus();
+  });
+
+  it('refocuses an error that returns after being cleared, even when it repeats the first', () => {
+    const { rerender } = render(<ErrorForm error="Same failure" />);
+    expect(banner()).not.toHaveFocus();
+
+    rerender(<ErrorForm error={null} />);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    rerender(<ErrorForm error="Same failure" />);
+
+    expect(banner()).toHaveFocus();
   });
 });
 

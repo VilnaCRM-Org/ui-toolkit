@@ -24,7 +24,7 @@ const BUSY_SX: SxProps<Theme> = {
   cursor: 'default',
   // The shared field ink is a light grey tuned for a white field; over the
   // contained button's brand fill it reads muddy. CRM draws this exact case in
-  // white (`ui-form/submit-spinner.tsx`, `route-fallback/styles.ts`), so the
+  // white (its `ui-form/submit-spinner.tsx`, `route-fallback/styles.ts`), so the
   // contained variant — brand blue, and the `danger` red that also builds on it —
   // takes white. Scoped by variant so `outlined`/`text`, which sit on white,
   // keep the grey arc that is legible there. Two class selectors, so this wins

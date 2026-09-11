@@ -13,11 +13,9 @@ import UiButton from '../ui-button';
 import UiTypography from '../ui-typography';
 
 import FormProviderBridge from './form-provider-bridge';
-import LiveStatus from './live-status';
 import styles from './styles';
 import buildSubmitHandler from './submit-handler';
-import SubmitSpinner from './submit-spinner';
-import useFocusOnMount from './use-focus-on-mount';
+import useFocusOnError from './use-focus-on-error';
 
 export interface UiFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
@@ -27,10 +25,12 @@ export interface UiFormProps<T extends FieldValues> {
   isSubmitting?: boolean | undefined;
   error?: string | null | undefined;
   submitLabel: string;
-  /** Announced through the polite status region while the form submits. */
-  submittingLabel?: string;
-  /** Overrides whether the submitting announcement is made (defaults to `submitting`). */
-  submittingAnnouncement?: boolean;
+  /**
+   * Spoken by the submit button's polite `role="status"` region once a submit
+   * has been in flight long enough to be worth announcing — forwarded as the
+   * button's `loadingText`, so it falls back to the kit's shared loading copy.
+   */
+  submittingLabel?: string | undefined;
   title: ReactNode;
   subtitle?: ReactNode;
   showTitle?: boolean;
@@ -54,6 +54,7 @@ type SubmitControlsProps = {
   submitting: boolean;
   isSubmitDisabled: boolean;
   submitLabel: string;
+  submittingLabel: string | undefined;
 };
 
 // Display props collected from UiForm via `...view` rest and passed as a single
@@ -80,16 +81,16 @@ type FormBodyProps<T extends FieldValues> = {
 
 // CRM parity: a submit failure moves focus to the alert banner so the error is
 // both announced and brought into view (the focus ring is the error-token
-// outline from `styles.errorBannerFocus`).
+// outline from `styles.errorBannerFocus`). See `useFocusOnError` for when.
 function ErrorBanner({ error }: { error?: string | null }): React.ReactElement | null {
-  const focusOnAppear: (node: HTMLDivElement | null) => void = useFocusOnMount<HTMLDivElement>();
+  const bannerRef: React.RefObject<HTMLDivElement | null> = useFocusOnError<HTMLDivElement>(error);
 
   if (!error) {
     return null;
   }
 
   return (
-    <Box ref={focusOnAppear} tabIndex={-1} sx={styles.errorBannerFocus}>
+    <Box ref={bannerRef} tabIndex={-1} sx={styles.errorBannerFocus}>
       <UiTypography role="alert" sx={{ color: 'red', marginBottom: '1rem' }}>
         {error}
       </UiTypography>
@@ -122,20 +123,22 @@ function FormHeader({
   );
 }
 
-// CRM parity: the spinner renders INSIDE the button through the MUI `loading`
-// slot (which also handles the non-interactive submitting semantics); the old
-// external size-70 loader below the form is gone.
+// CRM parity: the spinner renders INSIDE the submit button, replacing the old
+// external size-70 loader below the form. The busy state is UiButton's own
+// contract — the kit's shared arc, `aria-disabled` rather than a native
+// `disabled` (which would drop a keyboard user's focus the moment their own
+// activation starts the fetch), and the one polite status announcement.
 function SubmitControls({
   submitting,
   isSubmitDisabled,
   submitLabel,
+  submittingLabel,
 }: SubmitControlsProps): React.ReactElement {
   return (
     <UiButton
       type="submit"
       loading={submitting}
-      loadingPosition="center"
-      loadingIndicator={<SubmitSpinner />}
+      loadingText={submittingLabel}
       disabled={isSubmitDisabled}
       variant="contained"
       sx={styles.submitButton}
@@ -160,10 +163,8 @@ function FormBody<T extends FieldValues>({
     showSubtitle = true,
     isSubmitDisabled = false,
     submitLabel,
-    submittingLabel = 'Submitting…',
-    submittingAnnouncement,
+    submittingLabel,
   } = view;
-  const announceSubmitting: boolean = submittingAnnouncement ?? submitting;
 
   return (
     <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
@@ -179,8 +180,8 @@ function FormBody<T extends FieldValues>({
         submitting={submitting}
         isSubmitDisabled={isSubmitDisabled}
         submitLabel={submitLabel}
+        submittingLabel={submittingLabel}
       />
-      <LiveStatus message={announceSubmitting ? submittingLabel : ''} />
     </form>
   );
 }

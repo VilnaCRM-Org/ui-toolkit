@@ -2,8 +2,14 @@ import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
 export default {
-  // CRM parity: the error banner takes programmatic focus on mount; the ring is
-  // the error token so the failure cue and the focus cue read as one.
+  // CRM parity: the error banner takes programmatic focus when a submit fails;
+  // the ring is the error token so the failure cue and the focus cue read as
+  // one. `:focus-visible` is deliberate for a script-focused target: per the
+  // Selectors 4 heuristics (implemented by Chromium, Gecko and WebKit) an
+  // element focused from script inherits the modality of the element that had
+  // focus — so a keyboard-driven submit (Enter on the field or the button)
+  // shows the ring, while a pointer-driven one does not need it: the red alert
+  // text is already the visible cue, and the ring would only be noise.
   errorBannerFocus: {
     outline: 'none',
     '&:focus-visible': {
