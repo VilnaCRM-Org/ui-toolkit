@@ -1,5 +1,7 @@
 # ui-toolkit
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/VilnaCRM-Org/ui-toolkit/badge)](https://scorecard.dev/viewer/?uri=github.com/VilnaCRM-Org/ui-toolkit)
+
 React UI component library built with Bun, Storybook, and MUI.
 
 ## Stack
@@ -57,11 +59,17 @@ locally before pushing. See [agents.md](agents.md) for which test layer a given 
 | `make test-integration` | Jest composition suite: composed components, real children     |
 | `make test-e2e`         | Playwright behavior against a Storybook build                  |
 | `make test-visual`      | Playwright visual-regression snapshots                         |
+| `make test-storybook`   | Storybook interaction (play function) tests in a browser       |
 | `make test-mutation`    | Stryker mutation-strength gate                                 |
 | `make test-bats`        | Bats coverage of Makefile shell flows and their contracts      |
 
 The `lint-metrics` target runs a `rust-code-analysis` complexity gate over `src/`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the policy details and remediation guidance.
+
+`make lint` also runs `make lint-ci-paths`, which fails when the `Makefile` or a workflow names a
+repository path that does not exist — the class of drift that once left the memory-leak gate green
+while it executed nothing. See
+[CI gate integrity](CONTRIBUTING.md#ci-gate-integrity-fail-closed) in `CONTRIBUTING.md`.
 
 ### Bats Shell Coverage
 
@@ -81,6 +89,20 @@ make test-bats BATS_FORMATTER=tap
 When you add or change a public Make target, update `tests/bats/make-target-coverage.tsv` in the
 same change. Either add or adjust direct Bats coverage for uncovered shell behavior, or point the
 manifest at the pull-request workflow that already exercises the target.
+
+### Storybook interaction tests
+
+Every interactive component ships a story whose `play` function drives it in a real
+browser, so the demonstration surface is also a behavioural gate:
+
+```bash
+make test-storybook
+```
+
+The run fails closed — it exits non-zero when no interaction story is discovered, when
+the live Storybook index and `tests/storybook/interaction-stories.json` disagree, or when
+any registered play test does not pass. See
+[tests/storybook/README.md](tests/storybook/README.md).
 
 ### Dependency graph hygiene
 
@@ -250,6 +272,22 @@ An app that observed failed submits through a global `unhandledrejection` listen
 `formState.isSubmitSuccessful` as a failure signal, must switch those call sites to
 `onSubmitError`.
 
+## Releases
+
+The library is not published to the public npm registry. Pushing to `main` runs the release
+workflow, which bumps the version, tags it, and attaches the packed
+`vilnacrm-ui-toolkit-<version>.tgz` to the GitHub release; `crm` and `website` depend on that
+asset URL directly. Reproduce the artifact locally with:
+
+```bash
+make start-bun
+make package
+```
+
+The tarball lands in `dist/`, and the recipe fails if it does not carry the entry points that
+`package.json` promises. [CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
+`website` pin a release, verify it, and move to a later one.
+
 ## Notes
 
 - This repository is a React UI library, not a Next.js app.
@@ -257,9 +295,28 @@ An app that observed failed submits through a global `unhandledrejection` listen
 - `make lint-next` runs ESLint. The name predates the library split — it is not
   Next.js-specific — and is kept only to avoid renaming churn across CI and tooling.
 
+## Observability
+
+The toolkit ships **zero runtime telemetry by design**: no analytics, no error reporting, no
+session replay, and no web-vitals collection. Components render and emit callbacks; nothing in
+this package phones home.
+
+Error reporting and performance monitoring are the consuming application's responsibility. The
+integration seam today is composition — wrap toolkit components in your own React error boundary
+and report from its handler. A toolkit-owned `UiErrorBoundary` is tracked in issue #71.
+
+The `make lint-unused-deps` gate keeps the stance honest: it fails on any declared package that
+nothing in the source tree references, so telemetry dependencies (such as the removed `@sentry/*`
+and `web-vitals`) cannot sit unused in `package.json` waiting to be wired up.
+
 ## Security
 
-Report vulnerabilities through the private reporting guidance in [SECURITY.md](SECURITY.md).
+Report vulnerabilities through the private reporting guidance in [SECURITY.md](SECURITY.md), which
+also documents the supported-version window and the response targets.
+
+Supply-chain posture is measured in CI: the `sbom` workflow publishes a CycloneDX SBOM for the npm
+package and for each CI image, and the `OSSF Scorecard` workflow publishes the repository score
+behind the badge above.
 
 ## Contributing
 

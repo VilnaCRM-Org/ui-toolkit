@@ -253,7 +253,8 @@ gate_equivalent() {
 
   run diff -u \
     <(printf '%s\n' lint build test-unit test-integration test-bats \
-      test-mutation test-e2e test-visual test-memory-leak lighthouse-desktop lighthouse-mobile) \
+      test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop \
+      lighthouse-mobile) \
     <(executed_gates)
   [ "$status" -eq 0 ]
 }

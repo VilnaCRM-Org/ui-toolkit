@@ -15,7 +15,7 @@ export interface UiErrorBoundaryProps {
   children: ReactNode;
   fallback?: UiErrorBoundaryFallback;
   onError?: UiErrorBoundaryErrorHandler;
-  resetKeys?: unknown[];
+  resetKeys?: unknown[] | undefined;
 }
 
 export interface UiErrorBoundaryState {

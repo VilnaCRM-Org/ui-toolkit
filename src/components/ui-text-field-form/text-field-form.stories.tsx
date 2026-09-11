@@ -2,6 +2,7 @@ import { Stack } from '@mui/material';
 import { Meta, StoryObj } from '@storybook/react';
 import { t } from 'i18next';
 import { useForm } from 'react-hook-form';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import UiButton from '../ui-button';
 
@@ -69,22 +70,50 @@ function TextFieldFormStory(args: TextFieldFormStoryArgs): React.ReactElement {
   );
 }
 
+const submitLabel: string = t('Submit');
+const tooShortMessage: string = t('Name must be at least 3 characters');
+
+const textFieldFormArgs: Story['args'] = {
+  rules: {
+    required: t('This field is required'),
+    validate: (value: string) => {
+      if (value.length < 3) {
+        return tooShortMessage;
+      }
+      return true;
+    },
+  },
+  type: 'text',
+  placeholder: t('Enter text...'),
+  fullWidth: false,
+};
+
 export const TextFieldForm: Story = {
   // Storybook's render passes the story args through to the wrapper component.
   // eslint-disable-next-line react/jsx-props-no-spreading
   render: args => <TextFieldFormStory {...(args as TextFieldFormStoryArgs)} />,
-  args: {
-    rules: {
-      required: t('This field is required'),
-      validate: (value: string) => {
-        if (value.length < 3) {
-          return t('Name must be at least 3 characters');
-        }
-        return true;
-      },
-    },
-    type: 'text',
-    placeholder: t('Enter text...'),
-    fullWidth: false,
+  args: textFieldFormArgs,
+};
+
+// Interaction story (`interaction` tag): proves the field surfaces its validation
+// message on submit and clears it once the value becomes valid.
+// See tests/storybook/README.md.
+export const ValidationSurfacesFieldError: Story = {
+  tags: ['interaction', '!autodocs'],
+  // eslint-disable-next-line react/jsx-props-no-spreading
+  render: args => <TextFieldFormStory {...(args as TextFieldFormStoryArgs)} />,
+  args: textFieldFormArgs,
+  play: async ({ canvasElement }): Promise<void> => {
+    const canvas: ReturnType<typeof within> = within(canvasElement);
+    const field: HTMLElement = canvas.getByRole('textbox');
+
+    await userEvent.type(field, 'ab');
+    await userEvent.click(canvas.getByRole('button', { name: submitLabel }));
+
+    await expect(await canvas.findByText(tooShortMessage)).toBeVisible();
+
+    await userEvent.type(field, 'c');
+
+    await waitFor((): Promise<void> => expect(canvas.queryByText(tooShortMessage)).toBeNull());
   },
 };

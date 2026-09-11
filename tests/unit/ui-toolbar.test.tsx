@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiToolbar } from '../../src/components';
+import UiToolbar from '../../src/components/ui-toolbar';
 
 import { testText } from './constants';
 

@@ -1,10 +1,26 @@
 import { render, fireEvent, screen } from '@testing-library/react';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
-import { UiButton } from '../../src/components';
-import { containedStyles, outlinedStyles } from '../../src/components/ui-button/theme';
+import UiButton from '../../src/components/ui-button';
+import {
+  containedStyles,
+  dangerStyles,
+  outlinedStyles,
+  theme as buttonTheme,
+} from '../../src/components/ui-button/theme';
 
 import { testText } from './constants';
+
+// Board A y=1354 (rest 439:19822 / hover 439:19824 / active 439:19826 / disabled
+// 439:19828). Local consts so a palette-token swap fails this test.
+const dangerRestFill: string = 'rgba(220, 57, 57, 0.1)';
+const dangerBorderColor: string = '#DF7878';
+const dangerRestInk: string = '#DC3939';
+const dangerHoverFill: string = '#DC3939';
+const dangerActiveFill: string = '#DF7878';
+const dangerDisabledFill: string = '#E1E7EA';
+const dangerPressedInk: string = '#FFF';
 
 describe('UiButton', () => {
   it('renders the button with the correct props', () => {
@@ -171,6 +187,75 @@ describe('UiButton', () => {
     });
     expect(outlinedStyles).toHaveProperty('border');
   });
+
+  it('renders the danger variant with its own name so the theme can match it', () => {
+    render(
+      <UiButton variant="contained" size="small" name="danger">
+        {testText}
+      </UiButton>
+    );
+
+    const button: HTMLElement = screen.getByRole('button', { name: testText });
+    expect(button).toHaveAttribute('name', 'danger');
+    expect(button).toBeEnabled();
+  });
+
+  it('disables the danger variant natively, like every other UiButton variant', () => {
+    render(
+      <UiButton variant="contained" size="small" name="danger" disabled>
+        {testText}
+      </UiButton>
+    );
+
+    expect(screen.getByRole('button', { name: testText })).toBeDisabled();
+  });
+});
+
+describe('UiButton danger variant style assembly (Board A y=1354)', () => {
+  it('declares the shared typography and radius the base pill uses', () => {
+    expect(dangerStyles).toMatchObject({
+      textTransform: 'none',
+      fontFamily: 'Golos Text',
+      fontWeight: '500',
+      fontSize: '0.938rem',
+      lineHeight: '1.125rem',
+      letterSpacing: '0',
+      borderRadius: '3.563rem',
+      padding: '0.75rem 1.5rem',
+    });
+  });
+
+  it('paints the rest fill from the error token at 10% alpha, not a new hex', () => {
+    expect(dangerStyles).toMatchObject({
+      backgroundColor: dangerRestFill,
+      border: `1px solid ${dangerBorderColor}`,
+      color: dangerRestInk,
+    });
+  });
+
+  it('paints hover: solid error fill, transparent border, white ink', () => {
+    expect(dangerStyles).toHaveProperty('&:hover', {
+      backgroundColor: dangerHoverFill,
+      border: '1px solid transparent',
+      color: dangerPressedInk,
+    });
+  });
+
+  it('paints active LIGHTER than hover (strokeDanger fill), transparent border, white ink', () => {
+    expect(dangerStyles).toHaveProperty('&:active', {
+      backgroundColor: dangerActiveFill,
+      border: '1px solid transparent',
+      color: dangerPressedInk,
+    });
+  });
+
+  it('paints disabled: brandGray fill, transparent border (no box jitter), white ink', () => {
+    expect(dangerStyles).toHaveProperty('&:disabled', {
+      backgroundColor: dangerDisabledFill,
+      border: '1px solid transparent',
+      color: dangerPressedInk,
+    });
+  });
 });
 
 describe('UiButton href guard (line 34: linkTarget && !isButtonElement)', () => {
@@ -200,5 +285,310 @@ describe('UiButton href guard (line 34: linkTarget && !isButtonElement)', () => 
     const link: HTMLElement = screen.getByRole('link', { name: testText });
     expect(link.tagName).toBe('A');
     expect(link).toHaveAttribute('href', '/external');
+  });
+});
+
+describe('UiButton — link attributes are part of the public type', () => {
+  it('forwards target and rel to the anchor it renders', () => {
+    // Both were already forwarded at runtime but missing from UiButtonProps, so a
+    // TypeScript consumer had to cast to pass them. This renders through the
+    // typed props, so it fails to compile if the declaration regresses.
+    render(
+      <UiButton href="https://example.com" target="_blank" rel="noopener noreferrer">
+        {testText}
+      </UiButton>
+    );
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+});
+
+describe('UiButton — the to-forwarding guard', () => {
+  // The guard is `isCustomComponent && to !== undefined`, and each half fails
+  // differently, so each needs its own case. This one covers the right half: a
+  // custom component with NO `to`. Assigning `componentProps.to = undefined` is not
+  // the same as never assigning it — the key still reaches the component, and a
+  // router Link that branches on `'to' in props` would take its navigation path
+  // with nothing to navigate to. Presence, not value, is therefore what is asserted.
+  it('omits the to prop entirely from a custom component that was given none', () => {
+    type ProbeProps = { children?: React.ReactNode };
+    const seen: string[] = [];
+    const Probe: React.ForwardRefExoticComponent<
+      ProbeProps & React.RefAttributes<HTMLAnchorElement>
+    > = React.forwardRef<HTMLAnchorElement, ProbeProps>(function Probe(props, ref) {
+      const carriesTo: boolean = Object.prototype.hasOwnProperty.call(props, 'to');
+      seen.push(carriesTo ? 'to-present' : 'to-absent');
+      return (
+        <a ref={ref} href="/resolved-by-router">
+          {props.children}
+        </a>
+      );
+    });
+
+    render(<UiButton component={Probe}>{testText}</UiButton>);
+
+    expect(screen.getByRole('link', { name: testText })).toBeInTheDocument();
+    expect(seen).not.toHaveLength(0);
+    expect(seen).not.toContain('to-present');
+  });
+
+  it('flattens to into href on the built-in anchor instead of forwarding it raw', () => {
+    // Only a custom link component owns navigation via `to`; the built-in `a` has no
+    // such prop, so forwarding it would leak a stray to="/dashboard" attribute into
+    // the DOM. A guard that always forwarded (if (true)) would render that attribute.
+    render(<UiButton to="/dashboard">{testText}</UiButton>);
+
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('href', '/dashboard');
+    expect(link).not.toHaveAttribute('to');
+  });
+
+  it('keeps the native button when the to object is empty rather than forwarding it', () => {
+    // `to={{}}` flattens to an empty string, so UiButton stays a plain <button>.
+    // Forwarding the raw (truthy) object makes MUI's ButtonBase treat the button as a
+    // link and swap the root for its LinkComponent <a>, losing the role and the type.
+    render(<UiButton to={{}}>{testText}</UiButton>);
+
+    const button: HTMLElement = screen.getByRole('button', { name: testText });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).not.toHaveAttribute('to');
+  });
+});
+
+describe('UiButton — the busy state closes the native activation path', () => {
+  it('does not submit its form while busy, from pointer or keyboard', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onSubmit: jest.Mock = jest.fn(e => e.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <UiButton type="submit" loading>
+          {testText}
+        </UiButton>
+      </form>
+    );
+
+    const button: HTMLElement = screen.getByRole('button');
+    // `aria-disabled` keeps the control focusable and activatable, and
+    // `pointer-events: none` only closes the mouse path — so the keyboard
+    // route is the one that has to be proven shut. `fireEvent.keyDown` would
+    // NOT prove it: jsdom does not turn a raw keydown into the button's
+    // default activation, so such a test passes whatever the code does.
+    // `userEvent` does emulate that translation, so Enter and Space here are
+    // real activations.
+    fireEvent.click(button);
+    button.focus();
+    await user.keyboard('{Enter}');
+    await user.keyboard(' ');
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('cancels the default action so a busy link button cannot navigate', () => {
+    render(
+      <UiButton href="/somewhere" loading>
+        {testText}
+      </UiButton>
+    );
+
+    const link: HTMLElement = screen.getByRole('link');
+    const clicked: boolean = fireEvent.click(link);
+
+    // `fireEvent` returns false once a handler called `preventDefault`, which
+    // is what stops the browser following `href`.
+    expect(clicked).toBe(false);
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('still submits once the busy state clears', () => {
+    const onSubmit: jest.Mock = jest.fn(e => e.preventDefault());
+    const { rerender } = render(
+      <form onSubmit={onSubmit}>
+        <UiButton type="submit" loading>
+          {testText}
+        </UiButton>
+      </form>
+    );
+
+    rerender(
+      <form onSubmit={onSubmit}>
+        <UiButton type="submit" loading={false}>
+          {testText}
+        </UiButton>
+      </form>
+    );
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes the consumer click through when not busy', () => {
+    const onClick: jest.Mock = jest.fn();
+    render(<UiButton onClick={onClick}>{testText}</UiButton>);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('withholds the consumer click while busy', () => {
+    const onClick: jest.Mock = jest.fn();
+    render(
+      <UiButton onClick={onClick} loading>
+        {testText}
+      </UiButton>
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(onClick).not.toHaveBeenCalled();
+  });
+});
+
+// Ui kit page: the medium CTA (439:19253) is a 171x62 pill around a 107x22 label
+// inset 32/20, and the small button (439:19257) a 137x50 pill around an 89x18
+// label inset 24/16. Both boxes are `label line box + 2 x padding`, so the two
+// sizes cannot share one line-height -- doing so rendered every desktop medium
+// CTA 58px tall (issue #157).
+const MEDIUM_LABEL_BOX: number = 22;
+const SMALL_LABEL_BOX: number = 18;
+const MEDIUM_VERTICAL_PADDING: number = 20;
+const MEDIUM_HORIZONTAL_PADDING: number = 32;
+const MEDIUM_FIGMA_HEIGHT: number = 62;
+
+// The 20px inset is measured from the pill's OUTER edge, because Figma strokes
+// inside the frame. The contained CTA has no stroke and spends the whole inset on
+// padding; the outlined rule spends 1px of it on the CSS border, which is drawn
+// outside the padding box, so its padding is 1px short on each edge. Both land
+// the same 62px outer box, which is what these tests measure.
+const OUTLINED_BORDER: number = 1;
+
+type MediumBox = { padding: string; border: number };
+
+const MEDIUM_BOXES: ReadonlyMap<string, MediumBox> = new Map<string, MediumBox>([
+  ['contained', { padding: '1.25rem 2rem', border: 0 }],
+  ['outlined', { padding: '1.1875rem 1.9375rem', border: OUTLINED_BORDER }],
+]);
+
+function mediumBox(variant: string): MediumBox {
+  const box: MediumBox | undefined = MEDIUM_BOXES.get(variant);
+  if (!box) {
+    throw new Error(`no medium box is documented for the ${variant} variant`);
+  }
+  return box;
+}
+
+type ButtonVariantRule = {
+  props: { variant?: string; size?: string; name?: string };
+  style: Record<string, unknown>;
+};
+
+function namedRule(name: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) => rule.props.name === name
+  );
+  if (!match) {
+    throw new Error(`no ${name} button variant is registered`);
+  }
+  return match.style;
+}
+
+function mediumRule(variant: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) =>
+      rule.props.variant === variant &&
+      rule.props.size === 'medium' &&
+      rule.props.name === undefined
+  );
+  if (!match) {
+    throw new Error(`no ${variant}/medium button variant is registered`);
+  }
+  return match.style;
+}
+
+describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
+  it.each(['contained', 'outlined'])(
+    "gives the %s medium button the 22px label line box, not the small size's 18px",
+    (variant: string) => {
+      expect(mediumRule(variant)).toMatchObject({
+        lineHeight: `${MEDIUM_LABEL_BOX / 16}rem`,
+        fontSize: '1.125rem',
+        fontWeight: '600',
+        padding: mediumBox(variant).padding,
+      });
+    }
+  );
+
+  it.each(['contained', 'outlined'])(
+    'lays the %s medium label box, padding and border out to the 62px Figma pill',
+    (variant: string) => {
+      const style: Record<string, unknown> = mediumRule(variant);
+      const border: number = mediumBox(variant).border;
+      const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
+      const padding: number = parseFloat(String(style.padding)) * 16;
+
+      // The border is drawn outside the padding box, so it counts toward the
+      // rendered height exactly as the padding does.
+      expect(lineBox + 2 * padding + 2 * border).toBe(MEDIUM_FIGMA_HEIGHT);
+      // And the padding still reproduces Figma's inset once the border is in it.
+      expect(padding + border).toBe(MEDIUM_VERTICAL_PADDING);
+    }
+  );
+
+  it('carries the 32px horizontal Figma inset on both medium variants, border included', () => {
+    const horizontalInset = (variant: string): number => {
+      const shorthand: string[] = String(mediumRule(variant).padding).split(' ');
+      const horizontal: string = shorthand[1] ?? '';
+      return parseFloat(horizontal) * 16 + mediumBox(variant).border;
+    };
+
+    expect(horizontalInset('contained')).toBe(MEDIUM_HORIZONTAL_PADDING);
+    expect(horizontalInset('outlined')).toBe(MEDIUM_HORIZONTAL_PADDING);
+  });
+
+  // `outlinedStyles` drops the border entirely when disabled, which would undo
+  // the compensation above and shrink the pill 2px on both axes the moment the
+  // button goes disabled. The medium rule keeps a transparent 1px instead.
+  it('keeps a transparent 1px border on the disabled outlined medium, so it cannot jitter', () => {
+    expect(mediumRule('outlined')['&:disabled']).toMatchObject({
+      border: '1px solid transparent',
+    });
+  });
+
+  it('keeps the shared base line box at the small size, which Figma still measures 18px', () => {
+    expect(containedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+    expect(outlinedStyles).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+  });
+
+  // MUI applies every matching variant rule, not only the most specific one, so
+  // the plain outlined/medium rule also lands on the socialButton — which is how
+  // that button gets an 18px font size it never declares. Without its own line
+  // box it would inherit the CTA's 22px and grow 4px, breaking its baseline.
+  it('does not let the CTA label box reach the socialButton, a 58px pill', () => {
+    expect(namedRule('socialButton')).toMatchObject({
+      lineHeight: `${SMALL_LABEL_BOX / 16}rem`,
+    });
+  });
+
+  it('registers socialButton as an outlined medium button, which is why it is exposed', () => {
+    const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+      []) as ButtonVariantRule[];
+    const social: ButtonVariantRule = rules.find(
+      (rule: ButtonVariantRule) => rule.props.name === 'socialButton'
+    ) as ButtonVariantRule;
+
+    expect(social.props).toMatchObject({ variant: 'outlined', size: 'medium' });
+  });
+
+  it('leaves the sub-640px mobile CTA on the 18px line box it is drawn with', () => {
+    const mobile: Record<string, unknown> = mediumRule('contained')[
+      '@media (max-width: 640px)'
+    ] as Record<string, unknown>;
+    expect(mobile).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
   });
 });

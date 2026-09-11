@@ -13,7 +13,7 @@ export default {
   },
   formTitle: {
     fontSize: '1.375rem',
-    fontFamily: 'Golos',
+    fontFamily: 'Golos Text',
     fontWeight: 700,
     letterSpacing: 0,
     lineHeight: '1',
@@ -28,7 +28,7 @@ export default {
     },
   },
   formSubtitle: {
-    fontFamily: 'Golos',
+    fontFamily: 'Golos Text',
     fontWeight: 400,
     fontSize: '0.9375rem',
     lineHeight: '1.67',
@@ -80,7 +80,7 @@ export default {
       paddingTop: '1.25rem',
       paddingBottom: '1.25rem',
       marginTop: '1.1875rem',
-      fontFamily: 'Golos',
+      fontFamily: 'Golos Text',
       fontWeight: 600,
       fontSize: '1.125rem',
       lineHeight: 1,

@@ -13,6 +13,9 @@ out/
 # production
 build/
 
+# packed release tarball (make package)
+dist/
+
 # type-declaration rollup scratch dir (tsc -> API Extractor)
 temp/
 

@@ -7,7 +7,7 @@ import UiTypography from '../ui-typography';
 
 import backToMainStyles from './styles';
 
-type UiBackToMainProps = {
+export type UiBackToMainProps = {
   to?: string;
   label?: React.ReactNode;
   /** Decorative leading glyph; rendered inside an `aria-hidden` box. */

@@ -53,6 +53,9 @@ const icon: SxProps<Theme> = {
 // action-icon-bar glyphs; remediate together in that sweep.
 const backText: SxProps<Theme> = {
   marginLeft: '0.5rem',
+  // A literal family, never `theme.typography.fontFamily`: the ambient theme
+  // outside a consumer's ThemeProvider is MUI's default, which pinned the label
+  // to Roboto. CRM's host theme resolves this to Golos, so the kit names it.
   fontFamily: 'Golos Text',
   fontWeight: 500,
   fontSize: '0.9375rem',

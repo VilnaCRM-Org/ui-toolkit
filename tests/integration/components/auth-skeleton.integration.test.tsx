@@ -9,13 +9,14 @@ import AuthSkeleton from '../../../src/components/auth-skeleton';
 // assert the genuine rendered tree and the cross-component propagation of the
 // `disableAnimation` prop down into every primitive.
 //
-// The primitives no longer expose a data-testid; each is located by the unique
-// `id` AuthSkeleton renders it with (mirroring the CRM convention).
+// The primitives expose neither a data-testid nor a role (they are aria-hidden
+// decoration); each is located by the id AuthSkeleton renders it with, matched
+// on its stable suffix because a React.useId() token prefixes every id.
 
 const SOCIAL_IDS: readonly string[] = ['google', 'facebook', 'apple', 'linkedin'];
 
-// Stable ids AuthSkeleton assigns to each composed primitive, grouped by type so
-// the suite can assert both presence and aggregate counts per primitive.
+// Stable id suffixes AuthSkeleton assigns to each composed primitive, grouped by
+// type so the suite can assert both presence and aggregate counts per primitive.
 const TEXT_IDS: readonly string[] = [
   'auth-skeleton-title',
   'auth-skeleton-subtitle',
@@ -34,34 +35,42 @@ const INPUT_IDS: readonly string[] = [
 const BUTTON_IDS: readonly string[] = ['auth-skeleton-submit'];
 const BLOCK_IDS: readonly string[] = SOCIAL_IDS.map(id => `auth-skeleton-social-${id}`);
 
-function getById(container: HTMLElement, id: string): HTMLElement {
+function selector(idSuffix: string): string {
+  return `[id$="${idSuffix}"]`;
+}
+
+function getById(container: HTMLElement, idSuffix: string): HTMLElement {
   // Skeleton primitives are decorative (no role/label); asserted by stable id only.
   // eslint-disable-next-line testing-library/no-node-access
-  const el: HTMLElement | null = container.querySelector<HTMLElement>(`#${id}`);
+  const el: HTMLElement | null = container.querySelector<HTMLElement>(selector(idSuffix));
   if (el === null) {
-    throw new Error(`Expected element #${id} to be present in the composed skeleton tree`);
+    throw new Error(`Expected element ${selector(idSuffix)} to be present in the skeleton tree`);
   }
   return el;
 }
 
 function countPresent(container: HTMLElement, ids: readonly string[]): number {
-  return ids.filter(id => container.querySelector(`#${id}`) !== null).length;
+  return ids.filter(id => container.querySelector(selector(id)) !== null).length;
 }
 
 describe('AuthSkeleton (integration)', () => {
-  it('renders the aria-labelled loading section as a <section> landmark', () => {
-    render(<AuthSkeleton />);
+  it('renders a busy container holding the hidden loading text, not a landmark', () => {
+    const { container } = render(<AuthSkeleton />);
 
-    const section: HTMLElement = screen.getByLabelText('Loading form');
-    expect(section).toBeInTheDocument();
-    expect(section.tagName).toBe('SECTION');
+    const root: HTMLElement = screen.getByRole('generic', { busy: true });
+    expect(root.tagName).toBe('DIV');
+    expect(root).not.toHaveAttribute('role');
+    expect(root).not.toHaveAttribute('aria-label');
+    expect(screen.getByText('Loading form')).toBeInTheDocument();
+    // The real primitives below it are all inside the aria-hidden shape tree.
+    expect(getById(container, 'auth-skeleton-title')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('honours a custom ariaLabel on the loading section', () => {
+  it('honours a custom ariaLabel as the hidden loading text', () => {
     render(<AuthSkeleton ariaLabel="Authentication loading" />);
 
-    expect(screen.getByLabelText('Authentication loading')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Loading form')).not.toBeInTheDocument();
+    expect(screen.getByText('Authentication loading')).toBeInTheDocument();
+    expect(screen.queryByText('Loading form')).not.toBeInTheDocument();
   });
 
   it('renders the real title and two-line subtitle text primitives', () => {
@@ -114,19 +123,22 @@ describe('AuthSkeleton (integration)', () => {
     expect(countPresent(container, BUTTON_IDS)).toBe(1);
   });
 
-  it('renders the MUI Divider with a presentation role wrapping a real text primitive', () => {
+  it('renders the MUI Divider wrapping a real text primitive', () => {
     const { container } = render(<AuthSkeleton />);
 
-    const divider: HTMLElement = screen.getByRole('presentation');
-    expect(divider).toBe(getById(container, 'auth-skeleton-divider'));
-    expect(divider).toHaveClass('MuiDivider-root');
+    // The divider carries no id of its own — it is a structural wrapper inside
+    // the aria-hidden shape tree, so it is located by its MUI class.
+    // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
+    const divider: HTMLElement | null = container.querySelector<HTMLElement>('.MuiDivider-root');
+    expect(divider).not.toBeNull();
+    expect(divider).toHaveAttribute('role', 'presentation');
 
     // The divider label is a real UiSkeletonText nested inside the MUI divider.
     const dividerText: HTMLElement = getById(container, 'auth-skeleton-divider-text');
     expect(dividerText).toBeInTheDocument();
     // Asserts the real text primitive is nested inside the divider; structural, no semantic query.
     // eslint-disable-next-line testing-library/no-node-access
-    expect(divider.querySelector('#auth-skeleton-divider-text')).toBe(dividerText);
+    expect(divider?.querySelector(selector('auth-skeleton-divider-text'))).toBe(dividerText);
   });
 
   it('renders all four social blocks as real UiSkeletonBlock primitives', () => {
@@ -140,40 +152,25 @@ describe('AuthSkeleton (integration)', () => {
     });
   });
 
-  it('renders the switcher text primitive as a direct child of the section', () => {
+  it('renders the switcher text primitive inside the aria-hidden shape tree', () => {
     const { container } = render(<AuthSkeleton />);
 
-    const section: HTMLElement = screen.getByLabelText('Loading form');
+    const root: HTMLElement = screen.getByRole('generic', { busy: true });
     const switcher: HTMLElement = getById(container, 'auth-skeleton-switcher');
 
-    expect(switcher).toBeInTheDocument();
-    // Asserts the DOM parent of the switcher is the loading section; structural relationship.
+    // Asserts the switcher sits in the hidden shape wrapper, whose own parent is
+    // the busy root — the canonical composed-skeleton nesting.
     // eslint-disable-next-line testing-library/no-node-access
-    expect(switcher.parentElement).toBe(section);
+    const shapeTree: HTMLElement = switcher.parentElement as HTMLElement;
+    expect(shapeTree).toHaveAttribute('aria-hidden', 'true');
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(shapeTree.parentElement).toBe(root);
   });
 
   it('composes the complete skeleton tree from every real primitive', () => {
     const { container } = render(<AuthSkeleton />);
 
-    const expectedIds: readonly string[] = [
-      'auth-skeleton-title',
-      'auth-skeleton-subtitle',
-      'auth-skeleton-subtitle-line2',
-      'auth-skeleton-field-label-1',
-      'auth-skeleton-field-label-2',
-      'auth-skeleton-field-label-3',
-      'auth-skeleton-input-1',
-      'auth-skeleton-input-2',
-      'auth-skeleton-input-3',
-      'auth-skeleton-submit',
-      'auth-skeleton-divider',
-      'auth-skeleton-divider-text',
-      'auth-skeleton-social-google',
-      'auth-skeleton-social-facebook',
-      'auth-skeleton-social-apple',
-      'auth-skeleton-social-linkedin',
-      'auth-skeleton-switcher',
-    ];
+    const expectedIds: readonly string[] = [...TEXT_IDS, ...INPUT_IDS, ...BUTTON_IDS, ...BLOCK_IDS];
 
     expectedIds.forEach(id => {
       expect(getById(container, id)).toBeInTheDocument();

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiBackToMain } from '../../src/components';
+import UiBackToMain from '../../src/components/ui-back-to-main';
 
 describe('UiBackToMain', () => {
   it('renders a default back-to-main link', () => {

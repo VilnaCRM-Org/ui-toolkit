@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { UiTypography } from '../../src/components';
+import UiTypography from '../../src/components/ui-typography';
 
 import { testText } from './constants';
 

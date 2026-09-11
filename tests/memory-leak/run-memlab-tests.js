@@ -14,7 +14,7 @@ const consoleMode = 'VERBOSE';
 async function runScenario(testFilePath) {
   const scenario = require(testFilePath);
 
-  const { runResult } = await run({
+  const { leaks, runResult } = await run({
     scenario,
     consoleMode,
     workDir,
@@ -24,15 +24,37 @@ async function runScenario(testFilePath) {
   await analyze(runResult, analyzer);
 
   runResult.cleanup();
+
+  return leaks.length;
+}
+
+function collectLeaks(previousRun, testFilePath) {
+  return previousRun.then(async leakingScenarios => {
+    const leakCount = await runScenario(testFilePath);
+    if (leakCount === 0) {
+      return leakingScenarios;
+    }
+    return [...leakingScenarios, `${path.basename(testFilePath)} (${leakCount} leak(s))`];
+  });
 }
 
 async function runMemlabTests() {
-  const testFilePaths = fs.readdirSync(scenariosDir).map(test => path.join(scenariosDir, test));
+  const testFilePaths = fs
+    .readdirSync(scenariosDir)
+    .filter(entry => entry.endsWith('.js'))
+    .map(test => path.join(scenariosDir, test));
 
-  await testFilePaths.reduce(
-    (previousRun, testFilePath) => previousRun.then(() => runScenario(testFilePath)),
-    Promise.resolve()
-  );
+  // Fail closed: an empty scenario directory means the gate measured nothing,
+  // which must never be reported as a pass.
+  if (testFilePaths.length === 0) {
+    throw new Error(`No memlab scenarios found in ${scenariosDir}.`);
+  }
+
+  const leakingScenarios = await testFilePaths.reduce(collectLeaks, Promise.resolve([]));
+
+  if (leakingScenarios.length > 0) {
+    throw new Error(`Memory leaks detected in: ${leakingScenarios.join(', ')}`);
+  }
 }
 
 runMemlabTests().catch(error => {

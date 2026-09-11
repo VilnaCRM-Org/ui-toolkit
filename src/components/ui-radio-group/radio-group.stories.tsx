@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { t } from 'i18next';
 import React from 'react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import {
   booleanControlArgType,
@@ -12,9 +12,9 @@ import type { UiRadioGroupProps, UiRadioOption } from './types';
 import UiRadioGroup from './index';
 
 const options: UiRadioOption[] = [
-  { label: 'Email', value: 'email' },
+  { label: 'Електронна пошта', value: 'email' },
   { label: 'SMS', value: 'sms' },
-  { label: 'Push notification', value: 'push' },
+  { label: 'Сповіщення', value: 'push' },
 ];
 
 // The group is always controlled, so a stateful wrapper seeds the selection from
@@ -43,7 +43,6 @@ const meta: Meta<typeof UiRadioGroup> = {
   argTypes: {
     label: textControlArgType('Visible group label / accessible name for the radio group'),
     disabled: booleanControlArgType('Whether the whole group is disabled'),
-    error: booleanControlArgType('Whether the group is in error state'),
     required: booleanControlArgType('Marks the group required for assistive technology'),
   },
 };
@@ -52,11 +51,37 @@ export default meta;
 
 type Story = StoryObj<typeof UiRadioGroup>;
 
+const groupLabel: string = "Бажаний спосіб зв'язку";
+const secondOptionLabel: string = 'SMS';
+const thirdOptionLabel: string = 'Сповіщення';
+
 export const RadioGroup: Story = {
   args: {
     options,
-    label: t('Preferred contact method'),
-    error: false,
+    label: groupLabel,
   },
   render: (args: UiRadioGroupProps): React.ReactElement => <RadioGroupStory args={args} />,
+};
+
+// Interaction story (`interaction` tag): proves choosing a radio checks it and
+// unchecks the previous choice — the single-choice contract.
+// See tests/storybook/README.md.
+export const ChoosingOptionMovesSelection: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    options,
+    label: groupLabel,
+  },
+  render: (args: UiRadioGroupProps): React.ReactElement => <RadioGroupStory args={args} />,
+  play: async ({ canvasElement }): Promise<void> => {
+    const canvas: ReturnType<typeof within> = within(canvasElement);
+
+    await userEvent.click(canvas.getByRole('radio', { name: secondOptionLabel }));
+    await expect(canvas.getByRole('radio', { name: secondOptionLabel })).toBeChecked();
+
+    await userEvent.click(canvas.getByRole('radio', { name: thirdOptionLabel }));
+
+    await expect(canvas.getByRole('radio', { name: thirdOptionLabel })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: secondOptionLabel })).not.toBeChecked();
+  },
 };

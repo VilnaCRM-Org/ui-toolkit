@@ -132,14 +132,45 @@ own subdirectory:
 - `tests/unit` — Jest unit and component tests (`*.test.ts`, `*.test.tsx`, `*.spec.js`)
 - `tests/integration` — Jest composition tests across components
 - `tests/e2e` — Playwright end-to-end specs run against Storybook
+- `tests/storybook` — the Storybook interaction (play function) registry and its docs
 - `tests/visual` — Playwright visual-regression specs and their snapshots
-- `tests/load` — k6 load tests
+- `tests/load` — rationale for the deliberately omitted load tier (see its `README.md`)
 - `tests/memory-leak` — Memlab leak scenarios
 - `tests/bats` — Bats coverage for Makefile and CI shell flows
 
 `make lint-test-structure` enforces this layout: it fails when any `*.test.*` or `*.spec.*` file
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
+
+### CI gate integrity (fail-closed)
+
+A gate that passes without running is worse than no gate: it manufactures confidence. The
+memory-leak gate proved this — a rename left the Makefile and its workflow pointing at
+`tests/memory-leak/runMemlabTests.js`, so for weeks the job reported success having executed
+nothing.
+
+Three rules follow from that, and all three are enforced:
+
+1. **No input-detection skips in workflows.** A step never asks whether its inputs exist; a missing
+   input must turn a job red, never green, and there is no "bootstrap PR" escape hatch any more.
+   The `if:` conditions that remain are the ones that make failures _more_ visible or are unrelated
+   to gating: `always()` on teardown and artifact upload, `!cancelled()` so the mutation merge gate
+   still runs (and fails) when a shard dies, an explicit shard-result assertion, and fork guards on
+   the two jobs that need a write token.
+2. **No vacuous passes.** Jest runs without `--passWithNoTests`, Playwright without
+   `--pass-with-no-tests`, `make lint-next` fails when it finds nothing to lint, and the memlab
+   runner fails when its scenario directory is empty or when a scenario reports a leak.
+3. **No dead references.** `make lint-ci-paths` extracts every repository-relative path named by
+   the `Makefile` and by `.github/workflows/*.yml` and fails when one of them does not exist:
+
+   ```bash
+   make lint-ci-paths
+   ```
+
+   It ignores interpolations (`$(VAR)`, `${{ ctx }}`), globs, comments and generated output
+   directories, because those cannot be resolved statically or are absent from a fresh checkout.
+   The gate runs inside `make lint` and as its own step in the static testing workflow, and its
+   behaviour is pinned by `tests/bats/ci_referenced_paths.bats`.
 
 ### Complexity metrics gate
 
@@ -293,7 +324,7 @@ IDE/editor integration and visual/graph reporting (`dot`/`archi` output) are out
 ### CI speed and the mutation-testing gate
 
 GitHub runs the pull-request workflows in parallel, so PR feedback is gated by the slowest single
-job. Two things keep that fast without dropping or weakening any check — every gate still runs on
+job. Four things keep that fast without dropping or weakening any check — every gate still runs on
 every PR.
 
 **Cancel superseded runs.** Every workflow declares a `concurrency` group keyed on the workflow and
@@ -303,16 +334,50 @@ that PR instead of letting it finish. The release workflows (`autorelease`, `aut
 the `bun` service with `make start-bun` rather than `make start`, which also builds the Storybook and
 Playwright images they do not need.
 
-**Mutation testing is sharded, not slowed.** Stryker over the whole component surface took close to
-an hour as one job. `mutation-testing.yml` now fans `make test-mutation-shard` across a 4-way matrix;
-each shard mutates a deterministic, disjoint slice of the same file set (`stryker.shard.config.mjs`)
-and uploads a per-shard JSON report. A final `merge and enforce gate` job runs
+**Jest was loading every suite for every mutant.** A round-robin run took ~1h58m wall clock over
+750 mutants (worst shard 72 min, best 23 — a 3.2x spread), because `stryker.config.mjs` had
+`jest.enableFindRelatedTests: false`: Jest resolved and loaded all 63 test suites for each mutant
+and only then filtered by `testNamePattern`, at ~15.8 s/mutant. That flag is now `true`, so each
+mutant's Jest run is restricted to the suites that actually reach the mutated module.
+
+Turning the flag on was not enough by itself: every unit test imported the public barrel
+`'../../src/components'`, and in Jest's reverse dependency graph that import makes a test "related"
+to every component, so it is reloaded for every mutant regardless. New component tests must
+deep-import the component under test (e.g. `'../../src/components/ui-button'`), never the barrel.
+Only the structural guards whose subject IS the public surface may import it;
+`jest.mutation.config.ts` excludes those suites (`components-index`, `ui-core-contract`) from the
+mutation tier via `testPathIgnorePatterns` — safe because they assert on export names and types,
+never on rendered behaviour, so they kill zero mutants, which was checked against the baseline
+report's `killedBy` data rather than assumed. They still run in the unit gate, and dropping a suite
+from the mutation tier can only ever lower a score, never inflate one.
+
+**A type-invalid mutant no longer survives as unkillable.** Stryker's TypeScript checker
+(`checkers: ['typescript']`) now runs ahead of Jest, so a mutant that cannot compile is reported
+`CompileError` and dropped from the score denominator instead of executing — `esbuild-jest` strips
+types, so today such a mutant runs and survives every test. Two settings make it work and must not
+be "cleaned up": `disableTypeChecks: false` (the default `true` writes `// @ts-nocheck` into every
+sandbox file, turning the checker into a silent no-op) and `tsconfigFile: 'tsconfig.stryker.json'`
+(the root `tsconfig` also pulls in tests, scripts and `.storybook`; narrowing to `src/**` is what
+keeps the per-mutant check affordable).
+
+**Sharding is bin-packed by file size, not round-robin.** A sharded run costs whatever its slowest
+shard costs, and round-robin left the worst shard carrying 3.2x the best (72 min against 23).
+`mutation-testing.yml` fans `make test-mutation-shard` across a 6-way matrix whose slices are
+balanced by file weight rather than file count. `scripts/ci/mutation-scope.mjs` is now the single
+source of truth for the mutated file set: `stryker.config.mjs` and `stryker.shard.config.mjs` both
+derive from it, so the two can no longer drift apart and silently drop mutants from the merged
+score. Each shard uploads a per-shard JSON report. A final `merge and enforce gate` job runs
 `make merge-mutation-reports`, which unions the shard reports and re-enforces the **unchanged**
 Stryker `break` threshold (`stryker.config.mjs` — `break: 80`) over the whole set, computing the
-mutation score exactly as an unsharded run would. Sharding by file is score-preserving: each mutant
-runs against the full suite regardless of which shard owns it. A missing shard report makes the merge
-fail (it never passes the gate vacuously). The merge math is unit-tested in
-`tests/unit/mutation-report.test.ts`.
+mutation score exactly as an unsharded run would. Sharding by file is score-preserving: a
+mutant's related-test set is derived from the mutated file, so it is identical no matter which
+shard owns that file — sharding partitions the work without changing any mutant's verdict. A
+missing shard report makes the
+merge fail (it never passes the gate vacuously). The merge math is unit-tested in
+`tests/unit/mutation-report.test.ts`, and the runner settings above are pinned by
+`tests/unit/mutation-runner-scope.test.ts`. Both jobs carry `timeout-minutes` as a regression
+tripwire, so a silent return to full-suite reloading fails the job instead of quietly burning
+runner time.
 
 Run it locally either way:
 
@@ -320,8 +385,8 @@ Run it locally either way:
 make test-mutation                                   # full, gated, single-process run
 # or reproduce the sharded CI flow against a running bun service:
 make start-bun
-make test-mutation-shard MUTATION_SHARD_TOTAL=4 MUTATION_SHARD_INDEX=0   # repeat for 1..3
-make merge-mutation-reports MUTATION_SHARD_TOTAL=4
+make test-mutation-shard MUTATION_SHARD_TOTAL=6 MUTATION_SHARD_INDEX=0   # repeat for 1..5
+make merge-mutation-reports MUTATION_SHARD_TOTAL=6
 ```
 
 **Required status checks.** When mutation testing is a required check, the gate is now the
@@ -433,6 +498,47 @@ waives every non-Alpine base in that file — so scrutinise multi-stage Dockerfi
 
 Current documented exception: `Dockerfile.playwright` — the official Playwright browser base
 is glibc-only, with no Alpine/musl variant published.
+
+### Supply-chain pinning and inventory
+
+Everything the CI executes is pinned to an immutable reference, and everything shipped is
+inventoried.
+
+- **Actions.** Every `uses:` in `.github/workflows/` is pinned to a full commit SHA with a
+  trailing `# v<semver>` comment. A mutable tag can be retargeted at attacker-controlled code
+  that then runs with the job's token. `zizmor` (a qlty plugin) reports `unpinned-uses`.
+- **Base images.** Every `FROM` carries an `@sha256:` digest alongside its human-readable tag.
+- **Token posture.** Every workflow declares a top-level `permissions:` block — `{}` unless the
+  workflow genuinely needs more — so a job added later cannot silently inherit a broad token.
+  Every job declares `timeout-minutes`, so a hung browser cannot burn the 6-hour default.
+- **Freshness.** Dependabot watches three ecosystems (`npm`, `github-actions`, `docker`) weekly.
+  npm version updates are grouped by dependency type; security updates stay ungrouped so each
+  arrives as its own immediately reviewable pull request.
+- **Inventory.** The `sbom` workflow publishes CycloneDX SBOMs as build artifacts:
+  one for the repository's declared dependency set (read straight from `bun.lock`, so it covers
+  runtime and development dependencies alike) and one per CI image, each scanned after its
+  install step so it carries the fully resolved tree. Both run on every pull request to `main`
+  and every push to `main`. `assert-sbom.sh` fails the job when a
+  document is empty, malformed, or — for the package SBOM — carries fewer npm components than a
+  fixed floor set well below the declared count, which is what a syft build that cannot read
+  `bun.lock` produces.
+  The `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
+  findings to code scanning.
+
+When you add a step that uses an action, resolve its SHA before committing. An
+annotated tag points at a tag object rather than at the commit, so the reference has to be
+dereferenced or the pin is invalid:
+
+```bash
+read -r object_type object_sha < <(
+  gh api "repos/<owner>/<repo>/git/ref/tags/<tag>" --jq '.object.type + " " + .object.sha'
+)
+if [ "$object_type" = tag ]; then
+  gh api "repos/<owner>/<repo>/git/tags/$object_sha" --jq '.object.sha'
+else
+  printf '%s\n' "$object_sha"
+fi
+```
 
 ### Pull Request
 

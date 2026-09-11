@@ -5,10 +5,15 @@ ARG INSTALL_CHROMIUM=false
 
 SHELL ["/bin/sh", "-lc"]
 
+# Alpine's nodejs links against the system ICU, whose data ships split: the
+# default icu-data-en carries English only, so every other locale silently
+# resolves back to English and the calendar's `locale` prop looks like a no-op.
+# icu-data-full replaces it and keeps the localisation tests meaningful.
 RUN apk add --no-cache \
       bash=5.2.37-r0 \
       g++=14.2.0-r6 \
-      jq=1.8.1-r0 \
+      icu-data-full=76.1-r1 \
+      jq=1.8.2-r0 \
       make=4.4.1-r3 \
       nodejs=22.23.2-r0 \
       npm=11.6.4-r0 \
@@ -31,12 +36,38 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true \
 
 WORKDIR /app
 
-COPY . .
+# Explicit paths instead of `COPY . .`: a recursive build-context copy is refused
+# by SonarCloud (docker:S6470), and --chown here replaces the `chown -R /app` that
+# rewrote every inode and made overlayfs duplicate the whole tree into the next
+# layer (dive wasted-bytes gate). Every tracked top-level entry is listed; .env and
+# .qlty are the only omissions and .dockerignore already excludes both.
+COPY --chown=appuser:appuser .github ./.github
+COPY --chown=appuser:appuser .husky ./.husky
+COPY --chown=appuser:appuser .storybook ./.storybook
+COPY --chown=appuser:appuser config ./config
+COPY --chown=appuser:appuser i18n ./i18n
+COPY --chown=appuser:appuser scripts ./scripts
+COPY --chown=appuser:appuser specs ./specs
+COPY --chown=appuser:appuser src ./src
+COPY --chown=appuser:appuser tests ./tests
+COPY --chown=appuser:appuser \
+      .dependency-cruiser.js .dive-ci .dockerignore .editorconfig .env.example .gitignore \
+      .hadolint.yaml .markdownlint.yaml .markdownlintignore .prettierignore .prettierrc \
+      CLAUDE.md CONSUMING.md CONTRIBUTING.md Dockerfile Dockerfile.playwright \
+      Dockerfile.rca LICENSE Makefile README.md SECURITY.md agents.md api-extractor.json \
+      babel.config.js build.config.mjs bun.lock checkNodeVersion.js commitlint.config.js \
+      docker-compose.yml eslint.config.mjs i18n.js jest.config.ts \
+      jest.integration.config.ts jest.mutation.config.ts jest.setup.ts lighthouserc.js \
+      package.json playwright.config.ts robots.txt stryker.config.mjs \
+      stryker.shard.config.mjs tsconfig.api-extractor.json tsconfig.dts.json tsconfig.json \
+      tsconfig.paths.json tsconfig.stryker.json \
+      ./
 
 RUN if [ -f package.json ]; then \
       bun install --frozen-lockfile; \
     fi \
-    && chown -R appuser:appuser /app
+    && chown appuser:appuser /app \
+    && if [ -d node_modules ]; then chown -R appuser:appuser node_modules; fi
 
 USER appuser
 

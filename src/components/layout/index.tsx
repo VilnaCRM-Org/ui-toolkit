@@ -1,11 +1,11 @@
 import React from 'react';
 
-type LayoutProps = {
+export type LayoutProps = {
   children?: React.ReactNode;
   header?: React.ReactNode;
   footer?: React.ReactNode;
-  pageTitle?: string;
-  metaDescription?: string;
+  pageTitle?: string | undefined;
+  metaDescription?: string | undefined;
 };
 
 function upsertMetaDescription(content: string): void {

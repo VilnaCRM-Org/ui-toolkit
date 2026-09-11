@@ -24,8 +24,8 @@ export interface UiFormProps<T extends FieldValues> {
   defaultValues: DefaultValues<T>;
   children: ReactNode;
   formOptions?: Omit<UseFormProps<T>, 'defaultValues'>;
-  isSubmitting?: boolean;
-  error?: string | null;
+  isSubmitting?: boolean | undefined;
+  error?: string | null | undefined;
   submitLabel: string;
   /** Announced through the polite status region while the form submits. */
   submittingLabel?: string;
@@ -36,7 +36,7 @@ export interface UiFormProps<T extends FieldValues> {
   showTitle?: boolean;
   showSubtitle?: boolean;
   resetOnSuccess?: boolean;
-  isSubmitDisabled?: boolean;
+  isSubmitDisabled?: boolean | undefined;
   /**
    * Receives whatever value a rejected `onSubmit` carried, so the rejection is contained
    * instead of escaping. With no handler attached the rejection is still contained and a
@@ -47,7 +47,7 @@ export interface UiFormProps<T extends FieldValues> {
    * competing `role="alert"` regions, whose announcements are duplicated, interrupted,
    * or dropped. Pick exactly one path per failure.
    */
-  onSubmitError?: (error: unknown) => void;
+  onSubmitError?: ((error: unknown) => void) | undefined;
 }
 
 type SubmitControlsProps = {

@@ -5,6 +5,8 @@ on:
     branches:
       - main
 
+permissions: {}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -12,37 +14,25 @@ concurrency:
 jobs:
   visual-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     env:
       CI: true
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Detect visual test inputs
-        id: visual
-        run: |
-          present=false
-          if [[ -f package.json && -f bun.lock && -f playwright.config.ts && -d tests/visual ]] && find tests/visual -type f -name '*.spec.ts' -print -quit | grep -q .; then
-            present=true
-          fi
-          echo "present=$present" >> "$GITHUB_OUTPUT"
-
-      - name: Skip visual tests
-        if: steps.visual.outputs.present != 'true'
-        run: echo "Skipping visual tests because this bootstrap PR does not include visual test files yet."
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Install dependencies
-        if: steps.visual.outputs.present == 'true'
         run: make install
 
       - name: Run visual tests
-        if: steps.visual.outputs.present == 'true'
         run: make test-visual
 
-      - uses: actions/upload-artifact@v4
-        if: always() && steps.visual.outputs.present == 'true'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
         with:
           name: visual-test-report
           path: playwright-report/
