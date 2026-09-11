@@ -37,11 +37,15 @@ const FREEZE_CSS = `
 async function openFrozenStory(page: Page, id: string): Promise<void> {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`/iframe.html?id=${id}&viewMode=story`);
-  // Wait for the story to actually MOUNT (a child inside the root), not merely
-  // for the root container: the empty root is already "visible" before React
-  // hydrates, and a screenshot taken in that gap is a blank frame that matches
-  // (and with --update-snapshots, bakes) a blank baseline.
-  await page.locator('#storybook-root > *, #root > *').first().waitFor({ state: 'visible' });
+  // Wait for the story to actually MOUNT (a VISIBLE child inside the root), not
+  // merely for the root container: the empty root is already "visible" before
+  // React hydrates, and a screenshot taken in that gap is a blank frame that
+  // matches (and with --update-snapshots, bakes) a blank baseline. `:visible`
+  // keeps a hidden first child (a `display: none` helper) from pinning `.first()`.
+  await page
+    .locator('#storybook-root > :visible, #root > :visible')
+    .first()
+    .waitFor({ state: 'visible' });
   await page.addStyleTag({ content: FREEZE_CSS });
   await page.evaluate(() => document.fonts.ready);
 }
