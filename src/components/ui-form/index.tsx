@@ -23,6 +23,12 @@ export interface UiFormProps<T extends FieldValues> {
   children: ReactNode;
   formOptions?: Omit<UseFormProps<T>, 'defaultValues'>;
   isSubmitting?: boolean | undefined;
+  /**
+   * Form-level failure copy, rendered in a `role="alert"` banner that takes
+   * focus when it appears or its message changes. Clear it when a new submit
+   * starts: React re-renders only on a changed value, so a repeated identical
+   * failure that is never cleared can be neither re-announced nor refocused.
+   */
   error?: string | null | undefined;
   submitLabel: string;
   /**
