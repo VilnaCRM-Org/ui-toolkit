@@ -8,13 +8,15 @@
 # landed anyway, stranding v0.2.0 and v0.4.0 and wedging every later release
 # behind the version preflight. These tests pin the shape that cannot strand a
 # tag: the action does not push at all, and the workflow sends the branch ref
-# before the tag ref.
+# before the tag ref. A second contract (issue #162) pins what happens when main
+# declines the branch ref: the step names the App and the issue that carries the
+# admin steps, and it still fails before the tag ref is ever sent.
 #
-# Every assertion below reads EXECUTABLE lines only. The workflow documents the
-# banned command in a comment -- quoting the failure it exists to prevent -- so a
-# check run over the raw file would match that prose and fail the very shape it
-# is asking for. `workflow_code` strips comment lines while keeping the original
-# line numbers, so the ordering assertions still compare real positions.
+# Every assertion below reads EXECUTABLE lines only, so a comment that quotes the
+# banned command -- documenting the failure it exists to prevent -- can never
+# satisfy or fail the shape being asked for. `workflow_code` strips comment lines
+# while keeping the original line numbers, so the ordering assertions still
+# compare real positions.
 
 load './test_helper.bash'
 
@@ -93,6 +95,42 @@ step_code() {
 
   [ -n "$step" ]
   printf '%s\n' "$step" | grep -qE "^[0-9]+: +if: \\\$\{\{ steps\.changelog\.outputs\.skipped == 'false' \}\}$"
+}
+
+@test "a GH006 on the branch push names the release App and the issue with the admin steps" {
+  local step
+  step="$(step_code 'Push the release commit, then its tag')"
+
+  printf '%s\n' "$step" | grep -qE "grep -q 'GH006'"
+  printf '%s\n' "$step" | grep -qF "\${APP_SLUG}"
+  printf '%s\n' "$step" | grep -qF 'issue #162'
+}
+
+@test "the App slug the diagnostic prints comes from the token step" {
+  local step
+  step="$(step_code 'Push the release commit, then its tag')"
+
+  printf '%s\n' "$step" | grep -qF 'APP_SLUG: ${{ steps.generate_token.outputs.app-slug }}'
+}
+
+@test "the GH006 diagnostic does not swallow the failure (fail-open guard)" {
+  # The annotation is a courtesy; the exit is the contract. The step must still
+  # exit non-zero after printing it, and before the tag ref is pushed -- an
+  # annotation followed by a fall-through would land the tag on a rejected commit.
+  local step error_line exit_line tag_line
+  step="$(step_code 'Push the release commit, then its tag')"
+
+  # Read inside the step: the credential check and the release step carry their
+  # own `exit 1`, so a workflow-wide lookup would return the wrong one.
+  error_line="$(printf '%s\n' "$step" | grep -E '::error::.*declined the release commit' | cut -d: -f1)"
+  exit_line="$(printf '%s\n' "$step" | grep -E '^[0-9]+: +exit 1$' | cut -d: -f1)"
+  tag_line="$(printf '%s\n' "$step" | grep -E 'git push .*refs/tags/' | cut -d: -f1)"
+
+  [ -n "$error_line" ]
+  [ -n "$exit_line" ]
+  [ -n "$tag_line" ]
+  [ "$error_line" -lt "$exit_line" ]
+  [ "$exit_line" -lt "$tag_line" ]
 }
 
 @test "step_code stops at the next step, so the scoping above is real (fail-open guard)" {

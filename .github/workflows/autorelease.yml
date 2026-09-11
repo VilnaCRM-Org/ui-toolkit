@@ -23,9 +23,6 @@ jobs:
       contents: write
 
     steps:
-      # Fails with a remedy instead of `create-github-app-token`'s bare "Input
-      # required and not supplied: app-id" when the organisation secrets are not
-      # visible to this repository. Reads only the emptiness of the values.
       - name: Verify the release App credentials are available
         env:
           APP_ID: ${{ secrets.VILNACRM_APP_ID }}
@@ -40,79 +37,24 @@ jobs:
             exit 1
           fi
 
-      # secrets.GITHUB_TOKEN cannot push to main: branch protection answers
-      # `GH006: Protected branch update failed ... protected branch hook declined`.
-      # The App token is what is supposed to get past that, because the App can be
-      # a bypass actor on the protected branch where the default token cannot.
-      #
-      # It is NOT past it here yet. Run 34278680478 minted the token successfully
-      # and still took `GH006 ... Changes must be made through a pull request`, so
-      # this repository's main ruleset does not list the App as a bypass actor.
-      # Measured, not assumed: ui-toolkit has never landed a `chore(release)`
-      # commit on main and has never had a successful autorelease run. The grant
-      # itself does work somewhere -- php-service-template's main is protected and
-      # this same action pushed `chore(release): v1.11.0` to it on 2026-04-12 --
-      # so the fix is an admin comparing the two rulesets. Enumerating bypass
-      # actors needs admin; `repos/.../rulesets` 404s otherwise.
-      #
-      # Do not restate here that any sibling repository "already releases this
-      # way". That claim was carried in this comment and is false: crm has zero
-      # release commits on main and no successful run in its last 79, and
-      # website's last one was 2026-01-20.
       - name: Generate a token for the release App
         id: generate_token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          # `app-id`, not the newer `client-id`: the organisation secret holds the
-          # App ID. Switching inputs would need a new secret.
           app-id: ${{ secrets.VILNACRM_APP_ID }}
           private-key: ${{ secrets.VILNACRM_APP_PRIVATE_KEY }}
-          # Without this the minted token inherits every permission the App
-          # installation holds. The release flow only commits the changelog and
-          # version bump, pushes the tag, and creates the release — all `contents`.
           permission-contents: write
 
       - name: Checkout code
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           token: ${{ steps.generate_token.outputs.token }}
-          # The changelog range and the version preflight below both need the full
-          # history AND every tag. At depth 1 the preflight cannot see the tags it
-          # exists to compare against, so it would pass vacuously.
           fetch-depth: 0
-          # Dropped, like every other workflow in this repo. The changelog action
-          # does NOT use the checkout credential: its `init()` rewrites `origin`
-          # to https://x-access-token:<github-token>@... before it pulls, commits
-          # or pushes, so it authenticates the version bump and the tag with the
-          # token passed to it below. Persisting a contents:write credential here
-          # would leave it in .git/config for the docker build and `make package`
-          # steps that run after this job's release steps.
           persist-credentials: false
 
-      # Deliberately before the changelog action. `git tag` aborts with exit 128
-      # when the computed tag already exists, but only after the changelog has been
-      # committed, so a collision that is not caught here corrupts a release
-      # mid-flight and leaves another orphaned tag behind for the next run.
       - name: Check the release version cannot collide with an existing tag
         run: bash scripts/ci/check-release-version.sh .
 
-      # `git-push: false` is load-bearing, not a preference. The action's own push
-      # is `git push origin <branch> --follow-tags` (src/helpers/git.js), which
-      # sends the tag ref and the branch ref in one command but NOT in one
-      # transaction. When branch protection rejects the branch ref the tag still
-      # lands, and the run ends with a tag on the remote and no commit behind it:
-      #
-      #   [command] git push origin main --follow-tags
-      #   remote: error: GH006: Protected branch update failed for refs/heads/main.
-      #   remote: - Changes must be made through a pull request.
-      #    * [new tag]         v0.4.0 -> v0.4.0
-      #    ! [remote rejected] main -> main (protected branch hook declined)
-      #
-      # That is how v0.2.0 and v0.4.0 were stranded (issues #81, #160). One failed
-      # release then wedges every later one, because the version preflight above
-      # correctly refuses to bump under a tag that already exists. With the push
-      # disabled here the action only commits and tags LOCALLY; the step below
-      # sends the refs in an order where a rejection leaves nothing behind.
       - name: Conventional Changelog Action
         id: changelog
         uses: TriPSs/conventional-changelog-action@8118086024a5380b05b0d54ed2181516082e090f # v4.1.0
@@ -122,33 +64,32 @@ jobs:
           version-file: 'package.json'
           git-push: false
 
-      # Branch ref first, on its own, and the tag only once it has landed. The two
-      # failure modes are not symmetric: a stranded tag blocks every future release
-      # until someone deletes it by hand, while a landed commit whose tag failed to
-      # push costs one skipped version number and self-heals on the next run. So the
-      # irreversible ref goes last.
-      #
-      # The remote URL is rebuilt from the App token rather than reusing `origin`.
-      # Checkout ran with persist-credentials: false, and while the changelog action
-      # does rewrite `origin` to an authenticated URL inside its own init(), relying
-      # on that side effect would leave this step silently dependent on the action's
-      # internals. The token reaches git through env, and Actions masks it in logs.
       - name: Push the release commit, then its tag
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
           RELEASE_TOKEN: ${{ steps.generate_token.outputs.token }}
           RELEASE_TAG: ${{ steps.changelog.outputs.tag }}
           REPOSITORY: ${{ github.repository }}
+          APP_SLUG: ${{ steps.generate_token.outputs.app-slug }}
         run: |
           set -euo pipefail
 
           remote="https://x-access-token:${RELEASE_TOKEN}@github.com/${REPOSITORY}.git"
+          push_log="$RUNNER_TEMP/release-push.log"
 
-          git push "$remote" "HEAD:${GITHUB_REF}"
+          if ! git push "$remote" "HEAD:${GITHUB_REF}" 2> "$push_log"; then
+            cat "$push_log" >&2
+            if grep -q 'GH006' "$push_log"; then
+              echo "::error::main's branch protection rule declined the release commit" \
+                "(GH006). The release App '${APP_SLUG}' is not on that rule's bypass list," \
+                "so no release can land until an admin adds it. Nothing was pushed and no" \
+                "tag exists on the remote. Steps: issue #162"
+            fi
+            exit 1
+          fi
+
           git push "$remote" "refs/tags/${RELEASE_TAG}"
 
-      # The changelog step bumps package.json in the working tree before the image
-      # is built, so the packed tarball carries the version that is being released.
       - name: Start docker build environment
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: make start-bun
@@ -157,16 +98,6 @@ jobs:
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: make package
 
-      # softprops/action-gh-release is archived. `gh` is the runner's own CLI, which
-      # keeps the most privileged step in the repository free of third-party code
-      # instead of swapping one archived action for another.
-      #
-      # The tag, the notes and the repository reach the script through `env:`, never
-      # through `${{ }}` interpolation inside `run:`, so a crafted commit message
-      # cannot be read as shell or as a gh flag. The tarball is resolved and counted
-      # rather than glob-expanded into the command line: releasing zero assets, or
-      # two, would both silently break `release-asset-check.yml`, which asserts that
-      # the newest tag ships exactly `vilnacrm-ui-toolkit-<version>.tgz`.
       - name: Create Release
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
@@ -185,9 +116,6 @@ jobs:
             exit 1
           fi
 
-          # Scratch goes to the runner temp dir, not the workspace: a repo-root
-          # release-notes.md would read to the referenced-path guard
-          # (scripts/ci/check-referenced-paths.ts) as a committed file that is missing.
           notes="$RUNNER_TEMP/release-notes.md"
           printf '%s\n' "$RELEASE_NOTES" > "$notes"
 
