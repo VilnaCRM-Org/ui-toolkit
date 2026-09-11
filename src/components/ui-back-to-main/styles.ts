@@ -24,8 +24,8 @@ const section: SxProps<Theme> = {
 };
 
 // The focus ring is `darkPrimary`, not the CRM brand-blue: #1EAEFF on the white
-// band measures 2.46:1 (< the 3:1 SC 1.4.11 floor) and the ring is the sole
-// focus cue on a transparent button (accessibility review amendment, 2026-08-26).
+// band measures 2.46:1 (< the 3:1 SC 1.4.11 floor, DEV-65) and the ring is the
+// sole focus cue on a transparent button (accessibility review, 2026-08-26).
 const backButton: SxProps<Theme> = {
   padding: 0,
   color: palette.grey300.main,
@@ -48,9 +48,9 @@ const icon: SxProps<Theme> = {
   height: '24px',
 };
 
-// Label ink is the design-source #969B9D (2.81:1 on white) — covered by the same
-// Story 1.3 accessibility-visuals deferral as the item-row muted state and the
-// action-icon-bar glyphs; remediate together in that sweep.
+// Label ink is the design-source #969B9D (2.81:1 on white, DEV-66) — deferred to
+// the same accessibility-visuals sweep as the item-row muted state and the
+// action-icon-bar glyphs (D-03); remediate together there.
 const backText: SxProps<Theme> = {
   marginLeft: '0.5rem',
   // A literal family, never `theme.typography.fontFamily`: the ambient theme
