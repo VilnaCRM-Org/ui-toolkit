@@ -15,8 +15,11 @@ export default function useFocusOnError<T extends HTMLElement>(
   useEffect((): void => {
     const changed: boolean = error !== previous.current;
     previous.current = error;
-    if (changed && error) {
-      ref.current?.focus();
+    // The banner box exists only while `error` is set, so a null node here is
+    // the banner LEAVING (error cleared) — never a missing element.
+    const node: T | null = ref.current;
+    if (changed && node !== null) {
+      node.focus();
     }
   }, [error]);
 

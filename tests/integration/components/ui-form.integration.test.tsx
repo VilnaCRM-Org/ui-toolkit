@@ -247,20 +247,26 @@ describe('UiForm integration (real composed inputs)', () => {
 
 const SERVER_FAILURE_MESSAGE: string = 'backend rejected the login';
 
-const rejectLogin: SubmitHandler<LoginForm> = (): Promise<void> =>
-  Promise.reject(new Error(SERVER_FAILURE_MESSAGE));
-
 // A consumer wired the documented way: the rejection lands in onSubmitError,
-// and the consumer's own state feeds it back through the `error` display prop.
+// the consumer's own state feeds it back through the `error` display prop, and
+// a retry that succeeds clears it again. The backend fails the first attempt.
 function LoginSurfacingServerError(): React.ReactElement {
   const [error, setError] = React.useState<string | null>(null);
+  const attempts: React.RefObject<number> = React.useRef(0);
+  const submit: SubmitHandler<LoginForm> = React.useCallback(async (): Promise<void> => {
+    attempts.current += 1;
+    if (attempts.current === 1) {
+      throw new Error(SERVER_FAILURE_MESSAGE);
+    }
+    setError(null);
+  }, []);
   const surfaceFailure: (failure: unknown) => void = React.useCallback((failure: unknown): void => {
     setError(failure instanceof Error ? failure.message : String(failure));
   }, []);
 
   return (
     <UiForm<LoginForm>
-      onSubmit={rejectLogin}
+      onSubmit={submit}
       onSubmitError={surfaceFailure}
       defaultValues={DEFAULT_VALUES}
       submitLabel={SUBMIT_LABEL}
@@ -299,6 +305,18 @@ describe('UiForm rejection containment (real composed inputs)', () => {
     // The focus target is the banner box wrapping the alert, not the alert.
     // eslint-disable-next-line testing-library/no-node-access
     expect(alert.parentElement).toHaveFocus();
+  });
+
+  it('takes the banner down again once a retry succeeds', async () => {
+    const user = userEvent.setup();
+    render(<LoginSurfacingServerError />);
+    await fillValidLoginAndSubmit();
+    await screen.findByRole('alert');
+
+    // The typed values survived the failure, so the retry is one click.
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    await waitFor((): void => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 
   it('warns through the dev channel when a rejection arrives with no handler', async () => {
