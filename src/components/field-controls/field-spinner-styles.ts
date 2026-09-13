@@ -6,8 +6,8 @@ import colorTheme from '../ui-color-theme';
 export const FIELD_SPINNER_MD: string = '1.25rem';
 
 /**
- * The submit spinner's thickness (`ui-form/submit-spinner.tsx`), reused so every
- * loading arc in the kit is drawn at one weight. MUI measures `thickness` in the
+ * The thickness of CRM's submit spinner (`ui-form/submit-spinner.tsx` there),
+ * reused so every loading arc in the kit is drawn at one weight. MUI measures `thickness` in the
  * 44-unit viewBox, so the painted stroke scales with the box: 4.5 over a 20px
  * spinner is ~2.05px — the ring weight `ui-status-badge` already uses.
  */

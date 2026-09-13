@@ -9,8 +9,8 @@ export interface FieldSpinnerProps {
 }
 
 // The kit's one loading indicator, reused rather than reinvented: the same MUI
-// `CircularProgress` at the same thickness the submit spinner already draws
-// (`ui-form/submit-spinner.tsx`), so every busy surface paints the same arc.
+// `CircularProgress` at the thickness CRM's submit spinner already draws
+// (`ui-form/submit-spinner.tsx` there), so every busy surface paints the same arc.
 //
 // Decorative on purpose. `CircularProgress` emits `role="progressbar"`
 // unconditionally but only carries `aria-valuenow` in its determinate branch, so

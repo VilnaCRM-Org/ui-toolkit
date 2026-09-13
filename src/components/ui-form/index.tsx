@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
 import React, { ReactNode } from 'react';
 import {
   DefaultValues,
@@ -15,6 +15,7 @@ import UiTypography from '../ui-typography';
 import FormProviderBridge from './form-provider-bridge';
 import styles from './styles';
 import buildSubmitHandler from './submit-handler';
+import useFocusOnError from './use-focus-on-error';
 
 export interface UiFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
@@ -22,8 +23,20 @@ export interface UiFormProps<T extends FieldValues> {
   children: ReactNode;
   formOptions?: Omit<UseFormProps<T>, 'defaultValues'>;
   isSubmitting?: boolean | undefined;
+  /**
+   * Form-level failure copy, rendered in a `role="alert"` banner that takes
+   * focus when it appears or its message changes. Clear it when a new submit
+   * starts: React re-renders only on a changed value, so a repeated identical
+   * failure that is never cleared can be neither re-announced nor refocused.
+   */
   error?: string | null | undefined;
   submitLabel: string;
+  /**
+   * Spoken by the submit button's polite `role="status"` region once a submit
+   * has been in flight long enough to be worth announcing — forwarded as the
+   * button's `loadingText`, so it falls back to the kit's shared loading copy.
+   */
+  submittingLabel?: string | undefined;
   title: ReactNode;
   subtitle?: ReactNode;
   showTitle?: boolean;
@@ -47,6 +60,7 @@ type SubmitControlsProps = {
   submitting: boolean;
   isSubmitDisabled: boolean;
   submitLabel: string;
+  submittingLabel: string | undefined;
 };
 
 // Display props collected from UiForm via `...view` rest and passed as a single
@@ -71,15 +85,22 @@ type FormBodyProps<T extends FieldValues> = {
   view: FormViewProps<T>;
 };
 
+// CRM parity: a submit failure moves focus to the alert banner so the error is
+// both announced and brought into view (the focus ring is the error-token
+// outline from `styles.errorBannerFocus`). See `useFocusOnError` for when.
 function ErrorBanner({ error }: { error?: string | null }): React.ReactElement | null {
+  const bannerRef: React.RefObject<HTMLDivElement | null> = useFocusOnError<HTMLDivElement>(error);
+
   if (!error) {
     return null;
   }
 
   return (
-    <UiTypography role="alert" aria-live="polite" sx={{ color: 'red', marginBottom: '1rem' }}>
-      {error}
-    </UiTypography>
+    <Box ref={bannerRef} tabIndex={-1} sx={styles.errorBannerFocus}>
+      <UiTypography role="alert" sx={{ color: 'red', marginBottom: '1rem' }}>
+        {error}
+      </UiTypography>
+    </Box>
   );
 }
 
@@ -108,23 +129,28 @@ function FormHeader({
   );
 }
 
+// CRM parity: the spinner renders INSIDE the submit button, replacing the old
+// external size-70 loader below the form. The busy state is UiButton's own
+// contract — the kit's shared arc, `aria-disabled` rather than a native
+// `disabled` (which would drop a keyboard user's focus the moment their own
+// activation starts the fetch), and the one polite status announcement.
 function SubmitControls({
   submitting,
   isSubmitDisabled,
   submitLabel,
+  submittingLabel,
 }: SubmitControlsProps): React.ReactElement {
   return (
-    <>
-      <UiButton
-        type="submit"
-        disabled={submitting || isSubmitDisabled}
-        variant="contained"
-        sx={styles.submitButton}
-      >
-        {submitLabel}
-      </UiButton>
-      {submitting ? <CircularProgress color="primary" size={70} sx={styles.loader} /> : null}
-    </>
+    <UiButton
+      type="submit"
+      loading={submitting}
+      loadingText={submittingLabel}
+      disabled={isSubmitDisabled}
+      variant="contained"
+      sx={styles.submitButton}
+    >
+      {submitLabel}
+    </UiButton>
   );
 }
 
@@ -143,10 +169,11 @@ function FormBody<T extends FieldValues>({
     showSubtitle = true,
     isSubmitDisabled = false,
     submitLabel,
+    submittingLabel,
   } = view;
 
   return (
-    <form noValidate onSubmit={methods.handleSubmit(handleSubmit)}>
+    <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
       <ErrorBanner error={error} />
       <FormHeader
         title={title}
@@ -159,6 +186,7 @@ function FormBody<T extends FieldValues>({
         submitting={submitting}
         isSubmitDisabled={isSubmitDisabled}
         submitLabel={submitLabel}
+        submittingLabel={submittingLabel}
       />
     </form>
   );

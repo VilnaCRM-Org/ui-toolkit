@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { FieldValues, SubmitHandler, useFormContext } from 'react-hook-form';
@@ -245,6 +245,39 @@ describe('UiForm integration (real composed inputs)', () => {
   });
 });
 
+const SERVER_FAILURE_MESSAGE: string = 'backend rejected the login';
+
+// A consumer wired the documented way: the rejection lands in onSubmitError,
+// the consumer's own state feeds it back through the `error` display prop, and
+// a retry that succeeds clears it again. The backend fails the first attempt.
+function LoginSurfacingServerError(): React.ReactElement {
+  const [error, setError] = React.useState<string | null>(null);
+  const attempts: React.RefObject<number> = React.useRef(0);
+  const submit: SubmitHandler<LoginForm> = React.useCallback(async (): Promise<void> => {
+    attempts.current += 1;
+    if (attempts.current === 1) {
+      throw new Error(SERVER_FAILURE_MESSAGE);
+    }
+    setError(null);
+  }, []);
+  const surfaceFailure: (failure: unknown) => void = React.useCallback((failure: unknown): void => {
+    setError(failure instanceof Error ? failure.message : String(failure));
+  }, []);
+
+  return (
+    <UiForm<LoginForm>
+      onSubmit={submit}
+      onSubmitError={surfaceFailure}
+      defaultValues={DEFAULT_VALUES}
+      submitLabel={SUBMIT_LABEL}
+      title={FORM_TITLE}
+      error={error}
+    >
+      <LoginFields />
+    </UiForm>
+  );
+}
+
 describe('UiForm rejection containment (real composed inputs)', () => {
   it('routes a rejected onSubmit to onSubmitError and keeps the typed values', async () => {
     const failure: Error = new Error('backend rejected the login');
@@ -257,6 +290,33 @@ describe('UiForm rejection containment (real composed inputs)', () => {
     await waitFor((): void => expect(onSubmitError).toHaveBeenCalledTimes(1));
     expect(onSubmitError).toHaveBeenCalledWith(failure);
     expect(screen.getByLabelText(EMAIL_LABEL)).toHaveValue('ada@example.com');
+  });
+
+  it('moves focus to the error banner once the consumer surfaces the rejection', async () => {
+    render(<LoginSurfacingServerError />);
+    await fillValidLoginAndSubmit();
+
+    // The real path end to end: the click runs react-hook-form's submit, the
+    // rejection reaches onSubmitError, the consumer's state renders the banner,
+    // and the banner takes focus — so the failure is announced AND brought into
+    // view without the user hunting for it.
+    const alert: HTMLElement = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(SERVER_FAILURE_MESSAGE);
+    // The focus target is the banner box wrapping the alert, not the alert.
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(alert.parentElement).toHaveFocus();
+  });
+
+  it('takes the banner down again once a retry succeeds', async () => {
+    const user = userEvent.setup();
+    render(<LoginSurfacingServerError />);
+    await fillValidLoginAndSubmit();
+    await screen.findByRole('alert');
+
+    // The typed values survived the failure, so the retry is one click.
+    await user.click(screen.getByRole('button', { name: SUBMIT_LABEL }));
+
+    await waitFor((): void => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 
   it('warns through the dev channel when a rejection arrives with no handler', async () => {
@@ -342,8 +402,16 @@ describe('UiForm submitting state', () => {
       </UiForm>
     );
 
-    expect(screen.getByRole('button')).toBeDisabled();
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    // UiButton's busy contract: the control stays focusable behind
+    // `aria-disabled`, paints the kit's decorative arc (no accessible
+    // progressbar) and the form itself is marked busy.
+    const button: HTMLElement = screen.getByRole('button');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toBeEnabled();
+    expect(within(button).getByRole('progressbar', { hidden: true })).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(button.closest('form')).toHaveAttribute('aria-busy', 'true');
   });
 });
 

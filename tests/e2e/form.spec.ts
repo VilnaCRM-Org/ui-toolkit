@@ -18,11 +18,21 @@ test.describe('UiForm accessibility states', () => {
     await expect(page.getByRole('button', { name: 'Sign in' })).toBeEnabled();
   });
 
-  test('disables submit and shows a progressbar while submitting', async ({ page }) => {
+  test('keeps submit aria-disabled with an in-button spinner while submitting', async ({
+    page,
+  }) => {
     await gotoStory(page, 'uicomponents-uiform--submitting');
 
-    await expect(page.getByRole('button')).toBeDisabled();
-    await expect(page.getByRole('progressbar')).toBeVisible();
+    // UiButton's busy contract: `aria-disabled` rather than native `disabled`
+    // (so focus is not dropped mid-fetch), a decorative arc inside the button,
+    // and the busy state spoken from the polite status region once it has
+    // lasted long enough to be worth announcing.
+    const button = page.getByRole('button');
+    await expect(button).toHaveAttribute('aria-disabled', 'true');
+    await expect(button).toHaveJSProperty('disabled', false);
+    await expect(button.getByRole('progressbar', { includeHidden: true })).toBeVisible();
+    await expect(page.getByRole('progressbar')).toHaveCount(0);
+    await expect(page.getByRole('status')).toHaveText('Завантаження');
   });
 
   test('disables submit when submission is explicitly disabled', async ({ page }) => {
