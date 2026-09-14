@@ -22,8 +22,8 @@ teardown() {
 }
 
 # An 80-statement function, a 4-parameter function, a 5-deep nest and a
-# 13-branch function: one fixture per backstop threshold, in one file so ESLint
-# builds the type-aware program once.
+# 13-branch function: one fixture per function-scoped backstop threshold, in one
+# file so ESLint builds the type-aware program once.
 write_oversized_fixture() {
   local file="$1"
   {
@@ -42,6 +42,15 @@ write_oversized_fixture() {
   } > "$file"
 }
 
+# The file-scoped threshold needs its own fixture: 401 one-line top-level
+# statements, none of which trips a function-scoped rule.
+write_oversized_file_fixture() {
+  local file="$1"
+  {
+    for i in $(seq 1 401); do printf 'export const value%s = %s;\n' "$i" "$i"; done
+  } > "$file"
+}
+
 run_eslint_json() {
   run bun x eslint --format json --no-warn-ignored "$@"
 }
@@ -52,6 +61,16 @@ rule_ids() {
     const ids = new Set(reports.flatMap(r => r.messages.map(m => m.ruleId)));
     console.log([...ids].sort().join("\n"));
   '
+}
+
+rule_ids_for() {
+  local file="$1"
+  printf '%s' "$output" | bun -e '
+    const reports = JSON.parse(await Bun.stdin.text());
+    const report = reports.find(r => r.filePath === process.argv[1]);
+    const ids = new Set((report?.messages ?? []).map(m => m.ruleId));
+    console.log([...ids].sort().join("\n"));
+  ' "$file"
 }
 
 # Reads a threshold from the real flat config (the block whose rules carry the
@@ -66,12 +85,14 @@ backstop_threshold() {
   "
 }
 
-@test "an oversized function under src/ fails ESLint on every backstop rule" {
+@test "oversized fixtures under src/ fail ESLint on every backstop rule" {
   local fixture="$FIXTURE_DIR/oversized.ts"
+  local file_fixture="$FIXTURE_DIR/oversized-file.ts"
   write_oversized_fixture "$fixture"
+  write_oversized_file_fixture "$file_fixture"
 
   cd "$PROJECT_ROOT"
-  run_eslint_json "$fixture"
+  run_eslint_json "$fixture" "$file_fixture"
   [ "$status" -eq 1 ]
 
   local ids
@@ -80,6 +101,9 @@ backstop_threshold() {
   [[ "$ids" == *"max-params"* ]]
   [[ "$ids" == *"max-depth"* ]]
   [[ "$ids" == *"complexity"* ]]
+  # `max-lines` is reported by file, so it must be asserted against its own
+  # fixture rather than inferred from the function-scoped rules above.
+  [[ "$(rule_ids_for "$file_fixture")" == "max-lines" ]]
 }
 
 @test "a function inside the RCA hard policy passes the backstop" {
