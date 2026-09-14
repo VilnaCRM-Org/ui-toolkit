@@ -1,9 +1,12 @@
 import type { SxProps, Theme } from '@mui/material';
 
+/** A CSS length for the block's box: a unit string, or a pixel number. */
+export type SkeletonBlockLength = string | number;
+
 export interface UiSkeletonBlockProps {
   id?: string | undefined;
-  width?: string | number | undefined;
-  height?: string | number | undefined;
-  borderRadius?: string | number | undefined;
+  width?: SkeletonBlockLength | undefined;
+  height?: SkeletonBlockLength | undefined;
+  borderRadius?: SkeletonBlockLength | undefined;
   sx?: SxProps<Theme> | undefined;
 }

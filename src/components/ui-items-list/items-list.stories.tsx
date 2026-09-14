@@ -63,13 +63,12 @@ function AccordionRow({
 // explicitly (the repo forbids prop-spreading).
 function ItemsListStory({ args }: Readonly<{ args: UiItemsListProps }>): React.ReactElement {
   const [openKey, setOpenKey] = React.useState<string | null>(null);
+  const renderRow = (row: SampleRow): React.ReactElement => (
+    <AccordionRow key={rowKey(row)} row={row} openKey={openKey} setOpenKey={setOpenKey} />
+  );
   return (
     <UiItemsList aria-label={args['aria-label']} sx={args.sx}>
-      {SAMPLE_ROWS.map(
-        (row): React.ReactElement => (
-          <AccordionRow key={rowKey(row)} row={row} openKey={openKey} setOpenKey={setOpenKey} />
-        )
-      )}
+      {SAMPLE_ROWS.map(renderRow)}
     </UiItemsList>
   );
 }
