@@ -10,22 +10,25 @@ import type {
 // Storybook's docgen reads that as a union of `T` and `undefined`, which infers an
 // `object` control and makes the preview reject a URL arg (`?args=checked:!true`)
 // as incompatible with the type. The `undefined` member carries no information
-// on an optional prop, so it is folded away before controls are inferred.
+// on an optional prop, so it is folded away before controls are inferred. A
+// REQUIRED `T | undefined` is left alone: there the `undefined` is a deliberate
+// part of the contract rather than the optional marker.
 
 function isUndefinedMember(type: SBType): boolean {
   return type.name === 'other' && type.value === 'undefined';
 }
 
+function memberText(member: SBType): string {
+  if (member.name === 'literal') return String(member.value);
+  return member.raw ?? member.name;
+}
+
 function withoutUndefined(type: SBType): SBType {
-  if (type.name !== 'union') return type;
+  if (type.name !== 'union' || type.required !== false) return type;
   const members: SBType[] = type.value.filter(member => !isUndefinedMember(member));
   if (members.length === type.value.length) return type;
-  if (members.length === 1) return { ...members[0], required: type.required } as SBType;
-  return {
-    ...type,
-    value: members,
-    raw: members.map(member => member.raw ?? member.name).join(' | '),
-  };
+  if (members.length === 1) return { ...members[0], required: false } as SBType;
+  return { ...type, value: members, raw: members.map(memberText).join(' | ') };
 }
 
 function collapseArgType(argType: StrictInputType): StrictInputType {

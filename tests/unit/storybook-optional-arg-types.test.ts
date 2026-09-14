@@ -60,7 +60,7 @@ describe('collapseOptionalUndefined (Storybook argTypes enhancer)', () => {
     expect(enhanced.size?.type).toEqual({
       name: 'union',
       required: false,
-      raw: 'literal | literal',
+      raw: "'small' | 'medium'",
       value: [
         { name: 'literal', value: "'small'" },
         { name: 'literal', value: "'medium'" },
@@ -68,12 +68,28 @@ describe('collapseOptionalUndefined (Storybook argTypes enhancer)', () => {
     });
   });
 
+  it('leaves a required union alone: there `undefined` is part of the contract', () => {
+    const plain: StrictArgTypes = {
+      value: {
+        name: 'value',
+        type: {
+          name: 'union',
+          required: true,
+          raw: 'boolean | undefined',
+          value: [{ name: 'boolean' }, UNDEFINED],
+        },
+      },
+    };
+
+    expect(enhance(plain).value).toBe(plain.value);
+  });
+
   it('leaves types without an undefined member, and typeless argTypes, untouched', () => {
     const plain: StrictArgTypes = {
       label: { name: 'label', type: { name: 'string', required: true } },
       variant: {
         name: 'variant',
-        type: { name: 'union', value: [{ name: 'string' }, { name: 'number' }] },
+        type: { name: 'union', required: false, value: [{ name: 'string' }, { name: 'number' }] },
       },
       onClick: { name: 'onClick', action: 'clicked' },
     };
