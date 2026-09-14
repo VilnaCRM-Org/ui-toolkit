@@ -8,6 +8,7 @@ import i18next from 'i18next';
 import '../src/components/fonts.css';
 import './preview.css';
 import resources from '../i18n/localization.json';
+import { collapseOptionalUndefined } from './optional-arg-types';
 
 i18next.use(initReactI18next).init({
   resources,
@@ -17,6 +18,7 @@ i18next.use(initReactI18next).init({
 });
 const preview: Preview = {
   tags: ['autodocs'],
+  argTypesEnhancers: [collapseOptionalUndefined],
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: {
