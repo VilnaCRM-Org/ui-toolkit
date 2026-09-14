@@ -23,7 +23,7 @@ jest.mock('@mui/material', () => {
       children?: import('react').ReactNode;
     }): import('react').ReactElement => {
       mockGrid(props);
-      return mockReact.createElement('div', { 'data-testid': 'card-grid' }, props.children);
+      return mockReact.createElement('div', null, props.children);
     },
   };
 });
@@ -35,11 +35,7 @@ jest.mock('../../src/components/ui-card-list/ui-card-item', () => {
 
   return {
     __esModule: true,
-    default: jest.fn(() =>
-      mockReact.createElement('div', {
-        'data-testid': 'mock-ui-card-item',
-      })
-    ),
+    default: jest.fn(() => mockReact.createElement('article', { 'aria-label': 'card item' })),
   };
 });
 
@@ -47,7 +43,7 @@ describe('CardGrid component', () => {
   it('renders a card item for every entry in the list', () => {
     render(React.createElement(CardGrid, { cardList }));
 
-    expect(screen.getAllByTestId('mock-ui-card-item')).toHaveLength(cardList.length);
+    expect(screen.getAllByRole('article', { name: 'card item' })).toHaveLength(cardList.length);
   });
 
   it('selects the smallGrid style when the first item is a small card', () => {

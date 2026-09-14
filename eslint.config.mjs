@@ -44,6 +44,7 @@ const devDependencyPatterns = [
   'jest.mutation.config.ts',
   'playwright.config.ts',
   'build.config.mjs',
+  'scripts/**',
   '**/*.stories.ts',
   '**/*.stories.tsx',
   ...testFilePatterns,
@@ -88,7 +89,6 @@ export default [
       '.storybook/**',
       'storybook-static/**',
       'eslint.config.mjs',
-      'scripts/**',
       'playwright-report/**',
       'test-results/**',
       'reports/**',
@@ -184,18 +184,24 @@ export default [
       ...importPlugin.flatConfigs.typescript.rules,
       ...jsxA11y.flatConfigs.recommended.rules,
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'error',
       ...eslintComments.configs.recommended.rules,
       'eslint-comments/no-use': [
         'error',
         { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable'] },
       ],
-      'react/jsx-no-bind': 'warn',
-      'no-await-in-loop': 'warn',
-      'no-restricted-syntax': 'warn',
+      // Defect-class rules are errors, not warnings: `make lint-next` runs with
+      // `--max-warnings 0`, so a warning would fail the gate anyway, and a rule
+      // that can never fail CI only accumulates debt (issue #89).
+      'react/jsx-no-bind': 'error',
+      'no-await-in-loop': 'error',
+      'no-restricted-syntax': 'error',
       'no-alert': 'error',
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      'import/prefer-default-export': 'warn',
+      // Named exports through per-component barrels are this package's export
+      // contract (tests/unit/export-contract-integrity.test.ts), so a default-
+      // export preference is noise here rather than a signal.
+      'import/prefer-default-export': 'off',
       'max-len': ['error', { code: 100 }],
       'eslint-comments/disable-enable-pair': 'off',
       'no-restricted-imports': ['error', { patterns: ['@/features/*/*'] }],
@@ -299,6 +305,10 @@ export default [
       'import/no-dynamic-require': 'off',
       'global-require': 'off',
       'no-await-in-loop': 'off',
+      // jsx-no-bind guards consumers against per-render handler churn inside the
+      // published components; a test's inline handler renders once and has no
+      // consumer, so the rule only adds ceremony there.
+      'react/jsx-no-bind': 'off',
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
@@ -339,7 +349,7 @@ export default [
     files: testFilePatterns,
     rules: {
       'no-restricted-syntax': [
-        'warn',
+        'error',
         {
           selector:
             'CallExpression[callee.property.name=/^(get|query|find)(All)?ByTestId$/], CallExpression[callee.name=/^(get|query|find)(All)?ByTestId$/]',
@@ -350,9 +360,34 @@ export default [
     },
   },
 
-  // K6 load test scripts: console output is the idiomatic logging channel.
+  // Complexity backstop for the rust-code-analysis gate (config/metrics-policy.json,
+  // `make lint-metrics`). That gate is the precise one, but it is Docker-only and
+  // runs on pull requests alone; ESLint runs in editors, `make lint` and every
+  // static-testing job. These thresholds sit just above the RCA hard policy
+  // (cyclomatic 10, lloc 10, nargs 3) so a file the RCA gate accepts never fails
+  // here, while an oversized function is still caught when the RCA container is
+  // unavailable (issue #89).
   {
-    files: ['tests/load/**/*.js'],
+    files: [
+      'src/**/*.ts',
+      'src/**/*.tsx',
+      'scripts/**/*.ts',
+      'scripts/**/*.js',
+      'scripts/**/*.mjs',
+    ],
+    rules: {
+      complexity: ['error', 12],
+      'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['error', 400],
+      'max-depth': ['error', 4],
+      'max-params': ['error', 3],
+    },
+  },
+
+  // CI gate scripts and K6 load test scripts: console output is the idiomatic
+  // logging channel.
+  {
+    files: ['scripts/**/*.ts', 'scripts/**/*.js', 'scripts/**/*.mjs', 'tests/load/**/*.js'],
     rules: {
       'no-console': 'off',
     },

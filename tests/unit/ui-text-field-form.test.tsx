@@ -146,11 +146,7 @@ describe('UiTextFieldForm', () => {
           name="testField"
           placeholder={testPlaceholder}
           InputProps={{
-            endAdornment: (
-              <InputAdornment position="end" data-testid="field-adornment">
-                km
-              </InputAdornment>
-            ),
+            endAdornment: <InputAdornment position="end">km</InputAdornment>,
           }}
         />
       );
@@ -158,7 +154,7 @@ describe('UiTextFieldForm', () => {
 
     render(<InputPropsWrapper />);
 
-    expect(screen.getByTestId('field-adornment')).toBeInTheDocument();
+    expect(screen.getByText('km')).toBeInTheDocument();
   });
 });
 

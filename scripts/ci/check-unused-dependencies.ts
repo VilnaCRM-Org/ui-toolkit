@@ -22,6 +22,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
+
 import { evaluatePackageJson } from './unused-dependency-policy';
 
 const BASE_DIR = process.cwd();

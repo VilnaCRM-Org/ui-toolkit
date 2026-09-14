@@ -17,38 +17,62 @@ type RenderArgs<T extends FieldValues> = {
   fieldState: ControllerFieldState;
 };
 
-function createRenderField<T extends FieldValues>(
-  inputProps: Omit<CustomTextField<T>, 'control' | 'defaultValue' | 'name' | 'rules'>
-): (args: RenderArgs<T>) => React.ReactElement {
-  return function renderField({
-    field: { ref, value, onChange, onBlur, ...field },
-    fieldState: { error },
-  }: RenderArgs<T>): React.ReactElement {
-    // Run RHF's handlers (required to track value/validation) AND any handler the
-    // consumer passed, instead of letting the spread order silently drop theirs.
-    const handleChange: React.ChangeEventHandler<
-      HTMLInputElement | HTMLTextAreaElement
-    > = event => {
-      onChange(event);
-      inputProps.onChange?.(event);
-    };
-    const handleBlur: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> = event => {
-      onBlur();
-      inputProps.onBlur?.(event);
-    };
+type InputProps<T extends FieldValues> = Omit<
+  CustomTextField<T>,
+  'control' | 'defaultValue' | 'name' | 'rules'
+>;
 
-    return (
-      <UiInput
-        {...inputProps}
-        {...field}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        ref={ref}
-        value={value ?? ''}
-        error={!!error}
-        helperText={error?.message ?? inputProps.helperText}
-      />
-    );
+type ControlledInputProps<T extends FieldValues> = RenderArgs<T> & {
+  inputProps: InputProps<T>;
+};
+
+function ControlledInput<T extends FieldValues>({
+  field: { ref, value, onChange, onBlur, ...field },
+  fieldState: { error },
+  inputProps,
+}: ControlledInputProps<T>): React.ReactElement {
+  // Run RHF's handlers (required to track value/validation) AND any handler the
+  // consumer passed, instead of letting the spread order silently drop theirs.
+  // Memoised so the input only sees a new handler when one of the two changes.
+  const { onChange: consumerChange, onBlur: consumerBlur } = inputProps;
+  const handleChange = React.useCallback<
+    React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
+  >(
+    event => {
+      onChange(event);
+      consumerChange?.(event);
+    },
+    [onChange, consumerChange]
+  );
+  const handleBlur = React.useCallback<
+    React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
+  >(
+    event => {
+      onBlur();
+      consumerBlur?.(event);
+    },
+    [onBlur, consumerBlur]
+  );
+
+  return (
+    <UiInput
+      {...inputProps}
+      {...field}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      ref={ref}
+      value={value ?? ''}
+      error={!!error}
+      helperText={error?.message ?? inputProps.helperText}
+    />
+  );
+}
+
+function createRenderField<T extends FieldValues>(
+  inputProps: InputProps<T>
+): (args: RenderArgs<T>) => React.ReactElement {
+  return function renderField({ field, fieldState }: RenderArgs<T>): React.ReactElement {
+    return <ControlledInput field={field} fieldState={fieldState} inputProps={inputProps} />;
   };
 }
 

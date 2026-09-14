@@ -16,12 +16,12 @@ class LocalizationGenerator {
 
   pathToI18nFile;
 
-  constructor(
+  constructor({
     i18nPath = 'i18n',
     featurePath = 'src/features',
     jsonFileType = 'json',
-    localizationFile = 'localization.json'
-  ) {
+    localizationFile = 'localization.json',
+  } = {}) {
     this.i18nPath = i18nPath;
     this.featurePath = featurePath;
     this.jsonFileType = jsonFileType;

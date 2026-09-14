@@ -128,8 +128,7 @@ function isExemptFromNameScan(
 
 /** The entries of one manifest field that are neither exempt nor named by the corpus. */
 function findUnusedInField(
-  field: string,
-  entries: Record<string, unknown>,
+  [field, entries]: readonly [string, Record<string, unknown>],
   corpus: readonly string[],
   peers: ReadonlySet<string> | null
 ): UnusedDependency[] {
@@ -155,7 +154,7 @@ export function findUnusedDependencies(
   return SCANNED_DEPENDENCY_FIELDS.flatMap(field => {
     const entries = pkg[field];
 
-    return isRecord(entries) ? findUnusedInField(field, entries, corpus, peers) : [];
+    return isRecord(entries) ? findUnusedInField([field, entries], corpus, peers) : [];
   });
 }
 

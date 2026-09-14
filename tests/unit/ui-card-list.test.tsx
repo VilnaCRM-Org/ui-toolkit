@@ -18,22 +18,18 @@ jest.mock('@mui/material', () => ({
 jest.mock('../../src/components/ui-card-list/card-swiper', () => {
   const mockReact: typeof import('react') = jest.requireActual('react');
 
-  return jest.fn(() =>
-    mockReact.createElement('div', {
-      'data-testid': 'card-swiper',
-    })
-  );
+  return jest.fn(() => mockReact.createElement('section', { 'aria-label': 'card swiper' }));
 });
 
 jest.mock('../../src/components/ui-card-list/card-grid', () => {
   const mockReact: typeof import('react') = jest.requireActual('react');
 
-  return jest.fn(() =>
-    mockReact.createElement('div', {
-      'data-testid': 'card-grid',
-    })
-  );
+  return jest.fn(() => mockReact.createElement('section', { 'aria-label': 'card grid' }));
 });
+
+// Both variant wrappers are `display: none` outside their media query, which
+// jsdom never evaluates, so role queries pass `hidden: true` to reach them.
+const HIDDEN: { hidden: true } = { hidden: true };
 
 describe('UiCardList component', () => {
   const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
@@ -48,8 +44,10 @@ describe('UiCardList component', () => {
 
     render(React.createElement(UiCardList, { cardList }));
 
-    expect(screen.getByTestId('card-grid')).toBeInTheDocument();
-    expect(screen.queryByTestId('card-swiper')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { ...HIDDEN, name: 'card grid' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('region', { ...HIDDEN, name: 'card swiper' })
+    ).not.toBeInTheDocument();
     expect(mockedCardSwiper).not.toHaveBeenCalled();
   });
 
@@ -58,8 +56,8 @@ describe('UiCardList component', () => {
 
     render(React.createElement(UiCardList, { cardList }));
 
-    expect(screen.getByTestId('card-swiper')).toBeInTheDocument();
-    expect(screen.queryByTestId('card-grid')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { ...HIDDEN, name: 'card swiper' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { ...HIDDEN, name: 'card grid' })).not.toBeInTheDocument();
   });
 });
 

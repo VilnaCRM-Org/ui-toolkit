@@ -28,6 +28,36 @@ function rowKey(row: SampleRow): string {
   return `${row.method} ${row.path}`;
 }
 
+type OpenKeySetter = React.Dispatch<React.SetStateAction<string | null>>;
+
+interface AccordionRowProps {
+  row: SampleRow;
+  openKey: string | null;
+  setOpenKey: OpenKeySetter;
+}
+
+// One row of the accordion: it owns its toggle handler so the row only sees a
+// new callback when its key changes, not on every parent render.
+function AccordionRow({
+  row,
+  openKey,
+  setOpenKey,
+}: Readonly<AccordionRowProps>): React.ReactElement {
+  const key: string = rowKey(row);
+  const onToggle = React.useCallback((): void => {
+    setOpenKey((prev): string | null => (prev === key ? null : key));
+  }, [key, setOpenKey]);
+  return (
+    <UiItemRow
+      method={row.method}
+      path={row.path}
+      description={row.description}
+      expanded={openKey === key}
+      onToggle={onToggle}
+    />
+  );
+}
+
 // A single-open accordion over the sample rows: each row owns its `expanded` via
 // the shared open-key, and toggling one collapses the rest. Props are threaded
 // explicitly (the repo forbids prop-spreading).
@@ -35,19 +65,11 @@ function ItemsListStory({ args }: Readonly<{ args: UiItemsListProps }>): React.R
   const [openKey, setOpenKey] = React.useState<string | null>(null);
   return (
     <UiItemsList aria-label={args['aria-label']} sx={args.sx}>
-      {SAMPLE_ROWS.map((row): React.ReactElement => {
-        const key: string = rowKey(row);
-        return (
-          <UiItemRow
-            key={key}
-            method={row.method}
-            path={row.path}
-            description={row.description}
-            expanded={openKey === key}
-            onToggle={(): void => setOpenKey((prev): string | null => (prev === key ? null : key))}
-          />
-        );
-      })}
+      {SAMPLE_ROWS.map(
+        (row): React.ReactElement => (
+          <AccordionRow key={rowKey(row)} row={row} openKey={openKey} setOpenKey={setOpenKey} />
+        )
+      )}
     </UiItemsList>
   );
 }

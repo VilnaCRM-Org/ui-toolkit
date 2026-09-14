@@ -5,12 +5,23 @@ import React from 'react';
 // real swiper is used by the storybook/webpack build.
 export const Pagination: Record<string, never> = {};
 
+// The stand-ins carry the APG carousel semantics (a named region holding
+// named slide groups) so a test reaches them by role, the way it reaches every
+// other composed child, instead of through a test id.
 export function Swiper({ children }: Readonly<{ children?: React.ReactNode }>): React.ReactElement {
-  return <div data-testid="swiper">{children}</div>;
+  return (
+    <div role="region" aria-roledescription="carousel" aria-label="carousel">
+      {children}
+    </div>
+  );
 }
 
 export function SwiperSlide({
   children,
 }: Readonly<{ children?: React.ReactNode }>): React.ReactElement {
-  return <div data-testid="swiper-slide">{children}</div>;
+  return (
+    <div role="group" aria-roledescription="slide" aria-label="slide">
+      {children}
+    </div>
+  );
 }
