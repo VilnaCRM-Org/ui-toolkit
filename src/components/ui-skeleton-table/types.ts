@@ -21,16 +21,16 @@ export interface SkeletonTableColumnSlot extends SkeletonTableColumn {
 }
 
 export interface UiSkeletonTableProps {
-  id?: string;
+  id?: string | undefined;
   /** Body row count. Defaults to the ten rows measured on Board D. */
-  rows?: number;
+  rows?: number | undefined;
   /**
    * Column count. Defaults to the five measured columns; the measured width
    * pattern cycles and the component's max width grows with the added tracks
    * when a larger count is requested.
    */
-  columns?: number;
+  columns?: number | undefined;
   /** Screen-reader-only status text, forwarded to the shared composed shell. */
-  loadingText?: string;
-  sx?: SxProps<Theme>;
+  loadingText?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

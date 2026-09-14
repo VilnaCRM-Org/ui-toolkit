@@ -12,9 +12,9 @@ export type UiInputProps = Omit<TextFieldProps, 'inputRef' | 'onBlur' | 'onChang
    * Supplying this makes the component emit an `id` on the field when the
    * consumer gave none, because MUI derives the helper text's id from it.
    */
-  describedBy?: string;
-  InputProps?: OutlinedInputProps;
-  onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-  ref?: React.ForwardedRef<HTMLInputElement>;
+  describedBy?: string | undefined;
+  InputProps?: OutlinedInputProps | undefined;
+  onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
+  onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
+  ref?: React.ForwardedRef<HTMLInputElement> | undefined;
 };

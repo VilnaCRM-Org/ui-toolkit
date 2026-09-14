@@ -25,7 +25,7 @@ export interface UiSelectWithSearchProps {
   /** Controlled selected option (`null` when nothing is selected). */
   value?: UiSelectWithSearchOption | null | undefined;
   /** Called with the newly selected option, or `null` when the value is cleared. */
-  onChange?: (value: UiSelectWithSearchOption | null) => void | undefined;
+  onChange?: ((value: UiSelectWithSearchOption | null) => void) | undefined;
   /**
    * Marks the options as being fetched. The toolkit is presentational — it never
    * fetches; the consuming app owns the request and drives this flag.

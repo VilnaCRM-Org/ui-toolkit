@@ -16,13 +16,13 @@ export type UiFooterSocialLink = {
   id: string;
   href: string;
   label: string;
-  icon?: ReactElement | string;
+  icon?: ReactElement | string | undefined;
 };
 
 export type UiFooterProps = {
-  logo?: ReactNode;
-  privacyContent?: ReactNode;
-  emailContent?: ReactNode;
+  logo?: ReactNode | undefined;
+  privacyContent?: ReactNode | undefined;
+  emailContent?: ReactNode | undefined;
   socialLinks: UiFooterSocialLink[];
   copyrightLabel: string;
 };

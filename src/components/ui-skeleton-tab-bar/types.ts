@@ -6,16 +6,16 @@ export interface SkeletonTabsProps {
 }
 
 export interface UiSkeletonTabBarProps {
-  id?: string;
+  id?: string | undefined;
   /**
    * Number of tab placeholders. Board D draws six equal columns across the
    * 1132px bar; the first underline segment is the active one.
    */
-  tabs?: number;
+  tabs?: number | undefined;
   /**
    * Screen-reader-only status text forwarded to the shared skeleton shell;
    * pass a localized string in consuming apps.
    */
-  loadingText?: string;
-  sx?: SxProps<Theme>;
+  loadingText?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

@@ -8,10 +8,10 @@ import UiTypography from '../ui-typography';
 import backToMainStyles from './styles';
 
 export type UiBackToMainProps = {
-  to?: string;
-  label?: React.ReactNode;
+  to?: string | undefined;
+  label?: React.ReactNode | undefined;
   /** Decorative leading glyph; rendered inside an `aria-hidden` box. */
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | undefined;
 };
 
 // The CRM back-arrow export (`assets/icons/arrows/back-arrow.svg`): an 8x14

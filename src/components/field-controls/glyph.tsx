@@ -18,8 +18,8 @@ export interface GlyphProps {
    * the folder) must pass their native dimensions here, otherwise the 20px default
    * scales them up and thickens the stroke past the Figma weight.
    */
-  width?: string;
-  height?: string;
+  width?: string | undefined;
+  height?: string | undefined;
 }
 
 /**

@@ -9,9 +9,9 @@ import type { ReactNode } from 'react';
 export interface UiLinkProps {
   children: ReactNode;
   href: string;
-  target?: string;
-  rel?: string;
-  sx?: SxProps<Theme>;
+  target?: string | undefined;
+  rel?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
   /**
    * Renders the link in Board A's Disabled column state. The anchor keeps its
    * `href` — and therefore its `link` role and accessible name — but is flagged
@@ -19,11 +19,11 @@ export interface UiLinkProps {
    * (`tabIndex={-1}`), and its activation is suppressed, so clicking it does not
    * navigate. The `rel`/new-tab contract is unaffected by `disabled`.
    */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /**
    * Visually-hidden hint appended when the link opens in a new tab
    * (`target="_blank"`). Pass a localized string; set to `''` to suppress
    * (e.g. when the consumer renders its own external-link affordance).
    */
-  newTabLabel?: string;
+  newTabLabel?: string | undefined;
 }

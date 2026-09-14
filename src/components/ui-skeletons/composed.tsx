@@ -15,9 +15,9 @@ export interface ComposedSkeletonProps {
    * region per view — skeletons never own live regions.
    */
   loadingText?: string | undefined;
-  sx?: SxProps<Theme>;
+  sx?: SxProps<Theme> | undefined;
   /** Layout styles for the hidden shape tree (flex/grid of the composition). */
-  contentSx?: SxProps<Theme>;
+  contentSx?: SxProps<Theme> | undefined;
   children: React.ReactNode;
 }
 

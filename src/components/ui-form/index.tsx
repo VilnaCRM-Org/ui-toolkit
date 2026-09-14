@@ -21,7 +21,7 @@ export interface UiFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
   defaultValues: DefaultValues<T>;
   children: ReactNode;
-  formOptions?: Omit<UseFormProps<T>, 'defaultValues'>;
+  formOptions?: Omit<UseFormProps<T>, 'defaultValues'> | undefined;
   isSubmitting?: boolean | undefined;
   /**
    * Form-level failure copy, rendered in a `role="alert"` banner that takes
@@ -38,10 +38,10 @@ export interface UiFormProps<T extends FieldValues> {
    */
   submittingLabel?: string | undefined;
   title: ReactNode;
-  subtitle?: ReactNode;
-  showTitle?: boolean;
-  showSubtitle?: boolean;
-  resetOnSuccess?: boolean;
+  subtitle?: ReactNode | undefined;
+  showTitle?: boolean | undefined;
+  showSubtitle?: boolean | undefined;
+  resetOnSuccess?: boolean | undefined;
   isSubmitDisabled?: boolean | undefined;
   /**
    * Receives whatever value a rejected `onSubmit` carried, so the rejection is contained

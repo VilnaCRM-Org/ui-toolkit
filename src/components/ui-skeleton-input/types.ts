@@ -1,4 +1,4 @@
 export interface UiSkeletonInputProps {
-  disableAnimation?: boolean;
-  id?: string;
+  disableAnimation?: boolean | undefined;
+  id?: string | undefined;
 }

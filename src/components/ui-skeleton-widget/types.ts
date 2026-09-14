@@ -40,19 +40,19 @@ export interface SkeletonChartBar {
 }
 
 export interface UiSkeletonWidgetProps {
-  id?: string;
+  id?: string | undefined;
   /**
    * Card footprint. `small` is the 375x410 board card; `medium` is the 774x410
    * card, widening to 1167x540 once `columns` is 2.
    */
-  size?: SkeletonWidgetSize;
+  size?: SkeletonWidgetSize | undefined;
   /** Content anatomy under the header. Defaults to the task list. */
-  variant?: SkeletonWidgetVariant;
+  variant?: SkeletonWidgetVariant | undefined;
   /**
    * Task rows drawn *per column* (design default 4). Ignored by the `block`
    * and `chart` variants, which have no repeated row.
    */
-  rows?: number;
+  rows?: number | undefined;
   /**
    * Task-list column count. Board D draws the single column on the 774x410
    * card (`632:46444`) and two 561-wide columns on the 1167x540 card
@@ -60,11 +60,11 @@ export interface UiSkeletonWidgetProps {
    * keeps 774x410, `2` selects 1167x540. It applies to `size='medium'` +
    * `variant='task-list'` only — every other combination resolves to 1.
    */
-  columns?: SkeletonWidgetColumns;
+  columns?: SkeletonWidgetColumns | undefined;
   /**
    * Screen-reader-only status text forwarded to the shared skeleton shell;
    * pass a localized string in consuming apps.
    */
-  loadingText?: string;
-  sx?: SxProps<Theme>;
+  loadingText?: string | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

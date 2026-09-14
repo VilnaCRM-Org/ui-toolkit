@@ -1,9 +1,9 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export interface UiSkeletonBlockProps {
-  id?: string;
-  width?: string | number;
-  height?: string | number;
-  borderRadius?: string | number;
-  sx?: SxProps<Theme>;
+  id?: string | undefined;
+  width?: string | number | undefined;
+  height?: string | number | undefined;
+  borderRadius?: string | number | undefined;
+  sx?: SxProps<Theme> | undefined;
 }

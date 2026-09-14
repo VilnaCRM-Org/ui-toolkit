@@ -5,7 +5,7 @@ import { FIELD_SPINNER_MD, FIELD_SPINNER_THICKNESS, fieldSpinnerSx } from './fie
 
 export interface FieldSpinnerProps {
   /** Rendered box, as a CSS length. Defaults to the 20px shared Glyph box. */
-  size?: string;
+  size?: string | undefined;
 }
 
 // The kit's one loading indicator, reused rather than reinvented: the same MUI
