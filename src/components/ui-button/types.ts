@@ -4,9 +4,9 @@ import type React from 'react';
 export type ButtonLinkTarget =
   | string
   | {
-      pathname?: string;
-      search?: string;
-      hash?: string;
+      pathname?: string | undefined;
+      search?: string | undefined;
+      hash?: string | undefined;
     };
 
 export interface UiButtonProps extends ButtonProps {

@@ -26,7 +26,7 @@ export interface UiMultiSelectProps {
   /** Controlled selected options (empty array when nothing is selected). */
   value?: UiMultiSelectOption[] | undefined;
   /** Called with the full next selection whenever an option is added or removed. */
-  onChange?: (value: UiMultiSelectOption[]) => void | undefined;
+  onChange?: ((value: UiMultiSelectOption[]) => void) | undefined;
   /**
    * Marks the options as being fetched. The toolkit is presentational — it never
    * fetches; the consuming app owns the request and drives this flag.

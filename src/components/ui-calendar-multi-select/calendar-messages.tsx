@@ -6,7 +6,7 @@ import type { CalendarField } from './use-calendar-field';
 
 export interface CalendarMessagesProps {
   field: CalendarField;
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
 }
 
 // The visible helper text (a description linked via `aria-describedby`) plus a

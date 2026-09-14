@@ -60,7 +60,7 @@ export const outlinedStyles: Interpolation<{ theme: Theme }> = {
   '&:disabled': {
     backgroundColor: colorTheme.palette.brandGray.main,
     color: colorTheme.palette.white.main,
-    border: 'none',
+    border: '1px solid transparent',
   },
 };
 
@@ -69,7 +69,7 @@ export const outlinedStyles: Interpolation<{ theme: Theme }> = {
 // state (transparent where Figma paints none) so the 98x42 box never shifts.
 export const dangerStyles: Interpolation<{ theme: Theme }> = {
   ...baseButtonStyles,
-  padding: '0.75rem 1.5rem',
+  padding: '0.6875rem 1.4375rem',
   backgroundColor: alpha(colorTheme.palette.error.main, 0.1),
   border: `1px solid ${colorTheme.palette.strokeDanger.main}`,
   color: colorTheme.palette.error.main,
@@ -119,7 +119,7 @@ export const theme: Theme = createTheme({
         },
         {
           props: { variant: 'outlined', size: 'small' },
-          style: { ...outlinedStyles, padding: '1rem 1.5rem' },
+          style: { ...outlinedStyles, padding: '0.9375rem 1.4375rem' },
         },
         {
           props: { variant: 'outlined', size: 'medium' },
@@ -139,14 +139,6 @@ export const theme: Theme = createTheme({
             ...outlinedStyles,
             ...mediumLabelBox,
             padding: '1.1875rem 1.9375rem',
-            // A transparent 1px rather than `outlinedStyles`' `border: none`, so
-            // the compensated padding holds in every state and the box does not
-            // jitter when the button is disabled -- the danger pill's convention.
-            '&:disabled': {
-              backgroundColor: colorTheme.palette.brandGray.main,
-              color: colorTheme.palette.white.main,
-              border: '1px solid transparent',
-            },
           },
         },
         {
@@ -161,14 +153,13 @@ export const theme: Theme = createTheme({
           // declares. That made it inherit the medium CTA's label box too, and
           // this pill is 189x58 around a 22px content row (Figma 439:19329), not
           // a 171x62 CTA. It declares its own line box so the CTA's cannot reach
-          // it; without this line the button grows 4px and its visual baseline
-          // breaks.
+          // it.
           style: {
             fontFamily: 'Golos Text',
             textTransform: 'none',
-            lineHeight: '1.125rem',
+            lineHeight: '1.375rem',
             borderRadius: '0.75rem',
-            padding: '1.125rem',
+            padding: '1.0625rem',
             gap: '0.563rem',
             border: `1px solid ${colorTheme.palette.brandGray.main}`,
             background: colorTheme.palette.white.main,
@@ -186,7 +177,7 @@ export const theme: Theme = createTheme({
             '&:disabled': {
               background: colorTheme.palette.brandGray.main,
               boxShadow: 'none',
-              border: 'none',
+              border: '1px solid transparent',
               img: {
                 opacity: '0.2',
               },

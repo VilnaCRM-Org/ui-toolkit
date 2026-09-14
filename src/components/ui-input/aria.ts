@@ -4,8 +4,8 @@ import type { UiInputProps } from './types';
 
 /** The native-input ARIA this control owns, flattened for a shallow JSX apply. */
 export interface InputAriaAttrs {
-  'aria-describedby'?: string;
-  'aria-required'?: true;
+  'aria-describedby'?: string | undefined;
+  'aria-required'?: true | undefined;
 }
 
 // MUI derives the helper text's id from the field id, and only when a field id

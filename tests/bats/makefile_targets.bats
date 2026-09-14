@@ -161,6 +161,9 @@ EOF
   script="${logged#docker compose run --rm --entrypoint sh bun -lc }"
   [ "$script" != "$logged" ]
 
+  [[ "$script" == *"bun x eslint --max-warnings 0 "* ]]
+  [[ "$script" == *'-name "*.mjs"'* ]]
+
   mkdir -p "$BATS_TEST_TMPDIR/no-src"
   run bash -c 'cd "$1" && shift && sh -c "$1"' _ "$BATS_TEST_TMPDIR/no-src" "$script"
   [ "$status" -eq 1 ]

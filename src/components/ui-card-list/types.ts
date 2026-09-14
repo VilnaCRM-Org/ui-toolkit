@@ -18,8 +18,8 @@ export type UiCardItemData = {
   title: string | ReactNode;
   text: string | ReactNode;
   alt: string;
-  tooltipTitle?: ReactNode;
-  tooltipLabel?: ReactNode;
+  tooltipTitle?: ReactNode | undefined;
+  tooltipLabel?: ReactNode | undefined;
 };
 
 export interface UiCardListProps {

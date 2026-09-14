@@ -62,6 +62,14 @@ function setSmallScreen(): void {
 // composed DOM — so role queries pass `hidden: true` to reach it.
 const HIDDEN: { hidden: true } = { hidden: true };
 
+function querySwiper(): HTMLElement | null {
+  return screen.queryByRole('region', { ...HIDDEN, name: 'carousel' });
+}
+
+function slides(): HTMLElement[] {
+  return screen.queryAllByRole('group', { ...HIDDEN, name: 'slide' });
+}
+
 describe('UiCardList integration (real composed child chain)', () => {
   describe('large-screen grid variant', () => {
     it('renders the real CardGrid -> UiCardItem -> CardContent tree with each heading', () => {
@@ -70,7 +78,7 @@ describe('UiCardList integration (real composed child chain)', () => {
       render(<UiCardList cardList={LARGE_CARDLIST_ARRAY} />);
 
       // No swiper stand-in means CardSwiper did not render: grid variant only.
-      expect(screen.queryByTestId('swiper')).not.toBeInTheDocument();
+      expect(querySwiper()).not.toBeInTheDocument();
 
       const headings: HTMLElement[] = screen.getAllByRole('heading', HIDDEN);
       const headingTexts: string[] = headings.map(heading => heading.textContent ?? '');
@@ -126,8 +134,8 @@ describe('UiCardList integration (real composed child chain)', () => {
       render(<UiCardList cardList={SMALL_CARDLIST_ARRAY} />);
 
       // The swiper stand-in marks that the real CardSwiper variant mounted.
-      expect(screen.getByTestId('swiper')).toBeInTheDocument();
-      expect(screen.getAllByTestId('swiper-slide')).toHaveLength(SMALL_CARDLIST_ARRAY.length);
+      expect(querySwiper()).toBeInTheDocument();
+      expect(slides()).toHaveLength(SMALL_CARDLIST_ARRAY.length);
 
       const headingTexts: string[] = screen
         .getAllByRole('heading', HIDDEN)
@@ -156,7 +164,7 @@ describe('UiCardList integration (real composed child chain)', () => {
 
       render(<UiCardList cardList={LARGE_CARDLIST_ARRAY} />);
 
-      expect(screen.queryByTestId('swiper')).not.toBeInTheDocument();
+      expect(querySwiper()).not.toBeInTheDocument();
       expect(screen.getAllByRole('img', HIDDEN)).toHaveLength(LARGE_CARDLIST_ARRAY.length);
     });
 
@@ -165,7 +173,7 @@ describe('UiCardList integration (real composed child chain)', () => {
 
       render(<UiCardList cardList={LARGE_CARDLIST_ARRAY} />);
 
-      expect(screen.getByTestId('swiper')).toBeInTheDocument();
+      expect(querySwiper()).toBeInTheDocument();
       // The grid variant is gated out, so the card tree is rendered exactly once.
       expect(screen.getAllByRole('img', HIDDEN)).toHaveLength(LARGE_CARDLIST_ARRAY.length);
     });
@@ -223,7 +231,7 @@ describe('UiCardList grid content edge cases', () => {
     render(<UiCardList cardList={[reactNodeCard]} />);
 
     // Ensure this edge-case is validated on the grid path, not swiper.
-    expect(screen.queryByTestId('swiper')).not.toBeInTheDocument();
+    expect(querySwiper()).not.toBeInTheDocument();
     expect(screen.getByText('Custom node body')).toBeInTheDocument();
   });
 });
@@ -247,7 +255,7 @@ describe('UiCardList nullish cardList degradation (real children)', () => {
 
     render(<UiCardList cardList={nullishCardList} />);
 
-    expect(screen.queryByTestId('swiper')).not.toBeInTheDocument();
+    expect(querySwiper()).not.toBeInTheDocument();
     expect(screen.queryAllByRole('img', HIDDEN)).toHaveLength(0);
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nullish'));
   });
@@ -257,7 +265,7 @@ describe('UiCardList nullish cardList degradation (real children)', () => {
 
     render(<UiCardList cardList={nullishCardList} />);
 
-    expect(screen.getByTestId('swiper')).toBeInTheDocument();
-    expect(screen.queryAllByTestId('swiper-slide')).toHaveLength(0);
+    expect(querySwiper()).toBeInTheDocument();
+    expect(slides()).toHaveLength(0);
   });
 });

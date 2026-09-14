@@ -19,9 +19,10 @@ export interface UiTypographyProps extends HTMLAttributes<HTMLElement> {
     | 'bold22'
     | 'demi18'
     | 'button'
-    | 'mobileText';
+    | 'mobileText'
+    | undefined;
   children: ReactNode;
-  component?: ElementType;
-  id?: string;
-  htmlFor?: string;
+  component?: ElementType | undefined;
+  id?: string | undefined;
+  htmlFor?: string | undefined;
 }

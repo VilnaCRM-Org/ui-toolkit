@@ -26,14 +26,13 @@ function emittedCss(element: Element): string {
 // The overlay and its runs are pure paint — aria-hidden, no role, no accessible
 // name — so their class hooks are the only handle a test has on them.
 function overlayIn(container: HTMLElement): Element {
-  // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
+  // eslint-disable-next-line testing-library/no-node-access
   const root: Element | null = container.querySelector('.ui-ghost-overlay');
   if (root === null) throw new Error('GhostOverlay rendered no overlay root');
   return root;
 }
 
 function runsIn(container: HTMLElement): Element[] {
-  // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
   return [...container.querySelectorAll('.ui-ghost-run')];
 }
 

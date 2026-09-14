@@ -13,8 +13,8 @@ export type UiErrorBoundaryErrorHandler = (error: Error, info: ErrorInfo) => voi
 
 export interface UiErrorBoundaryProps {
   children: ReactNode;
-  fallback?: UiErrorBoundaryFallback;
-  onError?: UiErrorBoundaryErrorHandler;
+  fallback?: UiErrorBoundaryFallback | undefined;
+  onError?: UiErrorBoundaryErrorHandler | undefined;
   resetKeys?: unknown[] | undefined;
 }
 

@@ -6,7 +6,7 @@ export interface UiRadioOption {
   label: string;
   value: string;
   /** Disables this option only (the whole group can be disabled via `disabled`). */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 /**
@@ -35,14 +35,14 @@ export interface UiRadioGroupProps {
    * `value` is coerced to `''`, so a group that starts empty never silently
    * flips to uncontrolled on the first selection.
    */
-  value?: string;
+  value?: string | undefined;
   /** Called with the newly selected option's `value` whenever the choice changes. */
-  onChange?: (value: string) => void;
+  onChange?: ((value: string) => void) | undefined;
   /**
    * Shared `name` grouping the radios for form submission; MUI generates one
    * when omitted, so keyboard grouping works either way.
    */
-  name?: string;
+  name?: string | undefined;
   /**
    * Disables the whole group (single options can also be disabled via
    * `UiRadioOption.disabled`).
@@ -57,18 +57,18 @@ export interface UiRadioGroupProps {
    */
   required?: boolean | undefined;
   /** Lays the options out in a row instead of the default column. */
-  row?: boolean;
-  sx?: SxProps<Theme>;
+  row?: boolean | undefined;
+  sx?: SxProps<Theme> | undefined;
   /** Visible group label — the preferred accessible name (WCAG 2.4.6 / 3.3.2). */
   label?: string | undefined;
   /** Accessible name used only when there is no visible `label`. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /**
    * Description — typically the reason the group is invalid. Rendered in a
    * `FormHelperText` and linked to the group via `aria-describedby`, so screen
    * readers announce *why* the group is in error alongside `aria-invalid`.
    */
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   /** Seeds the group label / helper-text ids (and can associate an external label). */
-  id?: string;
+  id?: string | undefined;
 }

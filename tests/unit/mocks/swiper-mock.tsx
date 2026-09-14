@@ -6,11 +6,19 @@ import React from 'react';
 export const Pagination: Record<string, never> = {};
 
 export function Swiper({ children }: Readonly<{ children?: React.ReactNode }>): React.ReactElement {
-  return <div data-testid="swiper">{children}</div>;
+  return (
+    <section aria-roledescription="carousel" aria-label="carousel">
+      {children}
+    </section>
+  );
 }
 
 export function SwiperSlide({
   children,
 }: Readonly<{ children?: React.ReactNode }>): React.ReactElement {
-  return <div data-testid="swiper-slide">{children}</div>;
+  return (
+    <div role="group" aria-roledescription="slide" aria-label="slide">
+      {children}
+    </div>
+  );
 }

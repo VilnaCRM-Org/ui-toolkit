@@ -23,7 +23,7 @@ const STATIC_SX: { readonly animation: 'none'; readonly backgroundSize: '100% 10
 } as const;
 
 export type AuthSkeletonProps = {
-  disableAnimation?: boolean;
+  disableAnimation?: boolean | undefined;
   /**
    * Visually-hidden loading text for the busy container. Pass a localized
    * string in consuming apps. The skeleton only marks state (`aria-busy` plus
@@ -31,7 +31,7 @@ export type AuthSkeletonProps = {
    * via one persistent `role="status"` region per view — `aria-busy` is a
    * state marker, not a notification, and the shapes themselves are decorative.
    */
-  ariaLabel?: string;
+  ariaLabel?: string | undefined;
 };
 
 type Wrap = <T extends object>(baseSx: T) => (T | typeof STATIC_SX)[];

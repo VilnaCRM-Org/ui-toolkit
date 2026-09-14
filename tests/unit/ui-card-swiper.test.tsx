@@ -69,8 +69,14 @@ function toWrapper(swiper: HTMLElement): HTMLElement {
   return swiper.parentElement as HTMLElement;
 }
 
+const HIDDEN: { hidden: true } = { hidden: true };
+
+function getSwiper(): HTMLElement {
+  return screen.getByRole('region', { ...HIDDEN, name: 'carousel' });
+}
+
 function getSwiperWrapper(): HTMLElement {
-  return toWrapper(screen.getByTestId('swiper'));
+  return toWrapper(getSwiper());
 }
 
 // CardSwiper renders the local parity card (`./ui-card-item`), not the canonical
@@ -80,7 +86,7 @@ jest.mock('../../src/components/ui-card-list/ui-card-item', () => {
 
   return {
     __esModule: true,
-    default: jest.fn(() => mockReact.createElement('div', { 'data-testid': 'mock-card-item' })),
+    default: jest.fn(() => mockReact.createElement('article', { 'aria-label': 'card item' })),
   };
 });
 
@@ -106,9 +112,13 @@ describe('CardSwiper component', () => {
   it('renders a swiper slide for every card item', () => {
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
-    expect(screen.getByTestId('swiper')).toBeInTheDocument();
-    expect(screen.getAllByTestId('swiper-slide')).toHaveLength(smallCardList.length);
-    expect(screen.getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
+    expect(getSwiper()).toBeInTheDocument();
+    expect(screen.getAllByRole('group', { ...HIDDEN, name: 'slide' })).toHaveLength(
+      smallCardList.length
+    );
+    expect(screen.getAllByRole('article', { ...HIDDEN, name: 'card item' })).toHaveLength(
+      smallCardList.length
+    );
   });
 
   it('disables pointer events while a tooltip is open and restores on close', async () => {
@@ -131,20 +141,24 @@ describe('CardSwiper component', () => {
     // jsdom cannot evaluate the MUI media-query sx, so assert the two style
     // objects differ (proving the branch is meaningful) plus correct rendering.
     expect(gridStyles.gridSmallMobile).not.toBe(gridStyles.gridLargeMobile);
-    expect(screen.getAllByTestId('mock-card-item')).toHaveLength(smallCardList.length);
+    expect(screen.getAllByRole('article', { ...HIDDEN, name: 'card item' })).toHaveLength(
+      smallCardList.length
+    );
   });
 
   it('selects the large mobile grid branch when the first card is large', () => {
     render(React.createElement(CardSwiper, { cardList: largeCardList }));
 
-    expect(screen.getAllByTestId('mock-card-item')).toHaveLength(largeCardList.length);
+    expect(screen.getAllByRole('article', { ...HIDDEN, name: 'card item' })).toHaveLength(
+      largeCardList.length
+    );
   });
 
   it('falls back to the large mobile grid branch when the list is empty', () => {
     render(React.createElement(CardSwiper, { cardList: [] }));
 
-    expect(screen.getByTestId('swiper')).toBeInTheDocument();
-    expect(screen.queryAllByTestId('mock-card-item')).toHaveLength(0);
+    expect(getSwiper()).toBeInTheDocument();
+    expect(screen.queryAllByRole('article', { ...HIDDEN, name: 'card item' })).toHaveLength(0);
   });
 
   it('ignores mutations that are not childList changes', () => {
@@ -245,7 +259,9 @@ jest.mock('swiper/react', () => {
     return reactForSwiper.createElement(
       'div',
       {
-        'data-testid': 'swiper',
+        role: 'region',
+        'aria-roledescription': 'carousel',
+        'aria-label': 'carousel',
         'data-pagination-has-clickable-key': String(hasClickableKey),
         'data-pagination-clickable': String(pagination?.clickable === true),
         'data-modules-count': String(Array.isArray(props.modules) ? props.modules.length : -1),
@@ -256,7 +272,11 @@ jest.mock('swiper/react', () => {
   }
 
   function SwiperSlideStub(props: Readonly<{ children?: React.ReactNode }>): React.ReactElement {
-    return reactForSwiper.createElement('div', { 'data-testid': 'swiper-slide' }, props.children);
+    return reactForSwiper.createElement(
+      'div',
+      { role: 'group', 'aria-roledescription': 'slide', 'aria-label': 'slide' },
+      props.children
+    );
   }
 
   return { __esModule: true, Swiper: SwiperStub, SwiperSlide: SwiperSlideStub };
@@ -266,7 +286,7 @@ describe('CardSwiper swiper configuration', () => {
   it('passes a clickable pagination object to the swiper', () => {
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
-    const swiper: HTMLElement = screen.getByTestId('swiper');
+    const swiper: HTMLElement = getSwiper();
     // Kills ObjectLiteral `pagination={{}}` (the `clickable` key must exist) and
     // BooleanLiteral `clickable: false` (the value must be true).
     expect(swiper).toHaveAttribute('data-pagination-has-clickable-key', 'true');
@@ -277,7 +297,7 @@ describe('CardSwiper swiper configuration', () => {
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
     // Kills ArrayDeclaration `modules={[]}`: the modules array must hold one item.
-    expect(screen.getByTestId('swiper')).toHaveAttribute('data-modules-count', '1');
+    expect(getSwiper()).toHaveAttribute('data-modules-count', '1');
   });
 });
 
@@ -445,7 +465,9 @@ describe('CardSwiper shared tooltip observer', () => {
     const { getCallback, restore } = captureObserverCallback();
 
     renderTwoSwipers();
-    const wrappers: HTMLElement[] = screen.getAllByTestId('swiper').map(toWrapper);
+    const wrappers: HTMLElement[] = screen
+      .getAllByRole('region', { ...HIDDEN, name: 'carousel' })
+      .map(toWrapper);
     addTooltipNode();
 
     getCallback()?.([makeRecord('childList', [makeTooltipNode()])], {} as MutationObserver);
@@ -520,21 +542,21 @@ describe('CardSwiper loop configuration', () => {
 
     // Kills the `> 1` -> `>= 1` boundary mutant (0 >= 1 is false, so this alone
     // does not; the single-item case below does) and the `-> true` collapse.
-    expect(screen.getByTestId('swiper')).toHaveAttribute('data-loop', 'false');
+    expect(getSwiper()).toHaveAttribute('data-loop', 'false');
   });
 
   it('disables loop for a single-item list', () => {
     render(React.createElement(CardSwiper, { cardList: smallCardList }));
 
     // Kills `> 1` -> `>= 1` (1 >= 1 would be true) and the literal-`true` collapse.
-    expect(screen.getByTestId('swiper')).toHaveAttribute('data-loop', 'false');
+    expect(getSwiper()).toHaveAttribute('data-loop', 'false');
   });
 
   it('enables loop when there is more than one card', () => {
     render(React.createElement(CardSwiper, { cardList: multiCardList }));
 
     // Kills `> 1` -> `< 1` and the literal-`false` collapse.
-    expect(screen.getByTestId('swiper')).toHaveAttribute('data-loop', 'true');
+    expect(getSwiper()).toHaveAttribute('data-loop', 'true');
   });
 
   it('emits no Swiper loop warning for a single-item list', () => {

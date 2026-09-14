@@ -99,7 +99,7 @@ export type { UiImageProps } from './ui-image/types';
 export { default as UiForm } from './ui-form';
 export type { UiFormProps } from './ui-form/index';
 export { default as UiSkeletonBlock } from './ui-skeleton-block';
-export type { UiSkeletonBlockProps } from './ui-skeleton-block/types';
+export type { SkeletonBlockLength, UiSkeletonBlockProps } from './ui-skeleton-block/types';
 export { default as UiSkeletonButton } from './ui-skeleton-button';
 export type { UiSkeletonButtonProps } from './ui-skeleton-button/types';
 export { default as UiSkeletonControlText } from './ui-skeleton-control-text';

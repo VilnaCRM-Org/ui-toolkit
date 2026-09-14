@@ -129,12 +129,12 @@ lint-next: ## Run ESLint inside the docker container.
 			fi; \
 			targets="$$targets $$dir"; \
 		done; \
-		files=$$(find $$targets -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.ts" -o -name "*.tsx" \)); \
+		files=$$(find $$targets -type f \( -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.ts" -o -name "*.tsx" \)); \
 		if [ -z "$$files" ]; then \
 			echo "No lint files found under$$targets; refusing to report a vacuous pass."; \
 			exit 1; \
 		fi; \
-		bun x eslint $$files \
+		bun x eslint --max-warnings 0 $$files \
 	'
 
 lint-tsc: ## Run the TypeScript linter inside the docker container.

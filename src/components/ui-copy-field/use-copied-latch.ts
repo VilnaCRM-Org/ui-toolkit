@@ -37,13 +37,14 @@ function useLatchRefs(): LatchRefs {
   const timer: React.RefObject<ReturnType<typeof setTimeout> | undefined> = React.useRef<
     ReturnType<typeof setTimeout> | undefined
   >(undefined);
+  const close = React.useCallback((): void => {
+    mounted.current = false;
+    clearTimeout(timer.current);
+  }, []);
   React.useEffect((): (() => void) => {
     mounted.current = true;
-    return (): void => {
-      mounted.current = false;
-      clearTimeout(timer.current);
-    };
-  }, []);
+    return close;
+  }, [close]);
   return { mounted, timer };
 }
 

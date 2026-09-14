@@ -9,7 +9,7 @@ import { splitOnPrefix } from './ghost-completion';
 const palette: (typeof colorTheme)['palette'] = colorTheme.palette;
 
 /** MUI's `<li>` prop bag for a rendered option (click/hover/aria/key). */
-export type OptionProps = React.HTMLAttributes<HTMLLIElement> & { key?: React.Key };
+export type OptionProps = React.HTMLAttributes<HTMLLIElement> & { key?: React.Key | undefined };
 
 /** The `renderOption` callback shape shared by the search and multi-select listboxes. */
 export type FieldOptionRenderer<Option> = (

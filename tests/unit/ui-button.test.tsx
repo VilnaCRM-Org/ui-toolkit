@@ -221,7 +221,7 @@ describe('UiButton danger variant style assembly (Board A y=1354)', () => {
       lineHeight: '1.125rem',
       letterSpacing: '0',
       borderRadius: '3.563rem',
-      padding: '0.75rem 1.5rem',
+      padding: '0.6875rem 1.4375rem',
     });
   });
 
@@ -456,6 +456,15 @@ const SMALL_LABEL_BOX: number = 18;
 const MEDIUM_VERTICAL_PADDING: number = 20;
 const MEDIUM_HORIZONTAL_PADDING: number = 32;
 const MEDIUM_FIGMA_HEIGHT: number = 62;
+const SMALL_VERTICAL_PADDING: number = 16;
+const SMALL_HORIZONTAL_PADDING: number = 24;
+const SMALL_FIGMA_HEIGHT: number = 50;
+const SOCIAL_CONTENT_ROW: number = 22;
+const SOCIAL_INSET: number = 18;
+const SOCIAL_FIGMA_HEIGHT: number = 58;
+const DANGER_VERTICAL_PADDING: number = 12;
+const DANGER_HORIZONTAL_PADDING: number = 24;
+const DANGER_FIGMA_HEIGHT: number = 42;
 
 // The 20px inset is measured from the pill's OUTER edge, because Figma strokes
 // inside the frame. The contained CTA has no stroke and spends the whole inset on
@@ -492,6 +501,19 @@ function namedRule(name: string): Record<string, unknown> {
   );
   if (!match) {
     throw new Error(`no ${name} button variant is registered`);
+  }
+  return match.style;
+}
+
+function sizedRule(variant: string, size: string): Record<string, unknown> {
+  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
+    []) as ButtonVariantRule[];
+  const match: ButtonVariantRule | undefined = rules.find(
+    (rule: ButtonVariantRule) =>
+      rule.props.variant === variant && rule.props.size === size && rule.props.name === undefined
+  );
+  if (!match) {
+    throw new Error(`no ${variant}/${size} button variant is registered`);
   }
   return match.style;
 }
@@ -551,11 +573,12 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
     expect(horizontalInset('outlined')).toBe(MEDIUM_HORIZONTAL_PADDING);
   });
 
-  // `outlinedStyles` drops the border entirely when disabled, which would undo
-  // the compensation above and shrink the pill 2px on both axes the moment the
-  // button goes disabled. The medium rule keeps a transparent 1px instead.
-  it('keeps a transparent 1px border on the disabled outlined medium, so it cannot jitter', () => {
+  it('keeps a transparent 1px border on every disabled outlined preset, so none can jitter', () => {
+    expect(outlinedStyles).toHaveProperty(['&:disabled', 'border'], '1px solid transparent');
     expect(mediumRule('outlined')['&:disabled']).toMatchObject({
+      border: '1px solid transparent',
+    });
+    expect(namedRule('socialButton')['&:disabled']).toMatchObject({
       border: '1px solid transparent',
     });
   });
@@ -567,12 +590,15 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
 
   // MUI applies every matching variant rule, not only the most specific one, so
   // the plain outlined/medium rule also lands on the socialButton — which is how
-  // that button gets an 18px font size it never declares. Without its own line
-  // box it would inherit the CTA's 22px and grow 4px, breaking its baseline.
-  it('does not let the CTA label box reach the socialButton, a 58px pill', () => {
-    expect(namedRule('socialButton')).toMatchObject({
-      lineHeight: `${SMALL_LABEL_BOX / 16}rem`,
-    });
+  // that button gets an 18px font size it never declares.
+  it('lays the socialButton out to the 58px Figma pill on its own line box', () => {
+    const style: Record<string, unknown> = namedRule('socialButton');
+    const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
+    const padding: number = parseFloat(String(style.padding)) * 16;
+
+    expect(lineBox).toBe(SOCIAL_CONTENT_ROW);
+    expect(padding + OUTLINED_BORDER).toBe(SOCIAL_INSET);
+    expect(lineBox + 2 * padding + 2 * OUTLINED_BORDER).toBe(SOCIAL_FIGMA_HEIGHT);
   });
 
   it('registers socialButton as an outlined medium button, which is why it is exposed', () => {
@@ -590,5 +616,42 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
       '@media (max-width: 640px)'
     ] as Record<string, unknown>;
     expect(mobile).toMatchObject({ lineHeight: `${SMALL_LABEL_BOX / 16}rem` });
+  });
+});
+
+describe('UiButton bordered pills share the filled pill box (issue #159)', () => {
+  const insets = (style: Record<string, unknown>): { vertical: number; horizontal: number } => {
+    const shorthand: string[] = String(style.padding).split(' ');
+    return {
+      vertical: parseFloat(shorthand[0] ?? '') * 16,
+      horizontal: parseFloat(shorthand[1] ?? shorthand[0] ?? '') * 16,
+    };
+  };
+
+  it('keeps the contained small pill on the flat 16/24 padding, which is the whole inset', () => {
+    expect(insets(sizedRule('contained', 'small'))).toEqual({
+      vertical: SMALL_VERTICAL_PADDING,
+      horizontal: SMALL_HORIZONTAL_PADDING,
+    });
+  });
+
+  it('subtracts the border from the outlined small padding so both pills are 137x50', () => {
+    const style: Record<string, unknown> = sizedRule('outlined', 'small');
+    const { vertical, horizontal } = insets(style);
+    const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
+
+    expect(vertical + OUTLINED_BORDER).toBe(SMALL_VERTICAL_PADDING);
+    expect(horizontal + OUTLINED_BORDER).toBe(SMALL_HORIZONTAL_PADDING);
+    expect(lineBox + 2 * vertical + 2 * OUTLINED_BORDER).toBe(SMALL_FIGMA_HEIGHT);
+  });
+
+  it('subtracts the border from the danger padding so the pill is 98x42', () => {
+    const style: Record<string, unknown> = dangerStyles as Record<string, unknown>;
+    const { vertical, horizontal } = insets(style);
+    const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
+
+    expect(vertical + OUTLINED_BORDER).toBe(DANGER_VERTICAL_PADDING);
+    expect(horizontal + OUTLINED_BORDER).toBe(DANGER_HORIZONTAL_PADDING);
+    expect(lineBox + 2 * vertical + 2 * OUTLINED_BORDER).toBe(DANGER_FIGMA_HEIGHT);
   });
 });

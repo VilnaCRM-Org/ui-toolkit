@@ -44,6 +44,7 @@ const devDependencyPatterns = [
   'jest.mutation.config.ts',
   'playwright.config.ts',
   'build.config.mjs',
+  'scripts/**',
   '**/*.stories.ts',
   '**/*.stories.tsx',
   ...testFilePatterns,
@@ -88,7 +89,6 @@ export default [
       '.storybook/**',
       'storybook-static/**',
       'eslint.config.mjs',
-      'scripts/**',
       'playwright-report/**',
       'test-results/**',
       'reports/**',
@@ -184,18 +184,18 @@ export default [
       ...importPlugin.flatConfigs.typescript.rules,
       ...jsxA11y.flatConfigs.recommended.rules,
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'error',
       ...eslintComments.configs.recommended.rules,
       'eslint-comments/no-use': [
         'error',
         { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable'] },
       ],
-      'react/jsx-no-bind': 'warn',
-      'no-await-in-loop': 'warn',
-      'no-restricted-syntax': 'warn',
+      'react/jsx-no-bind': 'error',
+      'no-await-in-loop': 'error',
+      'no-restricted-syntax': 'error',
       'no-alert': 'error',
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      'import/prefer-default-export': 'warn',
+      'import/prefer-default-export': 'off',
       'max-len': ['error', { code: 100 }],
       'eslint-comments/disable-enable-pair': 'off',
       'no-restricted-imports': ['error', { patterns: ['@/features/*/*'] }],
@@ -299,6 +299,7 @@ export default [
       'import/no-dynamic-require': 'off',
       'global-require': 'off',
       'no-await-in-loop': 'off',
+      'react/jsx-no-bind': 'off',
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
@@ -339,7 +340,7 @@ export default [
     files: testFilePatterns,
     rules: {
       'no-restricted-syntax': [
-        'warn',
+        'error',
         {
           selector:
             'CallExpression[callee.property.name=/^(get|query|find)(All)?ByTestId$/], CallExpression[callee.name=/^(get|query|find)(All)?ByTestId$/]',
@@ -347,6 +348,30 @@ export default [
             'Prefer getByRole/getByLabelText/getByText; *ByTestId is a last resort (issue #90).',
         },
       ],
+    },
+  },
+
+  {
+    files: [
+      'src/**/*.ts',
+      'src/**/*.tsx',
+      'scripts/**/*.ts',
+      'scripts/**/*.js',
+      'scripts/**/*.mjs',
+    ],
+    rules: {
+      complexity: ['error', 12],
+      'max-lines-per-function': ['error', { max: 60, skipBlankLines: true, skipComments: true }],
+      'max-lines': ['error', 400],
+      'max-depth': ['error', 4],
+      'max-params': ['error', 3],
+    },
+  },
+
+  {
+    files: ['scripts/**/*.ts', 'scripts/**/*.js', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
     },
   },
 

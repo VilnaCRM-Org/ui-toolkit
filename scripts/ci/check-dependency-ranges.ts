@@ -7,6 +7,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { isAbsolute, relative, resolve } from 'node:path';
+
 import { evaluatePackageJson } from './dependency-range-policy';
 
 // The manifest filename is a fixed constant pointing at this repo's own

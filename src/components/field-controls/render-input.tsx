@@ -12,11 +12,11 @@ export interface FieldRenderInputConfig {
   placeholder?: string | undefined;
   required?: boolean | undefined;
   error?: boolean | undefined;
-  helperText?: React.ReactNode;
+  helperText?: React.ReactNode | undefined;
   variant?: 'outlined' | 'filled' | 'standard' | undefined;
   ariaLabel?: string | undefined;
   /** Optional leading adornment (e.g. the search magnifier); omitted for select. */
-  startAdornment?: React.ReactNode;
+  startAdornment?: React.ReactNode | undefined;
   /**
    * The loading slot painted at the field's trailing edge. Composed BEFORE MUI's
    * own end adornment (see `composeEndAdornment`) so the clear/popup indicators
@@ -24,15 +24,15 @@ export interface FieldRenderInputConfig {
    * byte-identical, so a control that never sets `loading` renders exactly the
    * tree it renders today.
    */
-  loadingAdornment?: React.ReactNode;
+  loadingAdornment?: React.ReactNode | undefined;
   /** Extra native-input props (handlers/style) merged over MUI's own; handlers compose. */
-  htmlInputProps?: HtmlInputProps;
+  htmlInputProps?: HtmlInputProps | undefined;
   /**
    * The inline ghost overlay (search/select typeahead), rendered as a sibling of the
    * field. When present the field is wrapped in a positioned Box so the overlay can
    * be pinned over the input; when absent the bare field renders unchanged.
    */
-  overlay?: React.ReactNode;
+  overlay?: React.ReactNode | undefined;
 }
 
 // A positioned wrapper so the aria-hidden ghost overlay can be pinned over the input.

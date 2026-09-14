@@ -17,6 +17,7 @@ import type {
   LayoutProps,
   ProfileSelectItem,
   SegmentedOption,
+  SkeletonBlockLength,
   SkeletonControlVariant,
   SkeletonImageVariant,
   SkeletonTextSize,
@@ -308,6 +309,7 @@ type PublicTypeSurface = [
   Named<LayoutProps>,
   Named<ProfileSelectItem>,
   Named<SegmentedOption>,
+  Named<SkeletonBlockLength>,
   Named<SkeletonControlVariant>,
   Named<SkeletonImageVariant>,
   Named<SkeletonTextSize>,
@@ -384,7 +386,7 @@ type PublicTypeSurface = [
   Named<UiTypographyProps>,
   Named<UiUploadStatus>,
 ];
-const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 89;
+const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 90;
 
 describe('export contract integrity (Story 5.3, #33)', () => {
   describe('A — the register covers the module tree (R1, R4)', () => {

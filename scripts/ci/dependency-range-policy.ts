@@ -66,9 +66,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function evaluateSpecifier(
   field: string,
-  name: string,
-  rawSpecifier: unknown,
-  exceptions: Set<string>
+  [name, rawSpecifier]: readonly [string, unknown],
+  exceptions: ReadonlySet<string>
 ): RangeViolation | null {
   if (exceptions.has(name)) return null;
 
@@ -104,8 +103,8 @@ export function findRangeViolations(
     const entries = pkg[field];
     if (!isRecord(entries)) continue;
 
-    for (const [name, rawSpecifier] of Object.entries(entries)) {
-      const violation = evaluateSpecifier(field, name, rawSpecifier, exceptions);
+    for (const entry of Object.entries(entries)) {
+      const violation = evaluateSpecifier(field, entry, exceptions);
       if (violation) violations.push(violation);
     }
   }

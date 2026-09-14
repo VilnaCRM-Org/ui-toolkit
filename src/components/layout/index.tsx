@@ -1,9 +1,9 @@
 import React from 'react';
 
 export type LayoutProps = {
-  children?: React.ReactNode;
-  header?: React.ReactNode;
-  footer?: React.ReactNode;
+  children?: React.ReactNode | undefined;
+  header?: React.ReactNode | undefined;
+  footer?: React.ReactNode | undefined;
   pageTitle?: string | undefined;
   metaDescription?: string | undefined;
 };

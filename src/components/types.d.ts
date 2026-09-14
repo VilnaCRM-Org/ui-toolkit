@@ -15,16 +15,16 @@ declare module '@mui/material/styles' {
   }
 
   interface TypographyVariantsOptions {
-    medium16?: CSSProperties;
-    medium15?: CSSProperties;
-    medium14?: CSSProperties;
-    regular16?: CSSProperties;
-    bodyText18?: CSSProperties;
-    bodyText16?: CSSProperties;
-    bold22?: CSSProperties;
-    demi18?: CSSProperties;
-    button?: CSSProperties;
-    mobileText?: CSSProperties;
+    medium16?: CSSProperties | undefined;
+    medium15?: CSSProperties | undefined;
+    medium14?: CSSProperties | undefined;
+    regular16?: CSSProperties | undefined;
+    bodyText18?: CSSProperties | undefined;
+    bodyText16?: CSSProperties | undefined;
+    bold22?: CSSProperties | undefined;
+    demi18?: CSSProperties | undefined;
+    button?: CSSProperties | undefined;
+    mobileText?: CSSProperties | undefined;
   }
 
   interface Palette {
@@ -59,34 +59,34 @@ declare module '@mui/material/styles' {
   }
 
   interface PaletteOptions {
-    darkPrimary?: PaletteOptions['primary'];
-    darkSecondary?: PaletteOptions['primary'];
-    strokeDanger?: PaletteOptions['primary'];
-    white?: PaletteOptions['primary'];
-    brandGray?: PaletteOptions['primary'];
-    grey200?: PaletteOptions['primary'];
-    grey250?: PaletteOptions['primary'];
-    grey300?: PaletteOptions['primary'];
-    grey400?: PaletteOptions['primary'];
-    grey500?: PaletteOptions['primary'];
-    backgroundGrey100?: PaletteOptions['primary'];
-    backgroundGrey200?: PaletteOptions['primary'];
-    backgroundGrey300?: PaletteOptions['primary'];
-    containedButtonHover?: PaletteOptions['primary'];
-    containedButtonActive?: PaletteOptions['primary'];
-    patchMethod?: PaletteOptions['primary'];
-    getMethodHover?: PaletteOptions['primary'];
-    putMethodHover?: PaletteOptions['primary'];
-    postMethodHover?: PaletteOptions['primary'];
-    deleteMethodHover?: PaletteOptions['primary'];
-    patchMethodHover?: PaletteOptions['primary'];
-    mutedInkHover?: PaletteOptions['primary'];
-    notchDeskBefore?: PaletteOptions['primary'];
-    notchDeskAfter?: PaletteOptions['primary'];
-    notchMobileBefore?: PaletteOptions['primary'];
-    notchMobileAfter?: PaletteOptions['primary'];
-    textLinkHover?: PaletteOptions['primary'];
-    textLinkActive?: PaletteOptions['primary'];
+    darkPrimary?: PaletteOptions['primary'] | undefined;
+    darkSecondary?: PaletteOptions['primary'] | undefined;
+    strokeDanger?: PaletteOptions['primary'] | undefined;
+    white?: PaletteOptions['primary'] | undefined;
+    brandGray?: PaletteOptions['primary'] | undefined;
+    grey200?: PaletteOptions['primary'] | undefined;
+    grey250?: PaletteOptions['primary'] | undefined;
+    grey300?: PaletteOptions['primary'] | undefined;
+    grey400?: PaletteOptions['primary'] | undefined;
+    grey500?: PaletteOptions['primary'] | undefined;
+    backgroundGrey100?: PaletteOptions['primary'] | undefined;
+    backgroundGrey200?: PaletteOptions['primary'] | undefined;
+    backgroundGrey300?: PaletteOptions['primary'] | undefined;
+    containedButtonHover?: PaletteOptions['primary'] | undefined;
+    containedButtonActive?: PaletteOptions['primary'] | undefined;
+    patchMethod?: PaletteOptions['primary'] | undefined;
+    getMethodHover?: PaletteOptions['primary'] | undefined;
+    putMethodHover?: PaletteOptions['primary'] | undefined;
+    postMethodHover?: PaletteOptions['primary'] | undefined;
+    deleteMethodHover?: PaletteOptions['primary'] | undefined;
+    patchMethodHover?: PaletteOptions['primary'] | undefined;
+    mutedInkHover?: PaletteOptions['primary'] | undefined;
+    notchDeskBefore?: PaletteOptions['primary'] | undefined;
+    notchDeskAfter?: PaletteOptions['primary'] | undefined;
+    notchMobileBefore?: PaletteOptions['primary'] | undefined;
+    notchMobileAfter?: PaletteOptions['primary'] | undefined;
+    textLinkHover?: PaletteOptions['primary'] | undefined;
+    textLinkActive?: PaletteOptions['primary'] | undefined;
   }
 }
 

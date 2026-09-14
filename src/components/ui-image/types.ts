@@ -1,7 +1,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export interface UiImageProps {
-  sx?: SxProps<Theme>;
+  sx?: SxProps<Theme> | undefined;
   /**
    * Image source — a URL string or a static import (`{ src }`). The type is
    * strict, but the component degrades gracefully on runtime data: a nullish

@@ -17,9 +17,9 @@ export interface PageRangeInput {
   /** Total number of pages. */
   count: number;
   /** Pages shown either side of the current page (default 1). */
-  siblingCount?: number;
+  siblingCount?: number | undefined;
   /** Always-visible pages at each end (default 1). */
-  boundaryCount?: number;
+  boundaryCount?: number | undefined;
 }
 
 interface RangeConfig {
