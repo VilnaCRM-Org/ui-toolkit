@@ -36,8 +36,6 @@ interface AccordionRowProps {
   setOpenKey: OpenKeySetter;
 }
 
-// One row of the accordion: it owns its toggle handler so the row only sees a
-// new callback when its key changes, not on every parent render.
 function AccordionRow({
   row,
   openKey,

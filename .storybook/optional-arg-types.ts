@@ -5,15 +5,6 @@ import type {
   StrictInputType,
 } from 'storybook/internal/types';
 
-// The component types spell optional props `foo?: T | undefined` so consumers on
-// `exactOptionalPropertyTypes` can pass a `T | undefined` through (issue #153).
-// Storybook's docgen reads that as a union of `T` and `undefined`, which infers an
-// `object` control and makes the preview reject a URL arg (`?args=checked:!true`)
-// as incompatible with the type. The `undefined` member carries no information
-// on an optional prop, so it is folded away before controls are inferred. A
-// REQUIRED `T | undefined` is left alone: there the `undefined` is a deliberate
-// part of the contract rather than the optional marker.
-
 function isUndefinedMember(type: SBType): boolean {
   return type.name === 'other' && type.value === 'undefined';
 }

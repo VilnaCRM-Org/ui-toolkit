@@ -3,18 +3,6 @@ import { join, relative, resolve } from 'node:path';
 
 import ts from 'typescript';
 
-// Consumers compiling with `exactOptionalPropertyTypes` (website does) cannot
-// pass `T | undefined` into a prop declared `foo?: T` — under that flag the two
-// are different types, even though passing `undefined` is what "optional" means
-// at runtime (issue #153). Every optional member of an exported interface or
-// type alias under src/components therefore spells `| undefined` explicitly, and
-// this guard fails the build for the first one that does not, so the contract
-// cannot regress one prop at a time.
-//
-// Scope is exported declarations only: an internal, MUI-facing shape (a
-// `slotProps` object literal type, say) has to match MUI's own `foo?: T`
-// signatures and is never seen by a consumer.
-
 const COMPONENTS_ROOT: string = resolve(__dirname, '..', '..', 'src', 'components');
 const SKIPPED_FILE: RegExp = /\.(test|stories)\.tsx?$/;
 
@@ -41,8 +29,6 @@ function mentionsUndefined(type: ts.TypeNode | undefined): boolean {
   return false;
 }
 
-// A declaration inside `declare module '…' { … }` is an augmentation and is
-// public without an `export` keyword; everything else must be exported.
 function isExportedDeclaration(node: ts.Node): boolean {
   if (!ts.isInterfaceDeclaration(node) && !ts.isTypeAliasDeclaration(node)) return false;
   const exported: boolean = (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export) !== 0;
@@ -106,9 +92,6 @@ describe('optional props on exported component types accept undefined (#153)', (
     expect(scan.offenders.map(describeOffender)).toEqual([]);
   });
 
-  // The matcher itself has to see through the type forms the codebase uses;
-  // a matcher that only understood a bare `undefined` keyword would silently
-  // accept parenthesised function types and nested unions.
   it.each([
     ['foo?: string', 1],
     ['foo?: string | undefined', 0],

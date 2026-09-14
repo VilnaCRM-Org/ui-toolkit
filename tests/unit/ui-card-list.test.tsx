@@ -27,8 +27,6 @@ jest.mock('../../src/components/ui-card-list/card-grid', () => {
   return jest.fn(() => mockReact.createElement('section', { 'aria-label': 'card grid' }));
 });
 
-// Both variant wrappers are `display: none` outside their media query, which
-// jsdom never evaluates, so role queries pass `hidden: true` to reach them.
 const HIDDEN: { hidden: true } = { hidden: true };
 
 describe('UiCardList component', () => {

@@ -2,13 +2,6 @@ import type { SBType, StrictArgTypes } from 'storybook/internal/types';
 
 import { collapseOptionalUndefined } from '../../.storybook/optional-arg-types';
 
-// Storybook's docgen reads `foo?: T | undefined` (the spelling issue #153
-// requires) as a union of `T` and `undefined`. Left alone, that union infers an
-// `object` control and the preview drops a URL arg such as `checked:!true` as
-// incompatible — which is exactly how the visual state suite caught it. The
-// enhancer folds the `undefined` member away so the control and the arg
-// mapping see the real type again.
-
 const UNDEFINED: SBType = { name: 'other', value: 'undefined' };
 
 function enhance(argTypes: StrictArgTypes): StrictArgTypes {

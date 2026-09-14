@@ -190,17 +190,11 @@ export default [
         'error',
         { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable'] },
       ],
-      // Defect-class rules are errors, not warnings: `make lint-next` runs with
-      // `--max-warnings 0`, so a warning would fail the gate anyway, and a rule
-      // that can never fail CI only accumulates debt (issue #89).
       'react/jsx-no-bind': 'error',
       'no-await-in-loop': 'error',
       'no-restricted-syntax': 'error',
       'no-alert': 'error',
       'no-console': ['error', { allow: ['warn', 'error'] }],
-      // Named exports through per-component barrels are this package's export
-      // contract (tests/unit/export-contract-integrity.test.ts), so a default-
-      // export preference is noise here rather than a signal.
       'import/prefer-default-export': 'off',
       'max-len': ['error', { code: 100 }],
       'eslint-comments/disable-enable-pair': 'off',
@@ -305,9 +299,6 @@ export default [
       'import/no-dynamic-require': 'off',
       'global-require': 'off',
       'no-await-in-loop': 'off',
-      // jsx-no-bind guards consumers against per-render handler churn inside the
-      // published components; a test's inline handler renders once and has no
-      // consumer, so the rule only adds ceremony there.
       'react/jsx-no-bind': 'off',
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-require-imports': 'off',
@@ -360,13 +351,6 @@ export default [
     },
   },
 
-  // Complexity backstop for the rust-code-analysis gate (config/metrics-policy.json,
-  // `make lint-metrics`). That gate is the precise one, but it is Docker-only and
-  // runs on pull requests alone; ESLint runs in editors, `make lint` and every
-  // static-testing job. These thresholds sit just above the RCA hard policy
-  // (cyclomatic 10, lloc 10, nargs 3) so a file the RCA gate accepts never fails
-  // here, while an oversized function is still caught when the RCA container is
-  // unavailable (issue #89).
   {
     files: [
       'src/**/*.ts',
@@ -384,10 +368,16 @@ export default [
     },
   },
 
-  // CI gate scripts and K6 load test scripts: console output is the idiomatic
-  // logging channel.
   {
-    files: ['scripts/**/*.ts', 'scripts/**/*.js', 'scripts/**/*.mjs', 'tests/load/**/*.js'],
+    files: ['scripts/**/*.ts', 'scripts/**/*.js', 'scripts/**/*.mjs'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
+  // K6 load test scripts: console output is the idiomatic logging channel.
+  {
+    files: ['tests/load/**/*.js'],
     rules: {
       'no-console': 'off',
     },

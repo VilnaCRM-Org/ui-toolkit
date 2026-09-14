@@ -161,8 +161,6 @@ EOF
   script="${logged#docker compose run --rm --entrypoint sh bun -lc }"
   [ "$script" != "$logged" ]
 
-  # Warnings fail the gate: every retained rule is an error and nothing can
-  # accumulate as warn-only debt (issue #89). `.mjs` gate scripts are linted too.
   [[ "$script" == *"bun x eslint --max-warnings 0 "* ]]
   [[ "$script" == *'-name "*.mjs"'* ]]
 

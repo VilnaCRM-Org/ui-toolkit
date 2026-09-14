@@ -37,9 +37,6 @@ function useLatchRefs(): LatchRefs {
   const timer: React.RefObject<ReturnType<typeof setTimeout> | undefined> = React.useRef<
     ReturnType<typeof setTimeout> | undefined
   >(undefined);
-  // The cleanup must clear whichever reset is armed AT unmount, not the one
-  // that existed when the effect mounted, so `timer` is read through a stable
-  // callback instead of being captured by the effect body.
   const close = React.useCallback((): void => {
     mounted.current = false;
     clearTimeout(timer.current);

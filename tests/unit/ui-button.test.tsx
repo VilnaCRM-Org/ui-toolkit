@@ -221,7 +221,6 @@ describe('UiButton danger variant style assembly (Board A y=1354)', () => {
       lineHeight: '1.125rem',
       letterSpacing: '0',
       borderRadius: '3.563rem',
-      // 23/11 of padding plus the 1px border is the 24/12 Figma inset (#159).
       padding: '0.6875rem 1.4375rem',
     });
   });
@@ -460,8 +459,6 @@ const MEDIUM_FIGMA_HEIGHT: number = 62;
 const SMALL_VERTICAL_PADDING: number = 16;
 const SMALL_HORIZONTAL_PADDING: number = 24;
 const SMALL_FIGMA_HEIGHT: number = 50;
-// The socialButton (439:19329) is a 189x58 pill around a 22px content row inset
-// 18px; the danger pill (439:19822) is 98x42 around the 18px label inset 24/12.
 const SOCIAL_CONTENT_ROW: number = 22;
 const SOCIAL_INSET: number = 18;
 const SOCIAL_FIGMA_HEIGHT: number = 58;
@@ -576,9 +573,6 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
     expect(horizontalInset('outlined')).toBe(MEDIUM_HORIZONTAL_PADDING);
   });
 
-  // Dropping the border when disabled would undo the compensation above and
-  // shrink the pill 2px on both axes the moment the button goes disabled, so
-  // the shared outlined preset keeps a transparent 1px in that state.
   it('keeps a transparent 1px border on every disabled outlined preset, so none can jitter', () => {
     expect(outlinedStyles).toHaveProperty(['&:disabled', 'border'], '1px solid transparent');
     expect(mediumRule('outlined')['&:disabled']).toMatchObject({
@@ -596,10 +590,7 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
 
   // MUI applies every matching variant rule, not only the most specific one, so
   // the plain outlined/medium rule also lands on the socialButton — which is how
-  // that button gets an 18px font size it never declares. The pill declares its
-  // own line box so its height never depends on what the CTA rule carries: the
-  // 22px content row of Figma 439:19329, inset 18px with the stroke inside, is
-  // 17px of padding plus the 1px border on each edge of that row (#159).
+  // that button gets an 18px font size it never declares.
   it('lays the socialButton out to the 58px Figma pill on its own line box', () => {
     const style: Record<string, unknown> = namedRule('socialButton');
     const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
@@ -628,10 +619,6 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
   });
 });
 
-// Issue #159: the outlined small pill rendered 52px against the contained one's
-// 50, and the danger pill 44 against Figma's 42, because each declared a 1px
-// border beside the same flat padding as its stroke-less sibling. Each bordered
-// rule now spends 1px of the Figma inset on the border and the rest on padding.
 describe('UiButton bordered pills share the filled pill box (issue #159)', () => {
   const insets = (style: Record<string, unknown>): { vertical: number; horizontal: number } => {
     const shorthand: string[] = String(style.padding).split(' ');

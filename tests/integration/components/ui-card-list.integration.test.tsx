@@ -62,8 +62,6 @@ function setSmallScreen(): void {
 // composed DOM — so role queries pass `hidden: true` to reach it.
 const HIDDEN: { hidden: true } = { hidden: true };
 
-// The swiper stand-in (tests/unit/mocks/swiper-mock.tsx) is a named carousel
-// region holding one named slide group per card.
 function querySwiper(): HTMLElement | null {
   return screen.queryByRole('region', { ...HIDDEN, name: 'carousel' });
 }

@@ -69,10 +69,6 @@ function toWrapper(swiper: HTMLElement): HTMLElement {
   return swiper.parentElement as HTMLElement;
 }
 
-// The swiper stub is a named carousel region (see the `swiper/react` mock
-// below). Its MUI Grid wrapper is `display: none` outside the mobile media
-// query, which jsdom never evaluates, so every role query here passes
-// `hidden: true` to reach the subtree.
 const HIDDEN: { hidden: true } = { hidden: true };
 
 function getSwiper(): HTMLElement {

@@ -1,14 +1,5 @@
 #!/usr/bin/env bats
 
-# Coverage for the ESLint complexity backstop (issue #89). The precise complexity
-# gate is rust-code-analysis (`make lint-metrics`), which only runs inside its
-# Docker container on pull requests. eslint.config.mjs carries a looser mirror of
-# that policy for `src/**` and `scripts/**` so an oversized function still fails
-# in editors, `make lint` and the static-testing job when the RCA container is
-# unavailable. These tests run the real ESLint against throwaway fixtures under
-# src/ (the backstop is path-scoped, and typescript-eslint's project service only
-# sees files the tsconfig includes), then remove them.
-
 load './test_helper.bash'
 
 FIXTURE_DIR="$PROJECT_ROOT/src/__eslint_backstop_fixture__"
@@ -21,9 +12,6 @@ teardown() {
   rm -rf "$FIXTURE_DIR"
 }
 
-# An 80-statement function, a 4-parameter function, a 5-deep nest and a
-# 13-branch function: one fixture per function-scoped backstop threshold, in one
-# file so ESLint builds the type-aware program once.
 write_oversized_fixture() {
   local file="$1"
   {
@@ -42,8 +30,6 @@ write_oversized_fixture() {
   } > "$file"
 }
 
-# The file-scoped threshold needs its own fixture: 401 one-line top-level
-# statements, none of which trips a function-scoped rule.
 write_oversized_file_fixture() {
   local file="$1"
   {
@@ -73,8 +59,6 @@ rule_ids_for() {
   ' "$file"
 }
 
-# Reads a threshold from the real flat config (the block whose rules carry the
-# backstop), so the assertion tracks the config rather than a regex over it.
 backstop_threshold() {
   local config="$1"
   local rule="$2"
@@ -101,8 +85,6 @@ backstop_threshold() {
   [[ "$ids" == *"max-params"* ]]
   [[ "$ids" == *"max-depth"* ]]
   [[ "$ids" == *"complexity"* ]]
-  # `max-lines` is reported by file, so it must be asserted against its own
-  # fixture rather than inferred from the function-scoped rules above.
   [[ "$(rule_ids_for "$file_fixture")" == "max-lines" ]]
 }
 

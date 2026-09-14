@@ -33,7 +33,6 @@ function ControlledInput<T extends FieldValues>({
 }: ControlledInputProps<T>): React.ReactElement {
   // Run RHF's handlers (required to track value/validation) AND any handler the
   // consumer passed, instead of letting the spread order silently drop theirs.
-  // Memoised so the input only sees a new handler when one of the two changes.
   const { onChange: consumerChange, onBlur: consumerBlur } = inputProps;
   const handleChange = React.useCallback<
     React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
