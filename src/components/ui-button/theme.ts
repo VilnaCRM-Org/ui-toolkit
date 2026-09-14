@@ -8,6 +8,14 @@ import colorTheme from '../ui-color-theme';
 // 89x18 label inset 24/16 (24+89+24=137, 16+18+16=50), and the danger pill
 // 439:19822 is 98x42 around the same 18px label inset 24/12. The medium button
 // has a taller label box and overrides it below.
+//
+// Figma strokes INSIDE the frame, so every inset above is measured from the
+// pill's outer edge. CSS draws a border OUTSIDE the padding box on an auto-sized
+// element (`boxSizing` cannot absorb it: border-box only bites when a length is
+// declared, and both axes here are `auto`), so a stroked pill that reused the
+// filled pill's padding verbatim rendered 2px over on both axes (issue #159).
+// Every bordered rule below therefore subtracts its 1px border from the padding
+// so the stroked and filled pills share one box.
 const baseButtonStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
@@ -57,19 +65,23 @@ export const outlinedStyles: Interpolation<{ theme: Theme }> = {
   '&:active': {
     border: `1px solid ${colorTheme.palette.grey500.main}`,
   },
+  // A transparent 1px rather than `border: none`, so the compensated padding
+  // holds in every state and the box does not jitter when the button is
+  // disabled -- the danger pill's convention.
   '&:disabled': {
     backgroundColor: colorTheme.palette.brandGray.main,
     color: colorTheme.palette.white.main,
-    border: 'none',
+    border: '1px solid transparent',
   },
 };
 
 // Board A y=1354, danger `Cancel` pill (rest 439:19822 / hover 439:19824 /
 // active 439:19826 / disabled 439:19828). Border stays declared at 1px in every
-// state (transparent where Figma paints none) so the 98x42 box never shifts.
+// state (transparent where Figma paints none) so the 98x42 box never shifts,
+// and the 24/12 inset is 23/11 of padding plus that border.
 export const dangerStyles: Interpolation<{ theme: Theme }> = {
   ...baseButtonStyles,
-  padding: '0.75rem 1.5rem',
+  padding: '0.6875rem 1.4375rem',
   backgroundColor: alpha(colorTheme.palette.error.main, 0.1),
   border: `1px solid ${colorTheme.palette.strokeDanger.main}`,
   color: colorTheme.palette.error.main,
@@ -119,34 +131,22 @@ export const theme: Theme = createTheme({
         },
         {
           props: { variant: 'outlined', size: 'small' },
-          style: { ...outlinedStyles, padding: '1rem 1.5rem' },
+          // 15/23 of padding plus the 1px border reproduces the contained
+          // pill's 16/24 inset and the same 137x50 box (1+15+18+15+1 = 50).
+          style: { ...outlinedStyles, padding: '0.9375rem 1.4375rem' },
         },
         {
           props: { variant: 'outlined', size: 'medium' },
           // The contained CTA above IS the 171x62 pill and carries no stroke, so
           // its 20/32 padding is the whole inset. This rule adds `outlinedStyles`'
-          // 1px border, and CSS draws a border OUTSIDE the padding box on an
-          // auto-sized element -- `boxSizing` cannot absorb it, because
-          // border-box only bites when a length is declared and both axes here
-          // are `auto`. Reusing the CTA's padding verbatim therefore renders
-          // 173x64, 2px over its contained sibling on both axes. Figma strokes
-          // INSIDE the frame, so the border is subtracted from the padding
-          // instead: 19/31 plus the 1px border reproduces the 20/32 inset and
-          // lands the box back on 171x62 (1+19+22+19+1 = 62). Same compensation
-          // `ui-add-button`, `ui-filter-chip`, `ui-task-card` and
+          // 1px border, so 19/31 of padding plus that border reproduces the
+          // inset and lands the box back on 171x62 (1+19+22+19+1 = 62). Same
+          // compensation `ui-add-button`, `ui-filter-chip`, `ui-task-card` and
           // `ui-integration-card` already apply.
           style: {
             ...outlinedStyles,
             ...mediumLabelBox,
             padding: '1.1875rem 1.9375rem',
-            // A transparent 1px rather than `outlinedStyles`' `border: none`, so
-            // the compensated padding holds in every state and the box does not
-            // jitter when the button is disabled -- the danger pill's convention.
-            '&:disabled': {
-              backgroundColor: colorTheme.palette.brandGray.main,
-              color: colorTheme.palette.white.main,
-              border: '1px solid transparent',
-            },
           },
         },
         {
@@ -158,17 +158,18 @@ export const theme: Theme = createTheme({
           // MUI applies EVERY matching variant rule, not just the most specific
           // one, so the plain outlined/medium rule above also lands on this
           // button -- which is how it picks up the 18px font size it never
-          // declares. That made it inherit the medium CTA's label box too, and
-          // this pill is 189x58 around a 22px content row (Figma 439:19329), not
-          // a 171x62 CTA. It declares its own line box so the CTA's cannot reach
-          // it; without this line the button grows 4px and its visual baseline
-          // breaks.
+          // declares. This pill is 189x58 around a 22px content row (Figma
+          // 439:19329: a 22px glyph beside an 18px DemiBold label whose line
+          // box measures 22px), inset 18px from the outer edge with the stroke
+          // inside. It declares that line box itself rather than inheriting
+          // whatever the CTA rule carries, and spends 17px of the inset on
+          // padding and 1px on the border (1+17+22+17+1 = 58).
           style: {
             fontFamily: 'Golos Text',
             textTransform: 'none',
-            lineHeight: '1.125rem',
+            lineHeight: '1.375rem',
             borderRadius: '0.75rem',
-            padding: '1.125rem',
+            padding: '1.0625rem',
             gap: '0.563rem',
             border: `1px solid ${colorTheme.palette.brandGray.main}`,
             background: colorTheme.palette.white.main,
@@ -186,7 +187,7 @@ export const theme: Theme = createTheme({
             '&:disabled': {
               background: colorTheme.palette.brandGray.main,
               boxShadow: 'none',
-              border: 'none',
+              border: '1px solid transparent',
               img: {
                 opacity: '0.2',
               },
