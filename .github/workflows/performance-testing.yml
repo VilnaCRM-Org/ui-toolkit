@@ -32,11 +32,25 @@ jobs:
         with:
           persist-credentials: false
 
-      # Lighthouse targets run in their own `docker compose run --rm` container
-      # (RUN_BUN_SH) and build Storybook themselves, so no long-lived service is
-      # needed here.
+      - name: Start docker test environment
+        run: make start-bun
+
       - name: Run ${{ matrix.formFactor }} Lighthouse audit
         run: make lighthouse-${{ matrix.formFactor }}
+
+      - name: Export the Lighthouse results
+        if: always()
+        run: make copy-lighthouse-reports
+
+      - name: Upload the Lighthouse results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lighthouse-${{ matrix.formFactor }}
+          path: .lighthouseci/
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: error
 
       - name: Stop docker test environment
         if: always()

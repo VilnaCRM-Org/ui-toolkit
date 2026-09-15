@@ -15,13 +15,14 @@ load './test_helper.bash'
 # Pull-request workflow targets that are environment plumbing rather than quality gates:
 # they boot, tear down, or move artifacts and assert nothing on their own. `make verify`
 # manages its own containers through each gate, so it never needs to invoke these.
-PLUMBING_TARGETS=(install start start-bun up down copy-coverage copy-mutation-report stage-mutation-reports)
+PLUMBING_TARGETS=(install start start-bun up down copy-coverage copy-lighthouse-reports copy-mutation-report stage-mutation-reports)
 
 # Sharded CI equivalents of a single local gate. CI fans mutation testing across a matrix
 # and re-enforces the same Stryker break threshold once over the union of the shards;
 # `make verify` runs that identical gate unsharded in one process.
 GATE_EQUIVALENT_test_mutation_shard=test-mutation
 GATE_EQUIVALENT_merge_mutation_reports=test-mutation
+GATE_EQUIVALENT_report_dependency_audit=lint-vulns
 
 setup() {
   setup_makefile_test_env
@@ -254,7 +255,8 @@ gate_equivalent() {
   run diff -u \
     <(printf '%s\n' lint build test-unit test-integration test-bats \
       test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop \
-      lighthouse-mobile) \
+      lighthouse-mobile lint-secrets scan-secrets-history lint-vulns scan-image-bun \
+      scan-image-playwright scan-image-rca) \
     <(executed_gates)
   [ "$status" -eq 0 ]
 }

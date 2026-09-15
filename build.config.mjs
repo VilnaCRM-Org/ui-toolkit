@@ -5,6 +5,8 @@ import path from 'path';
 import { createRequire } from 'module';
 import { execFileSync } from 'child_process';
 
+import { assertBundleFootprint } from './scripts/ci/check-bundle-footprint.mjs';
+
 const currentFile = fileURLToPath(import.meta.url);
 const currentDir = path.dirname(currentFile);
 const entryPoint = path.resolve(currentDir, 'src', 'components', 'index.ts');
@@ -220,6 +222,7 @@ rmSync(path.resolve(currentDir, 'build'), { recursive: true, force: true });
 
 esbuild
   .build({
+    absWorkingDir: currentDir,
     outdir: path.resolve(currentDir, 'build'),
     entryPoints: componentEntryPoints(),
     entryNames: '[name]',
@@ -268,6 +271,11 @@ esbuild
   .then(async result => {
     await generateTypeDeclarations();
     generateSubpathDeclarations(componentEntryPoints(), result.metafile);
+    assertBundleFootprint({
+      metafile: result.metafile,
+      budgetPath: path.resolve(currentDir, 'config', 'bundle-budget.json'),
+      buildDir: path.resolve(currentDir, 'build'),
+    });
   })
   .catch(error => {
     process.stderr.write(`Build failed: ${error.message ?? error}\n`);

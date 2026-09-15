@@ -9,6 +9,7 @@ help	bats	tests/bats/makefile_targets.bats	Validated through the help output con
 install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency install entrypoint used before browser-style jobs.
 lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.
 lighthouse-mobile	bats	tests/bats/makefile_targets.bats	Validated as the mobile Lighthouse shell entrypoint.
+copy-lighthouse-reports	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure, the missing-results skip, and the copy-success branch.
 lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the static testing workflow's individual lint targets.
 lint-deps	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
 lint-ci-paths	bats	tests/bats/ci_referenced_paths.bats	Validated for the passing repository scan, the historic memlab-rename failure, missing sources, and false-positive noise.
@@ -52,3 +53,10 @@ merge-mutation-reports	bats	tests/bats/makefile_targets.bats	Validated for the r
 ci	bats	tests/bats/aggregate_gate_targets.bats	Validated as the fast pre-push aggregate gate set, including fail-fast ordering and the summary table.
 verify	bats	tests/bats/aggregate_gate_targets.bats	Validated as the full merge-bar aggregate, including workflow-gate reachability.
 run-gates	bats	tests/bats/aggregate_gate_targets.bats	Validated as the shared gate runner behind ci and verify, including the empty-GATE_SET guard.
+lint-secrets	bats	tests/bats/secret_scanning.bats	Validated as the digest-pinned gitleaks working-tree scan with its positive control; also executed by the secret scanning workflow.
+scan-secrets-history	bats	tests/bats/secret_scanning.bats	Validated as the full-history gitleaks walk that refuses shallow clones and narrows to SECRETS_LOG_OPTS.
+lint-vulns	bats	tests/bats/dependency_cve_gate.bats	Validated as the digest-pinned trivy scan of the bun.lock production closure with SARIF output.
+scan-image-bun	bats	tests/bats/dependency_cve_gate.bats	Validated as the build-save-scan flow over Dockerfile gating on OS packages.
+scan-image-playwright	bats	tests/bats/dependency_cve_gate.bats	Validated as the build-save-scan flow over Dockerfile.playwright gating on OS packages.
+scan-image-rca	bats	tests/bats/dependency_cve_gate.bats	Validated as the build-save-scan flow over Dockerfile.rca gating on OS packages.
+report-dependency-audit	bats	tests/bats/dependency_cve_gate.bats	Validated for the clean, first-report, unchanged, and changed advisory-set branches of the tracking issue.

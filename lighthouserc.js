@@ -31,7 +31,7 @@ module.exports = {
     collect: {
       staticDistDir: './storybook-static',
       url: STORY_IDS.map(story),
-      numberOfRuns: 1,
+      numberOfRuns: 3,
       settings: {
         // Chrome runs as root inside the Docker test image, where the setuid
         // sandbox is unavailable — disable it (and dev-shm/gpu) so Lighthouse can
@@ -43,6 +43,7 @@ module.exports = {
       },
     },
     assert: {
+      aggregationMethod: 'median',
       assertions: {
         // color-contrast is WARN, not error: the known failures (white on the
         // brand primary #1EAEFF ~2.45:1, brand-blue links, grey300 footer text on

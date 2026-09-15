@@ -70,4 +70,10 @@ Supply-chain posture is measured continuously:
   latter scanned after installation so it carries the fully resolved tree;
 - the `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
   findings to code scanning;
-- CodeQL (`security testing`) analyses the TypeScript sources on every pull request to `main`.
+- CodeQL (`security testing`) analyses the TypeScript sources on every pull request to `main`;
+- the `secret scanning` workflow runs gitleaks over the working tree and the added commits of
+  every pull request, and over the full history weekly and on every push to `main`;
+- the `dependency cve scanning` workflow runs trivy on every pull request: it fails on a fixable
+  HIGH/CRITICAL advisory in the production dependency closure of `bun.lock` or in the OS packages
+  of any CI image, uploads the findings to code scanning, and audits the full lockfile weekly
+  into one `dependency-audit` tracking issue.

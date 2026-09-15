@@ -1,0 +1,31 @@
+{
+  "entryBytes": {
+    "default": 32768,
+    "index": 409600,
+    "ui-card-list": 122880
+  },
+  "cssBytes": 16384,
+  "buildBytes": 4194304,
+  "sharedEntries": ["ui-breakpoints", "ui-color-theme", "ui-typography"],
+  "composition": {
+    "auth-skeleton": [
+      "ui-skeleton-block",
+      "ui-skeleton-button",
+      "ui-skeleton-input",
+      "ui-skeleton-text"
+    ],
+    "ui-back-to-main": ["ui-button", "ui-container"],
+    "ui-card-list": ["ui-image", "ui-tooltip"],
+    "ui-form": ["ui-button"],
+    "ui-skeleton-control-text": ["ui-skeleton-block", "ui-skeleton-text"],
+    "ui-skeleton-list": ["ui-skeleton-block"],
+    "ui-skeleton-menu": ["ui-skeleton-block", "ui-skeleton-image", "ui-skeleton-text"],
+    "ui-skeleton-tab-bar": ["ui-skeleton-block", "ui-skeleton-text"],
+    "ui-skeleton-table": ["ui-skeleton-block"],
+    "ui-skeleton-widget": ["ui-skeleton-block", "ui-skeleton-image", "ui-skeleton-text"],
+    "ui-text-field-form": ["ui-input"]
+  },
+  "isolatedPackages": {
+    "swiper": ["ui-card-list"]
+  }
+}
