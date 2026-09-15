@@ -27,6 +27,18 @@ MUTATION_SHARD_TOTAL ?= 1
 MUTATION_SHARD_INDEX ?= 0
 MUTATION_REPORTS_DIR = reports/mutation
 
+GITLEAKS_IMAGE = ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+SECRETS_SCANNER = scripts/ci/scan-secrets.sh
+SECRETS_LOG_OPTS ?=
+
+TRIVY_IMAGE = aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969
+TRIVY_CACHE_DIR ?= $(CURDIR)/.trivy-cache
+TRIVY_SEVERITY = HIGH,CRITICAL
+TRIVY_REPORT_DIR = reports/trivy
+TRIVY_ENV = TRIVY_IMAGE="$(TRIVY_IMAGE)" TRIVY_CACHE_DIR="$(TRIVY_CACHE_DIR)" TRIVY_SEVERITY="$(TRIVY_SEVERITY)" TRIVY_REPORT_DIR="$(TRIVY_REPORT_DIR)"
+VULNERABILITY_SCANNER = scripts/ci/scan-vulnerabilities.sh
+DEPENDENCY_AUDIT_REPORTER = scripts/ci/report-dependency-audit.sh
+
 # Release packaging. The tarball is written outside build/ on purpose: `files`
 # publishes build/, so packing into it would fold the previous release's archive
 # into the next one.
@@ -39,7 +51,8 @@ PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
 # tests/bats/aggregate_gate_targets.bats holds the two definitions together: it
 # fails when a workflow runs a gate `verify` cannot reach.
 CI_GATES = lint build test-unit test-integration test-bats
-VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop lighthouse-mobile
+VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop lighthouse-mobile \
+	lint-secrets lint-vulns scan-image-bun scan-image-playwright scan-image-rca
 VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
 GATE_SET_NAME = gates
 GATE_SET =
@@ -52,11 +65,12 @@ MAKE_GATE = $(MAKE) --no-print-directory
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual test-visual-update \
 	test-storybook \
-	lighthouse-desktop lighthouse-mobile install update playwright-install test-bats \
+	lighthouse-desktop lighthouse-mobile copy-lighthouse-reports install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
 	lint-dep-ranges lint-unused-deps lint-deps lint-metrics lint-metrics-run lint-ci-paths \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports \
-	ci verify run-gates
+	ci verify run-gates lint-secrets scan-secrets-history \
+	lint-vulns scan-image-bun scan-image-playwright scan-image-rca report-dependency-audit
 
 PLAYWRIGHT_TEST_ARGS =
 PLAYWRIGHT_RUN_FLAGS =
@@ -171,6 +185,27 @@ lint-metrics-run: ## Evaluate metrics policy (run inside rca container via make 
 	export METRICS_POLICY=$(METRICS_POLICY_PATH); \
 	export METRICS_POLICY_SCHEMA=config/metrics-policy.schema.json; \
 	sh scripts/lint-metrics.sh
+
+lint-secrets: ## Scan the working tree for committed secrets with gitleaks (host-only, Docker).
+	@GITLEAKS_IMAGE="$(GITLEAKS_IMAGE)" SECRETS_MODE=tree bash $(SECRETS_SCANNER)
+
+scan-secrets-history: ## Scan every commit reachable from HEAD (or SECRETS_LOG_OPTS) for secrets with gitleaks (host-only, Docker; needs a full clone).
+	@GITLEAKS_IMAGE="$(GITLEAKS_IMAGE)" SECRETS_MODE=history SECRETS_LOG_OPTS="$(SECRETS_LOG_OPTS)" bash $(SECRETS_SCANNER)
+
+lint-vulns: ## Fail on a fixable HIGH/CRITICAL CVE in the production dependency closure of bun.lock (host-only, Docker).
+	@$(TRIVY_ENV) SCAN_TARGET=lockfile bash $(VULNERABILITY_SCANNER)
+
+scan-image-bun: ## Build the bun CI image and fail on a fixable HIGH/CRITICAL CVE in its OS packages (host-only, Docker).
+	@$(TRIVY_ENV) SCAN_TARGET=image SCAN_SERVICE=bun bash $(VULNERABILITY_SCANNER)
+
+scan-image-playwright: ## Build the Playwright CI image and fail on a fixable HIGH/CRITICAL CVE in its OS packages (host-only, Docker).
+	@$(TRIVY_ENV) SCAN_TARGET=image SCAN_SERVICE=playwright bash $(VULNERABILITY_SCANNER)
+
+scan-image-rca: ## Build the rca CI image and fail on a fixable HIGH/CRITICAL CVE in its OS packages (host-only, Docker).
+	@$(TRIVY_ENV) SCAN_TARGET=image SCAN_SERVICE=rca bash $(VULNERABILITY_SCANNER)
+
+report-dependency-audit: ## Report every fixable HIGH/CRITICAL CVE in the full lockfile, dev tooling included, to one tracking issue (host-only, Docker; needs gh).
+	@$(TRIVY_ENV) bash $(DEPENDENCY_AUDIT_REPORTER)
 
 # Host-side on purpose: the bun image bakes the repo without .git (.dockerignore) and has no
 # bind mount, so hooks written inside a container are thrown away with it. Husky 9 dropped the
@@ -290,10 +325,33 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 	'
 
 lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
-	$(RUN_BUN_SH) 'bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -n "$$container_id" ]; then \
+		$(EXEC_BUN) sh -lc 'bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'; \
+	else \
+		$(RUN_BUN_SH) 'bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'; \
+	fi
 
 lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
-	$(RUN_BUN_SH) 'bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -n "$$container_id" ]; then \
+		$(EXEC_BUN) sh -lc 'bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'; \
+	else \
+		$(RUN_BUN_SH) 'bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'; \
+	fi
+
+copy-lighthouse-reports: ## Copy the Lighthouse CI results directory from the docker container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; start docker before copying Lighthouse reports"; \
+		exit 1; \
+	fi; \
+	if ! $(EXEC_BUN) test -d /app/.lighthouseci; then \
+		echo "Lighthouse results directory was not generated; skipping copy"; \
+		exit 0; \
+	fi; \
+	rm -rf ./.lighthouseci; \
+	$(DOCKER_COMPOSE) cp bun:/app/.lighthouseci ./.lighthouseci
 
 install: ## Install dependencies inside the docker container.
 	$(RUN_BUN) bun install --frozen-lockfile

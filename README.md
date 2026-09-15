@@ -21,6 +21,14 @@ Install dependencies:
 bun install
 ```
 
+Every environment variable has a fallback, so no `.env` is needed to build or test. To override
+one, copy the template and edit the copy — `.env` is gitignored and the `secret scanning`
+workflow fails a pull request that commits a credential:
+
+```bash
+cp .env.example .env
+```
+
 `make help` prints the authoritative, self-documenting list of every target — run it first:
 
 ```bash
@@ -288,6 +296,27 @@ The tarball lands in `dist/`, and the recipe fails if it does not carry the entr
 `package.json` promises. [CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
 `website` pin a release, verify it, and move to a later one.
 
+### Bundle footprint
+
+Every build (`make build`, `make package`, the release) fails when the emitted bundle breaks
+`config/bundle-budget.json`:
+
+- `entryBytes` caps the JavaScript a consumer loads by importing one subpath
+  (`@vilnacrm/ui-toolkit/<component>`): the entry file plus every chunk it imports, transitively.
+  `default` applies to every component; `index` is the whole barrel; heavier components carry
+  their own line.
+- `composition` is the exact list of other published components each entry may reach, and
+  `sharedEntries` are the token modules any entry may reach. A component that starts pulling in
+  another one fails the build until the edge is declared here.
+- `isolatedPackages` confines a runtime dependency to the entries allowed to load it, so
+  importing a button can never retain the carousel runtime.
+- `cssBytes` caps `styles.css` and `buildBytes` caps everything `build/` ships — today mostly
+  the nine bundled TTF faces and the source maps, which stay in the artifact on purpose: the
+  fonts are the design's, and the maps are what makes a consumer's stack trace readable.
+
+The build prints each entry's footprint next to its budget. Raise a number only for a change that
+is meant to grow the artifact, in the same pull request, and say why in its description.
+
 ## Notes
 
 - This repository is a React UI library, not a Next.js app.
@@ -315,8 +344,11 @@ Report vulnerabilities through the private reporting guidance in [SECURITY.md](S
 also documents the supported-version window and the response targets.
 
 Supply-chain posture is measured in CI: the `sbom` workflow publishes a CycloneDX SBOM for the npm
-package and for each CI image, and the `OSSF Scorecard` workflow publishes the repository score
-behind the badge above.
+package and for each CI image, the `OSSF Scorecard` workflow publishes the repository score
+behind the badge above, `make lint-secrets` fails a pull request that commits a credential, and
+`make lint-vulns` plus the `scan-image-*` targets fail one that ships a fixable HIGH/CRITICAL
+advisory in the production dependency closure or in a CI image's OS packages. See
+[Supply-chain pinning and inventory](CONTRIBUTING.md#supply-chain-pinning-and-inventory).
 
 ## Contributing
 

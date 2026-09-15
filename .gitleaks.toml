@@ -1,0 +1,19 @@
+title = "VilnaCRM ui-toolkit secret-scanning policy"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Gitignored build and report output: absent from every CI checkout, present in a working copy"
+paths = [
+  '''^(/repo/)?build/''',
+  '''^(/repo/)?coverage/''',
+  '''^(/repo/)?dist/''',
+  '''^(/repo/)?playwright-report/''',
+  '''^(/repo/)?reports/''',
+  '''^(/repo/)?storybook-static/''',
+  '''^(/repo/)?temp/''',
+  '''^(/repo/)?test-results/''',
+  '''^(/repo/)?\.lighthouseci/''',
+  '''^(/repo/)?\.stryker-tmp/''',
+]

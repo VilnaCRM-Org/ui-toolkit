@@ -233,6 +233,42 @@ EOF
   assert_log_not_contains 'docker compose exec -T bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --verbose'
 }
 
+@test "lighthouse-desktop prefers docker compose exec when the bun service is running" {
+  run_make_target_with_env lighthouse-desktop FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose ps -q bun'
+  assert_log_contains 'docker compose exec -T bun sh -lc bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'
+  assert_log_not_contains 'docker compose run --rm --entrypoint sh bun -lc'
+}
+
+@test "lighthouse-mobile prefers docker compose exec when the bun service is running" {
+  run_make_target_with_env lighthouse-mobile FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose exec -T bun sh -lc bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'
+  assert_log_not_contains 'docker compose run --rm --entrypoint sh bun -lc'
+}
+
+@test "copy-lighthouse-reports fails clearly when the bun service is not running" {
+  run_make_target copy-lighthouse-reports
+  [ "$status" -ne 0 ]
+  assert_output_contains 'bun service is not running; start docker before copying Lighthouse reports'
+  assert_log_not_contains 'docker compose cp'
+}
+
+@test "copy-lighthouse-reports skips copying when no Lighthouse results were generated" {
+  run_make_target_with_env copy-lighthouse-reports FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_output_contains 'Lighthouse results directory was not generated; skipping copy'
+  assert_log_contains 'docker compose exec -T bun test -d /app/.lighthouseci'
+  assert_log_not_contains 'docker compose cp bun:/app/.lighthouseci ./.lighthouseci'
+}
+
+@test "copy-lighthouse-reports copies the results when they exist inside the bun container" {
+  run_make_target_with_env copy-lighthouse-reports FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id FAKE_BUN_LIGHTHOUSE_EXISTS=1
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose cp bun:/app/.lighthouseci ./.lighthouseci'
+}
+
 @test "copy-coverage fails clearly when the bun service is not running" {
   run_make_target copy-coverage
   [ "$status" -ne 0 ]

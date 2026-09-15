@@ -133,7 +133,8 @@ own subdirectory:
 - `tests/integration` — Jest composition tests across components
 - `tests/e2e` — Playwright end-to-end specs run against Storybook
 - `tests/storybook` — the Storybook interaction (play function) registry and its docs
-- `tests/visual` — Playwright visual-regression specs and their snapshots
+- `tests/visual` — Playwright visual-regression specs and their snapshots (regenerate baselines
+  only through `make test-visual-update`; see `tests/visual/README.md`)
 - `tests/load` — rationale for the deliberately omitted load tier (see its `README.md`)
 - `tests/memory-leak` — Memlab leak scenarios
 - `tests/bats` — Bats coverage for Makefile and CI shell flows
@@ -524,6 +525,21 @@ inventoried.
   `bun.lock` produces.
   The `OSSF Scorecard` workflow publishes the repository's supply-chain score and uploads its
   findings to code scanning.
+- **Secrets.** The `secret scanning` workflow runs gitleaks from a digest-pinned image against
+  the committed `.gitleaks.toml`: `make lint-secrets` scans the working tree on every pull
+  request together with the commits the pull request adds, and `make scan-secrets-history`
+  walks the whole history weekly and on every push to `main`. Each run seeds a fake credential
+  and fails unless the scanner reports it, so a broken scanner cannot pass green. `.env` is
+  gitignored; keep local overrides there and never commit one.
+- **CVEs.** The `dependency cve scanning` workflow runs trivy from a digest-pinned image.
+  `make lint-vulns` fails a pull request on a fixable HIGH/CRITICAL advisory in the production
+  dependency closure of `bun.lock`; `make scan-image-bun`, `make scan-image-playwright` and
+  `make scan-image-rca` build each CI image and fail on a fixable HIGH/CRITICAL advisory in its
+  OS packages. Both upload SARIF to code scanning. The full lockfile, dev tooling included, is
+  audited weekly by `make report-dependency-audit`, which keeps one `dependency-audit` tracking
+  issue current instead of turning unrelated pull requests red over a backlog no author caused.
+  Fix a finding by upgrading the dependency or the base package (`bun why <package>` names the
+  direct dependency); the gates have no ignore list.
 
 When you add a step that uses an action, resolve its SHA before committing. An
 annotated tag points at a tag object rather than at the commit, so the reference has to be

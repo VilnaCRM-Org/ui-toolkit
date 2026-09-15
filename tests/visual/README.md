@@ -35,16 +35,18 @@ Pixel baselines for every Storybook story, asserted with Playwright
 
 ## Updating baselines
 
-After an intentional visual change, regenerate and review the diffs:
+After an intentional visual change, regenerate the baselines inside the same pinned Playwright
+image CI compares against, then review every changed PNG before committing it:
 
 ```bash
-REACT_APP_STORYBOOK_URL=http://127.0.0.1:6029 \
-  bun x playwright test tests/visual --project=chromium --update-snapshots
+make test-visual-update
+git status --short tests/visual/visual.spec.ts-snapshots
 ```
 
-Baselines are committed under `visual.spec.ts-snapshots/` as `*-chromium-linux.png`.
-They are generated on Linux/Chromium to match the Playwright Docker image
-(`mcr.microsoft.com/playwright`), so the `linux` platform suffix is shared.
+The target bind-mounts `tests/` into the container so the new PNGs land in the working tree.
+Baselines are committed under `visual.spec.ts-snapshots/` as `*-chromium-linux.png`; a PNG
+captured on a host browser renders differently and fails `make test-visual` in CI, which is the
+guard against an unreproducible baseline. Attach the before/after diff to the pull request.
 
 ## Adding a story
 

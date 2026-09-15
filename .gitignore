@@ -53,6 +53,7 @@ playwright-report/
 blob-report/
 playwright/.cache/
 reports/
+.trivy-cache/
 .stryker-tmp
 
 # production

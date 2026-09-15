@@ -12,7 +12,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
       curl=7.81.0-1ubuntu1.27 \
       g++=4:11.2.0-1ubuntu1 \
+      libssl3=3.0.2-0ubuntu1.29 \
       make=4.3-4.1build1 \
+      openssl=3.0.2-0ubuntu1.29 \
       procps=2:3.3.17-6ubuntu2.1 \
       python3=3.10.6-1~22.04.1 \
       unzip=6.0-26ubuntu3.2 \

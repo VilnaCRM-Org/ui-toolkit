@@ -47,6 +47,19 @@ if [ "$1" = "compose" ] \
   exit 1
 fi
 
+if [ "$1" = "compose" ] \
+  && [ "${2:-}" = "exec" ] \
+  && [ "${3:-}" = "-T" ] \
+  && [ "${4:-}" = "bun" ] \
+  && [ "${5:-}" = "test" ] \
+  && [ "${6:-}" = "-d" ] \
+  && [ "${7:-}" = "/app/.lighthouseci" ]; then
+  if [ "${FAKE_BUN_LIGHTHOUSE_EXISTS:-0}" = "1" ]; then
+    exit 0
+  fi
+  exit 1
+fi
+
 exit 0
 EOF
 
