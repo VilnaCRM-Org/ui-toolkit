@@ -78,8 +78,8 @@ run_scanner() {
   grep -A 2 '^scan-secrets-history:' "$MAKEFILE" | grep -q 'SECRETS_LOG_OPTS="$(SECRETS_LOG_OPTS)"'
 }
 
-@test "lint-secrets is a verify gate and both targets are declared phony" {
-  grep -A 1 '^VERIFY_EXTRA_GATES' "$MAKEFILE" | grep -q 'lint-secrets'
+@test "both secret scans are verify gates and declared phony" {
+  grep -A 1 '^VERIFY_EXTRA_GATES' "$MAKEFILE" | grep -q 'lint-secrets scan-secrets-history'
   awk '/^\.PHONY/{buf=""; flag=1} flag{buf=buf $0; if(/\\$/)next; if(buf ~ /lint-secrets/ && buf ~ /scan-secrets-history/){found=1; exit}} END{exit !found}' "$MAKEFILE"
 }
 

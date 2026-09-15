@@ -48,8 +48,9 @@ jobs:
         with:
           name: lighthouse-${{ matrix.formFactor }}
           path: .lighthouseci/
+          include-hidden-files: true
           retention-days: 30
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Stop docker test environment
         if: always()

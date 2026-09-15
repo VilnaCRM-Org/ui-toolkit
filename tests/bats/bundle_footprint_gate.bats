@@ -172,6 +172,21 @@ run_check() {
   assert_output_contains 'ui-a: reaches [ui-theme] but config/bundle-budget.json composition declares []'
 }
 
+@test "a chunk reached through a dynamic import counts toward bytes, composition, and isolation" {
+  node -e '
+    const fs = require("fs");
+    const metafile = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    metafile.outputs["build/ui-a.mjs"].imports.push({ path: "build/chunks/chunk-B.mjs", kind: "dynamic-import" });
+    fs.writeFileSync(process.argv[1], JSON.stringify(metafile));
+  ' "$FIXTURE/metafile.json"
+  run_check
+  [ "$status" -eq 1 ]
+  assert_output_contains 'ui-a                             1150 / 1000'
+  assert_output_contains 'ui-a: 1150 bytes of JavaScript exceed its 1000-byte budget'
+  assert_output_contains 'ui-a: reaches [ui-b] but config/bundle-budget.json composition declares []'
+  assert_output_contains 'ui-a: pulls in swiper, which only [ui-b] may reach'
+}
+
 @test "an isolated package leaking into another entry fails the build" {
   edit_budget '{"isolatedPackages": {"swiper": []}}'
   run_check

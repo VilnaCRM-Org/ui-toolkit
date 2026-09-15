@@ -28,7 +28,7 @@ docker run --rm --user "$(id -u):$(id -g)" \
   "$image" fs --scanners vuln --severity "$severity" --ignore-unfixed --no-progress \
   --include-dev-deps --format json --exit-code 0 --output /reports/dependency-audit.json bun.lock
 
-if ! jq -e '.Results | type == "array"' "$json" > /dev/null 2>&1; then
+if ! jq -e '.SchemaVersion == 2 and ((.Results | type) == "array" or .Results == null)' "$json" > /dev/null 2>&1; then
   echo "report-dependency-audit: $json is not a trivy report; refusing to report a clean audit" >&2
   exit 1
 fi
@@ -70,7 +70,7 @@ fi
 
 gh label create "$label" --color B60205 --description "Fixable HIGH/CRITICAL advisories in the full dependency tree" 2>/dev/null || true
 
-existing="$(open_issues | head -n 1)"
+existing="$(open_issues | sed -n '1p')"
 if [ -z "$existing" ]; then
   gh issue create --label "$label" --title "$title" --body-file "$body"
   echo "report-dependency-audit: filed a tracking issue with $total findings"

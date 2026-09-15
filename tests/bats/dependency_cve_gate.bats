@@ -7,8 +7,9 @@ SCANNER="$PROJECT_ROOT/scripts/ci/scan-vulnerabilities.sh"
 REPORTER="$PROJECT_ROOT/scripts/ci/report-dependency-audit.sh"
 WORKFLOW="$PROJECT_ROOT/.github/workflows/dependency-cve-scanning.yml"
 PINNED_IMAGE='aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969'
-CLEAN_REPORT='{"Results":[{"Target":"bun.lock","Vulnerabilities":[]}]}'
-DIRTY_REPORT='{"Results":[{"Target":"bun.lock","Vulnerabilities":[{"PkgName":"nanoid","InstalledVersion":"3.3.11","FixedVersion":"3.3.16","VulnerabilityID":"GHSA-28wg-ghj8-5hjv","Severity":"HIGH"},{"PkgName":"basic-ftp","InstalledVersion":"5.2.0","FixedVersion":"5.2.1","VulnerabilityID":"CVE-2026-39983","Severity":"HIGH"}]}]}'
+CLEAN_REPORT='{"SchemaVersion":2,"ArtifactName":"bun.lock","Results":[{"Target":"bun.lock","Class":"lang-pkgs","Type":"bun"}]}'
+EMPTY_REPORT='{"SchemaVersion":2,"ArtifactName":"bun.lock"}'
+DIRTY_REPORT='{"SchemaVersion":2,"ArtifactName":"bun.lock","Results":[{"Target":"bun.lock","Vulnerabilities":[{"PkgName":"nanoid","InstalledVersion":"3.3.11","FixedVersion":"3.3.16","VulnerabilityID":"GHSA-28wg-ghj8-5hjv","Severity":"HIGH"},{"PkgName":"basic-ftp","InstalledVersion":"5.2.0","FixedVersion":"5.2.1","VulnerabilityID":"CVE-2026-39983","Severity":"HIGH"}]}]}'
 
 setup() {
   setup_makefile_test_env
@@ -245,11 +246,21 @@ run_reporter() {
   assert_log_not_contains 'gh issue create'
 }
 
+@test "a report with no results section at all still counts as clean" {
+  FAKE_TRIVY_JSON="$EMPTY_REPORT" FAKE_OPEN_ISSUES=58 run_reporter
+  [ "$status" -eq 0 ]
+  assert_log_contains 'gh issue close 58 --comment'
+}
+
 @test "the audit refuses to report a clean tree from something that is not a trivy report" {
-  FAKE_TRIVY_JSON='{}' FAKE_OPEN_ISSUES=58 run_reporter
-  [ "$status" -eq 1 ]
-  assert_output_contains 'is not a trivy report'
-  assert_log_not_contains 'gh issue close'
+  local shape
+  for shape in '{}' '{"Results":[]}' 'null' ''; do
+    reset_command_log
+    FAKE_TRIVY_JSON="$shape" FAKE_OPEN_ISSUES=58 run_reporter
+    [ "$status" -eq 1 ]
+    assert_output_contains 'is not a trivy report'
+    assert_log_not_contains 'gh issue close'
+  done
 }
 
 @test "the workflow gates pull requests on the lockfile and every image, uploading SARIF" {
@@ -257,6 +268,7 @@ run_reporter() {
   grep -qF 'run: make scan-image-${{ matrix.service }}' "$WORKFLOW"
   grep -qF 'service: [bun, playwright, rca]' "$WORKFLOW"
   [ "$(grep -c 'github/codeql-action/upload-sarif@' "$WORKFLOW")" -eq 2 ]
+  [ "$(grep -B 1 'github/codeql-action/upload-sarif@' "$WORKFLOW" | grep -c 'if: always()')" -eq 2 ]
   grep -qF 'sarif_file: reports/trivy/bun-lock.sarif' "$WORKFLOW"
   grep -qF 'sarif_file: reports/trivy/ui-toolkit-scan-${{ matrix.service }}.sarif' "$WORKFLOW"
 }

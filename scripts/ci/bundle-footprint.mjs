@@ -2,6 +2,7 @@ import path from 'node:path';
 
 const COMPONENT_INPUT = /^src\/components\/([^/]+)\//;
 const PACKAGE_INPUT = /^node_modules\/((?:@[^/]+\/)?[^/]+)\//;
+const CHUNK_EDGES = new Set(['import-statement', 'dynamic-import']);
 
 function entryOutputs(metafile) {
   return Object.entries(metafile.outputs).filter(
@@ -17,7 +18,7 @@ function reachableOutputs(metafile, start) {
     if (seen.has(file)) continue;
     seen.add(file);
     for (const imported of metafile.outputs[file].imports) {
-      if (imported.kind === 'import-statement' && metafile.outputs[imported.path]) {
+      if (CHUNK_EDGES.has(imported.kind) && metafile.outputs[imported.path]) {
         queue.push(imported.path);
       }
     }

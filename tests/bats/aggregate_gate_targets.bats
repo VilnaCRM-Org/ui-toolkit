@@ -22,7 +22,6 @@ PLUMBING_TARGETS=(install start start-bun up down copy-coverage copy-lighthouse-
 # `make verify` runs that identical gate unsharded in one process.
 GATE_EQUIVALENT_test_mutation_shard=test-mutation
 GATE_EQUIVALENT_merge_mutation_reports=test-mutation
-GATE_EQUIVALENT_scan_secrets_history=lint-secrets
 GATE_EQUIVALENT_report_dependency_audit=lint-vulns
 
 setup() {
@@ -256,8 +255,8 @@ gate_equivalent() {
   run diff -u \
     <(printf '%s\n' lint build test-unit test-integration test-bats \
       test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop \
-      lighthouse-mobile lint-secrets lint-vulns scan-image-bun scan-image-playwright \
-      scan-image-rca) \
+      lighthouse-mobile lint-secrets scan-secrets-history lint-vulns scan-image-bun \
+      scan-image-playwright scan-image-rca) \
     <(executed_gates)
   [ "$status" -eq 0 ]
 }

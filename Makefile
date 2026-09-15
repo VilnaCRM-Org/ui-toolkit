@@ -52,7 +52,7 @@ PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
 # fails when a workflow runs a gate `verify` cannot reach.
 CI_GATES = lint build test-unit test-integration test-bats
 VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop lighthouse-mobile \
-	lint-secrets lint-vulns scan-image-bun scan-image-playwright scan-image-rca
+	lint-secrets scan-secrets-history lint-vulns scan-image-bun scan-image-playwright scan-image-rca
 VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
 GATE_SET_NAME = gates
 GATE_SET =
