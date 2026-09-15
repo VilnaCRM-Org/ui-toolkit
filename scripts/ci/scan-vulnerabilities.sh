@@ -17,7 +17,7 @@ case "$image" in
     ;;
 esac
 digest="${image##*@sha256:}"
-if [ "${#digest}" -ne 64 ] || [ -n "${digest//[0-9a-f]/}" ]; then
+if [[ "${#digest}" -ne 64 ]] || [[ -n "${digest//[0-9a-f]/}" ]]; then
   echo "scan-vulnerabilities: TRIVY_IMAGE digest '$digest' is not 64 lowercase hex characters" >&2
   exit 1
 fi

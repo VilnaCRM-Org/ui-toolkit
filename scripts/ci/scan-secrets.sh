@@ -15,12 +15,12 @@ case "$image" in
     ;;
 esac
 digest="${image##*@sha256:}"
-if [ "${#digest}" -ne 64 ] || [ -n "${digest//[0-9a-f]/}" ]; then
+if [[ "${#digest}" -ne 64 ]] || [[ -n "${digest//[0-9a-f]/}" ]]; then
   echo "scan-secrets: GITLEAKS_IMAGE digest '$digest' is not 64 lowercase hex characters" >&2
   exit 1
 fi
 
-if [ ! -f "$workspace/$config" ]; then
+if [[ ! -f "$workspace/$config" ]]; then
   echo "scan-secrets: config '$config' not found under '$workspace'" >&2
   exit 1
 fi
@@ -31,16 +31,16 @@ scan_tree() {
 }
 
 scan_history() {
-  if [ ! -d "$workspace/.git" ]; then
+  if [[ ! -d "$workspace/.git" ]]; then
     echo "scan-secrets: SECRETS_MODE=history needs a git directory at '$workspace/.git'" >&2
     exit 1
   fi
-  if [ "$(git -C "$workspace" rev-parse --is-shallow-repository 2>/dev/null)" != "false" ]; then
+  if [[ "$(git -C "$workspace" rev-parse --is-shallow-repository 2>/dev/null)" != "false" ]]; then
     echo "scan-secrets: '$workspace' is a shallow (or unreadable) git repository; check out with fetch-depth: 0" >&2
     exit 1
   fi
   local args=()
-  if [ -n "$log_opts" ]; then
+  if [[ -n "$log_opts" ]]; then
     args=(--log-opts "$log_opts")
   fi
   docker run --rm -v "$workspace:/repo:ro" -w /repo \
@@ -50,7 +50,7 @@ scan_history() {
 
 probe=""
 cleanup_probe() {
-  if [ -n "$probe" ]; then
+  if [[ -n "$probe" ]]; then
     rm -rf "$probe"
   fi
 }
@@ -68,7 +68,7 @@ assert_scanner_detects() {
   status=$?
   set -e
 
-  if [ "$status" -ne 1 ]; then
+  if [[ "$status" -ne 1 ]]; then
     echo "scan-secrets: the scanner exited $status on a seeded credential instead of reporting it" >&2
     cat "$probe/stderr.txt" >&2
     exit 1

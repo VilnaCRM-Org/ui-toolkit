@@ -43,7 +43,7 @@ open_issues() {
   gh issue list --label "$label" --state open --search "$title in:title" --json number --jq '.[].number'
 }
 
-if [ "$total" -eq 0 ]; then
+if [[ "$total" -eq 0 ]]; then
   echo "report-dependency-audit: no fixable $severity advisory in the full lockfile"
   for number in $(open_issues); do
     gh issue close "$number" --comment "The weekly audit found no fixable $severity advisory in the full lockfile; closing."
@@ -58,20 +58,20 @@ fi
   printf 'Every entry has a fixed version; upgrade the direct dependency that pulls it in (`bun why <package>`).\n\n'
   printf '| Package | Installed | Fixed | Advisory | Severity |\n| --- | --- | --- | --- | --- |\n'
   printf '%s\n' "$findings"
-  if [ -n "$run_url" ]; then
+  if [[ -n "$run_url" ]]; then
     printf '\nAudit run: %s\n' "$run_url"
   fi
   printf '\n<!-- dependency-audit:%s -->\n' "$marker"
 } > "$body"
 
-if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   cat "$body" >> "$GITHUB_STEP_SUMMARY"
 fi
 
 gh label create "$label" --color B60205 --description "Fixable HIGH/CRITICAL advisories in the full dependency tree" 2>/dev/null || true
 
 existing="$(open_issues | sed -n '1p')"
-if [ -z "$existing" ]; then
+if [[ -z "$existing" ]]; then
   gh issue create --label "$label" --title "$title" --body-file "$body"
   echo "report-dependency-audit: filed a tracking issue with $total findings"
   exit 0

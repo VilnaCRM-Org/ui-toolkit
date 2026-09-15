@@ -148,7 +148,7 @@ export function evaluateBundleFootprint(metafile, budget, buildBytes) {
   checkBudgetNamesEntries(footprints, budget, violations);
   checkStylesheet(metafile, budget, violations);
   checkBuildDirectory(buildBytes, budget, violations);
-  return { rows: rows.sort((a, b) => b.bytes - a.bytes), violations };
+  return { rows: rows.toSorted((a, b) => b.bytes - a.bytes), violations };
 }
 
 export function formatFootprintReport({ rows, violations }, buildBytes) {
