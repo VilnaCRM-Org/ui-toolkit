@@ -17,6 +17,13 @@ export * from './shared-card-styles';
 
 const MISSING_CARD_LIST_WARNING: string =
   'UiCardList received a nullish `cardList`; rendering an empty list. Pass an array of card items.';
+const MIXED_CARD_TYPES_WARNING: string =
+  'UiCardList received a `cardList` mixing `smallCard` and `largeCard`; the layout follows ' +
+  'the first item, so the others render in the wrong grid. Use one `type` per list.';
+
+function isMixedCardList(cardList: readonly UiCardItemData[]): boolean {
+  return cardList.some((item: UiCardItemData): boolean => item.type !== cardList[0]?.type);
+}
 
 // Module scope, not a fresh `[]` per render: the fallback is handed to the
 // memoized grid/swiper, and a new array each render would defeat their shallow
@@ -33,6 +40,7 @@ export default function UiCardList({
   // `UiCardItemData[]` contract; a nullish runtime value degrades to an empty
   // grid/swiper instead of crashing the whole subtree on `.map`.
   const safeCardList: UiCardItemData[] = cardList ?? EMPTY_CARD_LIST;
+  useDevWarning(isMixedCardList(safeCardList) ? MIXED_CARD_TYPES_WARNING : null);
 
   // Render exactly one variant. Gating CardGrid on `!isSmallScreen` (rather than
   // mounting it always and hiding it with CSS) avoids rendering the whole card

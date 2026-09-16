@@ -7,7 +7,7 @@ import CardGrid from '../../src/components/ui-card-list/card-grid';
 import CardSwiper from '../../src/components/ui-card-list/card-swiper';
 import type { UiCardItemData } from '../../src/components/ui-card-list/types';
 
-import { cardList } from './constants';
+import { cardList, largeCard, smallCard } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';
 
 jest.mock('@mui/material', () => ({
@@ -158,5 +158,56 @@ describe('UiCardList nullish cardList degradation', () => {
     render(React.createElement(UiCardList, { cardList }));
 
     expect(warn.spy).not.toHaveBeenCalled();
+  });
+});
+
+describe('UiCardList mixed card types', () => {
+  const warn = mockConsoleWarn();
+  const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
+  const mixedCardList: UiCardItemData[] = [smallCard, { ...largeCard, id: 'large-1' }];
+
+  afterEach((): void => {
+    jest.clearAllMocks();
+  });
+
+  it('warns exactly once per mount when the list mixes smallCard and largeCard', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    const { rerender } = render(React.createElement(UiCardList, { cardList: mixedCardList }));
+    rerender(React.createElement(UiCardList, { cardList: [...mixedCardList] }));
+
+    expect(warn.spy).toHaveBeenCalledTimes(1);
+    expect(warn.spy).toHaveBeenCalledWith(
+      expect.stringContaining('mixing `smallCard` and `largeCard`')
+    );
+  });
+
+  it('warns whichever type comes first', () => {
+    mockedUseMediaQuery.mockReturnValue(true);
+
+    render(React.createElement(UiCardList, { cardList: [...mixedCardList].reverse() }));
+
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('mixing'));
+  });
+
+  it('stays quiet for a homogeneous list and for an empty one', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList: [smallCard, { ...smallCard, id: 'b' }] }));
+    render(React.createElement(UiCardList, { cardList: [] }));
+
+    expect(warn.spy).not.toHaveBeenCalled();
+  });
+
+  it('emits nothing in production for a mixed list', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+    const originalEnv: string | undefined = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      render(React.createElement(UiCardList, { cardList: mixedCardList }));
+      expect(warn.spy).not.toHaveBeenCalled();
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 });

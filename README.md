@@ -305,6 +305,35 @@ i18next's `_one` / `_other` plural suffixes rather than branching in the compone
 layouts are not supported: the component themes carry no `direction` and expose no injection point
 for one, which is part of the theming contract tracked in #72 and #83.
 
+## Development warnings
+
+The prop types are strict, but runtime data is not, so every component that degrades gracefully
+on invalid input says so through one channel: `console.warn`, prefixed `[ui-toolkit]`, then the
+component name, what it received and what it renders instead. Filter the console on the prefix to
+see only the toolkit's own guidance. Nothing is thrown and no rendered output changes.
+
+The warnings exist in development only. The shared `devWarn` helper returns before logging when
+`NODE_ENV` is `production`, so the production bundle emits no toolkit warning at all, and each
+message is keyed to the state that caused it: it logs once on mount and again only when that state
+changes, never on an ordinary re-render.
+
+What is warned about:
+
+- a required prop arriving nullish or blank (`cardList`, `src`, `label`, `name`, `value`, …); the
+  component renders its empty or static form;
+- a control with no accessible name, or an `error` state with no `helperText` to explain it
+  (`UiInput`, `UiPinInput`, `UiCalendarMultiSelect`, `UiFileUploadInput`, `UiSegmentedControl`
+  and the searchable fields);
+- a stateful prop without the handler that would make it interactive (`selected` without
+  `onSelect`, `open` without `onOpenChange`, `pressed` without `onToggle`, `value` without
+  `onChange`); the control renders as static content;
+- a value outside its prop's domain (`count`, `max`, `length`, a `value` matching no option,
+  duplicate ids); the value is normalised;
+- a `UiCardList` mixing `smallCard` and `largeCard`, or a card whose title, text or `alt` looks
+  like an i18n key that the i18next instance cannot translate;
+- a caught error with no `onError` (`UiErrorBoundary`), and a rejected submit with no
+  `onSubmitError` (`UiForm`) — both documented under [Error handling](#error-handling).
+
 ## Releases
 
 The library is not published to the public npm registry. Pushing to `main` runs the release

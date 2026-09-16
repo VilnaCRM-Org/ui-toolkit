@@ -2,14 +2,18 @@ import { Stack } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useDevWarning } from '@/utils/dev-warn';
+
 import UiImage from '../ui-image';
 
 import CardContent from './card-content';
 import styles from './styles';
 import type { UiCardItemProps } from './types';
+import { untranslatedKeyWarning } from './untranslated-key';
 
 function UiCardItem({ item, headingComponent }: UiCardItemProps): React.ReactElement {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  useDevWarning(untranslatedKeyWarning(item, (key: string): boolean => i18n.exists(key)));
   const isSmallCard: boolean = item.type === 'smallCard';
 
   return (
