@@ -6,11 +6,13 @@ import { useEffect } from 'react';
  * degrade gracefully on runtime-invalid props the strict TypeScript types forbid
  * (e.g. CMS/API data feeding a nullish value into a required prop).
  */
+export const DEV_WARNING_PREFIX: string = '[ui-toolkit]';
+
 export function devWarn(message: string): void {
   if (process.env.NODE_ENV === 'production') {
     return;
   }
-  console.warn(message);
+  console.warn(`${DEV_WARNING_PREFIX} ${message}`);
 }
 
 /**

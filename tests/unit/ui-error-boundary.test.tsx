@@ -20,7 +20,7 @@ import mockConsoleWarn from './utils/mock-console-warn';
 const FALLBACK_TEXT: string = 'Something went wrong.';
 const FALLBACK_KEY_TEXT: string = 'error_boundary.default_message';
 const MISSING_ON_ERROR_WARNING: string =
-  'UiErrorBoundary caught an error but no onError handler was supplied.';
+  '[ui-toolkit] UiErrorBoundary caught an error but no onError handler was supplied.';
 const HEALTHY_TEXT: string = 'healthy child';
 const SIBLING_TEXT: string = 'sibling region';
 const CUSTOM_FALLBACK_TEXT: string = 'custom fallback';

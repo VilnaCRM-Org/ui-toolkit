@@ -20,7 +20,7 @@ type FormCase = {
 const defaultEmail: string = 'default@example.com';
 const typedEmail: string = 'typed@example.com';
 const unhandledSubmitRejectionWarning: string =
-  'UiForm caught a rejected onSubmit; pass onSubmitError to handle it.';
+  '[ui-toolkit] UiForm caught a rejected onSubmit; pass onSubmitError to handle it.';
 
 // UiForm warns through devWarn when a rejection arrives with no onSubmitError
 // attached; silence it for the file and assert on the spy where it matters.

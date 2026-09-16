@@ -5,6 +5,8 @@ import CardContent from '../../src/components/ui-card-list/card-content';
 import { UiCardItemData } from '../../src/components/ui-card-list/types';
 import UiCardItem from '../../src/components/ui-card-list/ui-card-item';
 
+import mockConsoleWarn from './utils/mock-console-warn';
+
 // These tests render the local parity `CardContent` and `UiCardItem` directly
 // (no child mocks) so every branch of the title/text/tooltip rendering and the
 // small-vs-large layout selection is exercised against the real subtree. i18n is
@@ -134,6 +136,50 @@ describe('UiCardItem component', () => {
 
     expect(screen.getByRole('heading', { name: 'Open source' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Image card of open source' })).toBeInTheDocument();
+  });
+});
+
+describe('UiCardItem untranslated-key guidance', () => {
+  const warn = mockConsoleWarn();
+
+  it('warns once when the title looks like an i18n key that has no translation', () => {
+    const { rerender } = render(
+      <UiCardItem item={{ ...baseSmallItem, title: 'some.missing.key' }} />
+    );
+    rerender(<UiCardItem item={{ ...baseSmallItem, title: 'some.missing.key' }} />);
+
+    expect(warn.spy).toHaveBeenCalledTimes(1);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('"some.missing.key"'));
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining(`card "${baseSmallItem.id}"`));
+  });
+
+  it('warns when the text or the alt looks like an untranslated key', () => {
+    render(<UiCardItem item={{ ...baseSmallItem, text: 'cards.missing.text' }} />);
+    render(<UiCardItem item={{ ...baseSmallItem, alt: 'cards.missing.alt' }} />);
+
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('"cards.missing.text"'));
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('"cards.missing.alt"'));
+  });
+
+  it('stays quiet for translated keys, prose with a full stop, and node content', () => {
+    render(<UiCardItem item={baseSmallItem} />);
+    render(
+      <UiCardItem item={{ ...baseSmallItem, title: 'Ready. Set. Go', text: 'v2.0 is out' }} />
+    );
+    render(<UiCardItem item={{ ...baseSmallItem, title: <em>node.title</em> }} />);
+
+    expect(warn.spy).not.toHaveBeenCalled();
+  });
+
+  it('emits nothing in production for an untranslated key', () => {
+    const originalEnv: string | undefined = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      render(<UiCardItem item={{ ...baseSmallItem, title: 'some.missing.key' }} />);
+      expect(warn.spy).not.toHaveBeenCalled();
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 });
 

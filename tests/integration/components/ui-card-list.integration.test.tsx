@@ -269,3 +269,53 @@ describe('UiCardList nullish cardList degradation (real children)', () => {
     expect(slides()).toHaveLength(0);
   });
 });
+
+describe('UiCardList runtime data guidance (real children)', () => {
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach((): void => {
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation((): void => undefined);
+  });
+
+  afterEach((): void => {
+    warnSpy.mockRestore();
+  });
+
+  it('renders a mixed small/large list from the first card and dev-warns once', () => {
+    setLargeScreen();
+    const mixedCardList: UiCardItemData[] = [LARGE_CARDLIST_ARRAY[0], SMALL_CARDLIST_ARRAY[0]];
+
+    const { rerender } = render(<UiCardList cardList={mixedCardList} />);
+    rerender(<UiCardList cardList={mixedCardList} />);
+
+    expect(screen.getAllByRole('heading', { ...HIDDEN, level: 3 })).toHaveLength(2);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('mixing `smallCard` and `largeCard`')
+    );
+  });
+
+  it('renders an untranslated dotted title verbatim through the real chain and dev-warns', () => {
+    setLargeScreen();
+    const untranslatedCard: UiCardItemData = {
+      ...LARGE_CARDLIST_ARRAY[0],
+      id: 'untranslated',
+      title: 'cards.missing.title',
+    };
+
+    render(<UiCardList cardList={[untranslatedCard]} />);
+
+    expect(screen.getByRole('heading', { ...HIDDEN, level: 3 })).toHaveTextContent(
+      'cards.missing.title'
+    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"cards.missing.title"'));
+  });
+
+  it('stays quiet for a homogeneous, fully translated list', () => {
+    setLargeScreen();
+
+    render(<UiCardList cardList={LARGE_CARDLIST_ARRAY} />);
+
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+});

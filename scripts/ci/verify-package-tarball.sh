@@ -39,10 +39,10 @@ contents="$(tar -tzf "$tarball")"
 for required in \
   package/package.json \
   package/build/index.mjs \
-  package/build/index.d.ts \
+  package/build/index.d.mts \
   package/build/index.css \
   package/build/ui-button.mjs \
-  package/build/ui-button.d.ts; do
+  package/build/ui-button.d.mts; do
   if ! printf '%s\n' "$contents" | grep -qxF -- "$required"; then
     echo "$tarball is missing $required" >&2
     exit 1

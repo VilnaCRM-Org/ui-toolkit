@@ -73,3 +73,6 @@ jobs:
           echo "Linting the squash header this pull request would land:"
           printf '%s (#%s)\n' "$PR_TITLE" "$PR_NUMBER"
           printf '%s (#%s)\n' "$PR_TITLE" "$PR_NUMBER" | ./node_modules/.bin/commitlint --verbose
+
+      - name: Verify the version is ahead of every release tag
+        run: make lint-release-version

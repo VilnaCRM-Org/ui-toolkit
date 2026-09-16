@@ -327,7 +327,7 @@ describe('UiForm rejection containment (real composed inputs)', () => {
 
     await waitFor((): void =>
       expect(warn.spy).toHaveBeenCalledWith(
-        'UiForm caught a rejected onSubmit; pass onSubmitError to handle it.'
+        '[ui-toolkit] UiForm caught a rejected onSubmit; pass onSubmitError to handle it.'
       )
     );
   });

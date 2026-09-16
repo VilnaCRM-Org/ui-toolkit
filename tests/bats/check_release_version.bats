@@ -299,3 +299,117 @@ run_guard() {
   assert_output_contains 'release-version: OK'
   assert_log_contains 'git -C . tag --list'
 }
+
+@test "make lint-release-version runs the guard against the repository root" {
+  run grep -A1 -E '^lint-release-version:' "$PROJECT_ROOT/Makefile"
+  [ "$status" -eq 0 ]
+  assert_output_contains 'bash scripts/ci/check-release-version.sh .'
+}
+
+@test "the lint aggregate reaches lint-release-version" {
+  grep -qE '^lint:.*lint-release-version' "$PROJECT_ROOT/Makefile"
+  awk '/^\.PHONY/{buf=""; flag=1} flag{buf=buf $0; if(/\\$/)next; if(buf ~ /lint-release-version/ && flag){found=1; exit}} END{exit !found}' "$PROJECT_ROOT/Makefile"
+}
+
+guard_job_block() {
+  awk '
+    /^jobs:/ { in_jobs = 1; next }
+    in_jobs && /^  [A-Za-z0-9_-]+:[ \t]*$/ { if (block ~ /run: make lint-release-version/) print block; block = "" }
+    in_jobs { block = block $0 "\n" }
+    END { if (block ~ /run: make lint-release-version/) print block }
+  ' "$1"
+}
+
+checkout_steps() {
+  awk '
+    /^[ \t]*- / {
+      match($0, /^[ \t]*/)
+      if (indent == "" || RLENGTH < indent) indent = RLENGTH
+    }
+    { lines[++n] = $0 }
+    END {
+      for (i = 1; i <= n; i++) {
+        match(lines[i], /^[ \t]*/)
+        if (lines[i] ~ /^[ \t]*- / && RLENGTH == indent) {
+          if (step ~ /uses: actions\/checkout@/) print step "\n--"
+          step = ""
+        }
+        step = step lines[i] "\n"
+      }
+      if (step ~ /uses: actions\/checkout@/) print step "\n--"
+    }
+  ' <<< "$1"
+}
+
+assert_every_checkout_is_full() {
+  local steps
+  steps="$(checkout_steps "$1")"
+  [ -n "$steps" ]
+  ! printf '%s' "$steps" | awk 'BEGIN { RS = "--\n" } /uses: actions\/checkout@/ && !/fetch-depth: 0/ { found = 1 } END { exit !found }'
+}
+
+@test "the commit convention workflow runs the guard on every pull request from a full clone" {
+  local workflow="$PROJECT_ROOT/.github/workflows/commitlint.yml"
+  local job
+  job="$(guard_job_block "$workflow")"
+  [ -n "$job" ]
+  assert_every_checkout_is_full "$job"
+  grep -qE '^\s*pull_request:' "$workflow"
+}
+
+@test "the step-scoped fetch-depth check rejects a shallow checkout beside another full one in the same job" {
+  local job
+  job="$(cat <<'EOF'
+  guard:
+    steps:
+      - uses: actions/checkout@sha
+      - name: Fetch a sibling repository
+        uses: actions/checkout@sha
+        with:
+          repository: other/repo
+          path: other
+          fetch-depth: 0
+      - run: make lint-release-version
+EOF
+  )"
+  run assert_every_checkout_is_full "$job"
+  [ "$status" -ne 0 ]
+}
+
+@test "the step-scoped fetch-depth check accepts a job whose only checkout is a full clone" {
+  local job
+  job="$(cat <<'EOF'
+  guard:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@sha
+        with:
+          fetch-depth: 0
+      - run: make lint-release-version
+EOF
+  )"
+  assert_every_checkout_is_full "$job"
+}
+
+@test "the job-scoped fetch-depth check rejects a full clone that belongs to another job" {
+  local workflow="$BATS_TEST_TMPDIR/split-jobs.yml"
+  cat > "$workflow" <<'EOF'
+on:
+  pull_request:
+jobs:
+  history:
+    steps:
+      - uses: actions/checkout@sha
+        with:
+          fetch-depth: 0
+  guard:
+    steps:
+      - uses: actions/checkout@sha
+      - run: make lint-release-version
+EOF
+  local job
+  job="$(guard_job_block "$workflow")"
+  [ -n "$job" ]
+  run grep -E '^\s*fetch-depth: 0$' <<< "$job"
+  [ "$status" -ne 0 ]
+}

@@ -2,6 +2,7 @@ import { TextField } from '@mui/material';
 import React from 'react';
 
 import ScopedThemeProvider from '@/components/theme-scope';
+import { useDevWarning } from '@/utils/dev-warn';
 
 import { hasText } from '../field-controls';
 
@@ -43,34 +44,9 @@ function hasAccessibleName(props: UiInputProps): boolean {
   );
 }
 
-// Development-only accessibility guidance; stripped in production to keep the
-// published bundle quiet. Backward compatible — nothing is enforced at runtime.
-function emitInputAccessibilityWarnings(
-  nameWarning: string | null,
-  errorWarning: string | null
-): void {
-  if (process.env.NODE_ENV === 'production') {
-    return;
-  }
-  if (nameWarning) {
-    console.warn(nameWarning);
-  }
-  if (errorWarning) {
-    console.warn(errorWarning);
-  }
-}
-
-// Emitted from an effect keyed to the derived warning state (not raw props) so a
-// normal re-render does not re-log, but a prop change into/out of a warning state
-// does.
 function useInputAccessibilityWarnings(props: UiInputProps): void {
-  const nameWarning: string | null = hasAccessibleName(props) ? null : MISSING_NAME_WARNING;
-  const errorWarning: string | null =
-    props.error && props.helperText == null ? ERROR_WITHOUT_HELPER_WARNING : null;
-
-  React.useEffect((): void => {
-    emitInputAccessibilityWarnings(nameWarning, errorWarning);
-  }, [nameWarning, errorWarning]);
+  useDevWarning(hasAccessibleName(props) ? null : MISSING_NAME_WARNING);
+  useDevWarning(props.error && props.helperText == null ? ERROR_WITHOUT_HELPER_WARNING : null);
 }
 
 // Layers `under` BENEATH whatever the consumer already put on the htmlInput

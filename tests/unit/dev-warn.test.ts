@@ -1,4 +1,4 @@
-import { devWarn } from '../../src/utils/dev-warn';
+import { DEV_WARNING_PREFIX, devWarn } from '../../src/utils/dev-warn';
 
 // `useDevWarning` (the effect wrapper) is exercised end to end by the component
 // suites that consume it (ui-image, ui-card-list); here we pin the shared
@@ -17,7 +17,11 @@ describe('devWarn', () => {
   it('logs the message via console.warn in development', () => {
     devWarn('example warning');
 
-    expect(warnSpy).toHaveBeenCalledWith('example warning');
+    expect(warnSpy).toHaveBeenCalledWith('[ui-toolkit] example warning');
+  });
+
+  it('exposes the prefix every warning starts with', () => {
+    expect(DEV_WARNING_PREFIX).toBe('[ui-toolkit]');
   });
 
   it('emits nothing in production', () => {
