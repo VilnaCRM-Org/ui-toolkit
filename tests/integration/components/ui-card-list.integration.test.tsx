@@ -288,7 +288,7 @@ describe('UiCardList runtime data guidance (real children)', () => {
     const { rerender } = render(<UiCardList cardList={mixedCardList} />);
     rerender(<UiCardList cardList={mixedCardList} />);
 
-    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(2);
+    expect(screen.getAllByRole('heading', { ...HIDDEN, level: 3 })).toHaveLength(2);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('mixing `smallCard` and `largeCard`')
@@ -305,7 +305,9 @@ describe('UiCardList runtime data guidance (real children)', () => {
 
     render(<UiCardList cardList={[untranslatedCard]} />);
 
-    expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('cards.missing.title');
+    expect(screen.getByRole('heading', { ...HIDDEN, level: 3 })).toHaveTextContent(
+      'cards.missing.title'
+    );
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"cards.missing.title"'));
   });
 
