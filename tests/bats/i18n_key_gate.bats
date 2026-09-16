@@ -189,6 +189,9 @@ EOF
   write_source "$fixture" 'footer.stories.tsx' <<'EOF'
 export const key: string = t('footer.removed');
 EOF
+  write_source "$fixture" 'footer.stories.ts' <<'EOF'
+export const plainKey: string = t('footer.removed');
+EOF
   write_source "$fixture" 'globals.d.ts' <<'EOF'
 export const key: string = t('footer.removed');
 EOF

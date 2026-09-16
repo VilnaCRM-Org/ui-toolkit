@@ -17,7 +17,7 @@ const REFERENCE_LOCALE = 'en';
 const NAMESPACE = 'translation';
 
 const SOURCE_FILE = /\.tsx?$/;
-const EXCLUDED_SOURCE_FILE = /\.(stories\.tsx|d\.ts)$/;
+const EXCLUDED_SOURCE_FILE = /\.(stories\.tsx?|d\.ts)$/;
 
 function fail(code: 1 | 2, message: string): never {
   console.error(message);
