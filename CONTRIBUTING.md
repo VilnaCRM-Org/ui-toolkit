@@ -143,6 +143,41 @@ own subdirectory:
 lives outside the root `tests/` tree. The check runs on every pull request through the static
 testing workflow, so a misplaced test file fails CI.
 
+### Component prop contract
+
+Every component exported from `src/components/index.ts` uses one of two prop-surface shapes, and
+its `types.ts` makes the choice visible:
+
+- **MUI pass-through** — the props interface extends the wrapped MUI primitive's props
+  (`UiButtonProps extends ButtonProps`, `UiInputProps` from `TextFieldProps`) and the component
+  forwards the rest to that primitive. Use it when the component is a styled MUI primitive and
+  consumers legitimately need the primitive's whole API.
+- **Narrow contract** — the props interface lists exactly the supported props (`UiCheckboxProps`,
+  `UiLinkProps`, `UiTooltipProps`). Use it when the component composes several primitives, or
+  when forwarding arbitrary MUI props would let a consumer break its accessibility contract.
+
+Both shapes honour the shared baseline where it applies: `sx` on the root element, `disabled`,
+`error`, and `onChange` carrying the DOM event of the underlying control. A narrow `types.ts`
+states its supported baseline and its exceptions in a "Shared contract support" header (see
+`src/components/ui-checkbox/types.ts`); a pass-through interface inherits them from MUI.
+
+### Storybook coverage
+
+Every module exported from `src/components/index.ts` ships at least one `*.stories.tsx` (or
+`.mdx`) page, and no story exists for a module the barrel does not export;
+`tests/unit/story-coverage.test.ts` fails on either regression. A new story also needs its entry in
+`tests/visual/stories.json` and a committed baseline (see `tests/visual/README.md`).
+
+### Lighthouse gate
+
+`make lighthouse-desktop` and `make lighthouse-mobile` audit one story per Storybook title. The set
+is derived from `storybook-static/index.json` by `scripts/ci/lighthouse-policy.js` rather than
+hand-picked, so a new component is audited the moment it has a story; the desktop performance
+category is a hard floor (`minScore` 0.9, calibrated from three consecutive `main` runs that never
+scored below 0.95). `LHCI_SHARD=<index>/<count>` slices the story list; the performance workflow
+builds Storybook once, shares it as an artifact, and fans the audit out over three shards per form
+factor. When no `storybook-static/` is present the targets build it themselves.
+
 ### CI gate integrity (fail-closed)
 
 A gate that passes without running is worse than no gate: it manufactures confidence. The

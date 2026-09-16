@@ -31,3 +31,15 @@ export const CardListSmall: Story = {
     cardList: SMALL_CARDLIST_ARRAY,
   },
 };
+
+export const CardListSingleLarge: Story = {
+  args: {
+    cardList: [LARGE_CARDLIST_ARRAY[0]],
+  },
+};
+
+export const CardListSingleSmall: Story = {
+  args: {
+    cardList: [SMALL_CARDLIST_ARRAY[0]],
+  },
+};

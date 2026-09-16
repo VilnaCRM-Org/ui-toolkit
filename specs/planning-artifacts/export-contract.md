@@ -237,10 +237,13 @@ collected does not support exporting it:
   marketing site's "Integrate **services**" tooltip — a fixed `<Trans>` tree plus
   `ServicesHoverCard` — while `src/components/ui-card-list/card-content.tsx` is generic, driven by
   `item.tooltipTitle` / `item.tooltipLabel` and accepting `ReactNode` title and text.
-- **Its stories and baselines are not its own.**
-  `src/components/ui-card-item/card-item.stories.tsx` renders `UiCardList`, so the two baselines
-  registered under `UiComponents/UiCardItem` in `tests/visual/stories.json` are `UiCardList`
-  screenshots.
+- **Its stories and baselines were not its own.**
+  `src/components/ui-card-item/card-item.stories.tsx` rendered `UiCardList`, so the two baselines
+  registered under `UiComponents/UiCardItem` in `tests/visual/stories.json` were `UiCardList`
+  screenshots. Issue #91 moved them under `UiComponents/UiCardList` as the `CardListSingleLarge` /
+  `CardListSingleSmall` stories of `src/components/ui-card-list/card-list.stories.tsx`, and
+  `tests/unit/story-coverage.test.ts` now fails on any story under a module the barrel does not
+  export.
 
 Exporting the module would publish hardcoded site copy under a generic name and add a second
 `UiCardItem` contract to the package, so it stays internal; its public-facing surface is
