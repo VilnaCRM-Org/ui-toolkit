@@ -1,5 +1,5 @@
-// Lighthouse CI for the component library. Audits a representative set of
-// Storybook story iframes from the built `storybook-static` bundle.
+// Lighthouse CI for the component library. Audits one story per Storybook
+// title from the built `storybook-static` bundle.
 //
 // `make lighthouse-desktop` adds `--collect.settings.preset=desktop`;
 // `make lighthouse-mobile` adds `--collect.settings.formFactor=mobile`. The same
@@ -8,29 +8,31 @@
 // Stories are rendered in isolation (`/iframe.html`), so page-level a11y audits
 // (html-lang, document-title, landmarks) don't apply and would unfairly sink the
 // category score. We therefore gate on COMPONENT-level a11y audits as errors
-// (contrast, accessible names, labels, ARIA) and keep the category scores as
-// warnings.
+// (contrast, accessible names, labels, ARIA) and keep the a11y and
+// best-practices category scores as warnings.
 
-const STORY_IDS = [
-  'uicomponents-uibutton--contained',
-  'uicomponents-uibutton--outlined',
-  'uicomponents-uibutton--social-button',
-  'uicomponents-uiinput--input',
-  'uicomponents-uicheckbox--checkbox',
-  'uicomponents-uilink--link',
-  'uicomponents-uitypography--typography',
-  'uicomponents-uiform--default',
-  'uicomponents-uitooltip--tooltip',
-  'uicomponents-uifooter--footer',
-];
+const fs = require('fs');
 
-const story = id => `/iframe.html?id=${id}&viewMode=story`;
+const {
+  performanceFloor,
+  selectAuditedStories,
+  shardStories,
+  storyUrl,
+} = require('./scripts/ci/lighthouse-policy');
+
+const SKIPPED_TITLES = [];
+
+const storybookIndex = JSON.parse(fs.readFileSync('./storybook-static/index.json', 'utf8'));
+const auditedStories = shardStories(
+  selectAuditedStories(storybookIndex, SKIPPED_TITLES),
+  process.env.LHCI_SHARD || '1/1'
+);
 
 module.exports = {
   ci: {
     collect: {
       staticDistDir: './storybook-static',
-      url: STORY_IDS.map(story),
+      url: auditedStories.map(storyUrl),
       numberOfRuns: 3,
       settings: {
         // Chrome runs as root inside the Docker test image, where the setuid
@@ -61,11 +63,11 @@ module.exports = {
         'aria-valid-attr': 'error',
         'aria-valid-attr-value': 'error',
         'duplicate-id-aria': 'error',
-        // Category scores: warn only — isolated iframes drag a11y down via
-        // page-level audits, and perf of a static iframe isn't meaningful.
+        // a11y and best-practices category scores: warn only — isolated iframes
+        // drag a11y down via page-level audits.
         'categories:accessibility': ['warn', { minScore: 0.9 }],
         'categories:best-practices': ['warn', { minScore: 0.9 }],
-        'categories:performance': ['warn', { minScore: 0.7 }],
+        'categories:performance': performanceFloor(process.env.LHCI_FORM_FACTOR),
       },
     },
     upload: {

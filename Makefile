@@ -65,7 +65,8 @@ MAKE_GATE = $(MAKE) --no-print-directory
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual test-visual-update \
 	test-storybook \
-	lighthouse-desktop lighthouse-mobile copy-lighthouse-reports install update playwright-install test-bats \
+	lighthouse-desktop lighthouse-mobile copy-lighthouse-reports copy-storybook-static load-storybook-static \
+	install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
 	lint-dep-ranges lint-peer-ranges lint-unused-deps lint-i18n-keys lint-release-version lint-deps lint-metrics lint-metrics-run lint-ci-paths \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports \
@@ -226,7 +227,34 @@ storybook-start: ## Start Storybook inside the docker container.
 	$(BUN_X) storybook dev -p 6006
 
 storybook-build: ## Build Storybook inside the docker container.
-	$(BUN_X) storybook build
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -n "$$container_id" ]; then \
+		$(EXEC_BUN) bun x storybook build; \
+	else \
+		$(BUN_X) storybook build; \
+	fi
+
+copy-storybook-static: ## Copy the built Storybook out of the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first"; \
+		exit 1; \
+	fi; \
+	rm -rf ./storybook-static; \
+	$(DOCKER_COMPOSE) cp bun:/app/storybook-static ./storybook-static
+
+load-storybook-static: ## Copy a built Storybook from the host into the running bun container.
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' first"; \
+		exit 1; \
+	fi; \
+	if [ ! -f ./storybook-static/index.json ]; then \
+		echo "storybook-static/index.json is missing; run 'make storybook-build' and 'make copy-storybook-static' first"; \
+		exit 1; \
+	fi; \
+	$(DOCKER_COMPOSE) exec -T --user root bun rm -rf /app/storybook-static; \
+	$(DOCKER_COMPOSE) cp ./storybook-static bun:/app/storybook-static
 
 generate-ts-doc: ## Generate TypeScript documentation inside the docker container.
 	$(BUN_X) api-extractor run --local --verbose
@@ -333,20 +361,25 @@ test-memory-leak: ## Start the app and run Memlab inside a Docker container.
 		MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/run-memlab-tests.js \
 	'
 
-lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container.
+LHCI_SHARD ?= 1/1
+LIGHTHOUSE_BUILD_UNLESS_PRESENT = test -f storybook-static/index.json || bun x storybook build
+LIGHTHOUSE_DESKTOP = $(LIGHTHOUSE_BUILD_UNLESS_PRESENT) && LHCI_FORM_FACTOR=desktop LHCI_SHARD=$(LHCI_SHARD) bun x lhci autorun --collect.settings.preset=desktop
+LIGHTHOUSE_MOBILE = $(LIGHTHOUSE_BUILD_UNLESS_PRESENT) && LHCI_FORM_FACTOR=mobile LHCI_SHARD=$(LHCI_SHARD) bun x lhci autorun --collect.settings.formFactor=mobile
+
+lighthouse-desktop: ## Run desktop Lighthouse checks inside the docker container (LHCI_SHARD=<index>/<count> selects a slice of the stories).
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
-		$(EXEC_BUN) sh -lc 'bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'; \
+		$(EXEC_BUN) sh -lc '$(LIGHTHOUSE_DESKTOP)'; \
 	else \
-		$(RUN_BUN_SH) 'bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'; \
+		$(RUN_BUN_SH) '$(LIGHTHOUSE_DESKTOP)'; \
 	fi
 
-lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container.
+lighthouse-mobile: ## Run mobile Lighthouse checks inside the docker container (LHCI_SHARD=<index>/<count> selects a slice of the stories).
 	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
 	if [ -n "$$container_id" ]; then \
-		$(EXEC_BUN) sh -lc 'bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'; \
+		$(EXEC_BUN) sh -lc '$(LIGHTHOUSE_MOBILE)'; \
 	else \
-		$(RUN_BUN_SH) 'bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'; \
+		$(RUN_BUN_SH) '$(LIGHTHOUSE_MOBILE)'; \
 	fi
 
 copy-lighthouse-reports: ## Copy the Lighthouse CI results directory from the docker container.

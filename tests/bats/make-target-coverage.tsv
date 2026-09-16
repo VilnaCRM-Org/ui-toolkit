@@ -10,6 +10,8 @@ install	bats	tests/bats/makefile_targets.bats	Validated as the Bun dependency in
 lighthouse-desktop	bats	tests/bats/makefile_targets.bats	Validated as the desktop Lighthouse shell entrypoint.
 lighthouse-mobile	bats	tests/bats/makefile_targets.bats	Validated as the mobile Lighthouse shell entrypoint.
 copy-lighthouse-reports	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure, the missing-results skip, and the copy-success branch.
+copy-storybook-static	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure, the stale host copy being replaced, and the missing-build failure.
+load-storybook-static	bats	tests/bats/makefile_targets.bats	Validated for the missing-container failure, the missing-index refusal, and the replace-then-copy flow.
 lint	ci	.github/workflows/static-testing.yml	Executed indirectly through the static testing workflow's individual lint targets.
 lint-deps	ci	.github/workflows/dependency-cruiser.yml	Executed directly by the dedicated dependency-cruiser pull-request workflow.
 lint-ci-paths	bats	tests/bats/ci_referenced_paths.bats	Validated for the passing repository scan, the historic memlab-rename failure, missing sources, and false-positive noise.

@@ -12,19 +12,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  performance:
-    name: lighthouse ${{ matrix.formFactor }}
+  build-storybook:
+    name: build storybook
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        formFactor: [desktop, mobile]
     env:
       CI: true
-      INSTALL_CHROMIUM: 'true'
 
     steps:
       - name: Checkout code
@@ -35,8 +30,62 @@ jobs:
       - name: Start docker test environment
         run: make start-bun
 
-      - name: Run ${{ matrix.formFactor }} Lighthouse audit
-        run: make lighthouse-${{ matrix.formFactor }}
+      - name: Build Storybook
+        run: make storybook-build
+
+      - name: Export the Storybook build
+        run: make copy-storybook-static
+
+      - name: Upload the Storybook build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: storybook-static
+          path: storybook-static/
+          include-hidden-files: true
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Stop docker test environment
+        if: always()
+        run: make down
+
+  performance:
+    name: lighthouse ${{ matrix.formFactor }} ${{ matrix.shard }}
+    needs: build-storybook
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        formFactor: [desktop, mobile]
+        shard: [1, 2, 3]
+    env:
+      CI: true
+      INSTALL_CHROMIUM: 'true'
+      LHCI_SHARD_COUNT: 3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Download the Storybook build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: storybook-static
+          path: storybook-static/
+
+      - name: Start docker test environment
+        run: make start-bun
+
+      - name: Load the Storybook build into the container
+        run: make load-storybook-static
+
+      - name: Run ${{ matrix.formFactor }} Lighthouse audit, shard ${{ matrix.shard }}
+        run: make lighthouse-${{ matrix.formFactor }} LHCI_SHARD=${{ matrix.shard }}/$LHCI_SHARD_COUNT
 
       - name: Export the Lighthouse results
         if: always()
@@ -46,7 +95,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: lighthouse-${{ matrix.formFactor }}
+          name: lighthouse-${{ matrix.formFactor }}-${{ matrix.shard }}
           path: .lighthouseci/
           include-hidden-files: true
           retention-days: 30
