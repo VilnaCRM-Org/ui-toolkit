@@ -1,6 +1,6 @@
 import type { UiCardItemData } from './types';
 
-const KEY_SHAPE: RegExp = /^\S+\.\S+$/;
+const KEY_SHAPE: RegExp = /^[^\s.]+\.\S+$/;
 
 function looksLikeKey(value: unknown): value is string {
   return typeof value === 'string' && KEY_SHAPE.test(value);

@@ -22,7 +22,11 @@ const MIXED_CARD_TYPES_WARNING: string =
   'the first item, so the others render in the wrong grid. Use one `type` per list.';
 
 function isMixedCardList(cardList: readonly UiCardItemData[]): boolean {
-  return cardList.some((item: UiCardItemData): boolean => item.type !== cardList[0]?.type);
+  const [first] = cardList;
+  return (
+    first !== undefined &&
+    cardList.some((item: UiCardItemData): boolean => item.type !== first.type)
+  );
 }
 
 // Module scope, not a fresh `[]` per render: the fallback is handed to the
