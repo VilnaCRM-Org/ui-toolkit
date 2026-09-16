@@ -60,9 +60,17 @@ function displayPath(file: string): string {
   return relative(PROJECT_ROOT, file).split(sep).join('/');
 }
 
+function assertRealDirectory(path: string): void {
+  const stats = lstatSync(path);
+  if (stats.isSymbolicLink() || !stats.isDirectory()) {
+    throw new Error(`${path} must be a real directory, not a link or a file`);
+  }
+}
+
 function collectReferences(): KeyReference[] {
   let files: string[];
   try {
+    assertRealDirectory(SOURCE_ROOT);
     files = sourceFiles(SOURCE_ROOT);
   } catch (error) {
     return fail(2, `Failed to scan ${SOURCE_ROOT}: ${String(error)}`);

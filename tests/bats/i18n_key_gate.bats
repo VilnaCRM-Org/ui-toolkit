@@ -252,6 +252,22 @@ EOF
   assert_output_contains 'no "en.translation" object'
 }
 
+@test "a src that is itself a symbolic link exits 2 instead of scanning the link target" {
+  local fixture="$BATS_TEST_TMPDIR/linked-root"
+  write_resources "$fixture"
+  mkdir -p "$fixture/elsewhere"
+  cat > "$fixture/elsewhere/footer.ts" <<'EOF'
+import i18n from 'i18next';
+
+export const label: string = i18n.t('footer.copyright');
+EOF
+  ln -s elsewhere "$fixture/src"
+
+  run_gate "$fixture"
+  [ "$status" -eq 2 ]
+  assert_output_contains 'must be a real directory'
+}
+
 @test "a missing src directory exits 2" {
   local fixture="$BATS_TEST_TMPDIR/no-src"
   write_resources "$fixture"

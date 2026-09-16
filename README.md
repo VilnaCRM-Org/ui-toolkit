@@ -20,8 +20,9 @@ bun add "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
 The application provides the peer dependencies itself; the toolkit bundles none of them:
 
 ```bash
-bun add react react-dom @mui/material @mui/system @emotion/react @emotion/styled \
-  react-hook-form i18next react-i18next
+bun add "react@^19.0.0" "react-dom@^19.0.0" "@mui/material@^9.0.0" "@mui/system@^9.0.0" \
+  "@emotion/react@^11.0.0" "@emotion/styled@^11.0.0" "react-hook-form@^7.0.0" \
+  "i18next@>=23.0.0 <27.0.0" "react-i18next@>=14.0.0 <18.0.0"
 ```
 
 The accepted range of each peer is in the [support matrix](#module-format-and-support-matrix).
