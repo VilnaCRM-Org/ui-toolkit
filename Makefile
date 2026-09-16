@@ -67,7 +67,7 @@ MAKE_GATE = $(MAKE) --no-print-directory
 	test-storybook \
 	lighthouse-desktop lighthouse-mobile copy-lighthouse-reports install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
-	lint-dep-ranges lint-peer-ranges lint-unused-deps lint-i18n-keys lint-deps lint-metrics lint-metrics-run lint-ci-paths \
+	lint-dep-ranges lint-peer-ranges lint-unused-deps lint-i18n-keys lint-release-version lint-deps lint-metrics lint-metrics-run lint-ci-paths \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports \
 	ci verify run-gates lint-secrets scan-secrets-history \
 	lint-vulns scan-image-bun scan-image-playwright scan-image-rca report-dependency-audit
@@ -130,7 +130,7 @@ run-gates: ## Run each target in GATE_SET in order, then print a gate summary (u
 build: ## Build the project inside the docker container.
 	$(RUN_BUN) node ./build.config.mjs
 
-lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-peer-ranges lint-unused-deps lint-i18n-keys lint-test-structure lint-deps lint-metrics lint-ci-paths ## Run all linters inside the docker container.
+lint: lint-next lint-tsc lint-md format-check lint-dep-ranges lint-peer-ranges lint-unused-deps lint-i18n-keys lint-test-structure lint-release-version lint-deps lint-metrics lint-ci-paths ## Run all linters inside the docker container.
 
 lint-next: ## Run ESLint inside the docker container.
 	@$(RUN_BUN_SH) '\
@@ -174,6 +174,9 @@ lint-i18n-keys: ## Fail on a literal t()/i18nKey in src/ that i18n/localization.
 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.
 	sh ./scripts/check-test-structure.sh
+
+lint-release-version: ## Verify package.json's version is at least as high as every release tag.
+	bash scripts/ci/check-release-version.sh .
 
 lint-ci-paths: ## Verify every repo path referenced by the Makefile and CI workflows exists.
 	$(BUN) scripts/ci/check-referenced-paths.ts

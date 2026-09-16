@@ -299,3 +299,20 @@ run_guard() {
   assert_output_contains 'release-version: OK'
   assert_log_contains 'git -C . tag --list'
 }
+
+@test "make lint-release-version runs the guard against the repository root" {
+  run grep -A1 -E '^lint-release-version:' "$PROJECT_ROOT/Makefile"
+  [ "$status" -eq 0 ]
+  assert_output_contains 'bash scripts/ci/check-release-version.sh .'
+}
+
+@test "the lint aggregate reaches lint-release-version" {
+  grep -qE '^lint:.*lint-release-version' "$PROJECT_ROOT/Makefile"
+  awk '/^\.PHONY/{buf=""; flag=1} flag{buf=buf $0; if(/\\$/)next; if(buf ~ /lint-release-version/ && flag){found=1; exit}} END{exit !found}' "$PROJECT_ROOT/Makefile"
+}
+
+@test "the commit convention workflow runs the guard on every pull request from a full clone" {
+  local workflow="$PROJECT_ROOT/.github/workflows/commitlint.yml"
+  grep -qE '^\s*run: make lint-release-version$' "$workflow"
+  grep -qE '^\s*fetch-depth: 0$' "$workflow"
+}

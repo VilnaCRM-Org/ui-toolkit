@@ -373,6 +373,48 @@ support, or exempt the package with
 `transformIgnorePatterns: ['/node_modules/(?!@vilnacrm/ui-toolkit/)']` and map
 `@vilnacrm/ui-toolkit/styles.css` to a style stub through `moduleNameMapper`.
 
+## Versioning and stability
+
+Releases follow [SemVer 2.0.0](https://semver.org/spec/v2.0.0.html). The version is computed
+from the Conventional Commits headers the commit gate enforces: `fix` lands a patch, `feat` a
+minor, and a `!` after the scope or a `BREAKING CHANGE` footer a major. The same release run
+writes [CHANGELOG.md](CHANGELOG.md), one section per version with the commits behind it; the
+change between the newest tag and `main` is `git log v<newest>..main`, and there is no
+hand-written "unreleased" section to keep in step.
+
+While the version is `0.x`, a minor release may change the public API — the changelog names each
+such change under a breaking-changes heading — and a patch never does. From `1.0.0` a breaking
+change is a major release.
+
+The public API is:
+
+- every name the package root exports (`src/components/index.ts`, published as
+  `@vilnacrm/ui-toolkit`), and the same names through their `@vilnacrm/ui-toolkit/<component>`
+  subpath;
+- `@vilnacrm/ui-toolkit/styles.css` and `@vilnacrm/ui-toolkit/package.json`;
+- for each exported component: its props and their defaults, the roles and accessible names it
+  renders, and the callbacks it emits.
+
+Everything else is internal and may change in any release: modules under `chunks/`, the theme
+objects, and any name a subpath module carries without declaring it — `ui-card-list.mjs` re-exports
+its card styles so `ui-card-item` can reach them within the dependency rules, but the `.d.mts`
+does not name them, which is what keeps them out of the contract. That boundary is enforced by
+`tests/unit/export-contract-integrity.test.ts` and the API Extractor rollup (#33); the
+release-readiness governance report (#34) is where the gates are consolidated.
+
+Deprecation: a public name or prop is marked `@deprecated` in its JSDoc with the replacement
+named, emits a `[ui-toolkit]` development warning when used, and stays for at least one minor
+release before the next breaking release removes it.
+
+Peer dependency ranges: widening a range is a minor change; narrowing one — dropping a major a
+consumer may be on — is a breaking change. `make lint-peer-ranges` keeps the declared ranges
+honest against what the suite runs, and a narrowed range is a reviewed `package.json` diff.
+
+Version monotonicity: `package.json` must be at least as high as the highest `v*` tag, so the next
+computed release always lands above every existing tag. `make lint-release-version` runs that check
+on every pull request from the commit convention workflow, and the release workflow runs it again
+before it computes the next tag.
+
 ## Releases
 
 The library is not published to the public npm registry. Pushing to `main` runs the release
