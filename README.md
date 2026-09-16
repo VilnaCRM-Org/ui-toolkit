@@ -280,6 +280,31 @@ An app that observed failed submits through a global `unhandledrejection` listen
 `formState.isSubmitSuccessful` as a failure signal, must switch those call sites to
 `onSubmitError`.
 
+## Localization
+
+`UiFooter`, `UiCardList` and the default `UiErrorBoundary` fallback translate themselves through
+the i18next instance the application initialises; the toolkit never initialises one, which is why
+`i18next` and `react-i18next` are peer dependencies. Every other component takes already-translated
+strings through its props.
+
+The keys those components read live in `i18n/localization.json`, hand-maintained under the
+`translation` namespace for `en` and `uk`. The file is the source of truth: Storybook and the Jest
+setup load it, and there is no generator behind it. It is not part of the release tarball yet, so
+an application copies the keys it needs into its own resources — shipping them is tracked in #75.
+
+Two gates keep the file honest:
+
+- `make test-unit` fails when a locale's key set drifts from `en`, or when a string is blank;
+- `make lint-i18n-keys` fails when a literal `t('…')` or `i18nKey` in `src/` names a key `en`
+  does not translate. A key held in a variable is not checked, and a call that passes
+  `defaultValue` is exempt because the fallback is explicit.
+
+To add a key, add it to every locale in the same change. To add a locale, add a top-level entry
+carrying the full `en` key set. No string is count-based today; when the first one lands, use
+i18next's `_one` / `_other` plural suffixes rather than branching in the component. Right-to-left
+layouts are not supported: the component themes carry no `direction` and expose no injection point
+for one, which is part of the theming contract tracked in #72 and #83.
+
 ## Releases
 
 The library is not published to the public npm registry. Pushing to `main` runs the release

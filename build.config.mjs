@@ -12,24 +12,6 @@ const currentDir = path.dirname(currentFile);
 const entryPoint = path.resolve(currentDir, 'src', 'components', 'index.ts');
 
 const require = createRequire(import.meta.url);
-const LocalizationGenerator = require('./scripts/localizationGenerator');
-
-const localizationPlugin = {
-  name: 'localization-plugin',
-  setup(build) {
-    build.onStart(async () => {
-      try {
-        const localizationGenerator = new LocalizationGenerator();
-        localizationGenerator.generateLocalizationFile();
-      } catch (error) {
-        process.stderr.write(
-          `Localization generation failed during build startup: ${error.message ?? error}\n`
-        );
-        throw error;
-      }
-    });
-  },
-};
 
 // Every VALUE re-export in the public barrel becomes its own entry point.
 //
@@ -263,7 +245,6 @@ esbuild
       '.ttf': 'file',
     },
     resolveExtensions: ['.js', '.ts', '.jsx', '.tsx', '.json', '.svg'],
-    plugins: [localizationPlugin],
     define: {
       'process.env.NODE_ENV': '"production"',
     },
