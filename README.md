@@ -433,8 +433,9 @@ The public API is:
 - for each exported component: its props and their defaults, the roles and accessible names it
   renders, and the callbacks it emits.
 
-Everything else is internal and may change in any release: modules under `chunks/`, the theme
-objects, and any name a subpath module carries without declaring it — `ui-card-list.mjs` re-exports
+Everything else is internal and may change in any release: modules under `chunks/`, the
+per-component `theme.ts` modules that are not exported, and any name a subpath module carries
+without declaring it — `ui-card-list.mjs` re-exports
 its card styles so `ui-card-item` can reach them within the dependency rules, but the `.d.mts`
 does not name them, which is what keeps them out of the contract. That boundary is enforced by
 `tests/unit/export-contract-integrity.test.ts` and the API Extractor rollup (#33); the

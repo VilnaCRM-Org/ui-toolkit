@@ -320,14 +320,75 @@ guard_job_block() {
   ' "$1"
 }
 
+checkout_steps() {
+  awk '
+    /^[ \t]*- / {
+      match($0, /^[ \t]*/)
+      if (indent == "" || RLENGTH < indent) indent = RLENGTH
+    }
+    { lines[++n] = $0 }
+    END {
+      for (i = 1; i <= n; i++) {
+        match(lines[i], /^[ \t]*/)
+        if (lines[i] ~ /^[ \t]*- / && RLENGTH == indent) {
+          if (step ~ /uses: actions\/checkout@/) print step "\n--"
+          step = ""
+        }
+        step = step lines[i] "\n"
+      }
+      if (step ~ /uses: actions\/checkout@/) print step "\n--"
+    }
+  ' <<< "$1"
+}
+
+assert_every_checkout_is_full() {
+  local steps
+  steps="$(checkout_steps "$1")"
+  [ -n "$steps" ]
+  ! printf '%s' "$steps" | awk 'BEGIN { RS = "--\n" } /uses: actions\/checkout@/ && !/fetch-depth: 0/ { found = 1 } END { exit !found }'
+}
+
 @test "the commit convention workflow runs the guard on every pull request from a full clone" {
   local workflow="$PROJECT_ROOT/.github/workflows/commitlint.yml"
   local job
   job="$(guard_job_block "$workflow")"
   [ -n "$job" ]
-  printf '%s' "$job" | grep -qE '^\s*uses: actions/checkout@'
-  printf '%s' "$job" | grep -qE '^\s*fetch-depth: 0$'
+  assert_every_checkout_is_full "$job"
   grep -qE '^\s*pull_request:' "$workflow"
+}
+
+@test "the step-scoped fetch-depth check rejects a shallow checkout beside another full one in the same job" {
+  local job
+  job="$(cat <<'EOF'
+  guard:
+    steps:
+      - uses: actions/checkout@sha
+      - name: Fetch a sibling repository
+        uses: actions/checkout@sha
+        with:
+          repository: other/repo
+          path: other
+          fetch-depth: 0
+      - run: make lint-release-version
+EOF
+  )"
+  run assert_every_checkout_is_full "$job"
+  [ "$status" -ne 0 ]
+}
+
+@test "the step-scoped fetch-depth check accepts a job whose only checkout is a full clone" {
+  local job
+  job="$(cat <<'EOF'
+  guard:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@sha
+        with:
+          fetch-depth: 0
+      - run: make lint-release-version
+EOF
+  )"
+  assert_every_checkout_is_full "$job"
 }
 
 @test "the job-scoped fetch-depth check rejects a full clone that belongs to another job" {

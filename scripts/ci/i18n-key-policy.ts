@@ -46,7 +46,9 @@ function isDefaultValueName(name: ts.PropertyName): boolean {
 }
 
 function carriesDefaultValue(options: ts.Expression | undefined): boolean {
-  if (options === undefined || !ts.isObjectLiteralExpression(options)) return false;
+  if (options === undefined) return false;
+  if (literalText(options) !== null) return true;
+  if (!ts.isObjectLiteralExpression(options)) return false;
   return options.properties.some(
     property =>
       (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)) &&

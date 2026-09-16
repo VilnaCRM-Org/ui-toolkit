@@ -158,6 +158,8 @@ export const quoted: string = i18n.t('footer.removed', { 'defaultValue': 'Remove
 export const computed: string = i18n.t('footer.removed', { ['defaultValue']: 'Removed' });
 const defaultValue: string = 'Removed';
 export const shorthand: string = i18n.t('footer.removed', { defaultValue });
+export const positional: string = i18n.t('footer.removed', 'Removed');
+export const positionalWithOptions: string = i18n.t('footer.removed', `Removed`, { lng: 'en' });
 export const label: string = i18n.t('footer.copyright');
 EOF
 
