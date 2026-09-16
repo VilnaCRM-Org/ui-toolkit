@@ -311,8 +311,44 @@ run_guard() {
   awk '/^\.PHONY/{buf=""; flag=1} flag{buf=buf $0; if(/\\$/)next; if(buf ~ /lint-release-version/ && flag){found=1; exit}} END{exit !found}' "$PROJECT_ROOT/Makefile"
 }
 
+guard_job_block() {
+  awk '
+    /^jobs:/ { in_jobs = 1; next }
+    in_jobs && /^  [A-Za-z0-9_-]+:[ \t]*$/ { if (block ~ /run: make lint-release-version/) print block; block = "" }
+    in_jobs { block = block $0 "\n" }
+    END { if (block ~ /run: make lint-release-version/) print block }
+  ' "$1"
+}
+
 @test "the commit convention workflow runs the guard on every pull request from a full clone" {
   local workflow="$PROJECT_ROOT/.github/workflows/commitlint.yml"
-  grep -qE '^\s*run: make lint-release-version$' "$workflow"
-  grep -qE '^\s*fetch-depth: 0$' "$workflow"
+  local job
+  job="$(guard_job_block "$workflow")"
+  [ -n "$job" ]
+  printf '%s' "$job" | grep -qE '^\s*uses: actions/checkout@'
+  printf '%s' "$job" | grep -qE '^\s*fetch-depth: 0$'
+  grep -qE '^\s*pull_request:' "$workflow"
+}
+
+@test "the job-scoped fetch-depth check rejects a full clone that belongs to another job" {
+  local workflow="$BATS_TEST_TMPDIR/split-jobs.yml"
+  cat > "$workflow" <<'EOF'
+on:
+  pull_request:
+jobs:
+  history:
+    steps:
+      - uses: actions/checkout@sha
+        with:
+          fetch-depth: 0
+  guard:
+    steps:
+      - uses: actions/checkout@sha
+      - run: make lint-release-version
+EOF
+  local job
+  job="$(guard_job_block "$workflow")"
+  [ -n "$job" ]
+  run grep -E '^\s*fetch-depth: 0$' <<< "$job"
+  [ "$status" -ne 0 ]
 }

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 
 import {
@@ -48,7 +48,9 @@ function referenceLocaleTree(): TranslationTree {
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry): string[] => {
     const absolute = join(directory, entry);
-    if (statSync(absolute).isDirectory()) return sourceFiles(absolute);
+    const stats = lstatSync(absolute);
+    if (stats.isSymbolicLink()) return [];
+    if (stats.isDirectory()) return sourceFiles(absolute);
     if (!SOURCE_FILE.test(entry) || EXCLUDED_SOURCE_FILE.test(entry)) return [];
     return [absolute];
   });

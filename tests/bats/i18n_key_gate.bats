@@ -203,6 +203,28 @@ EOF
   assert_output_contains '1 reference(s)'
 }
 
+@test "symbolic links under src are skipped, so a link loop cannot recurse forever" {
+  local fixture="$BATS_TEST_TMPDIR/symlinks"
+  write_resources "$fixture"
+  write_source "$fixture" 'footer.ts' <<'EOF'
+import i18n from 'i18next';
+
+export const label: string = i18n.t('footer.copyright');
+EOF
+  write_source "$fixture" 'outside.ts' <<'EOF'
+import i18n from 'i18next';
+
+export const gone: string = i18n.t('footer.removed');
+EOF
+  mv "$fixture/src/outside.ts" "$fixture/outside.ts"
+  ln -s . "$fixture/src/loop"
+  ln -s ../outside.ts "$fixture/src/linked.ts"
+
+  run_gate "$fixture"
+  [ "$status" -eq 0 ]
+  assert_output_contains '1 reference(s)'
+}
+
 @test "a source tree with no literal key reference exits 2" {
   local fixture="$BATS_TEST_TMPDIR/no-references"
   write_resources "$fixture"
