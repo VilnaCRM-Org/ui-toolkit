@@ -154,12 +154,33 @@ import i18n from 'i18next';
 const FALLBACK_KEY: string = 'error_boundary.default_message';
 export const dynamic: string = i18n.t(FALLBACK_KEY);
 export const defaulted: string = i18n.t('footer.removed', { defaultValue: 'Removed' });
+export const quoted: string = i18n.t('footer.removed', { 'defaultValue': 'Removed' });
+export const computed: string = i18n.t('footer.removed', { ['defaultValue']: 'Removed' });
+const defaultValue: string = 'Removed';
+export const shorthand: string = i18n.t('footer.removed', { defaultValue });
 export const label: string = i18n.t('footer.copyright');
 EOF
 
   run_gate "$fixture"
   [ "$status" -eq 0 ]
   assert_output_contains '1 reference(s)'
+}
+
+@test "an options object without defaultValue does not exempt the key" {
+  local fixture="$BATS_TEST_TMPDIR/other-options"
+  write_resources "$fixture"
+  write_source "$fixture" 'footer.ts' <<'EOF'
+import i18n from 'i18next';
+
+declare const someKey: string;
+export const counted: string = i18n.t('footer.removed', { count: 2 });
+export const dynamicName: string = i18n.t('footer.gone', { [someKey]: 'Removed' });
+EOF
+
+  run_gate "$fixture"
+  [ "$status" -eq 1 ]
+  assert_output_contains '"footer.removed"'
+  assert_output_contains '"footer.gone"'
 }
 
 @test "stories and declaration files are outside the scanned source set" {

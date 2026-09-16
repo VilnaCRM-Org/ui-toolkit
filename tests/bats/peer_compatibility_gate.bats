@@ -138,6 +138,24 @@ EOF
   assert_output_contains 'is not valid semver'
 }
 
+@test "the gate fails on a non-string peer range and still evaluates the rest" {
+  local fixture="$BATS_TEST_TMPDIR/non-string"
+  mkdir -p "$fixture"
+  cat > "$fixture/package.json" <<'EOF'
+{
+  "devDependencies": { "react": "^20.0.0" },
+  "peerDependencies": { "react": "^19.0.0", "vue": 123, "svelte": null }
+}
+EOF
+  write_installed "$fixture" react 19.2.7
+
+  run_gate "$fixture"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'vue: peer range 123 is not a string'
+  assert_output_contains 'svelte: peer range null is not a string'
+  assert_output_contains 'react: devDependency range "^20.0.0" starts at 20.0.0'
+}
+
 @test "a manifest with no peerDependencies exits 2 instead of passing vacuously" {
   local fixture="$BATS_TEST_TMPDIR/no-peers"
   mkdir -p "$fixture"

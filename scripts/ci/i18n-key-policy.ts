@@ -35,13 +35,22 @@ function isTranslateCallee(callee: ts.Expression): boolean {
   return ts.isPropertyAccessExpression(callee) && callee.name.text === TRANSLATE_FUNCTION;
 }
 
+function isDefaultValueName(name: ts.PropertyName): boolean {
+  if (ts.isComputedPropertyName(name)) {
+    return literalText(name.expression) === DEFAULT_VALUE_OPTION;
+  }
+  return (
+    literalText(name) === DEFAULT_VALUE_OPTION ||
+    (ts.isIdentifier(name) && name.text === DEFAULT_VALUE_OPTION)
+  );
+}
+
 function carriesDefaultValue(options: ts.Expression | undefined): boolean {
   if (options === undefined || !ts.isObjectLiteralExpression(options)) return false;
   return options.properties.some(
     property =>
       (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)) &&
-      ts.isIdentifier(property.name) &&
-      property.name.text === DEFAULT_VALUE_OPTION
+      isDefaultValueName(property.name)
   );
 }
 

@@ -62,10 +62,13 @@ function installedViolation(
 }
 
 function evaluatePeer(
-  [name, peerRange]: [string, string],
+  [name, peerRange]: [string, unknown],
   devRanges: ReadonlyMap<string, string>,
   installed: InstalledVersionLookup
 ): PeerViolation[] {
+  if (typeof peerRange !== 'string') {
+    return [{ name, reason: `peer range ${JSON.stringify(peerRange)} is not a string` }];
+  }
   if (semver.validRange(peerRange) === null) {
     return [{ name, reason: `peer range "${peerRange}" is not valid semver` }];
   }
@@ -75,19 +78,22 @@ function evaluatePeer(
   ].filter((violation): violation is PeerViolation => violation !== null);
 }
 
+function peerEntries(pkg: unknown): [string, unknown][] {
+  return isRecord(pkg) && isRecord(pkg.peerDependencies)
+    ? Object.entries(pkg.peerDependencies)
+    : [];
+}
+
 export function findPeerViolations(
   pkg: unknown,
   installed: InstalledVersionLookup
 ): PeerViolation[] {
-  if (!isRecord(pkg)) return [];
-  const devRanges = new Map(stringEntries(pkg.devDependencies));
-  return stringEntries(pkg.peerDependencies).flatMap(peer =>
-    evaluatePeer(peer, devRanges, installed)
-  );
+  const devRanges = new Map(isRecord(pkg) ? stringEntries(pkg.devDependencies) : []);
+  return peerEntries(pkg).flatMap(peer => evaluatePeer(peer, devRanges, installed));
 }
 
 export function peerCount(pkg: unknown): number {
-  return isRecord(pkg) ? stringEntries(pkg.peerDependencies).length : 0;
+  return peerEntries(pkg).length;
 }
 
 export function formatReport(violations: readonly PeerViolation[]): string {

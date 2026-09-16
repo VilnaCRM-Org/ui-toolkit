@@ -378,8 +378,8 @@ published under an `import` condition as an `.mjs` module with `.d.mts` declarat
 `require` condition and no CommonJS build. React 19 and MUI 9 are ESM-first themselves, the
 per-component entry split depends on ESM code splitting, and a second module format would double
 the artifact for consumers that all bundle with ESM-capable tools. `main` and `module` point at the
-same `.mjs` for resolvers that ignore `exports`. On the supported Node lines `require()` of an ESM
-module works, but `import` is the supported form.
+same `.mjs` for resolvers that ignore `exports`. Use `import`: the `exports` map carries no
+`require` condition, so CommonJS `require()` of the package is not supported.
 
 | Surface           | Supported                                                            |
 | ----------------- | -------------------------------------------------------------------- |
