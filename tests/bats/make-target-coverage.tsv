@@ -17,6 +17,7 @@ lint-md	ci	.github/workflows/static-testing.yml	Executed directly by the static 
 lint-next	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-tsc	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
 lint-dep-ranges	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow.
+lint-peer-ranges	bats	tests/bats/peer_compatibility_gate.bats	Validated as the Docker-backed peer-range gate dispatch, its lint-chain and workflow registration, and its fixture exit codes.
 lint-unused-deps	bats	tests/bats/unused_dependency_gate.bats	Validated as the Docker-backed unused-dependency gate dispatch, its lint-chain registration, and its fixture exit codes.
 lint-i18n-keys	bats	tests/bats/i18n_key_gate.bats	Validated as the Docker-backed i18n key gate dispatch, its lint-chain and workflow registration, and its fixture exit codes.
 lint-test-structure	ci	.github/workflows/static-testing.yml	Executed directly by the static testing workflow to keep test files under the root tests/ tree.

@@ -8,7 +8,7 @@
   },
   "dtsRollup": {
     "enabled": true,
-    "untrimmedFilePath": "<projectFolder>/build/index.d.ts"
+    "untrimmedFilePath": "<projectFolder>/build/index.d.mts"
   },
   "apiReport": { "enabled": false },
   "docModel": { "enabled": false },

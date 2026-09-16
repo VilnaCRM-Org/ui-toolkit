@@ -334,6 +334,45 @@ What is warned about:
 - a caught error with no `onError` (`UiErrorBoundary`), and a rejected submit with no
   `onSubmitError` (`UiForm`) — both documented under [Error handling](#error-handling).
 
+## Module format and support matrix
+
+The package is ESM-only, and that is a decision rather than an omission. Every entry point is
+published under an `import` condition as an `.mjs` module with `.d.mts` declarations; there is no
+`require` condition and no CommonJS build. React 19 and MUI 9 are ESM-first themselves, the
+per-component entry split depends on ESM code splitting, and a second module format would double
+the artifact for consumers that all bundle with ESM-capable tools. `main` and `module` point at the
+same `.mjs` for resolvers that ignore `exports`. On the supported Node lines `require()` of an ESM
+module works, but `import` is the supported form.
+
+| Surface           | Supported                                                            |
+| ----------------- | -------------------------------------------------------------------- |
+| Module format     | ESM only: `import` condition, `.mjs` runtime, `.d.mts` declarations  |
+| Browsers          | ES2020 runtimes — Chrome 80, Edge 80, Firefox 74, Safari 13.1, later |
+| Node (SSR, tests) | `^20.19.0`, `^22.13.0`, `>=24`                                       |
+| React             | `react`, `react-dom` `^19.0.0`                                       |
+| MUI               | `@mui/material`, `@mui/system` `^9.0.0`                              |
+| Emotion           | `@emotion/react`, `@emotion/styled` `^11.0.0`                        |
+| Forms             | `react-hook-form` `^7.0.0`                                           |
+| i18n              | `i18next` `>=23.0.0 <27.0.0`, `react-i18next` `>=14.0.0 <18.0.0`     |
+| TypeScript        | 5.0 and later, `moduleResolution` `bundler` or `node16`              |
+| Bundler           | Any that honours `exports` and `sideEffects` (only `**/*.css`)       |
+
+The bundle is compiled to `es2020` and ships no polyfills, so the browser floor is whichever
+release of each engine first ran ES2020 syntax. The peer rows are the `peerDependencies` of
+`package.json`, verbatim.
+
+Three gates keep the matrix true. `make lint-peer-ranges` fails when a `devDependencies` mirror of
+a peer starts outside the peer range, or when the installed version does — so a dependency bump
+cannot leave the declared range behind. `make build` runs `publint` in strict mode against the
+manifest and the emitted files, so an `exports` entry that points at nothing, or a declaration
+that TypeScript would read as CommonJS, fails the build. `tests/unit/export-contract-integrity.test.ts`
+pins the `exports` map itself.
+
+Jest consumers: Jest does not transform `node_modules` by default, so either run under Jest's ESM
+support, or exempt the package with
+`transformIgnorePatterns: ['/node_modules/(?!@vilnacrm/ui-toolkit/)']` and map
+`@vilnacrm/ui-toolkit/styles.css` to a style stub through `moduleNameMapper`.
+
 ## Releases
 
 The library is not published to the public npm registry. Pushing to `main` runs the release

@@ -517,7 +517,7 @@ describe('export contract integrity (Story 5.3, #33)', () => {
     it('points main, module and types at the built entry', () => {
       expect(manifest.main).toBe('./build/index.mjs');
       expect(manifest.module).toBe('./build/index.mjs');
-      expect(manifest.types).toBe('./build/index.d.ts');
+      expect(manifest.types).toBe('./build/index.d.mts');
     });
 
     // `toEqual`, not a subset match: a subpath added without a register entry is
@@ -527,10 +527,10 @@ describe('export contract integrity (Story 5.3, #33)', () => {
     // barrel's own names, so it reaches no type the barrel does not re-export.
     it('maps the root, per-component and stylesheet subpaths to the build output', () => {
       expect(manifest.exports).toEqual({
-        '.': { types: './build/index.d.ts', import: './build/index.mjs' },
+        '.': { types: './build/index.d.mts', import: './build/index.mjs' },
         './styles.css': './build/index.css',
         './package.json': './package.json',
-        './*': { types: './build/*.d.ts', import: './build/*.mjs' },
+        './*': { types: './build/*.d.mts', import: './build/*.mjs' },
       });
     });
 
