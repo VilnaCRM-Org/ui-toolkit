@@ -1,6 +1,21 @@
 const STORY_ENTRY_TYPE = 'story';
 const SHARD_SPEC = /^([1-9]\d*)\/([1-9]\d*)$/;
 
+const TITLES_WITHOUT_CONTENTFUL_PAINT = [
+  'UiComponents/AuthSkeleton',
+  'UiComponents/UiSkeletonBlock',
+  'UiComponents/UiSkeletonButton',
+  'UiComponents/UiSkeletonControlText',
+  'UiComponents/UiSkeletonImage',
+  'UiComponents/UiSkeletonInput',
+  'UiComponents/UiSkeletonList',
+  'UiComponents/UiSkeletonMenu',
+  'UiComponents/UiSkeletonTabBar',
+  'UiComponents/UiSkeletonTable',
+  'UiComponents/UiSkeletonText',
+  'UiComponents/UiSkeletonWidget',
+];
+
 const PERFORMANCE_FLOORS = {
   desktop: ['error', { minScore: 0.9 }],
   mobile: ['warn', { minScore: 0.7 }],
@@ -80,6 +95,7 @@ function performanceFloor(formFactor) {
 
 module.exports = {
   PERFORMANCE_FLOORS,
+  TITLES_WITHOUT_CONTENTFUL_PAINT,
   performanceFloor,
   selectAuditedStories,
   shardStories,

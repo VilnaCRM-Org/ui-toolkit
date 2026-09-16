@@ -10,17 +10,21 @@ setup() {
   mkdir -p "$CONFIG_SANDBOX/scripts/ci" "$CONFIG_SANDBOX/storybook-static"
   cp "$LIGHTHOUSE_RC" "$CONFIG_SANDBOX/lighthouserc.js"
   cp "$PROJECT_ROOT/scripts/ci/lighthouse-policy.js" "$CONFIG_SANDBOX/scripts/ci/lighthouse-policy.js"
-  cat > "$CONFIG_SANDBOX/storybook-static/index.json" <<'JSON'
-{
-  "entries": {
-    "a--docs": { "type": "docs", "id": "a--docs", "title": "A", "name": "Docs" },
-    "a--first": { "type": "story", "id": "a--first", "title": "A", "name": "First" },
-    "a--second": { "type": "story", "id": "a--second", "title": "A", "name": "Second" },
-    "b--only": { "type": "story", "id": "b--only", "title": "B", "name": "Only" },
-    "c--only": { "type": "story", "id": "c--only", "title": "C", "name": "Only" }
-  }
-}
-JSON
+  (cd "$CONFIG_SANDBOX" && node -e '
+    const { TITLES_WITHOUT_CONTENTFUL_PAINT } = require("./scripts/ci/lighthouse-policy");
+    const story = (id, title, name) => [id, { type: "story", id, title, name }];
+    const entries = Object.fromEntries([
+      ["a--docs", { type: "docs", id: "a--docs", title: "A", name: "Docs" }],
+      story("a--first", "A", "First"),
+      story("a--second", "A", "Second"),
+      story("b--only", "B", "Only"),
+      story("c--only", "C", "Only"),
+      ...TITLES_WITHOUT_CONTENTFUL_PAINT.map((title, index) =>
+        story(`skipped-${index}--only`, title, "Only")
+      ),
+    ]);
+    require("fs").writeFileSync("storybook-static/index.json", JSON.stringify({ entries }));
+  ')
 }
 
 load_config() {
@@ -64,6 +68,19 @@ load_config() {
 @test "the Lighthouse config carries no hand-picked story list" {
   run grep -E 'STORY_IDS|uicomponents-' "$LIGHTHOUSE_RC"
   [ "$status" -ne 0 ]
+}
+
+@test "the Lighthouse config refuses a skip-list entry the Storybook index does not have" {
+  cd "$CONFIG_SANDBOX"
+  node -e '
+    const fs = require("fs");
+    const index = JSON.parse(fs.readFileSync("storybook-static/index.json", "utf8"));
+    delete index.entries["skipped-0--only"];
+    fs.writeFileSync("storybook-static/index.json", JSON.stringify(index));
+  '
+  load_config LHCI_FORM_FACTOR=desktop
+  [ "$status" -ne 0 ]
+  assert_output_contains 'absent from the Storybook index'
 }
 
 @test "the performance workflow builds Storybook once and shares it with every audit job" {

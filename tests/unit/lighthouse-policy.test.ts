@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import {
   PERFORMANCE_FLOORS,
+  TITLES_WITHOUT_CONTENTFUL_PAINT,
   performanceFloor,
   selectAuditedStories,
   shardStories,
@@ -87,6 +88,24 @@ describe('selectAuditedStories', () => {
     ]);
 
     expect(() => selectAuditedStories(index, [])).toThrow('no story to audit');
+  });
+});
+
+describe('TITLES_WITHOUT_CONTENTFUL_PAINT', () => {
+  it('names every skeleton title in the Storybook inventory and nothing else', () => {
+    const skeletonTitles: string[] = liveTitles.filter(title => title.includes('Skeleton')).sort();
+
+    expect([...TITLES_WITHOUT_CONTENTFUL_PAINT].sort()).toEqual(skeletonTitles);
+  });
+
+  it('leaves every other title audited', () => {
+    const audited: string[] = selectAuditedStories(liveIndex, TITLES_WITHOUT_CONTENTFUL_PAINT);
+    const auditedTitles: Set<string> = new Set(
+      audited.map(id => manifest.find(story => story.id === id)?.title ?? '')
+    );
+
+    expect(audited).toHaveLength(liveTitles.length - TITLES_WITHOUT_CONTENTFUL_PAINT.length);
+    expect(TITLES_WITHOUT_CONTENTFUL_PAINT.some(title => auditedTitles.has(title))).toBe(false);
   });
 });
 

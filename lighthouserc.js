@@ -14,17 +14,16 @@
 const fs = require('fs');
 
 const {
+  TITLES_WITHOUT_CONTENTFUL_PAINT,
   performanceFloor,
   selectAuditedStories,
   shardStories,
   storyUrl,
 } = require('./scripts/ci/lighthouse-policy');
 
-const SKIPPED_TITLES = [];
-
 const storybookIndex = JSON.parse(fs.readFileSync('./storybook-static/index.json', 'utf8'));
 const auditedStories = shardStories(
-  selectAuditedStories(storybookIndex, SKIPPED_TITLES),
+  selectAuditedStories(storybookIndex, TITLES_WITHOUT_CONTENTFUL_PAINT),
   process.env.LHCI_SHARD || '1/1'
 );
 
