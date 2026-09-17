@@ -90,6 +90,11 @@
     "name": "Keyboard Focus Reaches Back Link"
   },
   {
+    "id": "uicomponents-uibreakpoints--breakpoints",
+    "title": "UiComponents/UiBreakpoints",
+    "name": "Breakpoints"
+  },
+  {
     "id": "uicomponents-uibutton--click-invokes-handler",
     "title": "UiComponents/UiButton",
     "name": "Click Invokes Handler"
@@ -130,19 +135,19 @@
     "name": "Range Clicks Set Endpoints"
   },
   {
-    "id": "uicomponents-uicarditem--card-item-large",
-    "title": "UiComponents/UiCardItem",
-    "name": "Card Item Large"
-  },
-  {
-    "id": "uicomponents-uicarditem--card-item-small",
-    "title": "UiComponents/UiCardItem",
-    "name": "Card Item Small"
-  },
-  {
     "id": "uicomponents-uicardlist--card-list-large",
     "title": "UiComponents/UiCardList",
     "name": "Card List Large"
+  },
+  {
+    "id": "uicomponents-uicardlist--card-list-single-large",
+    "title": "UiComponents/UiCardList",
+    "name": "Card List Single Large"
+  },
+  {
+    "id": "uicomponents-uicardlist--card-list-single-small",
+    "title": "UiComponents/UiCardList",
+    "name": "Card List Single Small"
   },
   {
     "id": "uicomponents-uicardlist--card-list-small",
@@ -178,6 +183,11 @@
     "id": "uicomponents-uiclearbutton--static",
     "title": "UiComponents/UiClearButton",
     "name": "Static"
+  },
+  {
+    "id": "uicomponents-uicolortheme--color-theme",
+    "title": "UiComponents/UiColorTheme",
+    "name": "Color Theme"
   },
   {
     "id": "uicomponents-uicontainer--default",

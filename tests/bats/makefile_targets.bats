@@ -36,8 +36,8 @@ ps|docker compose ps|
 logs|docker compose logs --follow|
 new-logs|docker compose logs --tail=0 --follow|
 stop|docker compose stop|
-lighthouse-desktop|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.preset=desktop
-lighthouse-mobile|docker compose run --rm --entrypoint sh bun -lc bun x storybook build|bun x lhci autorun --collect.settings.formFactor=mobile
+lighthouse-desktop|docker compose run --rm --entrypoint sh bun -lc test -f storybook-static/index.json|LHCI_FORM_FACTOR=desktop LHCI_SHARD=1/1 bun x lhci autorun --collect.settings.preset=desktop
+lighthouse-mobile|docker compose run --rm --entrypoint sh bun -lc test -f storybook-static/index.json|LHCI_FORM_FACTOR=mobile LHCI_SHARD=1/1 bun x lhci autorun --collect.settings.formFactor=mobile
 EOF
 }
 
@@ -237,15 +237,78 @@ EOF
   run_make_target_with_env lighthouse-desktop FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
   assert_log_contains 'docker compose ps -q bun'
-  assert_log_contains 'docker compose exec -T bun sh -lc bun x storybook build && bun x lhci autorun --collect.settings.preset=desktop'
+  assert_log_contains 'docker compose exec -T bun sh -lc test -f storybook-static/index.json || bun x storybook build && LHCI_FORM_FACTOR=desktop LHCI_SHARD=1/1 bun x lhci autorun --collect.settings.preset=desktop'
   assert_log_not_contains 'docker compose run --rm --entrypoint sh bun -lc'
 }
 
 @test "lighthouse-mobile prefers docker compose exec when the bun service is running" {
   run_make_target_with_env lighthouse-mobile FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
   [ "$status" -eq 0 ]
-  assert_log_contains 'docker compose exec -T bun sh -lc bun x storybook build && bun x lhci autorun --collect.settings.formFactor=mobile'
+  assert_log_contains 'docker compose exec -T bun sh -lc test -f storybook-static/index.json || bun x storybook build && LHCI_FORM_FACTOR=mobile LHCI_SHARD=1/1 bun x lhci autorun --collect.settings.formFactor=mobile'
   assert_log_not_contains 'docker compose run --rm --entrypoint sh bun -lc'
+}
+
+@test "lighthouse targets hand the requested shard to the Lighthouse config" {
+  run_make_target lighthouse-desktop LHCI_SHARD=2/3
+  [ "$status" -eq 0 ]
+  assert_log_contains 'LHCI_FORM_FACTOR=desktop LHCI_SHARD=2/3 bun x lhci autorun --collect.settings.preset=desktop'
+
+  reset_command_log
+  run_make_target lighthouse-mobile LHCI_SHARD=3/3
+  [ "$status" -eq 0 ]
+  assert_log_contains 'LHCI_FORM_FACTOR=mobile LHCI_SHARD=3/3 bun x lhci autorun --collect.settings.formFactor=mobile'
+}
+
+@test "storybook-build prefers docker compose exec when the bun service is running" {
+  run_make_target_with_env storybook-build FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose exec -T bun bun x storybook build'
+  assert_log_not_contains 'docker compose run --rm bun bun x storybook build'
+}
+
+@test "copy-storybook-static fails clearly when the bun service is not running" {
+  run_make_target copy-storybook-static
+  [ "$status" -ne 0 ]
+  assert_output_contains "bun service is not running; run 'make start-bun' first"
+  assert_log_not_contains 'docker compose cp'
+}
+
+@test "copy-storybook-static replaces the host copy with the container build" {
+  mkdir -p "$MAKEFILE_SANDBOX/storybook-static"
+  touch "$MAKEFILE_SANDBOX/storybook-static/stale.js"
+  run_make_target_with_env copy-storybook-static FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose cp bun:/app/storybook-static ./storybook-static'
+  [ ! -e "$MAKEFILE_SANDBOX/storybook-static/stale.js" ]
+}
+
+@test "copy-storybook-static fails when the container holds no build" {
+  run_make_target_with_env copy-storybook-static FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id FAKE_DOCKER_FAILING_COMMAND='compose cp bun:/app/storybook-static'
+  [ "$status" -ne 0 ]
+}
+
+@test "load-storybook-static fails clearly when the bun service is not running" {
+  run_make_target load-storybook-static
+  [ "$status" -ne 0 ]
+  assert_output_contains "bun service is not running; run 'make start-bun' first"
+  assert_log_not_contains 'docker compose cp'
+}
+
+@test "load-storybook-static refuses a host directory without a Storybook index" {
+  mkdir -p "$MAKEFILE_SANDBOX/storybook-static"
+  run_make_target_with_env load-storybook-static FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -ne 0 ]
+  assert_output_contains 'storybook-static/index.json is missing'
+  assert_log_not_contains 'docker compose cp'
+}
+
+@test "load-storybook-static replaces the container build with the host copy" {
+  mkdir -p "$MAKEFILE_SANDBOX/storybook-static"
+  echo '{"entries":{}}' > "$MAKEFILE_SANDBOX/storybook-static/index.json"
+  run_make_target_with_env load-storybook-static FAKE_DOCKER_COMPOSE_BUN_ID=bun-service-id
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose exec -T --user root bun rm -rf /app/storybook-static'
+  assert_log_contains 'docker compose cp ./storybook-static bun:/app/storybook-static'
 }
 
 @test "copy-lighthouse-reports fails clearly when the bun service is not running" {

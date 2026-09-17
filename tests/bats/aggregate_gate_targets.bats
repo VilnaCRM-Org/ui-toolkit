@@ -15,7 +15,7 @@ load './test_helper.bash'
 # Pull-request workflow targets that are environment plumbing rather than quality gates:
 # they boot, tear down, or move artifacts and assert nothing on their own. `make verify`
 # manages its own containers through each gate, so it never needs to invoke these.
-PLUMBING_TARGETS=(install start start-bun up down copy-coverage copy-lighthouse-reports copy-mutation-report stage-mutation-reports)
+PLUMBING_TARGETS=(install start start-bun up down copy-coverage copy-lighthouse-reports copy-mutation-report stage-mutation-reports storybook-build copy-storybook-static load-storybook-static)
 
 # Sharded CI equivalents of a single local gate. CI fans mutation testing across a matrix
 # and re-enforces the same Stryker break threshold once over the union of the shards;
