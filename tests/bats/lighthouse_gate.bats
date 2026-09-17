@@ -11,17 +11,23 @@ setup() {
   cp "$LIGHTHOUSE_RC" "$CONFIG_SANDBOX/lighthouserc.js"
   cp "$PROJECT_ROOT/scripts/ci/lighthouse-policy.js" "$CONFIG_SANDBOX/scripts/ci/lighthouse-policy.js"
   (cd "$CONFIG_SANDBOX" && node -e '
-    const { TITLES_WITHOUT_CONTENTFUL_PAINT } = require("./scripts/ci/lighthouse-policy");
+    const {
+      CATALOGUE_TITLES,
+      TITLES_WITHOUT_CONTENTFUL_PAINT,
+      TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT,
+    } = require("./scripts/ci/lighthouse-policy");
     const story = (id, title, name) => [id, { type: "story", id, title, name }];
+    const titled = (prefix, titles) =>
+      titles.map((title, index) => story(`${prefix}-${index}--only`, title, "Only"));
     const entries = Object.fromEntries([
       ["a--docs", { type: "docs", id: "a--docs", title: "A", name: "Docs" }],
       story("a--first", "A", "First"),
       story("a--second", "A", "Second"),
       story("b--only", "B", "Only"),
       story("c--only", "C", "Only"),
-      ...TITLES_WITHOUT_CONTENTFUL_PAINT.map((title, index) =>
-        story(`skipped-${index}--only`, title, "Only")
-      ),
+      ...titled("skipped", TITLES_WITHOUT_CONTENTFUL_PAINT),
+      ...titled("icon", TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT),
+      ...titled("board", CATALOGUE_TITLES),
     ]);
     require("fs").writeFileSync("storybook-static/index.json", JSON.stringify({ entries }));
   ')
@@ -30,10 +36,21 @@ setup() {
 load_config() {
   run env "$@" node -e '
     const config = require("./lighthouserc.js").ci;
-    console.log(JSON.stringify({
-      urls: config.collect.url,
-      performance: config.assert.assertions["categories:performance"],
-    }));
+    const PERFORMANCE = [
+      "categories:performance",
+      "first-contentful-paint",
+      "speed-index",
+      "cumulative-layout-shift",
+    ];
+    const floors = Object.fromEntries(
+      config.assert.assertMatrix.map(entry => [
+        entry.matchingUrlPattern,
+        Object.fromEntries(
+          Object.entries(entry.assertions).filter(([audit]) => PERFORMANCE.includes(audit))
+        ),
+      ])
+    );
+    console.log(JSON.stringify({ assert: Object.keys(config.assert), urls: config.collect.url, floors }));
   '
 }
 
@@ -41,14 +58,40 @@ load_config() {
   cd "$CONFIG_SANDBOX"
   load_config LHCI_FORM_FACTOR=desktop
   [ "$status" -eq 0 ]
-  [ "$output" = '{"urls":["/iframe.html?id=a--first&viewMode=story","/iframe.html?id=b--only&viewMode=story","/iframe.html?id=c--only&viewMode=story"],"performance":["error",{"minScore":0.9}]}' ]
+  [[ "$output" == '{"assert":["assertMatrix"],"urls":["/iframe.html?id=a--first&viewMode=story","/iframe.html?id=b--only&viewMode=story","/iframe.html?id=board-0--only&viewMode=story","/iframe.html?id=c--only&viewMode=story","/iframe.html?id=icon-0--only&viewMode=story","/iframe.html?id=icon-1--only&viewMode=story","/iframe.html?id=icon-2--only&viewMode=story","/iframe.html?id=icon-3--only&viewMode=story"],"floors":{'* ]]
+  assert_output_contains '"[?&]id=a--first&":{"categories:performance":["error",{"minScore":0.9}]}'
+  assert_output_contains '"[?&]id=c--only&":{"categories:performance":["error",{"minScore":0.9}]}'
 }
 
 @test "the Lighthouse config audits only its shard of the stories" {
   cd "$CONFIG_SANDBOX"
   load_config LHCI_FORM_FACTOR=mobile LHCI_SHARD=2/3
   [ "$status" -eq 0 ]
-  [[ "$output" == '{"urls":["/iframe.html?id=b--only&viewMode=story"],"performance":["warn"'* ]]
+  [[ "$output" == '{"assert":["assertMatrix"],"urls":["/iframe.html?id=b--only&viewMode=story","/iframe.html?id=icon-0--only&viewMode=story","/iframe.html?id=icon-3--only&viewMode=story"],"floors":{'* ]]
+  assert_output_contains '"[?&]id=b--only&":{"categories:performance":["error",{"minScore":0.4}]}'
+  assert_output_contains '"[?&]id=icon-0--only&":{"first-contentful-paint":["error",{"minScore":0.4}],"speed-index":["error",{"minScore":0.4}],"cumulative-layout-shift":["error",{"minScore":0.4}]}'
+}
+
+@test "the Lighthouse config holds an icon-only title to the paint metrics and only warns on the catalogue board" {
+  cd "$CONFIG_SANDBOX"
+  load_config LHCI_FORM_FACTOR=desktop
+  [ "$status" -eq 0 ]
+  assert_output_contains '"[?&]id=icon-0--only&":{"first-contentful-paint":["error",{"minScore":0.9}],"speed-index":["error",{"minScore":0.9}],"cumulative-layout-shift":["error",{"minScore":0.9}]}'
+  assert_output_contains '"[?&]id=board-0--only&":{"categories:performance":["warn",{"minScore":0.9}]}'
+  [[ "$output" != *'"[?&]id=icon-0--only&":{"categories:performance"'* ]]
+}
+
+@test "the Lighthouse config refuses an icon-only or catalogue title the Storybook index does not have" {
+  cd "$CONFIG_SANDBOX"
+  node -e '
+    const fs = require("fs");
+    const index = JSON.parse(fs.readFileSync("storybook-static/index.json", "utf8"));
+    delete index.entries["board-0--only"];
+    fs.writeFileSync("storybook-static/index.json", JSON.stringify(index));
+  '
+  load_config LHCI_FORM_FACTOR=desktop
+  [ "$status" -ne 0 ]
+  assert_output_contains 'absent from the Storybook index: Showcase/'
 }
 
 @test "the Lighthouse config refuses to load without a form factor" {

@@ -15,7 +15,7 @@ const fs = require('fs');
 
 const {
   TITLES_WITHOUT_CONTENTFUL_PAINT,
-  performanceFloor,
+  assertionMatrix,
   selectAuditedStories,
   shardStories,
   storyUrl,
@@ -44,30 +44,33 @@ module.exports = {
       },
     },
     assert: {
-      aggregationMethod: 'median',
-      assertions: {
-        // color-contrast is WARN, not error: the known failures (white on the
-        // brand primary #1EAEFF ~2.45:1, brand-blue links, grey300 footer text on
-        // the shaded bg ~2.57:1) come from the BRAND palette in the Figma design,
-        // which the toolkit implements faithfully. Raising contrast means changing
-        // the brand — a design decision, not a toolkit fix — so we surface (warn)
-        // rather than block. The toolkit-fixable audits below stay as errors.
-        'color-contrast': 'warn',
-        'button-name': 'error',
-        'link-name': 'error',
-        'image-alt': 'error',
-        label: 'error',
-        'aria-allowed-attr': 'error',
-        'aria-required-attr': 'error',
-        'aria-valid-attr': 'error',
-        'aria-valid-attr-value': 'error',
-        'duplicate-id-aria': 'error',
-        // a11y and best-practices category scores: warn only — isolated iframes
-        // drag a11y down via page-level audits.
-        'categories:accessibility': ['warn', { minScore: 0.9 }],
-        'categories:best-practices': ['warn', { minScore: 0.9 }],
-        'categories:performance': performanceFloor(process.env.LHCI_FORM_FACTOR),
-      },
+      assertMatrix: assertionMatrix({
+        index: storybookIndex,
+        storyIds: auditedStories,
+        formFactor: process.env.LHCI_FORM_FACTOR,
+        audits: {
+          // color-contrast is WARN, not error: the known failures (white on the
+          // brand primary #1EAEFF ~2.45:1, brand-blue links, grey300 footer text on
+          // the shaded bg ~2.57:1) come from the BRAND palette in the Figma design,
+          // which the toolkit implements faithfully. Raising contrast means changing
+          // the brand — a design decision, not a toolkit fix — so we surface (warn)
+          // rather than block. The toolkit-fixable audits below stay as errors.
+          'color-contrast': 'warn',
+          'button-name': 'error',
+          'link-name': 'error',
+          'image-alt': 'error',
+          label: 'error',
+          'aria-allowed-attr': 'error',
+          'aria-required-attr': 'error',
+          'aria-valid-attr': 'error',
+          'aria-valid-attr-value': 'error',
+          'duplicate-id-aria': 'error',
+          // a11y and best-practices category scores: warn only — isolated iframes
+          // drag a11y down via page-level audits.
+          'categories:accessibility': ['warn', { minScore: 0.9 }],
+          'categories:best-practices': ['warn', { minScore: 0.9 }],
+        },
+      }),
     },
     upload: {
       // Keep results local — never publish externally.

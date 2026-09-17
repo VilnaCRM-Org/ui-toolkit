@@ -172,11 +172,20 @@ Every module exported from `src/components/index.ts` ships at least one `*.stori
 
 `make lighthouse-desktop` and `make lighthouse-mobile` audit one story per Storybook title. The set
 is derived from `storybook-static/index.json` by `scripts/ci/lighthouse-policy.js` rather than
-hand-picked, so a new component is audited the moment it has a story; the desktop performance
-category is a hard floor (`minScore` 0.9, calibrated from three consecutive `main` runs that never
-scored below 0.95). `LHCI_SHARD=<index>/<count>` slices the story list; the performance workflow
-builds Storybook once, shares it as an artifact, and fans the audit out over three shards per form
-factor. When no `storybook-static/` is present the targets build it themselves.
+hand-picked, so a new component is audited the moment it has a story. The performance category is
+a hard floor on both form factors: 0.9 on desktop (every component scores 0.93–0.98) and 0.4 on
+mobile (components score 0.52–0.71 under simulated 4G, which is Storybook's own preview bundle, so
+the mobile floor is a regression tripwire rather than a target). Every title is held to the same
+floor through a per-story assertion matrix, with two title-driven shapes: an icon-only component
+(`TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT`) paints no LCP candidate, so Lighthouse cannot score
+its category and the floor applies to each paint metric it can score (FCP, Speed Index, CLS)
+instead; a showcase board (`CATALOGUE_TITLES`) mounts the whole catalogue on one page, so its
+score is reported as a warning. Skeleton titles (`TITLES_WITHOUT_CONTENTFUL_PAINT`) paint nothing
+Lighthouse counts as content and abort the run, so they are the one skip-list; every list is
+checked against the live index and a stale entry fails the config. `LHCI_SHARD=<index>/<count>`
+slices the story list; the performance workflow builds Storybook once, shares it as an artifact,
+and fans the audit out over three shards per form factor. When no `storybook-static/` is present
+the targets build it themselves.
 
 ### CI gate integrity (fail-closed)
 

@@ -1,5 +1,6 @@
 const STORY_ENTRY_TYPE = 'story';
 const SHARD_SPEC = /^([1-9]\d*)\/([1-9]\d*)$/;
+const PERFORMANCE_SCORE = 'categories:performance';
 
 const TITLES_WITHOUT_CONTENTFUL_PAINT = [
   'UiComponents/AuthSkeleton',
@@ -16,9 +17,24 @@ const TITLES_WITHOUT_CONTENTFUL_PAINT = [
   'UiComponents/UiSkeletonWidget',
 ];
 
+const TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT = [
+  'UiComponents/UiActionIconBar',
+  'UiComponents/UiChevronButton',
+  'UiComponents/UiSocialIconButton',
+  'UiComponents/UiStatusBadge',
+];
+
+const METRICS_SCORED_WITHOUT_LARGEST_CONTENTFUL_PAINT = [
+  'first-contentful-paint',
+  'speed-index',
+  'cumulative-layout-shift',
+];
+
+const CATALOGUE_TITLES = ['Showcase/New Components (Figma parity)'];
+
 const PERFORMANCE_FLOORS = {
   desktop: ['error', { minScore: 0.9 }],
-  mobile: ['warn', { minScore: 0.7 }],
+  mobile: ['error', { minScore: 0.4 }],
 };
 
 function compareCodeUnits(left, right) {
@@ -36,18 +52,23 @@ function firstStoryPerTitle(entries) {
   return [...representatives.values()];
 }
 
-function assertSkipListIsLive(skippedTitles, liveTitles) {
-  const stale = skippedTitles.filter(title => !liveTitles.has(title));
+function liveTitlesOf(index) {
+  return new Set(firstStoryPerTitle(Object.values(index.entries)).map(entry => entry.title));
+}
+
+function assertTitlesAreLive(titles, index) {
+  const liveTitles = liveTitlesOf(index);
+  const stale = titles.filter(title => !liveTitles.has(title));
   if (stale.length > 0) {
     throw new Error(
-      `Lighthouse skip-list names titles absent from the Storybook index: ${stale.join(', ')}`
+      `Lighthouse policy names titles absent from the Storybook index: ${stale.join(', ')}`
     );
   }
 }
 
 function selectAuditedStories(index, skippedTitles) {
   const representatives = firstStoryPerTitle(Object.values(index.entries));
-  assertSkipListIsLive(skippedTitles, new Set(representatives.map(entry => entry.title)));
+  assertTitlesAreLive(skippedTitles, index);
   const audited = representatives
     .filter(entry => !skippedTitles.includes(entry.title))
     .map(entry => entry.id)
@@ -93,9 +114,44 @@ function performanceFloor(formFactor) {
   return floor;
 }
 
+function performanceAssertions(title, formFactor) {
+  const [level, options] = performanceFloor(formFactor);
+  if (TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT.includes(title)) {
+    return Object.fromEntries(
+      METRICS_SCORED_WITHOUT_LARGEST_CONTENTFUL_PAINT.map(metric => [metric, [level, options]])
+    );
+  }
+  if (CATALOGUE_TITLES.includes(title)) {
+    return { [PERFORMANCE_SCORE]: ['warn', options] };
+  }
+  return { [PERFORMANCE_SCORE]: [level, options] };
+}
+
+function storyAssertions(config, id) {
+  const { title } = config.index.entries[id];
+  return {
+    matchingUrlPattern: `[?&]id=${id}&`,
+    aggregationMethod: 'median',
+    assertions: { ...config.audits, ...performanceAssertions(title, config.formFactor) },
+  };
+}
+
+function assertionMatrix(config) {
+  assertTitlesAreLive(
+    [...TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT, ...CATALOGUE_TITLES],
+    config.index
+  );
+  return config.storyIds.map(id => storyAssertions(config, id));
+}
+
 module.exports = {
+  CATALOGUE_TITLES,
+  METRICS_SCORED_WITHOUT_LARGEST_CONTENTFUL_PAINT,
   PERFORMANCE_FLOORS,
   TITLES_WITHOUT_CONTENTFUL_PAINT,
+  TITLES_WITHOUT_LARGEST_CONTENTFUL_PAINT,
+  assertionMatrix,
+  performanceAssertions,
   performanceFloor,
   selectAuditedStories,
   shardStories,
