@@ -424,7 +424,7 @@ source of truth for the mutated file set: `stryker.config.mjs` and `stryker.shar
 derive from it, so the two can no longer drift apart and silently drop mutants from the merged
 score. Each shard uploads a per-shard JSON report. A final `merge and enforce gate` job runs
 `make merge-mutation-reports`, which unions the shard reports and re-enforces the **unchanged**
-Stryker `break` threshold (`stryker.config.mjs` — `break: 80`) over the whole set, computing the
+Stryker `break` threshold (`stryker.config.mjs` — `break: 100`) over the whole set, computing the
 mutation score exactly as an unsharded run would. Sharding by file is score-preserving: a
 mutant's related-test set is derived from the mutated file, so it is identical no matter which
 shard owns that file — sharding partitions the work without changing any mutant's verdict. A

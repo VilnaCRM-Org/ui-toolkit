@@ -73,7 +73,7 @@ const config = {
   // sandbox: tests/unit/storybook-interaction-coverage.test.ts scans them from
   // disk, and an ignored story file would make that drift guard see an empty
   // library and fail every mutant run.
-  thresholds: { high: 90, break: 80 },
+  thresholds: { high: 100, break: 100 },
 };
 
 export default config;
