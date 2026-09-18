@@ -1,8 +1,11 @@
 import { Box, Link } from '@mui/material';
 import React from 'react';
 
+import { useDevWarning } from '@/utils/dev-warn';
+
 import ScopedThemeProvider from '../theme-scope';
 
+import newTabLabelWarning from './new-tab-label-warning';
 import theme from './theme';
 import type { UiLinkProps } from './types';
 
@@ -44,12 +47,13 @@ function UiLink({
   rel,
   sx,
   disabled,
-  newTabLabel = '(opens in new tab)',
+  newTabLabel,
 }: UiLinkProps): React.ReactElement {
   // HTML matches the `_blank` keyword ASCII case-insensitively, so an exact
   // comparison let `target="_BLANK"` open a new browsing context with no
   // `rel` — a reverse-tabnabbing hole — and skipped the new-tab hint with it.
   const opensInNewTab: boolean = target?.toLowerCase() === '_blank';
+  useDevWarning(newTabLabelWarning(opensInNewTab, newTabLabel));
 
   return (
     <ScopedThemeProvider theme={theme}>

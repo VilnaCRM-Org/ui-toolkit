@@ -3,8 +3,10 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiLink from '../../src/components/ui-link';
+import type { UiLinkProps } from '../../src/components/ui-link/types';
 
 import { testText, testUrl } from './constants';
+import mockConsoleWarn from './utils/mock-console-warn';
 
 describe('UiLink', () => {
   it('renders the Link with the provided children and href', () => {
@@ -17,7 +19,7 @@ describe('UiLink', () => {
 
   it('adds a safe rel value for links that open in a new tab', () => {
     render(
-      <UiLink href={testUrl} target="_blank">
+      <UiLink href={testUrl} target="_blank" newTabLabel="(opens in new tab)">
         {testText}
       </UiLink>
     );
@@ -49,7 +51,7 @@ describe('UiLink', () => {
 
   it('merges noopener/noreferrer into an explicit rel for new-tab links', () => {
     render(
-      <UiLink href={testUrl} target="_blank" rel="nofollow">
+      <UiLink href={testUrl} target="_blank" rel="nofollow" newTabLabel="(opens in new tab)">
         {testText}
       </UiLink>
     );
@@ -64,7 +66,12 @@ describe('UiLink', () => {
 
   it('drops the empty tokens a padded rel prop splits into', () => {
     render(
-      <UiLink href={testUrl} target="_blank" rel="  nofollow   sponsored  ">
+      <UiLink
+        href={testUrl}
+        target="_blank"
+        rel="  nofollow   sponsored  "
+        newTabLabel="(opens in new tab)"
+      >
         {testText}
       </UiLink>
     );
@@ -77,22 +84,6 @@ describe('UiLink', () => {
       'rel',
       'nofollow sponsored noopener noreferrer'
     );
-  });
-
-  it('omits the new-tab notice when newTabLabel is an empty string', () => {
-    render(
-      <UiLink href={testUrl} target="_blank" newTabLabel="">
-        {testText}
-      </UiLink>
-    );
-
-    // An empty newTabLabel suppresses the visually-hidden hint, so the accessible
-    // name is exactly the children with no appended notice.
-    const link: HTMLElement = screen.getByRole('link', { name: testText });
-    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    // No semantic query exists for "no appended notice span"; assert its absence by structure.
-    // eslint-disable-next-line testing-library/no-node-access
-    expect(link.querySelector('span')).toBeNull();
   });
 
   it('applies base link styles when custom sx is not provided', () => {
@@ -178,20 +169,12 @@ const getElementCss = (element: HTMLElement): string => {
   return css;
 };
 
-const getNewTabLink = (label?: string): HTMLElement => {
-  if (label === undefined) {
-    render(
-      <UiLink href={testUrl} target="_blank">
-        {testText}
-      </UiLink>
-    );
-  } else {
-    render(
-      <UiLink href={testUrl} target="_blank" newTabLabel={label}>
-        {testText}
-      </UiLink>
-    );
-  }
+const getNewTabLink = (label: string = '(opens in new tab)'): HTMLElement => {
+  render(
+    <UiLink href={testUrl} target="_blank" newTabLabel={label}>
+      {testText}
+    </UiLink>
+  );
   return screen.getByRole('link');
 };
 
@@ -199,13 +182,7 @@ const getNoticeSpan = (link: HTMLElement): HTMLElement | null =>
   // eslint-disable-next-line testing-library/no-node-access
   link.querySelector('span');
 
-describe('UiLink new-tab notice (default label)', () => {
-  it('appends the default "(opens in new tab)" notice for new-tab links', () => {
-    // Kills StringLiteral default newTabLabel = '(opens in new tab)' -> ''.
-    const link: HTMLElement = getNewTabLink();
-    expect(link).toHaveAccessibleName(`${testText} (opens in new tab)`);
-  });
-
+describe('UiLink new-tab notice', () => {
   it('renders the visually-hidden notice span for new-tab links', () => {
     // Kills ConditionalExpression {opensInNewTab && newTabLabel ? ... : null} -> {false ? ...}.
     const link: HTMLElement = getNewTabLink();
@@ -338,7 +315,7 @@ describe('UiLink disabled state', () => {
 
   it('still enforces the new-tab rel and notice when disabled', () => {
     render(
-      <UiLink href={testUrl} target="_blank" disabled>
+      <UiLink href={testUrl} target="_blank" disabled newTabLabel="(opens in new tab)">
         {testText}
       </UiLink>
     );
@@ -353,7 +330,11 @@ describe('UiLink disabled state', () => {
 describe('UiLink — target keyword matching is case-insensitive', () => {
   it.each(['_blank', '_BLANK', '_Blank'])('hardens rel for target=%s', target => {
     render(
-      <UiLink href="https://example.com" target={target}>
+      <UiLink
+        href="https://example.com"
+        target={target as '_blank'}
+        newTabLabel="(opens in new tab)"
+      >
         Docs
       </UiLink>
     );
@@ -366,7 +347,11 @@ describe('UiLink — target keyword matching is case-insensitive', () => {
 
   it('announces the new tab for an upper-case target too', () => {
     render(
-      <UiLink href="https://example.com" target="_BLANK">
+      <UiLink
+        href="https://example.com"
+        target={'_BLANK' as '_blank'}
+        newTabLabel="(opens in new tab)"
+      >
         Docs
       </UiLink>
     );
@@ -400,5 +385,52 @@ describe('UiLink — a disabled link is inert to middle-click too', () => {
     });
     link.dispatchEvent(auxclick);
     expect(auxclick.defaultPrevented).toBe(true);
+  });
+});
+
+describe('UiLink new-tab label development warning', () => {
+  const warn: { readonly spy: jest.SpyInstance } = mockConsoleWarn();
+
+  const mountWithoutLabel = (): HTMLElement => {
+    const props: UiLinkProps = {
+      href: testUrl,
+      target: '_blank',
+      children: testText,
+    } as unknown as UiLinkProps;
+    render(React.createElement(UiLink, props));
+    return screen.getByRole('link', { name: testText });
+  };
+
+  it('warns once when a new-tab link reaches runtime without newTabLabel', () => {
+    const link: HTMLElement = mountWithoutLabel();
+    expect(warn.spy).toHaveBeenCalledTimes(1);
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('newTabLabel'));
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(getNoticeSpan(link)).toBeNull();
+  });
+
+  it('omits the new-tab notice and stays silent when newTabLabel is an empty string', () => {
+    render(
+      <UiLink href={testUrl} target="_blank" newTabLabel="">
+        {testText}
+      </UiLink>
+    );
+    const link: HTMLElement = screen.getByRole('link', { name: testText });
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(getNoticeSpan(link)).toBeNull();
+    expect(warn.spy).not.toHaveBeenCalled();
+  });
+
+  it('does not warn for a same-tab link without newTabLabel', () => {
+    render(<UiLink href={testUrl}>{testText}</UiLink>);
+    expect(screen.getByRole('link', { name: testText })).not.toHaveAttribute('target');
+    expect(warn.spy).not.toHaveBeenCalled();
+  });
+
+  it('does not warn and renders the cue when a new-tab link is labelled', () => {
+    const link: HTMLElement = getNewTabLink('external');
+    expect(link).toHaveAccessibleName(`${testText} external`);
+    expect(getNoticeSpan(link)).not.toBeNull();
+    expect(warn.spy).not.toHaveBeenCalled();
   });
 });

@@ -20,6 +20,10 @@ const meta: Meta<typeof UiLink> = {
       type: 'string',
       description: 'Link URL',
     },
+    newTabLabel: {
+      control: 'text',
+      description: 'Required with target="_blank": the application\'s translated new-tab cue',
+    },
     disabled: {
       control: 'boolean',
       description:
@@ -48,6 +52,7 @@ export const KeyboardFocusExposesNewTabHint: Story = {
     children: externalLinkText,
     href: 'https://vilnacrm.com',
     target: '_blank',
+    newTabLabel: newTabHint,
   },
   play: async ({ canvasElement }): Promise<void> => {
     const link: HTMLElement = within(canvasElement).getByRole('link', {
