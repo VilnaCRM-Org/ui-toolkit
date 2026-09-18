@@ -256,7 +256,7 @@ gate_equivalent() {
     <(printf '%s\n' lint build test-unit test-integration test-bats \
       test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop \
       lighthouse-mobile lint-secrets scan-secrets-history lint-vulns scan-image-bun \
-      scan-image-playwright scan-image-rca) \
+      scan-image-playwright scan-image-rca test-a11y) \
     <(executed_gates)
   [ "$status" -eq 0 ]
 }

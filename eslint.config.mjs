@@ -389,6 +389,8 @@ export default [
   // queries on `page.getByRole`), so disable the whole rule set for these specs.
   {
     files: [
+      'tests/a11y/**/*.ts',
+      'tests/a11y/**/*.tsx',
       'tests/e2e/**/*.ts',
       'tests/e2e/**/*.tsx',
       'tests/visual/**/*.ts',

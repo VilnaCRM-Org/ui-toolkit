@@ -622,6 +622,7 @@ locally before pushing. See [agents.md](agents.md) for which test layer a given 
 | `make test-e2e`         | Playwright behavior against a Storybook build                  |
 | `make test-visual`      | Playwright visual-regression snapshots                         |
 | `make test-storybook`   | Storybook interaction (play function) tests in a browser       |
+| `make test-a11y`        | axe-core WCAG 2.1 AA scan: jest-axe in jsdom, every story      |
 | `make test-mutation`    | Stryker mutation-strength gate                                 |
 | `make test-bats`        | Bats coverage of Makefile shell flows and their contracts      |
 

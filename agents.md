@@ -36,6 +36,7 @@ more than one. Match the change to the suite and run its verification command.
 | End-to-end (e2e)  | Storybook-driven component behavior end to end  | `make test-e2e`         |
 | Visual regression | Any change to rendered UI, layout, or styling   | `make test-visual`      |
 | Interaction       | Behaviour demonstrated by a story `play` fn     | `make test-storybook`   |
+| Accessibility     | Any change to DOM, ARIA, labels, or focus order | `make test-a11y`        |
 
 Unit tests run on Jest with React Testing Library in a jsdom env; specs are centralized in
 `tests/unit/**/*.test.tsx` (and `*.test.ts` for non-render logic). Integration specs live in
@@ -140,6 +141,7 @@ make test-integration      # Jest composition suite (for cross-component changes
 make test-e2e              # Storybook-driven behavior (for behavior changes)
 make test-storybook        # Story interaction tests (for interactive behavior changes)
 make test-visual           # Visual regression (for UI or styling changes)
+make test-a11y             # axe-core WCAG 2.1 AA gates (for DOM, ARIA, or focus changes)
 make lint                  # Full gate: ESLint, TypeScript, markdownlint, format, CI paths
 ```
 

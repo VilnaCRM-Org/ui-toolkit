@@ -47,6 +47,7 @@ COPY --chown=appuser:appuser .github ./.github
 COPY --chown=appuser:appuser .husky ./.husky
 COPY --chown=appuser:appuser .storybook ./.storybook
 COPY --chown=appuser:appuser config ./config
+COPY --chown=appuser:appuser docs/accessibility ./docs/accessibility
 COPY --chown=appuser:appuser scripts ./scripts
 COPY --chown=appuser:appuser specs ./specs
 COPY --chown=appuser:appuser src ./src
