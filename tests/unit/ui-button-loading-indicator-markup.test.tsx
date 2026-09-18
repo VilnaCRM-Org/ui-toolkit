@@ -4,29 +4,7 @@ import React from 'react';
 import UiButton from '../../src/components/ui-button';
 
 import { testText } from './constants';
-
-const emotionCssFor = (element: HTMLElement): string => {
-  const emotionClass: string | undefined = Array.from(element.classList).find(
-    (className: string): boolean => className.startsWith('css-')
-  );
-  if (!emotionClass) {
-    return '';
-  }
-  let css: string = '';
-  // eslint-disable-next-line testing-library/no-node-access
-  Array.from(document.querySelectorAll('style')).forEach((styleEl: Element): void => {
-    const sheet: CSSStyleSheet | null = (styleEl as HTMLStyleElement).sheet;
-    if (!sheet) {
-      return;
-    }
-    Array.from(sheet.cssRules).forEach((rule: CSSRule): void => {
-      if (rule.cssText.includes(emotionClass)) {
-        css += rule.cssText;
-      }
-    });
-  });
-  return css;
-};
+import { emotionCssFor } from './utils/emotion-css';
 
 const renderBusyButton = (variant: 'contained' | 'outlined' = 'contained'): HTMLElement => {
   render(

@@ -6,6 +6,7 @@ import UiLink from '../../src/components/ui-link';
 import type { UiLinkProps } from '../../src/components/ui-link/types';
 
 import { testText, testUrl } from './constants';
+import { emotionCssFor } from './utils/emotion-css';
 import mockConsoleWarn from './utils/mock-console-warn';
 
 describe('UiLink', () => {
@@ -146,29 +147,6 @@ describe('UiLink', () => {
   });
 });
 
-const getElementCss = (element: HTMLElement): string => {
-  const emotionClass: string | undefined = Array.from(element.classList).find(
-    (className: string): boolean => className.startsWith('css-')
-  );
-  if (!emotionClass) {
-    return '';
-  }
-  let css: string = '';
-  // eslint-disable-next-line testing-library/no-node-access
-  Array.from(document.querySelectorAll('style')).forEach((styleEl: Element): void => {
-    const sheet: CSSStyleSheet | null = (styleEl as HTMLStyleElement).sheet;
-    if (!sheet) {
-      return;
-    }
-    Array.from(sheet.cssRules).forEach((rule: CSSRule): void => {
-      if (rule.cssText.includes(emotionClass)) {
-        css += rule.cssText;
-      }
-    });
-  });
-  return css;
-};
-
 const getNewTabLink = (label: string = '(opens in new tab)'): HTMLElement => {
   render(
     <UiLink href={testUrl} target="_blank" newTabLabel={label}>
@@ -230,7 +208,7 @@ describe('UiLink visually-hidden notice styles', () => {
     const link: HTMLElement = getNewTabLink();
     const span: HTMLElement | null = getNoticeSpan(link);
     expect(span).not.toBeNull();
-    const css: string = getElementCss(span as HTMLElement);
+    const css: string = emotionCssFor(span as HTMLElement);
     expect(css).toMatch(/clip:\s*rect\(0 0 0 0\)/);
   });
 });
@@ -301,7 +279,7 @@ describe('UiLink disabled state', () => {
     // Board A's Disabled column (`439:19364`, `439:19614`) measures #E1E7EA
     // (brandGray) against the rest column's #969B9D. jsdom serialises colours
     // inconsistently, so both notations are accepted.
-    const css: string = getElementCss(getLink(true));
+    const css: string = emotionCssFor(getLink(true));
     expect(css).toMatch(
       /\[aria-disabled="true"\][^{]*\{[^}]*color:\s*(#e1e7ea|rgb\(225,\s*231,\s*234\))/i
     );

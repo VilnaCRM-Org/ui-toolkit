@@ -12,7 +12,7 @@ const currentDir = path.dirname(currentFile);
 const entryPoint = path.resolve(currentDir, 'src', 'components', 'index.ts');
 const LOCALES = 'locales';
 const localesEntry = path.resolve(currentDir, 'src', LOCALES, 'index.ts');
-const ALIAS_IMPORT = /(?:\bfrom\s+|\bimport\s*\(?\s*)['"]@\//;
+const ALIAS_IMPORT = /(?:\bfrom\s+|\bimport\s*(?:\(\s*)?)['"]@\//;
 
 const require = createRequire(import.meta.url);
 
