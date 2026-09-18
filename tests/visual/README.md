@@ -83,14 +83,17 @@ promote() {
   name="$(basename "${1%-actual.png}")-chromium-linux.png"
   mv "$1" "tests/visual/$2.spec.ts-snapshots/$name"
 }
-for actual in test-results/visual-states-*/*-actual.png; do promote "$actual" states; done
-for actual in test-results/visual-visual-*/*-actual.png; do promote "$actual" visual; done
+for actual in test-results/tests-visual-states-*/*-actual.png; do promote "$actual" states; done
+for actual in test-results/tests-visual-visual-*/*-actual.png; do promote "$actual" visual; done
 ```
 
-Result directories are prefixed by spec: `test-results/visual-states-*` belongs to
-`states.spec.ts-snapshots/`, `test-results/visual-visual-*` to `visual.spec.ts-snapshots/`.
-Review each `*-diff.png` from the same artifact before committing the promoted PNG; a diff
-that is only anti-aliasing is a reshoot, anything structural is a regression to fix first.
+Result directories are prefixed by spec path: `test-results/tests-visual-states-*` belongs to
+`states.spec.ts-snapshots/`, `test-results/tests-visual-visual-*` to `visual.spec.ts-snapshots/`.
+Playwright shortens a long file name inside `test-results/` to a hashed stem (for example
+`uicomponents-uicalendarmul-dacb9---calendar-multi-select-actual.png`); copy such a file onto the
+full baseline name by hand. Review each `*-diff.png` from the same artifact before committing the
+promoted PNG; a diff that is only anti-aliasing is a reshoot, anything structural is a regression
+to fix first.
 
 ## Adding a story
 
