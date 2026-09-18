@@ -5,6 +5,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -123,7 +124,7 @@ export function triggerButtonSx(state: Readonly<PickerVisualState>): SxProps<The
 }
 
 export const LABEL_TYPE: object = {
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   fontWeight: 500,
   fontSize: '0.938rem',
   lineHeight: '1.125rem',

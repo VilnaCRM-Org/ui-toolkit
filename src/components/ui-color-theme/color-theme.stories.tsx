@@ -2,6 +2,8 @@ import { Box, Stack, Typography } from '@mui/material';
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { sharedPalette } from './index';
 
 type PaletteName = keyof typeof sharedPalette;
@@ -24,10 +26,10 @@ function PaletteSwatch({ name }: Readonly<{ name: PaletteName }>): React.ReactEl
           backgroundColor: main,
         }}
       />
-      <Typography component="code" sx={{ minWidth: 200, fontFamily: 'Inter' }}>
+      <Typography component="code" sx={{ minWidth: 200, fontFamily: fontFamilies.inter }}>
         {name}
       </Typography>
-      <Typography component="code" sx={{ fontFamily: 'Inter' }}>
+      <Typography component="code" sx={{ fontFamily: fontFamilies.inter }}>
         {main}
       </Typography>
     </Stack>

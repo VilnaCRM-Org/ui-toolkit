@@ -25,12 +25,11 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY package.json bun.lock ./
-COPY build.config.mjs checkNodeVersion.js commitlint.config.js eslint.config.mjs i18n.js ./
+COPY build.config.mjs checkNodeVersion.js commitlint.config.js eslint.config.mjs ./
 COPY jest.config.ts jest.setup.ts playwright.config.ts stryker.config.mjs ./
 COPY tsconfig.json tsconfig.paths.json ./
 COPY .env.example ./
 COPY .storybook ./.storybook
-COPY i18n ./i18n
 COPY scripts ./scripts
 COPY src ./src
 COPY tests ./tests

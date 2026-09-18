@@ -117,6 +117,12 @@ describe('UiCardItem component', () => {
     expect(screen.getByAltText('Image card of open source')).toBeInTheDocument();
   });
 
+  it('keeps a non-key alt verbatim', () => {
+    render(<UiCardItem item={{ ...baseSmallItem, alt: 'Logo:v1' }} />);
+
+    expect(screen.getByAltText('Logo:v1')).toBeInTheDocument();
+  });
+
   it('renders title and text content for a small card', () => {
     render(<UiCardItem item={baseSmallItem} />);
 

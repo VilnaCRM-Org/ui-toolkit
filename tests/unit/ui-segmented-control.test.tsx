@@ -26,6 +26,7 @@ import {
   type SegmentedControlModel,
   type SegmentModel,
 } from '../../src/components/ui-segmented-control/use-segmented-control';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 
@@ -569,7 +570,7 @@ describe('styles — segmentSx and trackSx (pure, mutation-killing)', () => {
     expect(base.padding).toBe('0.5rem 1rem');
     expect(base.borderRadius).toBe('0.5rem');
     expect(base.backgroundColor).toBe('transparent');
-    expect(base.fontFamily).toBe('Inter');
+    expect(base.fontFamily).toBe(fontFamilies.inter);
     expect(base.fontWeight).toBe(500);
     expect(base.fontSize).toBe('0.875rem');
     expect(base.lineHeight).toBe('1.125rem');
@@ -601,7 +602,7 @@ describe('styles — segmentSx and trackSx (pure, mutation-killing)', () => {
     expect(passive.cursor).toBeUndefined();
     expect(passive.appearance).toBeUndefined();
     // The layout half is identical either way.
-    expect(passive.fontFamily).toBe('Inter');
+    expect(passive.fontFamily).toBe(fontFamilies.inter);
   });
 
   it('gates hover off the checked and disabled attributes, painting the translucent pill', () => {
@@ -684,5 +685,25 @@ describe('styles — segmentSx and trackSx (pure, mutation-killing)', () => {
       { marginTop: '1rem' },
       { paddingTop: '2rem' },
     ]);
+  });
+});
+
+describe('UiSegmentedControl — segment chrome follows the wired/static split', () => {
+  it('paints the pointer cursor on every wired segment', () => {
+    render(controlWith({ onChange: noop, label: GROUP }));
+
+    screen.getAllByRole('radio').forEach((radio: HTMLElement) => {
+      expect(radio).toHaveStyle({ cursor: 'pointer' });
+    });
+  });
+
+  it('paints no cursor on any static segment', () => {
+    render(controlWith({ id: 'static-control' }));
+
+    const spans: Element[] = nodesMatching('#static-control > span');
+    expect(spans).toHaveLength(3);
+    spans.forEach((span: Element) => {
+      expect(span).not.toHaveStyle({ cursor: 'pointer' });
+    });
   });
 });

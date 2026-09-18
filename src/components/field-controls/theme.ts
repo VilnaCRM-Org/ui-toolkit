@@ -1,6 +1,7 @@
 import { Theme, createTheme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 import { helperTextTypography } from './helper-text';
 
@@ -50,7 +51,7 @@ const outlinedFieldTheme: Theme = createTheme({
           '&::placeholder': {
             color: colorTheme.palette.grey300.main,
             opacity: 1,
-            fontFamily: 'Inter',
+            fontFamily: fontFamilies.inter,
             // Figma collapsed-field placeholder is Inter Regular (400); matches UiInput.
             fontWeight: '400',
           },

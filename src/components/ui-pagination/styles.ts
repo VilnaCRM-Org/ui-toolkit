@@ -2,6 +2,7 @@ import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 // Colours resolve to the shared theme tokens so the navigator matches the rest
 // of the kit without duplicating hex values. The Figma numbers (48px cell, 8px
@@ -16,7 +17,7 @@ export function paginationNavSx(consumer: SxProps<Theme> | undefined): SxProps<T
     display: 'inline-flex',
     alignItems: 'center',
     gap: '3rem',
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
   };
   const extra: SxProps<Theme> = consumer ?? {};
   return [base, ...(Array.isArray(extra) ? extra : [extra])];
@@ -44,7 +45,7 @@ const cellBase: SxProps<Theme> = {
   justifyContent: 'center',
   border: '1px solid transparent',
   borderRadius: '0.5rem',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '1rem',
   lineHeight: '1.125rem',
@@ -148,7 +149,7 @@ export const navLinkSx: SxProps<Theme> = {
 
 /** The prev/next label: Inter Medium 16/18, colour inherited from the link row. */
 export const navLabelSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '1rem',
   lineHeight: '1.125rem',

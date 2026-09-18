@@ -1,5 +1,7 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
+import { settle } from '../e2e/utils';
+
 // Enforces the Figma "state grid" (Rest / Hover / Active / Disabled / Error /
 // Focus) for the interactive components. The design board lays each component
 // out per state; the base visual.spec only captures the rest state, so these
@@ -18,9 +20,13 @@ async function openStory(page: Page, id: string, args?: string): Promise<void> {
   const argPart: string = args ? `&args=${args}` : '';
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`/iframe.html?id=${id}&viewMode=story${argPart}`);
-  await page.locator('#storybook-root, #root').first().waitFor({ state: 'visible' });
+  await page
+    .locator('#storybook-root > :visible, #root > :visible')
+    .first()
+    .waitFor({ state: 'visible' });
   await page.addStyleTag({ content: FREEZE_CSS });
   await page.evaluate(() => document.fonts.ready);
+  await page.mouse.move(0, 0);
 }
 
 function root(page: Page): Locator {
@@ -28,6 +34,7 @@ function root(page: Page): Locator {
 }
 
 async function shoot(page: Page, name: string): Promise<void> {
+  await settle(page);
   await expect(root(page)).toHaveScreenshot(name);
 }
 
@@ -356,6 +363,7 @@ test.describe('Visual states (Figma state grid) — profile select card', () => 
     // paints its own white fill, so the task card's second white layer is redundant,
     // and inset keeps the ring inside the 8px radius when a consumer clips the card.
     await page.keyboard.press('Tab');
+    await expect(page.getByRole('button')).toBeFocused();
     await shoot(page, 'profile-card-focus.png');
   });
 
@@ -366,6 +374,7 @@ test.describe('Visual states (Figma state grid) — profile select card', () => 
     await openMenuByKeyboard(page);
     // The same ring on the white menu row — a state no static tile can capture,
     // because it only exists while the popup is mounted and holding focus.
+    await settle(page);
     await expect(page).toHaveScreenshot('profile-menu-item-focus.png');
   });
 
@@ -376,6 +385,7 @@ test.describe('Visual states (Figma state grid) — profile select card', () => 
     // where the two collide, and the ring must stay legible on top of the fill —
     // which is why `:focus-visible` is declared after `:hover` in `menuItemSx`.
     await page.getByRole('menuitem').first().hover();
+    await settle(page);
     await expect(page).toHaveScreenshot('profile-menu-item-focus-hover.png');
   });
 });

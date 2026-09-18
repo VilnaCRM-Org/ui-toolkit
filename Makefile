@@ -52,7 +52,7 @@ PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
 # fails when a workflow runs a gate `verify` cannot reach.
 CI_GATES = lint build test-unit test-integration test-bats
 VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop lighthouse-mobile \
-	lint-secrets scan-secrets-history lint-vulns scan-image-bun scan-image-playwright scan-image-rca
+	lint-secrets scan-secrets-history lint-vulns scan-image-bun scan-image-playwright scan-image-rca test-a11y
 VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
 GATE_SET_NAME = gates
 GATE_SET =
@@ -64,7 +64,7 @@ MAKE_GATE = $(MAKE) --no-print-directory
 .PHONY: help build package lint lint-next lint-tsc lint-md format-check lint-test-structure git-hooks-install \
 	storybook-start storybook-build generate-ts-doc test-e2e test-e2e-local \
 	test-unit test-integration copy-coverage test-mutation test-memory-leak test-visual test-visual-update \
-	test-storybook \
+	test-storybook test-a11y \
 	lighthouse-desktop lighthouse-mobile copy-lighthouse-reports copy-storybook-static load-storybook-static \
 	install update playwright-install test-bats \
 	up down sh ps logs new-logs start start-bun stop load-tests run-storybook-playwright \
@@ -170,7 +170,7 @@ lint-peer-ranges: ## Fail when a devDependency floor or installed version falls 
 lint-unused-deps: ## Fail on package.json dependencies nothing references, inside the docker container.
 	$(BUN) scripts/ci/check-unused-dependencies.ts
 
-lint-i18n-keys: ## Fail on a literal t()/i18nKey in src/ that i18n/localization.json does not translate, inside the docker container.
+lint-i18n-keys: ## Fail on a literal t()/i18nKey in src/ that src/locales/localization.json does not translate, inside the docker container.
 	$(BUN) scripts/ci/check-i18n-keys.ts
 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.
@@ -417,6 +417,16 @@ test-visual-update: PLAYWRIGHT_TEST_ARGS = --project=chromium --update-snapshots
 test-visual-update: PLAYWRIGHT_RUN_FLAGS = --volume $(CURDIR)/tests:/app/tests
 test-visual-update: ## Start Storybook and update the Playwright visual snapshots (chromium) inside a Docker container.
 	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)" PLAYWRIGHT_RUN_FLAGS="$(PLAYWRIGHT_RUN_FLAGS)"
+
+A11Y_UNIT_SUITES = tests/unit/core-controls-axe-violations.test.tsx
+A11Y_INTEGRATION_SUITES = tests/integration/components/ui-form-axe-violations.integration.test.tsx
+
+test-a11y: PLAYWRIGHT_TEST_TARGET = ./tests/a11y
+test-a11y: PLAYWRIGHT_TEST_ARGS = --project=chromium
+test-a11y: ## Run the axe-core a11y gates (jest-axe in jsdom, then every Storybook story iframe) inside Docker.
+	$(RUN_BUN) node ./node_modules/jest/bin/jest.js --coverage=false --verbose $(A11Y_UNIT_SUITES)
+	$(RUN_BUN) node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --coverage=false --verbose $(A11Y_INTEGRATION_SUITES)
+	@$(MAKE) --no-print-directory run-storybook-playwright PLAYWRIGHT_TEST_TARGET="$(PLAYWRIGHT_TEST_TARGET)" PLAYWRIGHT_TEST_ARGS="$(PLAYWRIGHT_TEST_ARGS)"
 
 test-storybook: PLAYWRIGHT_RUN_CMD = bun scripts/ci/run-storybook-interactions.ts
 test-storybook: PLAYWRIGHT_TEST_TARGET = tests/storybook/interaction-stories.json

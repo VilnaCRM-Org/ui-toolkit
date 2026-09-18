@@ -19,6 +19,7 @@ import {
 } from '../../src/components/ui-pin-input/styles';
 import type { UiPinCellLabel, UiPinInputProps } from '../../src/components/ui-pin-input/types';
 import { usePinInput, type PinInputModel } from '../../src/components/ui-pin-input/use-pin-input';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { expectNoLiveRegion, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
@@ -693,7 +694,7 @@ describe('UiPinInput — error contract', () => {
     const root: string = fieldRootEmotionClass();
     const scoped: string[] = emittedRules(`${root} .MuiFormHelperText-root`);
 
-    expect(scoped[0]).toContain('font-family: Inter');
+    expect(scoped[0]).toContain(`font-family: ${fontFamilies.inter}`);
     expect(scoped[0]).toContain('font-weight: 500');
     expect(scoped[0]).toContain('font-size: 0.875rem');
     expect(scoped[0]).toContain('line-height: 1.125rem');
@@ -1129,7 +1130,7 @@ describe('pinInputSx / pinGroupSx — layout assembly (pure, mutation-killing)',
 
     expect(base[HELPER_TEXT_KEY]).toEqual({
       margin: '0.25rem 0 0 0',
-      fontFamily: 'Inter',
+      fontFamily: fontFamilies.inter,
       fontWeight: 500,
       fontSize: '0.875rem',
       lineHeight: '1.125rem',
@@ -1175,7 +1176,7 @@ describe('pinCellSx — the 64x86 master (pure, mutation-killing)', () => {
   it('pins the digit typography, identical in all four masters', () => {
     const cell: StyleObject = cellStyle();
 
-    expect(cell.fontFamily).toBe("'Golos Text'");
+    expect(cell.fontFamily).toBe(fontFamilies.golos);
     expect(cell.fontWeight).toBe(700);
     expect(cell.fontSize).toBe('1.375rem');
     expect(cell.lineHeight).toBe('1.625rem');

@@ -357,6 +357,54 @@ describe('UiErrorBoundary resetKeys', () => {
   });
 });
 
+function ResetWithKeysHarness({
+  onRender,
+}: Readonly<{ onRender: React.ProfilerOnRenderCallback }>): React.ReactElement {
+  const [shouldThrow, setShouldThrow] = React.useState<boolean>(true);
+  const [version, setVersion] = React.useState<number>(0);
+
+  const renderFallback = (error: Error, reset: () => void): React.ReactElement => {
+    const retry = (): void => {
+      setShouldThrow(false);
+      setVersion((value: number): number => value + 1);
+      reset();
+    };
+
+    return (
+      <div>
+        <p>{`caught: ${error.message}`}</p>
+        <button type="button" onClick={retry}>
+          Try again
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <React.Profiler id="boundary" onRender={onRender}>
+      <UiErrorBoundary fallback={renderFallback} resetKeys={[version]}>
+        <Boom shouldThrow={shouldThrow} />
+      </UiErrorBoundary>
+    </React.Profiler>
+  );
+}
+
+describe('UiErrorBoundary reset landing together with a keys change', () => {
+  it('commits the recovery once and schedules no second reset from the keys', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onRender: jest.Mock = jest.fn();
+
+    render(<ResetWithKeysHarness onRender={onRender} />);
+    expect(screen.getByText('caught: boom')).toBeInTheDocument();
+    onRender.mockClear();
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(screen.getByText(HEALTHY_TEXT)).toBeInTheDocument();
+    expect(onRender.mock.calls.map((call: unknown[]): unknown => call[1])).toEqual(['update']);
+  });
+});
+
 describe('UiErrorBoundary fallback message resolution', () => {
   const bareInstance: I18nInstance = createInstance();
 

@@ -10,6 +10,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -91,7 +92,7 @@ export const chipLabelRowSx: SxProps<Theme> = {
 // label is two props rather than one string. Figma sets no tracking, so MUI's
 // default body letter spacing is dropped explicitly (the radio-group precedent).
 const SEGMENT_TYPE: object = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

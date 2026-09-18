@@ -1,4 +1,5 @@
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 /**
  * The shared helper-text treatment: Figma's "14 medium" (Inter Medium 14/18,
@@ -13,7 +14,7 @@ import colorTheme from '@/components/ui-color-theme';
  */
 export const helperTextTypography = {
   margin: '0.25rem 0 0 0',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

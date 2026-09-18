@@ -425,3 +425,19 @@ describe('ChevronGlyph — the glyph (pure recipe)', () => {
     expect(path).toHaveAttribute('d', 'M12.5 5L7.5 10L12.5 15');
   });
 });
+
+describe('UiChevronButton — interactive chrome follows the wired/static split', () => {
+  it('paints the pointer cursor on the wired button', () => {
+    render(buttonWith({ onActivate: noop }));
+
+    expect(screen.getByRole('button', { name: LABEL })).toHaveStyle({ cursor: 'pointer' });
+  });
+
+  it('paints no cursor on the static span', () => {
+    render(buttonWith({ id: 'static-chevron' }));
+
+    const root: Element = firstOf(nodesMatching('#static-chevron'));
+    expect(root.tagName).toBe('SPAN');
+    expect(root).not.toHaveStyle({ cursor: 'pointer' });
+  });
+});

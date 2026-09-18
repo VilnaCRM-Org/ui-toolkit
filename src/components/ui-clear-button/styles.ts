@@ -7,6 +7,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -60,7 +61,7 @@ const CLEAR_BUTTON_BASE: object = {
 
 /** Inter Medium 14/18, tracking killed, never wraps — the label segment. */
 export const clearButtonLabelSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

@@ -5,8 +5,8 @@ import { deleteButtonSx, deleteCircleSx } from './styles';
 
 // The removable-chip delete affordance. MUI's `Chip` clones this element and
 // injects the delete `onClick`/`className`, so the outer `Box` must be a real DOM
-// element for those to land. It is named for assistive tech ("Remove Kyiv") and
-// stays out of the tab order. It is the Figma-exact 20×20 affordance (node
+// element for those to land. It is decorative: the chip root is the one named
+// remove control ("Remove Kyiv"). It is the Figma-exact 20×20 affordance (node
 // 535:37540), NOT a 24×24 target, and DEV-24 records that no SC 2.5.8 exception
 // closes the gap: the "Equivalent" exception needs a DIFFERENT control on the same
 // page that itself meets 24 CSS px, which a keyboard path is not (keyboard
@@ -16,15 +16,9 @@ import { deleteButtonSx, deleteCircleSx } from './styles';
 // 20px brand-blue circle with a white × glyph.
 const CROSS_PATH: string = 'M4 4l8 8M12 4l-8 8';
 
-export function buildDeleteIcon(label: string): React.ReactElement {
+export function buildDeleteIcon(): React.ReactElement {
   return (
-    <Box
-      component="span"
-      role="button"
-      aria-label={`Remove ${label}`}
-      tabIndex={-1}
-      sx={deleteButtonSx}
-    >
+    <Box component="span" aria-hidden="true" sx={deleteButtonSx}>
       <Box component="span" className="ui-chip-x" sx={deleteCircleSx}>
         <svg
           aria-hidden="true"

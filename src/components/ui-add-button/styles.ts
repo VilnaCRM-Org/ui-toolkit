@@ -7,6 +7,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -85,7 +86,7 @@ const ADD_BUTTON_BASE: object = {
 
 /** Inter Medium 14/18, tracking killed, one un-wrapped line (the label). */
 export const addButtonLabelSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

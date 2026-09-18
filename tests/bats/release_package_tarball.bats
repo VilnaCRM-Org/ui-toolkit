@@ -42,7 +42,7 @@ setup() {
 @test "verifier accepts a tarball carrying every published entry point" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
-    build/ui-button.mjs build/ui-button.d.mts
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 0 ]
@@ -86,6 +86,26 @@ setup() {
   assert_output_contains 'is missing package/build/index.css'
 }
 
+@test "verifier rejects a tarball missing the locale module" {
+  make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
+    package.json build/index.mjs build/index.d.mts build/index.css \
+    build/ui-button.mjs build/ui-button.d.mts build/locales.d.mts
+
+  run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'is missing package/build/locales.mjs'
+}
+
+@test "verifier rejects a tarball missing the locale declarations" {
+  make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
+    package.json build/index.mjs build/index.d.mts build/index.css \
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs
+
+  run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'is missing package/build/locales.d.mts'
+}
+
 @test "verifier fails when the package directory holds no tarball" {
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 1 ]
@@ -95,10 +115,10 @@ setup() {
 @test "verifier refuses to guess when several tarballs are present" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
-    build/ui-button.mjs build/ui-button.d.mts
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.1.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
-    build/ui-button.mjs build/ui-button.d.mts
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 1 ]

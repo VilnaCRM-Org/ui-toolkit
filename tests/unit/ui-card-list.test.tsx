@@ -182,6 +182,17 @@ describe('UiCardList mixed card types', () => {
     );
   });
 
+  it('spells out the per-list type rule in the mixed-types warning', () => {
+    mockedUseMediaQuery.mockReturnValue(false);
+
+    render(React.createElement(UiCardList, { cardList: mixedCardList }));
+
+    expect(warn.spy).toHaveBeenCalledWith(
+      expect.stringContaining('the first item, so the others render in the wrong grid.')
+    );
+    expect(warn.spy).toHaveBeenCalledWith(expect.stringContaining('Use one `type` per list.'));
+  });
+
   it('warns whichever type comes first', () => {
     mockedUseMediaQuery.mockReturnValue(true);
 

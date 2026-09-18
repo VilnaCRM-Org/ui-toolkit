@@ -305,17 +305,23 @@ Read from the repository, not from documentation, so the register can be checked
 1. **Package entry.** `src/index.ts` is a single line — `export * from './components';` — so the
    package's whole surface is `src/components/index.ts`, the barrel the register describes. The
    barrel is not the only runtime entry point — `package.json` also publishes a per-component
-   subpath (`"./*"` → `./build/*.mjs`) — but it is still the whole type surface: `build.config.mjs`
-   derives both the subpath entry set and each subpath's declarations from the barrel's own
-   re-export names (`componentEntryPoints`, `barrelNamesFor`), so a component the barrel does not
-   export gets no subpath and a type it does not re-export stays unnameable.
+   subpath (`"./*"` → `./build/*.mjs`) and the `"./locales"` resources subpath — but it is still
+   the whole component type surface: `build.config.mjs` derives both the component subpath entry
+   set and each such subpath's declarations from the barrel's own re-export names
+   (`componentEntryPoints`, `barrelNamesFor`), so a component the barrel does not export gets no
+   subpath and a type it does not re-export stays unnameable. `./locales` is not a component: it
+   is emitted from `src/locales/index.ts` and typed from that file's own tsc output
+   (`generateLocalesDeclarations`), so its two names (`resources`, `initI18n`) never enter the
+   barrel or the register.
 2. **Barrel.** `src/components/index.ts` opens with `import './fonts.css';` (the side-effect import
    recorded as `DEV-43`) and then re-exports the value and type surface enumerated above.
 3. **Published fields.** `package.json` declares `"main": "./build/index.mjs"`,
    `"module": "./build/index.mjs"` and `"types": "./build/index.d.ts"`; the `exports` map is
    `"."` → `{ "types": "./build/index.d.ts", "import": "./build/index.mjs" }`, `"./styles.css"` →
-   `"./build/index.css"`, `"./package.json"` → `"./package.json"` and `"./*"` →
-   `{ "types": "./build/*.d.ts", "import": "./build/*.mjs" }`. `"files": ["build"]` means the published tarball
+   `"./build/index.css"`, `"./locales"` →
+   `{ "types": "./build/locales.d.mts", "import": "./build/locales.mjs" }`, `"./package.json"` →
+   `"./package.json"` and `"./*"` → `{ "types": "./build/*.d.ts", "import": "./build/*.mjs" }`.
+   `"files": ["build"]` means the published tarball
    carries the `build/` directory only, so `src/` is not reachable from an installed package and a
    type that is not re-exported by the barrel is genuinely unnameable by a consumer — which is what
    makes R2/R3 a consumability rule rather than a style preference. `"sideEffects": ["**/*.css"]`
@@ -323,7 +329,8 @@ Read from the repository, not from documentation, so the register can be checked
 4. **Runtime artifact.** `make build` runs `node ./build.config.mjs`, which emits `build/index.mjs`
    and `build/index.css` (the `./styles.css` subpath) alongside the font files, plus one
    `build/<module>.mjs` per value re-export in the barrel — the `"./*"` subpath — with the code they
-   share hoisted into `build/chunks/`.
+   share hoisted into `build/chunks/`, and `build/locales.mjs` + `build/locales.d.mts` — the
+   `"./locales"` subpath — from `src/locales/index.ts`; the build fails if either file is missing.
 5. **Type artifact.** esbuild emits no declarations, so `build.config.mjs` runs
    `tsc -p tsconfig.dts.json` into a freshly cleaned `temp/dts` and then invokes API Extractor;
    `make generate-ts-doc` runs the same extractor step on its own (`api-extractor run --local

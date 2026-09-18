@@ -6,10 +6,9 @@ import type { ReactNode } from 'react';
  * - supported: sx, disabled
  * - exceptions: value, onChange, error, size, variant
  */
-export interface UiLinkProps {
+export type UiLinkProps = {
   children: ReactNode;
   href: string;
-  target?: string | undefined;
   rel?: string | undefined;
   sx?: SxProps<Theme> | undefined;
   /**
@@ -20,10 +19,19 @@ export interface UiLinkProps {
    * navigate. The `rel`/new-tab contract is unaffected by `disabled`.
    */
   disabled?: boolean | undefined;
-  /**
-   * Visually-hidden hint appended when the link opens in a new tab
-   * (`target="_blank"`). Pass a localized string; set to `''` to suppress
-   * (e.g. when the consumer renders its own external-link affordance).
-   */
-  newTabLabel?: string | undefined;
-}
+} & (
+  | {
+      target: '_blank';
+      /**
+       * Visually-hidden hint appended when the link opens in a new tab. Required
+       * with `target="_blank"`: pass the application's already-translated string.
+       * Pass `''` to render no cue (e.g. when the consumer renders its own
+       * external-link affordance).
+       */
+      newTabLabel: string;
+    }
+  | {
+      target?: '_self' | '_parent' | '_top' | undefined;
+      newTabLabel?: string | undefined;
+    }
+);

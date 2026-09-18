@@ -12,7 +12,7 @@ import {
 
 const PROJECT_ROOT = resolve(process.cwd());
 const SOURCE_ROOT = resolve(PROJECT_ROOT, 'src');
-const RESOURCES_PATH = resolve(PROJECT_ROOT, 'i18n', 'localization.json');
+const RESOURCES_PATH = resolve(PROJECT_ROOT, 'src', 'locales', 'localization.json');
 const REFERENCE_LOCALE = 'en';
 const NAMESPACE = 'translation';
 
@@ -96,7 +96,9 @@ const missing = findMissingKeys(references, knownKeys);
 if (missing.length > 0) {
   console.error(`i18n key check failed: ${missing.length} reference(s) have no translation:`);
   console.error(formatReport(missing));
-  console.error('Add the key to i18n/localization.json (every locale) or pass a defaultValue.');
+  console.error(
+    'Add the key to src/locales/localization.json (every locale) or pass a defaultValue.'
+  );
   process.exit(1);
 }
 

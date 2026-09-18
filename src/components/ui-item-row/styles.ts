@@ -6,6 +6,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 import { websiteBreakpointValues } from '../ui-breakpoints';
 
@@ -70,7 +71,7 @@ export const badgeSx: SxProps<Theme> = {
   backgroundColor: palette.white.main,
   borderRadius: '0.5rem',
   padding: '0.5rem 1.25rem',
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   fontWeight: 600,
   fontSize: '1rem',
   lineHeight: '1.625rem',
@@ -109,7 +110,7 @@ const ellipsisOverflow = {
 } as const;
 
 export const pathSx: SxProps<Theme> = {
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   fontWeight: 600,
   fontSize: '1.125rem',
   lineHeight: 'normal',
@@ -117,7 +118,7 @@ export const pathSx: SxProps<Theme> = {
   whiteSpace: 'nowrap',
   ...ellipsisOverflow,
   [MOBILE_MAX]: {
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontWeight: 500,
     fontSize: '1rem',
     lineHeight: '1.125rem',
@@ -125,7 +126,7 @@ export const pathSx: SxProps<Theme> = {
 };
 
 export const descriptionSx: SxProps<Theme> = {
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   fontWeight: 500,
   fontSize: '0.9375rem',
   lineHeight: '1.125rem',
@@ -133,7 +134,7 @@ export const descriptionSx: SxProps<Theme> = {
   whiteSpace: 'nowrap',
   ...ellipsisOverflow,
   [MOBILE_MAX]: {
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontWeight: 500,
     fontSize: '0.75rem',
     lineHeight: '1.125rem',

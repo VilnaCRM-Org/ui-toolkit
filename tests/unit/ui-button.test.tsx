@@ -9,6 +9,7 @@ import {
   outlinedStyles,
   theme as buttonTheme,
 } from '../../src/components/ui-button/theme';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { testText } from './constants';
 
@@ -215,7 +216,7 @@ describe('UiButton danger variant style assembly (Board A y=1354)', () => {
   it('declares the shared typography and radius the base pill uses', () => {
     expect(dangerStyles).toMatchObject({
       textTransform: 'none',
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
       fontWeight: '500',
       fontSize: '0.938rem',
       lineHeight: '1.125rem',

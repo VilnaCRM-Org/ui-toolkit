@@ -2,6 +2,7 @@ import { Theme, createTheme } from '@mui/material';
 
 import breakpointsTheme from '@/components/ui-breakpoints';
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const theme: Theme = createTheme({
   // Without a base family every MUI slot this theme does NOT override by hand —
@@ -9,7 +10,7 @@ const theme: Theme = createTheme({
   // which is not a face the toolkit ships. Declaring it once puts the label,
   // the typed value and the helper text on the same Inter the placeholder and
   // error overrides below already ask for.
-  typography: { fontFamily: 'Inter' },
+  typography: { fontFamily: fontFamilies.inter },
   components: {
     MuiOutlinedInput: {
       styleOverrides: {
@@ -52,7 +53,7 @@ const theme: Theme = createTheme({
             background: colorTheme.palette.white.main,
             '&::placeholder': {
               color: colorTheme.palette.grey300.main,
-              fontFamily: 'Inter',
+              fontFamily: fontFamilies.inter,
               fontSize: '1rem',
               fontStyle: 'normal',
               fontWeight: '400',
@@ -88,7 +89,7 @@ const theme: Theme = createTheme({
         root: {
           '&.Mui-error': {
             margin: '0.25rem 0 0 0',
-            fontFamily: 'Inter',
+            fontFamily: fontFamilies.inter,
             fontWeight: '500',
             fontSize: '0.875rem',
             lineHeight: '1.125rem',

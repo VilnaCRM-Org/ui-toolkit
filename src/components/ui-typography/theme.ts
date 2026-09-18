@@ -1,13 +1,15 @@
 import { Theme, createTheme } from '@mui/material';
 import { CSSProperties } from 'react';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import colorTheme from '../ui-color-theme';
 
 const hStyles: CSSProperties = {
   color: colorTheme.palette.darkPrimary.main,
   fontWeight: '700',
   lineHeight: 'normal',
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   letterSpacing: 'normal',
 };
 
@@ -35,7 +37,7 @@ const theme: Theme = createTheme({
     // rendered with NO variant lands on MUI's stock `body1` — and with no base
     // family declared that resolves to Roboto, which the toolkit never ships.
     // This is the family the heading styles already use.
-    fontFamily: 'Golos Text',
+    fontFamily: fontFamilies.golos,
     h1: {
       ...hStyles,
       fontSize: '3.5rem',
@@ -64,7 +66,7 @@ const theme: Theme = createTheme({
       fontSize: '1.375rem',
     },
     medium16: {
-      fontFamily: 'Inter',
+      fontFamily: fontFamilies.inter,
       fontWeight: '500',
       fontSize: '1rem',
       lineHeight: '1.125rem',
@@ -74,7 +76,7 @@ const theme: Theme = createTheme({
       // Design is the source of truth: the Figma "15 (medium)" token is Golos Text
       // Medium 15/18 (only the 14/16 medium tokens are Inter). CRM leaves this
       // family unset, but the design pins Golos here.
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
       fontWeight: '500',
       fontSize: '0.9375rem',
       lineHeight: '1.125rem',
@@ -85,56 +87,56 @@ const theme: Theme = createTheme({
       fontSize: '0.875rem',
       lineHeight: '1.125rem',
       color: colorTheme.palette.grey200.main,
-      fontFamily: 'Inter',
+      fontFamily: fontFamilies.inter,
     },
     regular16: {
       fontWeight: '500',
       fontSize: '1rem',
       lineHeight: '1.125rem',
       color: colorTheme.palette.grey300.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
     bodyText18: {
       fontWeight: '400',
       fontSize: '1.125rem',
       lineHeight: '1.875rem',
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
     bodyText16: {
       fontWeight: '400',
       fontSize: '1rem',
       lineHeight: '1.625rem',
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
     bold22: {
       fontWeight: '700',
       fontSize: '1.375rem',
       lineHeight: 'normal',
       color: colorTheme.palette.grey250.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
     demi18: {
       fontWeight: '600',
       fontSize: '1.125rem',
       lineHeight: 'normal',
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
     button: {
       fontWeight: '600',
       fontSize: '1.125rem',
       lineHeight: 'normal',
       color: colorTheme.palette.white.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
     mobileText: {
       fontWeight: '400',
       fontSize: '0.9375rem',
       lineHeight: '1.563rem',
       color: colorTheme.palette.darkPrimary.main,
-      fontFamily: 'Golos Text',
+      fontFamily: fontFamilies.golos,
     },
   },
 });

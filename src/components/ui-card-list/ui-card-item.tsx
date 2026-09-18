@@ -8,11 +8,13 @@ import UiImage from '../ui-image';
 
 import CardContent from './card-content';
 import styles from './styles';
+import { useKeyTranslator } from './translated-content';
 import type { UiCardItemProps } from './types';
 import { untranslatedKeyWarning } from './untranslated-key';
 
 function UiCardItem({ item, headingComponent }: UiCardItemProps): React.ReactElement {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
+  const translate = useKeyTranslator();
   useDevWarning(untranslatedKeyWarning(item, (key: string): boolean => i18n.exists(key)));
   const isSmallCard: boolean = item.type === 'smallCard';
 
@@ -20,7 +22,7 @@ function UiCardItem({ item, headingComponent }: UiCardItemProps): React.ReactEle
     <Stack sx={isSmallCard ? styles.smallWrapper : styles.largeWrapper}>
       <UiImage
         src={item.imageSrc}
-        alt={t(item.alt)}
+        alt={translate(item.alt)}
         sx={isSmallCard ? styles.smallImage : styles.largeImage}
       />
       <Stack direction="column">

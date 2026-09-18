@@ -55,7 +55,7 @@ if [ -n "$matches" ]; then
   echo "ERROR: test files found outside the root tests/ directory:" >&2
   printf '%s\n' "$matches" | sed 's,^\./,  ,' >&2
   echo >&2
-  echo "Move them under tests/ (tests/unit, tests/integration, tests/e2e," >&2
+  echo "Move them under tests/ (tests/unit, tests/integration, tests/e2e, tests/a11y," >&2
   echo "tests/visual, tests/storybook, tests/load, tests/memory-leak, tests/bats)." >&2
   exit 1
 fi

@@ -17,6 +17,7 @@ import {
   GLYPH_CLASS,
 } from '../../src/components/ui-clear-button/styles';
 import type { UiClearButtonProps } from '../../src/components/ui-clear-button/types';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import {
   describeActivationRequests,
@@ -468,7 +469,7 @@ describe('clear-button styles — content recipes (pure, mutation-killing)', () 
   it('pins the label to Inter Medium 14/18 with tracking killed and no wrap', () => {
     const label: StyleObject = clearButtonLabelSx as StyleObject;
 
-    expect(label.fontFamily).toBe('Inter');
+    expect(label.fontFamily).toBe(fontFamilies.inter);
     expect(label.fontWeight).toBe(500);
     expect(label.fontSize).toBe('0.875rem');
     expect(label.lineHeight).toBe('1.125rem');
@@ -518,5 +519,25 @@ describe('ClearGlyph — the leading × (pure recipe)', () => {
     expect(path).toHaveAttribute('stroke-width', '1.5');
     expect(path).toHaveAttribute('stroke-linecap', 'round');
     expect(path).toHaveAttribute('stroke-linejoin', 'round');
+  });
+});
+
+describe('UiClearButton — default label literal', () => {
+  const UKRAINIAN_DEFAULT: string = 'Очистити фільтри';
+
+  it('pins the built-in Ukrainian default label', () => {
+    expect(DEFAULT_LABEL).toBe(UKRAINIAN_DEFAULT);
+  });
+
+  it('names an unlabelled wired button with the default text', () => {
+    render(buttonWith({ onActivate: noop }));
+
+    expect(screen.getByRole('button', { name: UKRAINIAN_DEFAULT })).toBeInTheDocument();
+  });
+
+  it('renders the default text on an unlabelled static row', () => {
+    render(buttonWith({}));
+
+    expect(screen.getByText(UKRAINIAN_DEFAULT)).toBeInTheDocument();
   });
 });

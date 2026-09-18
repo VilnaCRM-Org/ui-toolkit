@@ -17,10 +17,10 @@ export const MEDIA_GROUPS: GroupSpec[] = [
     title: 'Пагінація',
     width: 685,
     states: [
-      { label: 'Rest', node: paginationNode({ value: 1 }) },
-      { label: 'Hover', node: paginationNode({ value: 1, hover: true }) },
-      { label: 'Current', node: paginationNode({ value: 2 }) },
-      { label: 'Disabled', node: paginationNode({ value: 2, disabled: true }) },
+      { label: 'Rest', node: paginationNode({ label: 'Rest', value: 1 }) },
+      { label: 'Hover', node: paginationNode({ label: 'Hover', value: 1, hover: true }) },
+      { label: 'Current', node: paginationNode({ label: 'Current', value: 2 }) },
+      { label: 'Disabled', node: paginationNode({ label: 'Disabled', value: 2, disabled: true }) },
     ],
   },
   {

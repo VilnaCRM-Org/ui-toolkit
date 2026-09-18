@@ -1,5 +1,7 @@
 import { Theme, createTheme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { outlinedFieldTheme } from '../field-controls';
 import colorTheme from '../ui-color-theme';
 
@@ -16,7 +18,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
       styleOverrides: {
         root: {
           // Value text: Golos Text Medium 15/18, Dark-primary ink #1B2327.
-          fontFamily: 'Golos Text',
+          fontFamily: fontFamilies.golos,
           fontSize: '0.9375rem',
           fontWeight: 500,
           lineHeight: '1.125rem',
@@ -30,7 +32,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
         },
         input: {
           '&::placeholder': {
-            fontFamily: 'Golos Text',
+            fontFamily: fontFamilies.golos,
             fontWeight: 500,
             fontSize: '0.9375rem',
             lineHeight: '1.125rem',
@@ -123,7 +125,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           '& .MuiAutocomplete-option': {
             minHeight: '2.75rem',
             paddingLeft: '1.25rem',
-            fontFamily: 'Golos Text',
+            fontFamily: fontFamilies.golos,
             fontSize: '0.9375rem',
             fontWeight: 500,
             color: colorTheme.palette.darkSecondary.main,

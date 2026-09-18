@@ -6,6 +6,7 @@ import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 export { srOnlySx } from '../field-controls';
 
@@ -25,7 +26,7 @@ export const chipSx: SxProps<Theme> = {
   // layout shift; it colours in on hover.
   border: '1px solid transparent',
   color: palette.primary.main,
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontSize: '1rem',
   fontWeight: 500,
   lineHeight: '1.125rem',

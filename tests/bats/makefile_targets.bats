@@ -108,6 +108,7 @@ EOF
 test-storybook|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun scripts/ci/run-storybook-interactions.ts tests/storybook/interaction-stories.json
 test-e2e|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/e2e
 test-visual|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/visual --project=chromium
+test-a11y|docker compose build playwright|docker compose up -d --build storybook|docker compose run --rm playwright sh -lc bun x wait-on --timeout 360000 http-get://storybook:6006/iframe.html|docker compose run --rm playwright bun x playwright test ./tests/a11y --project=chromium
 test-memory-leak|docker compose build bun|bun x storybook dev --ci --host 0.0.0.0 -p 3000|bun x wait-on --timeout 180000 http://127.0.0.1:3000|MEMLAB_WEBSITE_URL=http://127.0.0.1:3000 bun ./tests/memory-leak/run-memlab-tests.js
 EOF
 }
@@ -130,6 +131,17 @@ EOF
   assert_log_not_contains 'Skipping memory leak tests'
   assert_log_not_contains 'runMemlabTests.js'
   assert_log_contains 'bun ./tests/memory-leak/run-memlab-tests.js'
+}
+
+@test "test-a11y runs the scoped jest-axe suites before the story scan and never passes over an empty discovery" {
+  reset_command_log
+  run_make_target test-a11y
+  [ "$status" -eq 0 ]
+  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --coverage=false --verbose tests/unit/core-controls-axe-violations.test.tsx'
+  assert_log_contains 'docker compose run --rm bun node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts --coverage=false --verbose tests/integration/components/ui-form-axe-violations.integration.test.tsx'
+  assert_log_contains 'docker compose run --rm playwright bun x playwright test ./tests/a11y --project=chromium'
+  assert_log_not_contains '--passWithNoTests'
+  assert_log_not_contains '--pass-with-no-tests'
 }
 
 @test "jest and playwright suites never pass over an empty test discovery" {

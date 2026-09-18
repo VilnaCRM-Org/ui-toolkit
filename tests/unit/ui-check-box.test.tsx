@@ -6,6 +6,7 @@ import {
   formControlLabelSx,
   formControlLabelSxWith,
 } from '../../src/components/ui-checkbox/styles';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { testText } from './constants';
 
@@ -115,7 +116,7 @@ describe('UiCheckbox — label typography and consumer sx', () => {
     >;
     const labelRule = rule['& .MuiFormControlLabel-label'];
     expect(labelRule).toBeDefined();
-    expect((labelRule as Record<string, string>).fontFamily).toBe('Inter');
+    expect((labelRule as Record<string, string>).fontFamily).toBe(fontFamilies.inter);
   });
 
   // Pure assembly assertions: the wrapper is a `<label>`, which carries no ARIA

@@ -8,6 +8,7 @@ import { alpha } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -62,7 +63,7 @@ export const SEGMENT_BASE: SxProps<Theme> = {
   borderRadius: '0.5rem',
   backgroundColor: 'transparent',
   font: 'inherit',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

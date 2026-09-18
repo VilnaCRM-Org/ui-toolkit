@@ -2,14 +2,13 @@ import { test, expect } from '@playwright/test';
 
 import stories from '../visual/stories.json';
 
+import { expectManifestMatchesIndex, type StoryEntry } from './utils';
+
 // 100% story coverage: every Storybook story is rendered and asserted to mount
 // without an uncaught error, across all configured browsers. The manifest
 // (tests/visual/stories.json) is shared with the visual suite; the completeness
 // test below fails if it ever drifts from the live Storybook index, so no story
 // can escape e2e + visual coverage.
-
-type StoryEntry = { id: string; title: string; name: string };
-type IndexEntry = { type: string; id: string };
 
 test.describe('Story smoke (every story renders)', () => {
   for (const story of stories as StoryEntry[]) {
@@ -32,17 +31,5 @@ test.describe('Story smoke (every story renders)', () => {
 });
 
 test('the story manifest covers every live Storybook story', async ({ request, baseURL }) => {
-  const response = await request.get(`${baseURL}/index.json`);
-  expect(response.ok()).toBeTruthy();
-
-  const index: { entries: Record<string, IndexEntry> } = await response.json();
-  const liveStoryIds: string[] = Object.values(index.entries)
-    .filter(entry => entry.type === 'story')
-    .map(entry => entry.id)
-    .sort((a, b) => a.localeCompare(b));
-  const manifestIds: string[] = (stories as StoryEntry[])
-    .map(entry => entry.id)
-    .sort((a, b) => a.localeCompare(b));
-
-  expect(manifestIds).toEqual(liveStoryIds);
+  await expectManifestMatchesIndex(request, baseURL, stories as StoryEntry[]);
 });

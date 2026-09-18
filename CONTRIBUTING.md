@@ -132,6 +132,9 @@ own subdirectory:
 - `tests/unit` — Jest unit and component tests (`*.test.ts`, `*.test.tsx`, `*.spec.js`)
 - `tests/integration` — Jest composition tests across components
 - `tests/e2e` — Playwright end-to-end specs run against Storybook
+- `tests/a11y` — the shared axe-core configuration, the jest-axe helper, and the Playwright
+  story-scan and keyboard specs behind `make test-a11y` (see
+  `docs/accessibility/acceptance-standard.md`)
 - `tests/storybook` — the Storybook interaction (play function) registry and its docs
 - `tests/visual` — Playwright visual-regression specs and their snapshots (regenerate baselines
   only through `make test-visual-update`; see `tests/visual/README.md`)
@@ -186,6 +189,14 @@ checked against the live index and a stale entry fails the config. `LHCI_SHARD=<
 slices the story list; the performance workflow builds Storybook once, shares it as an artifact,
 and fans the audit out over three shards per form factor. When no `storybook-static/` is present
 the targets build it themselves.
+
+### Accessibility gate
+
+`make test-a11y` runs the axe-core gates: the scoped jest-axe suites in jsdom, then a
+`@axe-core/playwright` scan of every story iframe in `tests/visual/stories.json` plus the
+keyboard/focus spec, on chromium. The conformance target, the in-scope rules, the two documented
+carve-outs, and the exception process live in `docs/accessibility/acceptance-standard.md`; every
+component and story must pass it before it merges.
 
 ### CI gate integrity (fail-closed)
 
@@ -413,7 +424,7 @@ source of truth for the mutated file set: `stryker.config.mjs` and `stryker.shar
 derive from it, so the two can no longer drift apart and silently drop mutants from the merged
 score. Each shard uploads a per-shard JSON report. A final `merge and enforce gate` job runs
 `make merge-mutation-reports`, which unions the shard reports and re-enforces the **unchanged**
-Stryker `break` threshold (`stryker.config.mjs` — `break: 80`) over the whole set, computing the
+Stryker `break` threshold (`stryker.config.mjs` — `break: 100`) over the whole set, computing the
 mutation score exactly as an unsharded run would. Sharding by file is score-preserving: a
 mutant's related-test set is derived from the mutated file, so it is identical no matter which
 shard owns that file — sharding partitions the work without changing any mutant's verdict. A

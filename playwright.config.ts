@@ -13,9 +13,10 @@ export default defineConfig({
   testMatch: ['**/*.spec.ts'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: 0,
   ...workerOverride,
   reporter: 'html',
+  expect: { toHaveScreenshot: { threshold: 0, maxDiffPixels: 0, maxDiffPixelRatio: 0 } },
   use: {
     trace: 'on-first-retry',
     // Only relax TLS validation for explicit local/dev runs.
@@ -25,7 +26,18 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: {
+          args: [
+            '--disable-gpu',
+            '--disable-gpu-rasterization',
+            '--disable-partial-raster',
+            '--disable-lcd-text',
+            '--disable-skia-runtime-opts',
+          ],
+        },
+      },
     },
 
     {

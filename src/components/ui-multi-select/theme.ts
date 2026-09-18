@@ -1,5 +1,7 @@
 import { Theme, createTheme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { outlinedFieldTheme } from '../field-controls';
 import colorTheme from '../ui-color-theme';
 
@@ -14,7 +16,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          fontFamily: 'Inter',
+          fontFamily: fontFamilies.inter,
           fontSize: '1rem',
           lineHeight: '1.125rem',
           color: colorTheme.palette.darkPrimary.main,
@@ -107,7 +109,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           '& .MuiAutocomplete-option': {
             minHeight: '3.25rem',
             paddingLeft: '1.1875rem',
-            fontFamily: 'Inter',
+            fontFamily: fontFamilies.inter,
             fontSize: '1rem',
             fontWeight: 500,
             color: colorTheme.palette.darkPrimary.main,

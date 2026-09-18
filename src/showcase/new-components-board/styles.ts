@@ -1,3 +1,5 @@
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { MOBILE_MAX } from './fixtures';
 
 // Forced interaction-state visuals (Figma draws these as separate frames). Each
@@ -119,13 +121,13 @@ export const ROW_MOBILE_SX = {
     filter: 'drop-shadow(0 8px 13.5px rgba(49, 59, 67, 0.14))',
   },
   '& .ui-item-row__path': {
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontWeight: 500,
     fontSize: '1rem',
     lineHeight: '1.125rem',
   },
   '& .ui-item-row__description': {
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontWeight: 500,
     fontSize: '0.75rem',
     lineHeight: '1.125rem',
@@ -193,10 +195,10 @@ export const pageSx = {
   padding: '2.5rem',
   [MOBILE_MAX]: { padding: '1rem', gap: '2rem' },
   backgroundColor: '#FBFBFB',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
 } as const;
 export const groupTitleSx = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 600,
   fontSize: '1rem',
   color: '#1A1C1E',
@@ -215,7 +217,7 @@ export const itemBaseSx = {
 } as const;
 export const tallSx = { position: 'relative', minHeight: '340px' } as const;
 export const stateLabelSx = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 600,
   fontSize: '0.6875rem',
   letterSpacing: '0.08em',

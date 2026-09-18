@@ -14,7 +14,7 @@ history, tags it, packs the library with `npm pack`, and attaches
 `VilnaCRM-Org/ui-toolkit` is public, so the asset downloads without a token, an `.npmrc` entry, or
 a CI secret.
 
-The package is ESM-only and exposes three kinds of entry point:
+The package is ESM-only and exposes four kinds of entry point:
 
 - `@vilnacrm/ui-toolkit` — every component, theme, and token, with bundled type declarations.
 - `@vilnacrm/ui-toolkit/<component>` — one component on its own, e.g.
@@ -22,6 +22,8 @@ The package is ESM-only and exposes three kinds of entry point:
   the component as `default` plus its prop types as named type exports.
 - `@vilnacrm/ui-toolkit/styles.css` — the stylesheet, carrying the Swiper carousel CSS and the
   Inter and Golos Text font faces.
+- `@vilnacrm/ui-toolkit/locales` — the `en` and `uk` translation `resources` and the `initI18n`
+  helper that loads them into i18next (see the README's Localization section).
 
 Swiper is bundled into both entry points rather than declared as a peer, so the consumer does not
 install it for the toolkit's sake.

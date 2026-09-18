@@ -3,6 +3,7 @@ import { alpha } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 import type { UiUploadStatus } from './types';
 
@@ -87,7 +88,7 @@ const fileText: SystemStyleObject<Theme> = {
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',
@@ -114,7 +115,7 @@ const statusPill: SystemStyleObject<Theme> = {
   marginTop: '0.5rem',
   padding: '0.3125rem 0.5rem',
   borderRadius: '0.25rem',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

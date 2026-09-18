@@ -11,6 +11,7 @@ import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -134,7 +135,7 @@ export const countChipSx: SxProps<Theme> = {
   // is also carried by the button's accessible name, so nothing depends on the tint
   // alone.
   backgroundColor: palette.primary.main,
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.75rem',
   lineHeight: '1.125rem',

@@ -26,6 +26,7 @@ import {
   useCopyField,
   type CopyFieldModel,
 } from '../../src/components/ui-copy-field/use-copy-field';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import {
   describeAriaDisabledFocusable,
@@ -679,7 +680,7 @@ describe('ui-copy-field styles — content recipes (pure, mutation-killing)', ()
   it('pins the value type to Golos DemiBold 16/normal with tracking killed (rest ink)', () => {
     const value: StyleObject = copyFieldValueSx as StyleObject;
 
-    expect(value.fontFamily).toBe('Golos Text');
+    expect(value.fontFamily).toBe(fontFamilies.golos);
     expect(value.fontWeight).toBe(600);
     expect(value.fontSize).toBe('1rem');
     expect(value.lineHeight).toBe('normal');

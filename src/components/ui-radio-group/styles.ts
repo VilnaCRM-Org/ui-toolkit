@@ -1,6 +1,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -60,7 +61,7 @@ export default {
   },
   groupLabel: {
     marginBottom: '0.5rem',
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontWeight: 500,
     fontSize: '0.875rem',
     lineHeight: '1.125rem',
@@ -79,7 +80,7 @@ export default {
     marginLeft: 0,
     marginRight: 0,
     '& .MuiFormControlLabel-label': {
-      fontFamily: 'Inter',
+      fontFamily: fontFamilies.inter,
       fontWeight: 500,
       fontSize: '1rem',
       lineHeight: '1.125rem',

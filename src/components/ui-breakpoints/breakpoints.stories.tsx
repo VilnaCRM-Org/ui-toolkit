@@ -2,12 +2,14 @@ import { Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material'
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { crmBreakpointValues, heightBreakpoints, websiteBreakpointValues } from './index';
 
 type WidthKey = keyof typeof websiteBreakpointValues;
 type HeightKey = keyof typeof heightBreakpoints;
 
-const TABLE_SX = { maxWidth: 480, '& th, & td': { fontFamily: 'Inter' } } as const;
+const TABLE_SX = { maxWidth: 480, '& th, & td': { fontFamily: fontFamilies.inter } } as const;
 const WIDTH_KEYS: WidthKey[] = Object.keys(websiteBreakpointValues) as WidthKey[];
 const HEIGHT_KEYS: HeightKey[] = Object.keys(heightBreakpoints) as HeightKey[];
 

@@ -1,6 +1,8 @@
 import { Interpolation, Theme, createTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
@@ -12,7 +14,7 @@ const baseButtonStyles: Interpolation<{ theme: Theme }> = {
   textTransform: 'none',
   textDecoration: 'none',
   fontSize: '0.938rem',
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   fontWeight: '500',
   lineHeight: '1.125rem',
   letterSpacing: '0',
@@ -94,7 +96,7 @@ export const theme: Theme = createTheme({
   // Base family for the slots the variants below do not name themselves —
   // without it MUI's stock Roboto wins, and Roboto is not a face the toolkit
   // ships. Same family the contained/outlined button text already uses.
-  typography: { fontFamily: 'Golos Text' },
+  typography: { fontFamily: fontFamilies.golos },
   components: {
     MuiButton: {
       variants: [
@@ -155,7 +157,7 @@ export const theme: Theme = createTheme({
           // a 171x62 CTA. It declares its own line box so the CTA's cannot reach
           // it.
           style: {
-            fontFamily: 'Golos Text',
+            fontFamily: fontFamilies.golos,
             textTransform: 'none',
             lineHeight: '1.375rem',
             borderRadius: '0.75rem',

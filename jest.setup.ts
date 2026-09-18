@@ -1,2 +1,7 @@
 import '@testing-library/jest-dom';
-import './i18n';
+import { toHaveNoViolations } from 'jest-axe';
+
+import { initI18n } from './src/locales';
+
+initI18n();
+expect.extend(toHaveNoViolations);

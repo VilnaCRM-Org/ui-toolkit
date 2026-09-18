@@ -251,6 +251,61 @@ describe('UiItemsList — row key identity', () => {
   });
 });
 
+function KeyedFragments({ order }: Readonly<{ order: readonly string[] }>): React.ReactElement {
+  return (
+    <UiItemsList>
+      {order.map((name: string) => (
+        <React.Fragment key={name}>
+          <input aria-label={name} />
+        </React.Fragment>
+      ))}
+    </UiItemsList>
+  );
+}
+
+describe('UiItemsList — nullish rows inside fragments', () => {
+  it('drops nullish and boolean fragment children instead of wrapping them', () => {
+    render(
+      <UiItemsList>
+        <>
+          {null}
+          {false}
+          <UiItemRow method="get" path="/a" onToggle={noop} />
+          {undefined}
+        </>
+      </UiItemsList>
+    );
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: 'GET /a' })).toBeInTheDocument();
+  });
+
+  it('renders nothing when a fragment holds only nullish children', () => {
+    render(
+      <UiItemsList>
+        <>
+          {null}
+          {false}
+        </>
+      </UiItemsList>
+    );
+
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+  });
+
+  it('carries a keyed fragment with its row when the fragments are reordered', async () => {
+    const user: UserEvent = userEvent.setup();
+    const { rerender } = render(<KeyedFragments order={['first', 'second']} />);
+
+    await user.type(screen.getByRole('textbox', { name: 'first' }), 'kept');
+    rerender(<KeyedFragments order={['second', 'first']} />);
+
+    expect(screen.getByRole('textbox', { name: 'first' })).toHaveValue('kept');
+    expect(screen.getByRole('textbox', { name: 'second' })).toHaveValue('');
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+  });
+});
+
 describe('UiItemsList — consumer sx', () => {
   it('applies an object sx to the ul', () => {
     render(<UiItemsList sx={{ marginTop: '1rem' }}>{sampleRows()}</UiItemsList>);

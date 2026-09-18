@@ -8,6 +8,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -96,7 +97,7 @@ const COPY_FIELD_BASE: object = {
 // `UiFilterChip` / radio-group precedent). Rest ink `grey250`; hover/active/
 // disabled retint through the state selectors below.
 export const copyFieldValueSx: SxProps<Theme> = {
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   fontWeight: 600,
   fontSize: '1rem',
   lineHeight: 'normal',
