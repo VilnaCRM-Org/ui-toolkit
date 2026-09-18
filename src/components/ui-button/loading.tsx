@@ -18,7 +18,6 @@ import colorTheme from '../ui-color-theme';
  * would still follow its `href`. `useBusyClick` cancels that default.
  */
 const BUSY_SX: SxProps<Theme> = {
-  position: 'relative',
   color: 'transparent',
   pointerEvents: 'none',
   cursor: 'default',

@@ -477,3 +477,12 @@ describe('UiOptionCard — style assembly (styles.ts)', () => {
     expect(value.color).toBe(DARK_SECONDARY);
   });
 });
+
+describe('UiOptionCard — content text run', () => {
+  it('separates the caption from the value with a literal space text node', () => {
+    render(cardWith({ onSelect: noop }));
+
+    expect(card()).toHaveTextContent(FULL_NAME);
+    expect(card()).not.toHaveTextContent(`${LABEL}${VALUE_LABEL}`);
+  });
+});

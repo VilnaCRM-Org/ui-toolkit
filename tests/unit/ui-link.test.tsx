@@ -434,3 +434,36 @@ describe('UiLink new-tab label development warning', () => {
     expect(warn.spy).not.toHaveBeenCalled();
   });
 });
+
+describe('UiLink rel token separators', () => {
+  it('splits an explicit rel on tabs and newlines as well as spaces', () => {
+    render(
+      <UiLink
+        href={testUrl}
+        target="_blank"
+        rel={'nofollow\tsponsored\nugc'}
+        newTabLabel="external"
+      >
+        {testText}
+      </UiLink>
+    );
+
+    expect(screen.getByRole('link', { name: new RegExp(testText) })).toHaveAttribute(
+      'rel',
+      'nofollow sponsored ugc noopener noreferrer'
+    );
+  });
+
+  it('collapses a run of separators between two tokens into a single space', () => {
+    render(
+      <UiLink href={testUrl} target="_blank" rel={'nofollow \t\n sponsored'} newTabLabel="external">
+        {testText}
+      </UiLink>
+    );
+
+    expect(screen.getByRole('link', { name: new RegExp(testText) })).toHaveAttribute(
+      'rel',
+      'nofollow sponsored noopener noreferrer'
+    );
+  });
+});

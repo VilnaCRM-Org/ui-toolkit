@@ -520,3 +520,23 @@ describe('ClearGlyph — the leading × (pure recipe)', () => {
     expect(path).toHaveAttribute('stroke-linejoin', 'round');
   });
 });
+
+describe('UiClearButton — default label literal', () => {
+  const UKRAINIAN_DEFAULT: string = 'Очистити фільтри';
+
+  it('pins the built-in Ukrainian default label', () => {
+    expect(DEFAULT_LABEL).toBe(UKRAINIAN_DEFAULT);
+  });
+
+  it('names an unlabelled wired button with the default text', () => {
+    render(buttonWith({ onActivate: noop }));
+
+    expect(screen.getByRole('button', { name: UKRAINIAN_DEFAULT })).toBeInTheDocument();
+  });
+
+  it('renders the default text on an unlabelled static row', () => {
+    render(buttonWith({}));
+
+    expect(screen.getByText(UKRAINIAN_DEFAULT)).toBeInTheDocument();
+  });
+});

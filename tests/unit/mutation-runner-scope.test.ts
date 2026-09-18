@@ -44,7 +44,7 @@ const STRUCTURAL_GUARD_FILES: readonly string[] = [
 // Ratchet: `thresholds.break` may only ever climb. Bumping the floor here is
 // how a deliberate increase gets recorded; a config edit that LOWERS the real
 // value must fail this test rather than silently loosen the merge gate.
-const MUTATION_BREAK_THRESHOLD_FLOOR = 80;
+const MUTATION_BREAK_THRESHOLD_FLOOR = 100;
 
 const SHARD_TOTALS_UNDER_TEST: readonly number[] = [1, 2, 4, 6, 7, 8];
 

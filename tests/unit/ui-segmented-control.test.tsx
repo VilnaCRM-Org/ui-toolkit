@@ -686,3 +686,23 @@ describe('styles — segmentSx and trackSx (pure, mutation-killing)', () => {
     ]);
   });
 });
+
+describe('UiSegmentedControl — segment chrome follows the wired/static split', () => {
+  it('paints the pointer cursor on every wired segment', () => {
+    render(controlWith({ onChange: noop, label: GROUP }));
+
+    screen.getAllByRole('radio').forEach((radio: HTMLElement) => {
+      expect(radio).toHaveStyle({ cursor: 'pointer' });
+    });
+  });
+
+  it('paints no cursor on any static segment', () => {
+    render(controlWith({ id: 'static-control' }));
+
+    const spans: Element[] = nodesMatching('#static-control > span');
+    expect(spans).toHaveLength(3);
+    spans.forEach((span: Element) => {
+      expect(span).not.toHaveStyle({ cursor: 'pointer' });
+    });
+  });
+});

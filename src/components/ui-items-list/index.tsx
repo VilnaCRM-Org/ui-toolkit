@@ -5,47 +5,42 @@ import React from 'react';
 import { listItemSx, listSx } from './styles';
 import type { UiItemsListProps } from './types';
 
-// One flattened row plus the stable key its `<li>` carries.
-interface FlatRow {
-  node: React.ReactNode;
-  key: React.Key;
+// Flattens `children` into the individual rows, unwrapping any React Fragment so a
+// fragment holding several rows still yields ONE `<li>` per row. Recurses for nested
+// fragments. `Children.map` keys each `<li>` from its child (an explicit key rides
+// through; text/positional children fall back to their index), hands nullish and
+// boolean children over as `null` (dropped), and prefixes a fragment's rows with the
+// fragment's own key, so auto-keyed siblings stay unique across fragment boundaries
+// and a reordered keyed fragment keeps its rows' identity.
+function isFragment(
+  child: React.ReactNode
+): child is React.ReactElement<{ children?: React.ReactNode }> {
+  return React.isValidElement(child) && child.type === React.Fragment;
 }
 
-// Flattens `children` into the individual rows, unwrapping any React Fragment so a
-// fragment holding several rows still yields ONE `<li>` per row — `toArray` keeps a
-// fragment as a single child, which would otherwise nest multiple rows inside one
-// list item and break the one-row-per-`<li>` contract. Recurses for nested
-// fragments. Keys: `toArray` assigns each level a stable key (explicit keys ride
-// through; text/positional children fall back to their index), and the fragment
-// path prefix keeps auto-keyed siblings unique across fragment boundaries.
-function flattenRows(children: React.ReactNode, prefix: string, out: FlatRow[]): void {
-  React.Children.toArray(children).forEach((child: React.ReactNode, index: number): void => {
-    if (React.isValidElement(child) && child.type === React.Fragment) {
-      const inner: React.ReactNode = (child.props as { children?: React.ReactNode }).children;
-      // `toArray` always assigns a key here — an explicit fragment key rides
-      // through, an unkeyed fragment gets a positional one — so prefix the
-      // recursion with it: a reordered *keyed* fragment then keeps its
-      // descendants' identity instead of remounting them.
-      flattenRows(inner, `${prefix}${String(child.key)}.`, out);
-      return;
-    }
-    const ownKey: React.Key | null = React.isValidElement(child) ? child.key : null;
-    out.push({ node: child, key: `${prefix}${ownKey ?? index}` });
-  });
+// Wraps one flattened row in its own `<li>` (the row is the item's sole child).
+function toListItem(node: React.ReactNode): React.ReactElement {
+  return (
+    <Box component="li" sx={listItemSx}>
+      {node}
+    </Box>
+  );
+}
+
+function toRows(child: React.ReactNode): React.ReactNode {
+  if (child === null) {
+    return null;
+  }
+  return isFragment(child) ? flattenRows(child.props.children) : toListItem(child);
+}
+
+function flattenRows(children: React.ReactNode): React.ReactNode[] {
+  return React.Children.map(children, toRows) ?? [];
 }
 
 function mergeListSx(consumer: SxProps<Theme> | undefined): SxProps<Theme> {
   const extra: SxProps<Theme> = consumer ?? {};
   return [listSx, ...(Array.isArray(extra) ? extra : [extra])];
-}
-
-// Wraps one flattened row in its own `<li>` (the row is the item's sole child).
-function toListItem({ node, key }: FlatRow): React.ReactElement {
-  return (
-    <Box component="li" key={key} sx={listItemSx}>
-      {node}
-    </Box>
-  );
 }
 
 // A semantic `<ul role="list">` stacking its `UiItemRow` children, 8px apart. It
@@ -56,14 +51,13 @@ function UiItemsList({
   'aria-label': ariaLabel,
   sx,
 }: Readonly<UiItemsListProps>): React.ReactElement | null {
-  const rows: FlatRow[] = [];
-  flattenRows(children, '', rows);
+  const rows: React.ReactNode[] = flattenRows(children);
   if (rows.length === 0) {
     return null;
   }
   return (
     <Box component="ul" role="list" aria-label={ariaLabel} sx={mergeListSx(sx)}>
-      {rows.map(toListItem)}
+      {rows}
     </Box>
   );
 }

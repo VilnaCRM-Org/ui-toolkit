@@ -206,6 +206,53 @@ describe('UiTextFieldForm styles', () => {
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
 
+  type SwappableHandlers = {
+    onChange: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+    onBlur: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+  };
+
+  function SwappableHandlerWrapper({ onChange, onBlur }: SwappableHandlers): React.ReactElement {
+    const { control } = useForm();
+
+    return (
+      <UiTextFieldForm
+        control={control}
+        name="testField"
+        placeholder={testPlaceholder}
+        onChange={onChange}
+        onBlur={onBlur}
+      />
+    );
+  }
+
+  it('invokes the consumer onChange supplied on a later render, not the first one', () => {
+    const firstChange: jest.Mock = jest.fn();
+    const secondChange: jest.Mock = jest.fn();
+    const onBlur: jest.Mock = jest.fn();
+
+    const { rerender } = render(<SwappableHandlerWrapper onChange={firstChange} onBlur={onBlur} />);
+    rerender(<SwappableHandlerWrapper onChange={secondChange} onBlur={onBlur} />);
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: testText } });
+
+    expect(secondChange).toHaveBeenCalledTimes(1);
+    expect(firstChange).not.toHaveBeenCalled();
+  });
+
+  it('invokes the consumer onBlur supplied on a later render, not the first one', () => {
+    const onChange: jest.Mock = jest.fn();
+    const firstBlur: jest.Mock = jest.fn();
+    const secondBlur: jest.Mock = jest.fn();
+
+    const { rerender } = render(<SwappableHandlerWrapper onChange={onChange} onBlur={firstBlur} />);
+    rerender(<SwappableHandlerWrapper onChange={onChange} onBlur={secondBlur} />);
+
+    fireEvent.blur(screen.getByRole('textbox'));
+
+    expect(secondBlur).toHaveBeenCalledTimes(1);
+    expect(firstBlur).not.toHaveBeenCalled();
+  });
+
   it('runs the form blur handler when no consumer onBlur is provided', () => {
     function NoHandlerWrapper(): React.ReactElement {
       const { control } = useForm();

@@ -28,7 +28,7 @@ function mergeRel(opensInNewTab: boolean, rel: string | undefined): string | und
   if (!opensInNewTab) {
     return rel;
   }
-  const passed: string[] = rel?.split(/\s+/).filter(Boolean) ?? [];
+  const passed: string[] = rel?.split(/\s/).filter(Boolean) ?? [];
   return Array.from(new Set([...passed, 'noopener', 'noreferrer'])).join(' ');
 }
 
