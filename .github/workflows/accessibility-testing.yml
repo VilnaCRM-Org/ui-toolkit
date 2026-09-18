@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
 
       - name: Prepare result directories
-        run: mkdir -p playwright-report && chmod 0777 playwright-report
+        run: mkdir -p playwright-report && sudo chown 1000:1000 playwright-report
 
       - name: Install dependencies
         run: make install
