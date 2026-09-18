@@ -18,19 +18,40 @@ export type ChipRenderer = (
 // applied explicitly (not spread) to satisfy the no-prop-spreading rule. The chip
 // root is the single named remove control; when the whole control is disabled the
 // delete affordance is dropped so chips are read-only.
+type OnDelete = ReturnType<GetItemProps>['onDelete'];
+type OnKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => void;
 type RemoveControl = {
   'aria-label': string | undefined;
-  onClick: ReturnType<GetItemProps>['onDelete'] | undefined;
-  onDelete: ReturnType<GetItemProps>['onDelete'] | undefined;
+  onClick: OnDelete | undefined;
+  onDelete: OnDelete | undefined;
+  onKeyDown: OnKeyDown | undefined;
 };
+
+const NO_REMOVE_CONTROL: RemoveControl = {
+  'aria-label': undefined,
+  onClick: undefined,
+  onDelete: undefined,
+  onKeyDown: undefined,
+};
+
+function removeOnSpace(onDelete: OnDelete): OnKeyDown {
+  return (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (event.key === ' ') onDelete(event);
+  };
+}
 
 function removeControl(
   label: string,
   item: ReturnType<GetItemProps>,
   disabled: boolean
 ): RemoveControl {
-  if (disabled) return { 'aria-label': undefined, onClick: undefined, onDelete: undefined };
-  return { 'aria-label': `Remove ${label}`, onClick: item.onDelete, onDelete: item.onDelete };
+  if (disabled) return NO_REMOVE_CONTROL;
+  return {
+    'aria-label': `Remove ${label}`,
+    onClick: item.onDelete,
+    onDelete: item.onDelete,
+    onKeyDown: removeOnSpace(item.onDelete),
+  };
 }
 
 export function createChipRenderer(disabled: boolean): ChipRenderer {
@@ -51,6 +72,7 @@ export function createChipRenderer(disabled: boolean): ChipRenderer {
           aria-label={remove['aria-label']}
           onClick={remove.onClick}
           onDelete={remove.onDelete}
+          onKeyDown={remove.onKeyDown}
           deleteIcon={buildDeleteIcon()}
           sx={chipSx}
         />

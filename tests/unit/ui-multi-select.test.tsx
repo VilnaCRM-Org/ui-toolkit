@@ -487,6 +487,46 @@ describe('UiMultiSelect — removable chips', () => {
     expect(combobox).toHaveFocus();
   });
 
+  it.each(['{Enter}', ' '])('removes the focused chip with %s', async (key: string) => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[options[0], options[1]]}
+        aria-label="Cities"
+        onChange={onChange}
+      />
+    );
+
+    const combobox: HTMLElement = await openListbox(user);
+    await user.keyboard('{Escape}');
+    await user.keyboard('{ArrowLeft}');
+    await user.keyboard(key);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith([options[0]]);
+    expect(combobox).toHaveFocus();
+  });
+
+  it('keeps the focused chip on a key that is not a removal key', async () => {
+    const user: UserEvent = userEvent.setup();
+    const onChange: jest.Mock = jest.fn();
+    render(
+      <UiMultiSelect
+        options={options}
+        value={[options[0], options[1]]}
+        aria-label="Cities"
+        onChange={onChange}
+      />
+    );
+
+    await openListbox(user);
+    await user.keyboard('{Escape}');
+    await user.keyboard('{ArrowLeft}');
+    await user.keyboard('{ArrowLeft}');
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('removes a chip through onChange when its delete control is clicked', async () => {
     const user: UserEvent = userEvent.setup();
     const onChange: jest.Mock = jest.fn();
