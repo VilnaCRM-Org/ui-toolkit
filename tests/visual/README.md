@@ -28,14 +28,16 @@ Pixel baselines for every Storybook story, asserted with Playwright
 - **Pinned renderer.** The `chromium` project launches with `--disable-gpu`,
   `--disable-gpu-rasterization`, `--disable-partial-raster`, `--disable-lcd-text` and
   `--disable-skia-runtime-opts` (Playwright itself already passes `--force-color-profile=srgb`
-  and, in headless mode, `--hide-scrollbars`). Every stage that can round differently from one
-  host to the next is forced onto one code path: SwiftShader compositing, whose shaders are
-  JIT-compiled per CPU, gives way to the software compositor; tiles are always rasterised whole
-  on the CPU; subpixel text anti-aliasing is off; and Skia's per-CPU SIMD variants are replaced
-  by its portable code. Without those, the same commit produced a ±1 jitter on anti-aliased
-  borders, rings and shadows between two CI runners. The project is shared with `tests/e2e`, so
-  the flags apply there too (behaviour-only, so inert); the Storybook interaction runner
-  launches its own browser and is unaffected.
+  and, in headless mode, `--hide-scrollbars`). `--disable-partial-raster` is the one that
+  closes the run-to-run residue: a style change that lands after the first raster (Tab drawing a
+  focus ring, a hover) normally re-rasterises only its invalidation rect, and when that rect's
+  edge coincides with a rounded corner's anti-aliased arc — an inset ring invalidates exactly the
+  border box — Skia's coverage on the arc differs by one unit from a whole-tile raster, so the
+  same shot flipped between two renderings depending on paint timing. The other switches keep
+  every remaining stage on one code path: software compositing instead of SwiftShader, CPU
+  raster, no subpixel text anti-aliasing, Skia's portable code instead of per-CPU variants. The
+  project is shared with `tests/e2e`, so the flags apply there too (behaviour-only, so inert);
+  the Storybook interaction runner launches its own browser and is unaffected.
 - **No retries.** `retries: 0` is unconditional, so a comparison that fails once fails the
   job instead of being retried and reported as flaky.
 - **Settled captures.** `openStory`/`openFrozenStory` wait for a _visible child_ of the
