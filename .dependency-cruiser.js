@@ -48,7 +48,7 @@ module.exports = {
           '(^|/)(?:babel|webpack)\\.config\\.(?:js|cjs|mjs|ts|json)$',
           '[.]stories[.](?:mjs|tsx?|jsx?)$', // Storybook stories are entry points, not orphans
           'fonts\\.css$', // side-effect import in src/components/index.ts
-          '^src/(components/)?index\\.(ts|tsx)$', // public entry barrels
+          '^src/(components/|locales/)?index\\.(ts|tsx)$', // public entry barrels
         ],
       },
       to: {},

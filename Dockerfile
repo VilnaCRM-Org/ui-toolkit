@@ -47,7 +47,6 @@ COPY --chown=appuser:appuser .github ./.github
 COPY --chown=appuser:appuser .husky ./.husky
 COPY --chown=appuser:appuser .storybook ./.storybook
 COPY --chown=appuser:appuser config ./config
-COPY --chown=appuser:appuser i18n ./i18n
 COPY --chown=appuser:appuser scripts ./scripts
 COPY --chown=appuser:appuser specs ./specs
 COPY --chown=appuser:appuser src ./src
@@ -58,7 +57,7 @@ COPY --chown=appuser:appuser \
       .prettierrc CLAUDE.md CONSUMING.md CONTRIBUTING.md Dockerfile Dockerfile.playwright \
       Dockerfile.rca LICENSE Makefile README.md SECURITY.md agents.md api-extractor.json \
       babel.config.js build.config.mjs bun.lock checkNodeVersion.js codecov.yml \
-      commitlint.config.js docker-compose.yml eslint.config.mjs i18n.js jest.config.ts \
+      commitlint.config.js docker-compose.yml eslint.config.mjs jest.config.ts \
       jest.integration.config.ts jest.mutation.config.ts jest.setup.ts lighthouserc.js \
       package.json playwright.config.ts robots.txt stryker.config.mjs \
       stryker.shard.config.mjs tsconfig.api-extractor.json tsconfig.dts.json tsconfig.json \

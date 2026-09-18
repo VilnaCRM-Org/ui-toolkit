@@ -89,6 +89,10 @@
       "import": "./build/index.mjs"
     },
     "./styles.css": "./build/index.css",
+    "./locales": {
+      "types": "./build/locales.d.mts",
+      "import": "./build/locales.mjs"
+    },
     "./package.json": "./package.json",
     "./*": {
       "types": "./build/*.d.mts",

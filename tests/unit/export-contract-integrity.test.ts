@@ -525,10 +525,11 @@ describe('export contract integrity (Story 5.3, #33)', () => {
     // decision rather than a silent one. `./*` is the per-component subpath
     // Story 5.1 published; `build.config.mjs` derives its declarations from the
     // barrel's own names, so it reaches no type the barrel does not re-export.
-    it('maps the root, per-component and stylesheet subpaths to the build output', () => {
+    it('maps the root, per-component, stylesheet and locales subpaths to the build output', () => {
       expect(manifest.exports).toEqual({
         '.': { types: './build/index.d.mts', import: './build/index.mjs' },
         './styles.css': './build/index.css',
+        './locales': { types: './build/locales.d.mts', import: './build/locales.mjs' },
         './package.json': './package.json',
         './*': { types: './build/*.d.mts', import: './build/*.mjs' },
       });

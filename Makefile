@@ -170,7 +170,7 @@ lint-peer-ranges: ## Fail when a devDependency floor or installed version falls 
 lint-unused-deps: ## Fail on package.json dependencies nothing references, inside the docker container.
 	$(BUN) scripts/ci/check-unused-dependencies.ts
 
-lint-i18n-keys: ## Fail on a literal t()/i18nKey in src/ that i18n/localization.json does not translate, inside the docker container.
+lint-i18n-keys: ## Fail on a literal t()/i18nKey in src/ that src/locales/localization.json does not translate, inside the docker container.
 	$(BUN) scripts/ci/check-i18n-keys.ts
 
 lint-test-structure: ## Verify every test file lives under the root tests/ tree.

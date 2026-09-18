@@ -1,2 +1,4 @@
 import '@testing-library/jest-dom';
-import './i18n';
+import { initI18n } from './src/locales';
+
+initI18n();

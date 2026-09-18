@@ -42,7 +42,9 @@ for required in \
   package/build/index.d.mts \
   package/build/index.css \
   package/build/ui-button.mjs \
-  package/build/ui-button.d.mts; do
+  package/build/ui-button.d.mts \
+  package/build/locales.mjs \
+  package/build/locales.d.mts; do
   if ! printf '%s\n' "$contents" | grep -qxF -- "$required"; then
     echo "$tarball is missing $required" >&2
     exit 1

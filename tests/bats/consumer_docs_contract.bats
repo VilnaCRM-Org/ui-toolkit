@@ -89,6 +89,12 @@ peer_dependencies() {
   grep -qE '^## Localization$' "$README"
 }
 
+@test "README documents the shipped locales subpath and init helper" {
+  grep -qF '@vilnacrm/ui-toolkit/locales' "$README"
+  grep -qF 'initI18n' "$README"
+  grep -qF 'escapeValue' "$README"
+}
+
 @test "README keeps the contributor content under a Development heading" {
   grep -qE '^## Development$' "$README"
   awk '/^## Development$/ { inside = 1 } inside && /make verify/ { found = 1 } END { exit !found }' "$README"

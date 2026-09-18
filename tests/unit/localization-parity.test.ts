@@ -1,4 +1,4 @@
-import resources from '../../i18n/localization.json';
+import resources from '../../src/locales/localization.json';
 
 type TranslationTree = { [key: string]: string | TranslationTree };
 
@@ -24,7 +24,7 @@ function leafValues(tree: TranslationTree): string[] {
   );
 }
 
-describe('i18n/localization.json', () => {
+describe('src/locales/localization.json', () => {
   it('ships the reference locale and at least one translation of it', () => {
     expect(Object.keys(locales)).toContain(referenceLocale);
     expect(localeEntries.length).toBeGreaterThan(1);

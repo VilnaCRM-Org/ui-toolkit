@@ -13,8 +13,8 @@ setup() {
 
 write_resources() {
   local dir="$1"
-  mkdir -p "$dir/i18n"
-  cat > "$dir/i18n/localization.json" <<'EOF'
+  mkdir -p "$dir/src/locales"
+  cat > "$dir/src/locales/localization.json" <<'EOF'
 {
   "en": { "translation": { "footer": { "copyright": "Copyright", "privacy": "Privacy" } } },
   "uk": { "translation": { "footer": { "copyright": "Avtorske pravo", "privacy": "Konfidentsiinist" } } }
@@ -244,8 +244,8 @@ EOF
 
 @test "a missing reference locale exits 2" {
   local fixture="$BATS_TEST_TMPDIR/no-locale"
-  mkdir -p "$fixture/i18n"
-  printf '{ "uk": { "translation": { "footer": { "copyright": "x" } } } }\n' > "$fixture/i18n/localization.json"
+  mkdir -p "$fixture/src/locales"
+  printf '{ "uk": { "translation": { "footer": { "copyright": "x" } } } }\n' > "$fixture/src/locales/localization.json"
   write_source "$fixture" 'footer.ts' <<'EOF'
 import i18n from 'i18next';
 
@@ -259,8 +259,8 @@ EOF
 
 @test "a src that is itself a symbolic link exits 2 instead of scanning the link target" {
   local fixture="$BATS_TEST_TMPDIR/linked-root"
-  write_resources "$fixture"
-  mkdir -p "$fixture/elsewhere"
+  mkdir -p "$fixture/elsewhere/locales"
+  cp "$PROJECT_ROOT/src/locales/localization.json" "$fixture/elsewhere/locales/localization.json"
   cat > "$fixture/elsewhere/footer.ts" <<'EOF'
 import i18n from 'i18next';
 
@@ -275,9 +275,9 @@ EOF
 
 @test "a missing src directory exits 2" {
   local fixture="$BATS_TEST_TMPDIR/no-src"
-  write_resources "$fixture"
+  mkdir -p "$fixture"
 
   run_gate "$fixture"
   [ "$status" -eq 2 ]
-  assert_output_contains 'Failed to scan'
+  assert_output_contains 'Failed to read or parse'
 }

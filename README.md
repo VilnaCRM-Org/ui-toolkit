@@ -321,14 +321,53 @@ An app that observed failed submits through a global `unhandledrejection` listen
 ## Localization
 
 `UiFooter`, `UiCardList` and the default `UiErrorBoundary` fallback translate themselves through
-the i18next instance the application initialises; the toolkit never initialises one, which is why
-`i18next` and `react-i18next` are peer dependencies. Every other component takes already-translated
-strings through its props.
+the i18next instance the application initialises, which is why `i18next` (`>=23.0.0 <27.0.0`) and
+`react-i18next` (`>=14.0.0 <18.0.0`) are peer dependencies. Every other component takes
+already-translated strings through its props.
 
-The keys those components read live in `i18n/localization.json`, hand-maintained under the
-`translation` namespace for `en` and `uk`. The file is the source of truth: Storybook and the Jest
-setup load it, and there is no generator behind it. It is not part of the release tarball yet, so
-an application copies the keys it needs into its own resources — shipping them is tracked in #75.
+The translations ship with the package. `@vilnacrm/ui-toolkit/locales` exports the `en` and `uk`
+`resources` (one `translation` namespace each) and `initI18n`, which loads them into the default
+i18next instance before the first render:
+
+```ts
+import { initI18n } from '@vilnacrm/ui-toolkit/locales';
+
+initI18n();
+```
+
+`initI18n` calls `i18next.use(initReactI18next).init(...)` with `lng: 'en'`, `fallbackLng: 'en'`,
+the shipped `resources` and `interpolation.escapeValue: false`, and returns the instance. Its one
+argument is an i18next `InitOptions` object spread over those defaults, so
+`initI18n({ lng: 'uk' })` starts in Ukrainian and `initI18n({ interpolation: { escapeValue: true } })`
+turns escaping back on. An application that already owns an instance takes the `resources` export
+instead and merges the namespaces into its own:
+
+```ts
+import i18next from 'i18next';
+import { resources } from '@vilnacrm/ui-toolkit/locales';
+
+i18next.addResourceBundle('en', 'translation', resources.en.translation, true, false);
+i18next.addResourceBundle('uk', 'translation', resources.uk.translation, true, false);
+```
+
+`escapeValue: false` is the documented default because every toolkit string is rendered by React,
+which escapes on its own; Storybook and the Jest setup call the same `initI18n()`, so the stories
+and the tests run the configuration a consumer gets.
+
+What each self-translating component reads from the instance:
+
+- `UiFooter` reads `footer.copyright`, `footer.logo_alt`, `footer.privacy`, `footer.usage_policy`,
+  `footer.aria_labels.*` and `footer.alt_images.*`; it takes no text props.
+- `UiCardList` translates a string `title`, `text`, `tooltipTitle`, `tooltipLabel` or `alt` only
+  when the instance `exists()` it as a key; any other string (`'Save 10%.'`, `'Opens 10:30'`,
+  `'v1.2.3'`) renders verbatim, and a `ReactNode` passes through untouched.
+- `UiErrorBoundary` reads `error_boundary.default_message`, with a built-in English `defaultValue`,
+  so the fallback renders even under an instance with no resources.
+- Everything else takes already-translated strings through props and reads no key.
+
+The keys live in `src/locales/localization.json`, hand-maintained under the `translation` namespace
+for `en` and `uk`. The file is the source of truth — `initI18n` and Storybook load it, and there is
+no generator behind it.
 
 Two gates keep the file honest:
 
@@ -368,7 +407,7 @@ What is warned about:
 - a value outside its prop's domain (`count`, `max`, `length`, a `value` matching no option,
   duplicate ids); the value is normalised;
 - a `UiCardList` mixing `smallCard` and `largeCard`, or a card whose title, text or `alt` looks
-  like an i18n key that the i18next instance cannot translate;
+  like an i18n key that the i18next instance cannot translate; the string renders verbatim;
 - a caught error with no `onError` (`UiErrorBoundary`), and a rejected submit with no
   `onSubmitError` (`UiForm`) — both documented under [Error handling](#error-handling).
 

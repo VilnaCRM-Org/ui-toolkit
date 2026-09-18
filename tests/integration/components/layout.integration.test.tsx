@@ -9,7 +9,7 @@ import UiFooter from '../../../src/components/ui-footer';
 import UiToolbar from '../../../src/components/ui-toolbar';
 import UiTypography from '../../../src/components/ui-typography';
 
-// Resolved English strings from i18n/localization.json (i18n is initialised
+// Resolved English strings from src/locales/localization.json (i18n is initialised
 // globally in jest.setup, so the real children translate their keys).
 const COPYRIGHT_TEXT: string = 'Copyright © ТОВ “Vilna CRM”';
 const PRIVACY_LABEL: string = 'Privacy policy';
