@@ -363,7 +363,9 @@ What each self-translating component reads from the instance:
   `'v1.2.3'`) renders verbatim, and a `ReactNode` passes through untouched.
 - `UiErrorBoundary` reads `error_boundary.default_message`, with a built-in English `defaultValue`,
   so the fallback renders even under an instance with no resources.
-- Everything else takes already-translated strings through props and reads no key.
+- Everything else takes already-translated strings through props and reads no key. The one string
+  a component would otherwise have to invent is `UiLink`'s new-tab cue: with `target="_blank"` the
+  `newTabLabel` prop is required, so the application supplies it in its own language.
 
 The keys live in `src/locales/localization.json`, hand-maintained under the `translation` namespace
 for `en` and `uk`. The file is the source of truth — `initI18n` and Storybook load it, and there is
@@ -408,6 +410,8 @@ What is warned about:
   duplicate ids); the value is normalised;
 - a `UiCardList` mixing `smallCard` and `largeCard`, or a card whose title, text or `alt` looks
   like an i18n key that the i18next instance cannot translate; the string renders verbatim;
+- a `UiLink` opening a new tab whose `newTabLabel` is missing at runtime (the type requires it, but
+  a JavaScript caller can still omit it); the link renders without the new-tab cue;
 - a caught error with no `onError` (`UiErrorBoundary`), and a rejected submit with no
   `onSubmitError` (`UiForm`) — both documented under [Error handling](#error-handling).
 
