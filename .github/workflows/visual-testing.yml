@@ -25,15 +25,26 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Prepare result directories
+        run: mkdir -p test-results playwright-report && sudo chown 1000:1000 test-results playwright-report
+
       - name: Install dependencies
         run: make install
 
       - name: Run visual tests
-        run: make test-visual
+        run: make test-visual PLAYWRIGHT_RUN_FLAGS="--volume $GITHUB_WORKSPACE/test-results:/app/test-results --volume $GITHUB_WORKSPACE/playwright-report:/app/playwright-report"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: visual-test-report
           path: playwright-report/
+          retention-days: 30
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: visual-test-results
+          path: test-results/
+          if-no-files-found: ignore
           retention-days: 30
