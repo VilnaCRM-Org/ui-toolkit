@@ -25,11 +25,19 @@ export function calendarNode(opts: { value: string[]; hover?: boolean }): React.
 // Builds a pagination bar. Cell-hover is pointer-gated, so it is forced onto one
 // rest cell through a wrapping `sx`.
 export function paginationNode(opts: {
+  label: string;
   value: number;
   disabled?: boolean;
   hover?: boolean;
 }): React.ReactElement {
-  const bar = <UiPagination value={opts.value} count={7} disabled={opts.disabled} />;
+  const bar = (
+    <UiPagination
+      value={opts.value}
+      count={7}
+      disabled={opts.disabled}
+      aria-label={`Пагінація — ${opts.label}`}
+    />
+  );
   return opts.hover ? <Box sx={PAGINATION_HOVER_SX}>{bar}</Box> : bar;
 }
 

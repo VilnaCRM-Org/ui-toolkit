@@ -93,6 +93,20 @@ describe('New Components board (Figma parity showcase)', () => {
     }
   });
 
+  it('gives every pagination tile a unique navigation landmark name', () => {
+    render(<Board />);
+
+    const names: string[] = screen
+      .getAllByRole('navigation', { name: /^Пагінація — / })
+      .map(nav => nav.getAttribute('aria-label') ?? '');
+    expect(names).toEqual([
+      'Пагінація — Rest',
+      'Пагінація — Hover',
+      'Пагінація — Current',
+      'Пагінація — Disabled',
+    ]);
+  });
+
   it('renders the endpoint-row tiles as disclosure buttons and plain rows', () => {
     render(<Board />);
 

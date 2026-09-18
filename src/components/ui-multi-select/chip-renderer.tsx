@@ -15,13 +15,29 @@ export type ChipRenderer = (
 // Builds the MUI v9 `renderValue` callback that turns the selected options into
 // removable chips. `getItemProps` carries MUI's per-chip wiring (roving
 // `tabIndex=-1`, `data-item-index`, `onDelete`); its fully-typed fields are
-// applied explicitly (not spread) to satisfy the no-prop-spreading rule. When the
-// whole control is disabled the delete affordance is dropped so chips are
-// read-only.
+// applied explicitly (not spread) to satisfy the no-prop-spreading rule. The chip
+// root is the single named remove control; when the whole control is disabled the
+// delete affordance is dropped so chips are read-only.
+type RemoveControl = {
+  'aria-label': string | undefined;
+  onClick: ReturnType<GetItemProps>['onDelete'] | undefined;
+  onDelete: ReturnType<GetItemProps>['onDelete'] | undefined;
+};
+
+function removeControl(
+  label: string,
+  item: ReturnType<GetItemProps>,
+  disabled: boolean
+): RemoveControl {
+  if (disabled) return { 'aria-label': undefined, onClick: undefined, onDelete: undefined };
+  return { 'aria-label': `Remove ${label}`, onClick: item.onDelete, onDelete: item.onDelete };
+}
+
 export function createChipRenderer(disabled: boolean): ChipRenderer {
   return function renderChips(items, getItemProps): React.ReactNode {
     return items.map((option, index) => {
       const item: ReturnType<GetItemProps> = getItemProps({ index });
+      const remove: RemoveControl = removeControl(option.label, item, disabled);
       return (
         <Chip
           key={item.key}
@@ -31,8 +47,11 @@ export function createChipRenderer(disabled: boolean): ChipRenderer {
           tabIndex={item.tabIndex}
           data-item-index={item['data-item-index']}
           disabled={disabled || item.disabled}
-          onDelete={disabled ? undefined : item.onDelete}
-          deleteIcon={buildDeleteIcon(option.label)}
+          clickable={false}
+          aria-label={remove['aria-label']}
+          onClick={remove.onClick}
+          onDelete={remove.onDelete}
+          deleteIcon={buildDeleteIcon()}
           sx={chipSx}
         />
       );
