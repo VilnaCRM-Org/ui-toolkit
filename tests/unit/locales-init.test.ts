@@ -25,7 +25,7 @@ describe('@vilnacrm/ui-toolkit/locales', () => {
 
     expect(instance).toBe(i18next);
     expect(instance.language).toBe('en');
-    expect(instance.options.fallbackLng).toBe('en');
+    expect(instance.options.fallbackLng).toEqual(['en']);
     expect(instance.options.interpolation?.escapeValue).toBe(false);
     expect(instance.t('footer.copyright')).toBe('Copyright © ТОВ “Vilna CRM”');
   });
