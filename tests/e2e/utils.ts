@@ -26,3 +26,23 @@ export async function expectManifestMatchesIndex(
 
   expect(manifestIds).toEqual(liveStoryIds);
 }
+
+type StoryRenderPhase = { id: string; phase: string };
+type PreviewWindow = { __STORYBOOK_PREVIEW__?: { storyRenders?: StoryRenderPhase[] } };
+const TERMINAL_RENDER_PHASES: readonly string[] = ['finished', 'errored', 'aborted'];
+
+export async function waitForStoryRender(page: Page, storyId: string): Promise<string> {
+  const handle = await page.waitForFunction(
+    ({ id, terminal }: { id: string; terminal: readonly string[] }): string | false => {
+      const renders: StoryRenderPhase[] =
+        (window as PreviewWindow).__STORYBOOK_PREVIEW__?.storyRenders ?? [];
+      const render: StoryRenderPhase | undefined = renders.find(
+        (candidate: StoryRenderPhase): boolean =>
+          candidate.id === id && terminal.includes(candidate.phase)
+      );
+      return render ? render.phase : false;
+    },
+    { id: storyId, terminal: TERMINAL_RENDER_PHASES }
+  );
+  return String(await handle.jsonValue());
+}

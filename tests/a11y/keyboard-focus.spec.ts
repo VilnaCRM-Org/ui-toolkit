@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 import { gotoStory } from '../e2e/utils';
 
-import { expectFocusVisible, expectTabReaches } from './keyboard';
+import { expectTabReaches, expectTabReachesWithVisibleFocus } from './keyboard';
 
 async function openStory(page: Page, id: string): Promise<void> {
   await gotoStory(page, id);
@@ -20,18 +20,12 @@ test.describe('keyboard operability and focus', () => {
 
   test('Tab reaches the button and its focus is visible', async ({ page }) => {
     await openStory(page, 'uicomponents-uibutton--contained');
-    const button = page.getByRole('button');
-
-    await expectTabReaches(page, button);
-    await expectFocusVisible(button);
+    await expectTabReachesWithVisibleFocus(page, page.getByRole('button'));
   });
 
   test('Tab reaches the link and its focus is visible', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--link');
-    const link = page.getByRole('link');
-
-    await expectTabReaches(page, link);
-    await expectFocusVisible(link);
+    await expectTabReachesWithVisibleFocus(page, page.getByRole('link'));
   });
 
   test('Tab reaches the checkbox and Space toggles it', async ({ page }) => {

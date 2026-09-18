@@ -18,10 +18,9 @@ Both axe-core layers run the same tag set, declared once in `tests/a11y/axe-conf
 | Component | `jest-axe` (jsdom)     | Rendered via `renderWithProviders` inside the real theme    |
 | Story     | `@axe-core/playwright` | Every story iframe in `tests/visual/stories.json`, chromium |
 
-Interaction stories (`tests/storybook/interaction-stories.json`) autoplay their `play` function
-on render, so a scan would hit an undefined mid-play frame. They are skipped by the story scan,
-proven behaviourally by `make test-storybook`, and the scan asserts the skip list equals that
-registry so no story can drop out of both.
+Every story is scanned in the state its `play` function leaves behind: the scan waits for the
+preview's render to reach its terminal phase (`finished`) before running axe, so an interaction
+story is measured after its interaction, and a story whose render errors fails the scan outright.
 
 ## Definition of a11y-done
 
@@ -47,8 +46,9 @@ per-component defects, and they are not entries in the exception allowlist.
 2. **Component isolation: `region`, `landmark-one-main`, `page-has-heading-one`**
    (`COMPONENT_ISOLATION_RULES`). An isolated component render or a story iframe has no page
    composition by construction: no `<main>`, no `<h1>`, no landmark wrapping its content. Those
-   are the consuming application's responsibility. `jest-axe` leaves `region` enabled and every
-   isolated render trips it, so the group applies to both layers.
+   are the consuming application's responsibility. `jest-axe` does not disable `region` on its
+   own and every isolated render would trip it, so `DISABLED_RULES` applies the group to both
+   layers.
 
 ## Exception process
 
