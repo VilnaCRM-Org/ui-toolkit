@@ -30,8 +30,10 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           args: [
-            '--disable-lcd-text',
+            '--disable-gpu',
             '--disable-gpu-rasterization',
+            '--disable-partial-raster',
+            '--disable-lcd-text',
             '--disable-skia-runtime-opts',
           ],
         },

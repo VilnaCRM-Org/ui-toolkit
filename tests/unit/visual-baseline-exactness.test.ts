@@ -9,8 +9,10 @@ function source(relativePath: string): string {
 }
 
 const RENDERER_PINS: string[] = [
-  '--disable-lcd-text',
+  '--disable-gpu',
   '--disable-gpu-rasterization',
+  '--disable-partial-raster',
+  '--disable-lcd-text',
   '--disable-skia-runtime-opts',
 ];
 
