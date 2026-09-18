@@ -4,8 +4,8 @@
 
 Every component and every Storybook story in `@vilnacrm/ui-toolkit` conforms to
 **WCAG 2.1 Level AA**. The target is enforced, not aspirational: `make test-a11y` (workflow
-`accessibility testing`) blocks a pull request on any violation, alongside the `jsx-a11y` lint
-rules and the Lighthouse per-rule audits that already run.
+`accessibility testing`) fails a pull request's check on any violation, alongside the `jsx-a11y`
+lint rules and the Lighthouse per-rule audits that already run.
 
 ## In-scope rule set
 
