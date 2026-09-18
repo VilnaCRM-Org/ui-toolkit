@@ -694,7 +694,7 @@ describe('UiPinInput — error contract', () => {
     const root: string = fieldRootEmotionClass();
     const scoped: string[] = emittedRules(`${root} .MuiFormHelperText-root`);
 
-    expect(scoped[0]).toContain('font-family: Inter');
+    expect(scoped[0]).toContain(`font-family: ${fontFamilies.inter}`);
     expect(scoped[0]).toContain('font-weight: 500');
     expect(scoped[0]).toContain('font-size: 0.875rem');
     expect(scoped[0]).toContain('line-height: 1.125rem');
