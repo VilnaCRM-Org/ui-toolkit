@@ -9,6 +9,7 @@ import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -47,7 +48,7 @@ const ROOT_BASE: object = {
 
 /** The caption text, Golos Text 500 15/18, grey250 at rest/hover/selected. */
 export const captionSx: SxProps<Theme> = {
-  fontFamily: "'Golos Text'",
+  fontFamily: fontFamilies.golos,
   fontWeight: 500,
   fontSize: '0.938rem',
   lineHeight: '1.125rem',
@@ -76,7 +77,7 @@ export const boxSx: SxProps<Theme> = {
  * from the raw extraction, recorded in the deviation ledger.
  */
 export const valueSx: SxProps<Theme> = {
-  fontFamily: "'Golos Text'",
+  fontFamily: fontFamilies.golos,
   fontWeight: 400,
   fontSize: '1.125rem',
   lineHeight: '1.875rem',

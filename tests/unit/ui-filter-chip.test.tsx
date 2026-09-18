@@ -24,6 +24,7 @@ import {
   useFilterChip,
   type FilterChipModel,
 } from '../../src/components/ui-filter-chip/use-filter-chip';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
@@ -933,7 +934,7 @@ describe('filter-chip styles — content recipes (pure, mutation-killing)', () =
 
     [prefix, value].forEach((segment: StyleObject): void => {
       // Inter 600 is not a loaded weight; the Figma "Medium" maps to 500.
-      expect(segment.fontFamily).toBe('Inter');
+      expect(segment.fontFamily).toBe(fontFamilies.inter);
       expect(segment.fontWeight).toBe(500);
       expect(segment.fontSize).toBe('0.875rem');
       expect(segment.lineHeight).toBe('1.125rem');

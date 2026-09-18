@@ -96,6 +96,45 @@ is not seen by those components. Style them through `sx` and the MUI `slotProps`
 other components resolve against whatever theme surrounds them. Moving the eleven onto one
 consumer-extensible provider is tracked in #72 and #83.
 
+### Font families
+
+The components never name a font face directly. Every `fontFamily` resolves through one of two
+CSS custom properties, with the self-hosted faces that `@vilnacrm/ui-toolkit/styles.css` declares
+as the fallback:
+
+| Custom property           | Fallback face  |
+| ------------------------- | -------------- |
+| `--ui-toolkit-font-inter` | `Inter`        |
+| `--ui-toolkit-font-golos` | `'Golos Text'` |
+
+Leave both unset and the components render with the bundled faces. Set them to route the
+components through the application's own font pipeline. With `next/font`, pass the property name
+as `variable` and put the generated class on the root element:
+
+```tsx
+import { Golos_Text, Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--ui-toolkit-font-inter' });
+const golos = Golos_Text({ subsets: ['latin', 'cyrillic'], variable: '--ui-toolkit-font-golos' });
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${golos.variable}`}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+Plain CSS works the same way:
+
+```css
+:root {
+  --ui-toolkit-font-inter: 'MyInter', sans-serif;
+  --ui-toolkit-font-golos: 'MyGolos', sans-serif;
+}
+```
+
 ## Components
 
 Every value the package root exports. Each one is also published on its own subpath, named
@@ -105,7 +144,7 @@ and `Layout` is `@vilnacrm/ui-toolkit/layout`.
 | Export                    | What it is                                                           |
 | ------------------------- | -------------------------------------------------------------------- |
 | `UiButton`                | Button: `contained`/`outlined`, plus `danger`/`socialButton` names   |
-| `UiLink`                  | Text link; `target="_blank"` gets a new-tab cue and `rel`            |
+| `UiLink`                  | Text link; `target="_blank"` requires a translated `newTabLabel` cue |
 | `UiTypography`            | Text in the design's heading and body variants                       |
 | `UiImage`                 | Lazy `<img>` in a wrapper; takes a URL or a static import for `src`  |
 | `UiTooltip`               | Hover/focus tooltip around any trigger                               |

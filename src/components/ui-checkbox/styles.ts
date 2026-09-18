@@ -2,6 +2,7 @@ import { SxProps } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 
 import Check from '@/assets/svg/check.svg';
+import { fontFamilies } from '@/utils/font-tokens';
 
 import colorTheme from '../ui-color-theme';
 
@@ -48,7 +49,7 @@ const baseCheckbox: SxProps<Theme> = {
 // face the toolkit never ships. Inter matches the `field-controls`
 // label/helper-text convention every other field control uses.
 export const formControlLabelSx: SxProps<Theme> = {
-  '& .MuiFormControlLabel-label': { fontFamily: 'Inter' },
+  '& .MuiFormControlLabel-label': { fontFamily: fontFamilies.inter },
 };
 
 /** The wrapper `sx`: the label recipe first, the consumer's layers merged last. */

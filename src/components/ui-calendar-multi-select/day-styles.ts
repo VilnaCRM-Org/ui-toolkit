@@ -2,6 +2,8 @@
 // that carries the endpoint disc, the today ring and the day-number ink.
 import type { SxProps, Theme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { BAND, CIRCLE_PX, palette } from './style-tokens';
 import type { DayDescriptor } from './view-model';
 
@@ -57,7 +59,7 @@ export function dayCircleSx(day: DayDescriptor): SxProps<Theme> {
     height: `${CIRCLE_PX}px`,
     borderRadius: '50%',
     boxSizing: 'border-box',
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontSize: '0.875rem',
     // Figma draws every day number in Inter Medium (500), including the selected
     // endpoint; the filled blue disc (a shape/background change, not colour alone)

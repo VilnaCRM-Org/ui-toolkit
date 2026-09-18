@@ -20,6 +20,7 @@ import {
   useAddButton,
   type AddButtonModel,
 } from '../../src/components/ui-add-button/use-add-button';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import {
   describeActivationRequests,
@@ -381,7 +382,7 @@ describe('add-button styles — content recipes (pure, mutation-killing)', () =>
   it('pins the label to Inter Medium 14/18 with tracking killed, one un-wrapped line', () => {
     const label: StyleObject = addButtonLabelSx as StyleObject;
 
-    expect(label.fontFamily).toBe('Inter');
+    expect(label.fontFamily).toBe(fontFamilies.inter);
     expect(label.fontWeight).toBe(500);
     expect(label.fontSize).toBe('0.875rem');
     expect(label.lineHeight).toBe('1.125rem');

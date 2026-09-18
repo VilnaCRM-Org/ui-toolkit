@@ -1,5 +1,7 @@
 import { CSSObject } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import breakpointsTheme from '../ui-breakpoints';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
@@ -24,7 +26,7 @@ export const formSection: CSSObject = {
   paddingLeft: '0.375rem',
   paddingRight: '0.375rem',
   paddingBottom: '1.5rem',
-  fontFamily: 'Golos Text',
+  fontFamily: fontFamilies.golos,
   backgroundColor: '#FBFBFB',
   [`@media (min-width:${breakpointsTheme.breakpoints.values.md}px)`]: {
     paddingTop: '8.4375rem',

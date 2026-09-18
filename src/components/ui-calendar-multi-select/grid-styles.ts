@@ -2,6 +2,8 @@
 // week rows (with their range band) and the adjacent-month padding cells.
 import type { SxProps, Theme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { CIRCLE_PX, GRID_PX, palette } from './style-tokens';
 import type { CalendarSize } from './style-tokens';
 
@@ -60,7 +62,7 @@ export function dayRowSx(band: string): SxProps<Theme> {
 export const weekdayHeadingSx: SxProps<Theme> = {
   width: '2rem',
   height: `${CIRCLE_PX}px`,
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.75rem',
   color: palette.grey300.main,
@@ -83,7 +85,7 @@ export const adjacentDaySx: SxProps<Theme> = {
   justifyContent: 'center',
   width: `${CIRCLE_PX}px`,
   height: `${CIRCLE_PX}px`,
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   color: palette.grey300.main,

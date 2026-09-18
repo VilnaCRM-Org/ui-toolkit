@@ -21,6 +21,7 @@ import {
   useIntegrationCard,
   type IntegrationCardModel,
 } from '../../src/components/ui-integration-card/use-integration-card';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
@@ -437,7 +438,7 @@ describe('integration-card styles — content recipes (pure, mutation-killing)',
   it('pins the brand name to Golos Text Regular 16/26 with tracking killed', () => {
     const label: StyleObject = nameSx as StyleObject;
 
-    expect(label.fontFamily).toBe("'Golos Text'");
+    expect(label.fontFamily).toBe(fontFamilies.golos);
     expect(label.fontWeight).toBe(400);
     expect(label.fontSize).toBe('1rem');
     expect(label.lineHeight).toBe('1.625rem');

@@ -1,5 +1,7 @@
 import { Theme, createTheme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { outlinedFieldTheme } from '../field-controls';
 import { crmBreakpointValues } from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
@@ -18,7 +20,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
       styleOverrides: {
         root: {
           // Typed value: Inter Medium 14/18 (16 on tablet), Font/100 ink — not Roboto.
-          fontFamily: 'Inter',
+          fontFamily: fontFamilies.inter,
           fontSize: '0.875rem',
           fontWeight: 500,
           lineHeight: '1.125rem',
@@ -131,7 +133,7 @@ const theme: Theme = createTheme(outlinedFieldTheme, {
           '& .MuiAutocomplete-option': {
             minHeight: '3.25rem',
             paddingLeft: '1.1875rem',
-            fontFamily: 'Inter',
+            fontFamily: fontFamilies.inter,
             fontSize: '0.875rem',
             fontWeight: 500,
             color: colorTheme.palette.darkPrimary.main,

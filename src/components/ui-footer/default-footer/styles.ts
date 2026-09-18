@@ -1,3 +1,5 @@
+import { fontFamilies } from '@/utils/font-tokens';
+
 import breakpointsTheme from '../../ui-breakpoints';
 import colorTheme from '../../ui-color-theme';
 
@@ -51,7 +53,7 @@ export default {
 
   copyright: {
     color: colorTheme.palette.grey200.main,
-    fontFamily: 'Golos Text',
+    fontFamily: fontFamilies.golos,
   },
 
   listWrapper: {

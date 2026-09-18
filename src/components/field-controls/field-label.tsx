@@ -1,6 +1,8 @@
 import { FormLabel } from '@mui/material';
 import React from 'react';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import colorTheme from '../ui-color-theme';
 
 // External static field label. Figma places the label ABOVE the field (Inter
@@ -12,7 +14,7 @@ import colorTheme from '../ui-color-theme';
 const fieldLabelSx = {
   display: 'block',
   marginBottom: '0.5625rem',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

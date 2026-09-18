@@ -25,6 +25,7 @@ import {
   useNotificationBadge,
   type NotificationBadgeModel,
 } from '../../src/components/ui-notification-badge/use-notification-badge';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { ARIA_SELECTOR, expectNoLiveRegion, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
@@ -999,7 +1000,7 @@ describe('countChipSx — the counter chip (pure, mutation-killing)', () => {
   it('pins the counter ink to Inter Medium 12/18 with tracking killed', () => {
     const chip: StyleObject = countChipSx as StyleObject;
 
-    expect(chip.fontFamily).toBe('Inter');
+    expect(chip.fontFamily).toBe(fontFamilies.inter);
     expect(chip.fontWeight).toBe(500);
     expect(chip.fontSize).toBe('0.75rem');
     expect(chip.lineHeight).toBe('1.125rem');

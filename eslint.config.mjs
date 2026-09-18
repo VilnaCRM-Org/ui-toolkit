@@ -329,6 +329,18 @@ export default [
           selector: "TSPropertySignature[key.value='data-testid']",
           message: 'No data-testid prop type in source — expose an id prop instead (issue #90).',
         },
+        {
+          selector:
+            "Property[key.name='fontFamily'] > Literal[value=/^\\s*['\"]?(Inter|Golos Text)['\"]?\\s*(,.*)?$/]",
+          message:
+            'Use fontFamilies.inter / fontFamilies.golos from @/utils/font-tokens; a bare font name cannot be overridden by the consumer (issue #154).',
+        },
+        {
+          selector:
+            "Property[key.name='fontFamily'] > TemplateLiteral > TemplateElement[value.raw=/^\\s*['\"]?(Inter|Golos Text)/]",
+          message:
+            'Use fontFamilies.inter / fontFamilies.golos from @/utils/font-tokens; a bare font name cannot be overridden by the consumer (issue #154).',
+        },
       ],
     },
   },

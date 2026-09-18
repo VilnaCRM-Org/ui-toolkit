@@ -9,6 +9,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 import { helperTextSx } from '../field-controls';
 
@@ -105,7 +106,7 @@ export const pinCellSx: SxProps<Theme> = {
   margin: 0,
   padding: 0,
   textAlign: 'center',
-  fontFamily: "'Golos Text'",
+  fontFamily: fontFamilies.golos,
   fontWeight: 700,
   fontSize: '1.375rem',
   lineHeight: '1.625rem',

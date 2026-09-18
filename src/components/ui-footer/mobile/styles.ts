@@ -1,5 +1,6 @@
 import breakpointsTheme from '@/components/ui-breakpoints';
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 export default {
   wrapper: {
@@ -20,7 +21,7 @@ export default {
   },
 
   copyright: {
-    fontFamily: 'Golos Text',
+    fontFamily: fontFamilies.golos,
     paddingBottom: '1.25rem',
     color: colorTheme.palette.grey200.main,
     textAlign: 'center',

@@ -17,6 +17,7 @@ import {
   useOptionCard,
   type OptionCardModel,
 } from '../../src/components/ui-option-card/use-option-card';
+import { fontFamilies } from '../../src/utils/font-tokens';
 
 import { ARIA_SELECTOR, focusables, nodesMatching } from './utils/dom-queries';
 import firstOf from './utils/first-of';
@@ -443,7 +444,7 @@ describe('UiOptionCard — style assembly (styles.ts)', () => {
   it('paints the caption: Golos Text 500 15/18, grey250', () => {
     const caption = captionSx as StyleObject;
 
-    expect(caption.fontFamily).toBe("'Golos Text'");
+    expect(caption.fontFamily).toBe(fontFamilies.golos);
     expect(caption.fontWeight).toBe(500);
     expect(caption.fontSize).toBe('0.938rem');
     expect(caption.lineHeight).toBe('1.125rem');
@@ -469,7 +470,7 @@ describe('UiOptionCard — style assembly (styles.ts)', () => {
   it('paints the value: Golos Text 400 18/30, darkSecondary', () => {
     const value = valueSx as StyleObject;
 
-    expect(value.fontFamily).toBe("'Golos Text'");
+    expect(value.fontFamily).toBe(fontFamilies.golos);
     expect(value.fontWeight).toBe(400);
     expect(value.fontSize).toBe('1.125rem');
     expect(value.lineHeight).toBe('1.875rem');

@@ -2,6 +2,8 @@
 // surface, the month header row, the nav-chevron group and the divider rule.
 import type { SxProps, Theme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import { GRID_PX, MOBILE_MAX, palette } from './style-tokens';
 import type { CalendarSize } from './style-tokens';
 
@@ -13,7 +15,7 @@ const rootSx: SxProps<Theme> = {
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: '0.375rem',
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
 };
 
 /** Merges the consumer's `sx` over the calendar root styling. */
@@ -23,7 +25,7 @@ export function mergeRootSx(consumer: SxProps<Theme> | undefined): SxProps<Theme
 }
 
 export const labelSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   color: palette.grey200.main,
@@ -90,7 +92,7 @@ export const dividerSx: SxProps<Theme> = {
 };
 
 export const captionSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   // Figma 14/18 — the tighter line-height keeps the caption up near the top edge.

@@ -6,6 +6,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -84,7 +85,7 @@ export const textColumnSx: SxProps<Theme> = {
 // Inter Medium 16/18. Never clamped, never ellipsised: `anywhere` is what keeps an
 // unbroken `@mention` token from overflowing the column.
 export const titleSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '1rem',
   lineHeight: '1.125rem',
@@ -101,7 +102,7 @@ export const metaRowSx: SxProps<Theme> = {
 };
 
 export const labelSx: SxProps<Theme> = {
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',
@@ -128,7 +129,7 @@ export const chipSx: SxProps<Theme> = {
   // behind real text; revisit if the chip ever becomes interactive or state-bearing.
   backgroundColor: palette.brandGray.main,
   color: palette.darkPrimary.main,
-  fontFamily: 'Inter',
+  fontFamily: fontFamilies.inter,
   fontWeight: 500,
   fontSize: '0.875rem',
   lineHeight: '1.125rem',

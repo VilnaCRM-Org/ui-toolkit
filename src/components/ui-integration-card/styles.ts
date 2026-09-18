@@ -8,6 +8,7 @@
 import type { SxProps, Theme } from '@mui/material';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
@@ -119,7 +120,7 @@ const CHECKED_GLYPH: object = {
 // spacing is dropped explicitly (the radio-group precedent).
 export const nameSx: SxProps<Theme> = {
   minWidth: 0,
-  fontFamily: "'Golos Text'",
+  fontFamily: fontFamilies.golos,
   fontWeight: 400,
   fontSize: '1rem',
   lineHeight: '1.625rem',

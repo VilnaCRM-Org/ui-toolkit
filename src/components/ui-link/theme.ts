@@ -1,5 +1,7 @@
 import { Theme, createTheme } from '@mui/material';
 
+import { fontFamilies } from '@/utils/font-tokens';
+
 import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
 
@@ -9,7 +11,7 @@ const theme: Theme = createTheme({
       styleOverrides: {
         root: {
           color: colorTheme.palette.primary.main,
-          fontFamily: 'Inter',
+          fontFamily: fontFamilies.inter,
           fontSize: '0.875rem',
           fontStyle: 'normal',
           fontWeight: '700',

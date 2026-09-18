@@ -2,6 +2,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
 import colorTheme from '@/components/ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
 
 import { helperTextSx } from '../field-controls';
 
@@ -64,7 +65,7 @@ export default {
     borderRadius: '3.5625rem',
     backgroundColor: palette.primary.main,
     color: palette.white.main,
-    fontFamily: 'Golos Text',
+    fontFamily: fontFamilies.golos,
     fontWeight: 500,
     fontSize: '0.9375rem',
     lineHeight: '1.125rem',
@@ -107,7 +108,7 @@ export default {
 
   groupLabel: {
     marginBottom: '0.5625rem',
-    fontFamily: 'Inter',
+    fontFamily: fontFamilies.inter,
     fontWeight: 500,
     fontSize: '0.875rem',
     lineHeight: '1.125rem',
