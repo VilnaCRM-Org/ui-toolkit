@@ -330,12 +330,12 @@ export default [
           message: 'No data-testid prop type in source — expose an id prop instead (issue #90).',
         },
         {
-          selector: String.raw`Property[key.name='fontFamily'] > Literal[value=/^\s*['"]?(Inter|Golos Text)['"]?\s*(,.*)?$/]`,
+          selector: String.raw`Property:matches([key.name='fontFamily'], [key.value='fontFamily']) > Literal[value=/^\s*['"]?(Inter|Golos Text)['"]?\s*(,.*)?$/]`,
           message:
             'Use fontFamilies.inter / fontFamilies.golos from @/utils/font-tokens; a bare font name cannot be overridden by the consumer (issue #154).',
         },
         {
-          selector: String.raw`Property[key.name='fontFamily'] > TemplateLiteral > TemplateElement[value.raw=/^\s*['"]?(Inter|Golos Text)/]`,
+          selector: String.raw`Property:matches([key.name='fontFamily'], [key.value='fontFamily']) > TemplateLiteral > TemplateElement[value.raw=/^\s*['"]?(Inter|Golos Text)/]`,
           message:
             'Use fontFamilies.inter / fontFamilies.golos from @/utils/font-tokens; a bare font name cannot be overridden by the consumer (issue #154).',
         },

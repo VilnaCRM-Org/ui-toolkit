@@ -21,6 +21,7 @@ write_hardcoded_fixture() {
     printf "export const d = { fontFamily: 'Inter, sans-serif' };\n"
     printf 'export const e = { fontFamily: `Golos Text` };\n'
     printf "export const f = { typography: { fontFamily: 'Inter' } };\n"
+    printf "export const g = { 'fontFamily': 'Golos Text' };\n"
   } > "$file"
 }
 
@@ -69,8 +70,8 @@ source_gate_selectors() {
 @test "the src-only no-restricted-syntax block carries both font-family selectors" {
   local selectors
   selectors="$(source_gate_selectors "$PROJECT_ROOT/eslint.config.mjs")"
-  [[ "$selectors" == *"Property[key.name='fontFamily'] > Literal["* ]]
-  [[ "$selectors" == *"Property[key.name='fontFamily'] > TemplateLiteral > TemplateElement["* ]]
+  [[ "$selectors" == *"Property:matches([key.name='fontFamily'], [key.value='fontFamily']) > Literal["* ]]
+  [[ "$selectors" == *"Property:matches([key.name='fontFamily'], [key.value='fontFamily']) > TemplateLiteral > TemplateElement["* ]]
   [[ "$selectors" == *"JSXAttribute[name.name='data-testid']"* ]]
   [ "$(printf '%s\n' "$selectors" | grep -c 'fontFamilies.inter / fontFamilies.golos')" -eq 2 ]
 }
@@ -85,10 +86,10 @@ source_gate_selectors() {
 
   local messages
   messages="$(messages_for "$fixture")"
-  [ "$(printf '%s\n' "$messages" | wc -l)" -eq 6 ]
+  [ "$(printf '%s\n' "$messages" | wc -l)" -eq 7 ]
   [ "$(printf '%s\n' "$messages" | cut -f2 | sort -u)" = "no-restricted-syntax" ]
-  [ "$(printf '%s\n' "$messages" | cut -f1 | tr '\n' ' ')" = "1 2 3 4 5 6 " ]
-  [ "$(printf '%s\n' "$messages" | grep -c 'fontFamilies.inter / fontFamilies.golos')" -eq 6 ]
+  [ "$(printf '%s\n' "$messages" | cut -f1 | tr '\n' ' ')" = "1 2 3 4 5 6 7 " ]
+  [ "$(printf '%s\n' "$messages" | grep -c 'fontFamilies.inter / fontFamilies.golos')" -eq 7 ]
 }
 
 @test "the token, the raw var() string, a comment and an unrelated key pass the gate" {

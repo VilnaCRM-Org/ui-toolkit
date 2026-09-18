@@ -14,7 +14,9 @@ async function paintOf(target: Locator): Promise<FocusPaint> {
     const style: CSSStyleDeclaration = getComputedStyle(element);
     const drawsOutline: boolean = style.outlineStyle !== 'none' && style.outlineWidth !== '0px';
     return {
-      outline: drawsOutline ? `${style.outlineStyle} ${style.outlineWidth}` : 'none',
+      outline: drawsOutline
+        ? `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`
+        : 'none',
       boxShadow: style.boxShadow,
       borderColor: style.borderColor,
       backgroundColor: style.backgroundColor,
@@ -26,7 +28,7 @@ async function focusIndicators(target: Locator, rest: FocusPaint): Promise<strin
   const focused: FocusPaint = await paintOf(target);
   const ripple: number = await target.locator(FOCUS_RIPPLE).count();
   const indicators: string[] = [];
-  if (focused.outline !== 'none') indicators.push(`outline ${focused.outline}`);
+  if (focused.outline !== rest.outline) indicators.push(`outline ${focused.outline}`);
   if (ripple > 0) indicators.push('focus ripple');
   if (focused.boxShadow !== rest.boxShadow) indicators.push('box-shadow');
   if (focused.borderColor !== rest.borderColor) indicators.push('border-color');

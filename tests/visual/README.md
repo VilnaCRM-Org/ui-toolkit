@@ -83,6 +83,7 @@ regeneration recipe when Docker is not available locally:
 
 ```bash
 gh run download <run-id> -n visual-test-results -D test-results
+shopt -s nullglob
 promote() {
   local name
   name="$(basename "${1%-actual.png}")-chromium-linux.png"
