@@ -1,5 +1,7 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
+import { settle } from '../e2e/utils';
+
 // Enforces the Figma "state grid" (Rest / Hover / Active / Disabled / Error /
 // Focus) for the interactive components. The design board lays each component
 // out per state; the base visual.spec only captures the rest state, so these
@@ -25,15 +27,6 @@ async function openStory(page: Page, id: string, args?: string): Promise<void> {
   await page.addStyleTag({ content: FREEZE_CSS });
   await page.evaluate(() => document.fonts.ready);
   await page.mouse.move(0, 0);
-}
-
-async function settle(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise<void>(resolve => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      })
-  );
 }
 
 function root(page: Page): Locator {

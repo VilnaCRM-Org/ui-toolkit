@@ -46,3 +46,12 @@ export async function waitForStoryRender(page: Page, storyId: string): Promise<s
   );
   return String(await handle.jsonValue());
 }
+
+export async function settle(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      })
+  );
+}

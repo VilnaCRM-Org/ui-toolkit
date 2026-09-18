@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
+import { settle } from '../e2e/utils';
 import interactionStories from '../storybook/interaction-stories.json';
 
 import stories from './stories.json';
@@ -49,15 +50,6 @@ async function openFrozenStory(page: Page, id: string): Promise<void> {
   await page.addStyleTag({ content: FREEZE_CSS });
   await page.evaluate(() => document.fonts.ready);
   await page.mouse.move(0, 0);
-}
-
-async function settle(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise<void>(resolve => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      })
-  );
 }
 
 test.describe('Visual regression (Storybook stories)', () => {
