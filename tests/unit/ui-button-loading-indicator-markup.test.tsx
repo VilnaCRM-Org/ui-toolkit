@@ -43,11 +43,11 @@ const getSpinnerBox = (): HTMLElement =>
 
 describe('UiButton busy paint', () => {
   it('hides only the label ink', () => {
-    expect(renderBusyButton()).toHaveStyle({ color: 'transparent' });
+    expect(renderBusyButton()).toHaveStyle({ color: 'rgba(0, 0, 0, 0)' });
   });
 
   it('closes the pointer path and drops the hand cursor', () => {
-    expect(renderBusyButton()).toHaveStyle({ pointerEvents: 'none', cursor: 'default' });
+    expect(renderBusyButton()).toHaveStyle({ 'pointer-events': 'none', cursor: 'default' });
   });
 
   it('paints the contained spinner white over the brand fill', () => {
@@ -57,8 +57,8 @@ describe('UiButton busy paint', () => {
 
   it('carries the busy paint on the outlined variant as well', () => {
     expect(renderBusyButton('outlined')).toHaveStyle({
-      color: 'transparent',
-      pointerEvents: 'none',
+      color: 'rgba(0, 0, 0, 0)',
+      'pointer-events': 'none',
       cursor: 'default',
     });
   });
