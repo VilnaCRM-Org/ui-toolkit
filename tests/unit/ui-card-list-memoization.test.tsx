@@ -134,9 +134,8 @@ describe('CardContent render pass-through', () => {
 
     rerender(<CardContent item={firstItem} isSmallCard />);
 
-    // CardContent is intentionally NOT memoized: `<Trans>` has no i18next
-    // subscription of its own, so cutting this path would freeze translated
-    // copy on a language change (see ui-card-list-language-change.test.tsx).
+    // CardContent is intentionally NOT memoized (see
+    // ui-card-list-language-change.test.tsx).
     expect(mockedUiTypography).toHaveBeenCalledTimes(titleAndText * 2);
   });
 });

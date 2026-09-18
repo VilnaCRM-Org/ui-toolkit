@@ -1,16 +1,12 @@
 import React from 'react';
-import { Trans } from 'react-i18next';
 
 import ScopedThemeProvider from '../theme-scope';
 import UiTooltip from '../ui-tooltip';
 import UiTypography, { typographyTheme } from '../ui-typography';
 
 import styles from './styles';
+import { useContentRenderer } from './translated-content';
 import type { HeadingLevel, UiCardItemData } from './types';
-
-function renderContent(content: string | React.ReactNode): React.ReactNode {
-  return typeof content === 'string' ? <Trans i18nKey={content} /> : content;
-}
 
 function CardText({
   item,
@@ -19,6 +15,7 @@ function CardText({
   item: UiCardItemData;
   isSmallCard: boolean;
 }): React.ReactElement {
+  const renderContent = useContentRenderer();
   return (
     <UiTypography
       variant={isSmallCard ? 'bodyText16' : 'bodyText18'}
@@ -58,12 +55,7 @@ function CardText({
 // existing beneath it — that inner provider is what restores the label's colour
 // and font instead of letting it inherit the trigger's link styling.
 //
-// Deliberately NOT wrapped in React.memo, unlike UiCardItem. `<Trans>` does not
-// subscribe to i18next — react-i18next's Trans only reads the instance out of
-// context — so it re-renders only because an ancestor does. UiCardItem holds
-// that subscription (`useTranslation`), and a memo boundary here would cut the
-// path between them: on a language change the card's `alt` would follow the new
-// language while its visible title and body stayed on the old one. The memo on
+// Deliberately NOT wrapped in React.memo, unlike UiCardItem. The memo on
 // UiCardItem already stops unrelated parent re-renders one level up, so this
 // boundary would buy nothing anyway. Locked by the language-change test.
 export default function CardContent({
@@ -75,6 +67,7 @@ export default function CardContent({
   isSmallCard: boolean;
   headingComponent?: HeadingLevel | undefined;
 }): React.ReactElement {
+  const renderContent = useContentRenderer();
   return (
     <ScopedThemeProvider theme={typographyTheme}>
       <UiTypography

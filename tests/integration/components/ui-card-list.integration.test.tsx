@@ -25,7 +25,7 @@ jest.mock('@mui/material', () => ({
 
 const mockedUseMediaQuery: jest.Mock = useMediaQuery as jest.Mock;
 
-// Resolved English copy from i18n/localization.json. i18n is initialised
+// Resolved English copy from src/locales/localization.json. i18n is initialised
 // globally in jest.setup, so the keys in the demo arrays resolve to these
 // strings (kept here so the assertions read against user-visible text).
 const LARGE_TITLES: string[] = [
@@ -233,6 +233,30 @@ describe('UiCardList grid content edge cases', () => {
     // Ensure this edge-case is validated on the grid path, not swiper.
     expect(querySwiper()).not.toBeInTheDocument();
     expect(screen.getByText('Custom node body')).toBeInTheDocument();
+  });
+});
+
+describe('UiCardList literal string props (real children)', () => {
+  it('renders a literal title, text and alt verbatim through the real chain', () => {
+    setLargeScreen();
+
+    const literalCard: UiCardItemData = {
+      ...SMALL_CARDLIST_ARRAY[0],
+      title: 'Note:done',
+      text: 'Opens10:30',
+      alt: 'Logo:v1',
+    };
+
+    const keyedCard: UiCardItemData = { ...SMALL_CARDLIST_ARRAY[0], id: 'keyed' };
+
+    render(<UiCardList cardList={[literalCard, keyedCard]} />);
+
+    expect(querySwiper()).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { ...HIDDEN, name: 'Note:done' })).toBeInTheDocument();
+    expect(screen.getByText('Opens10:30')).toBeInTheDocument();
+    expect(screen.getByAltText('Logo:v1')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { ...HIDDEN, name: 'Public API' })).toBeInTheDocument();
+    expect(screen.getByAltText(SMALL_FIRST_ALT)).toBeInTheDocument();
   });
 });
 
