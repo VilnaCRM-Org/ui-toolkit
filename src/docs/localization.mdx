@@ -1,0 +1,53 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Localization" />
+
+# Localization
+
+`UiFooter`, `UiCardList` and the default `UiErrorBoundary` fallback translate themselves through
+the i18next instance the application initialises, which is why `i18next` and `react-i18next` are
+peer dependencies. Every other component takes already-translated strings through its props.
+
+## Load the shipped resources
+
+The translations ship with the package. `@vilnacrm/ui-toolkit/locales` exports the `en` and `uk`
+`resources` (one `translation` namespace each) and `initI18n`, which loads them into the default
+i18next instance before the first render:
+
+```ts
+import { initI18n } from '@vilnacrm/ui-toolkit/locales';
+
+initI18n();
+```
+
+`initI18n` calls `i18next.use(initReactI18next).init(...)` with `lng: 'en'`, `fallbackLng: 'en'`,
+the shipped `resources` and `interpolation.escapeValue: false`, and returns the instance. Its one
+argument is an i18next `InitOptions` object spread over those defaults, so `initI18n({ lng: 'uk' })`
+starts in Ukrainian.
+
+An application that already owns an instance takes the `resources` export instead and merges the
+namespaces into its own:
+
+```ts
+import i18next from 'i18next';
+import { resources } from '@vilnacrm/ui-toolkit/locales';
+
+i18next.addResourceBundle('en', 'translation', resources.en.translation, true, false);
+i18next.addResourceBundle('uk', 'translation', resources.uk.translation, true, false);
+```
+
+## What each self-translating component reads
+
+- `UiFooter` reads `footer.copyright`, `footer.logo_alt`, `footer.privacy`, `footer.usage_policy`,
+  `footer.aria_labels.*` and `footer.alt_images.*`; it takes no text props.
+- `UiCardList` translates a string `title`, `text`, `tooltipTitle`, `tooltipLabel` or `alt` only
+  when the instance `exists()` it as a key; any other string renders verbatim, and a `ReactNode`
+  passes through untouched.
+- `UiErrorBoundary` reads `error_boundary.default_message`, with a built-in English `defaultValue`,
+  so the fallback renders even under an instance with no resources.
+- Everything else takes already-translated strings through props and reads no key. With
+  `target="_blank"` the `UiLink` `newTabLabel` prop is required, so the application supplies the
+  new-tab cue in its own language.
+
+The stories in this Storybook run the same `initI18n()` a consumer calls, so what a story renders
+is what the default configuration renders.

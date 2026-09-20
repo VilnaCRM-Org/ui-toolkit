@@ -1,0 +1,82 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Theming" />
+
+# Theming
+
+The package exports the design tokens the components are built from:
+
+- `sharedPalette` — the colour tokens, in MUI palette shape (`primary`, `secondary`, `error`,
+  `success`, the method accents, hover and active variants). `websiteColorTheme` and
+  `crmColorTheme` are `createTheme` results carrying that palette; `UiColorTheme` is the website
+  one. The two are the same palette today, kept as separate names so the products can diverge.
+- `websiteBreakpointValues` (`xs` 375, `sm` 640, `md` 768, `lg` 1024, `xl` 1440) and
+  `crmBreakpointValues` (`xs` 320, `sm` 480, then the same); `websiteBreakpointsTheme` and
+  `crmBreakpointsTheme` are the matching MUI themes, and `UiBreakpoints` is the website one.
+- `heightBreakpoints` — the `compact` (550) and `medium` (700) viewport-height thresholds.
+
+## Compose the tokens into an application theme
+
+```tsx
+import { ThemeProvider, createTheme } from '@mui/material';
+import { crmBreakpointValues, sharedPalette } from '@vilnacrm/ui-toolkit';
+
+const theme = createTheme({
+  breakpoints: { values: crmBreakpointValues },
+  palette: sharedPalette,
+});
+
+export default function App({ children }: { children: React.ReactNode }) {
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+}
+```
+
+## How far the application theme reaches
+
+`UiButton`, `UiInput`, `UiLink`, `UiTypography`, `UiToolbar`, `UiTooltip`, `UiSearchInput`,
+`UiSelectWithSearch`, `UiMultiSelect`, `UiCalendarMultiSelect` and the card text inside
+`UiCardList` mount their own theme scope, so an application `ThemeProvider` does not restyle
+them: a palette or typography override from outside is not seen by those components. Style them
+through `sx` and the MUI `slotProps` they forward. The other components resolve against whatever
+theme surrounds them.
+
+Moving the eleven onto one consumer-extensible provider is tracked in issues #72 and #83.
+
+## Font families
+
+The components never name a font face directly. Every `fontFamily` resolves through one of two
+CSS custom properties, with the self-hosted faces that `@vilnacrm/ui-toolkit/styles.css` declares
+as the fallback:
+
+| Custom property           | Fallback face  |
+| ------------------------- | -------------- |
+| `--ui-toolkit-font-inter` | `Inter`        |
+| `--ui-toolkit-font-golos` | `'Golos Text'` |
+
+Leave both unset and the components render with the bundled faces. Set them to route the
+components through the application's own font pipeline:
+
+```css
+:root {
+  --ui-toolkit-font-inter: 'MyInter', sans-serif;
+  --ui-toolkit-font-golos: 'MyGolos', sans-serif;
+}
+```
+
+With `next/font`, pass the property name as `variable` and put the generated class on the root
+element:
+
+```tsx
+import { Golos_Text, Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], variable: '--ui-toolkit-font-inter' });
+const golos = Golos_Text({ subsets: ['latin', 'cyrillic'], variable: '--ui-toolkit-font-golos' });
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${golos.variable}`}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```

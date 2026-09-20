@@ -1,0 +1,74 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Docs/Getting started" />
+
+# Getting started
+
+`@vilnacrm/ui-toolkit` is distributed as a tarball attached to each GitHub release, not through
+the npm registry. The repository is public, so the asset downloads without a token.
+
+## Install
+
+Add the newest release from the consuming application:
+
+```bash
+VERSION=$(gh release view --repo VilnaCRM-Org/ui-toolkit \
+  --json tagName --jq '.tagName | ltrimstr("v")')
+BASE=https://github.com/VilnaCRM-Org/ui-toolkit/releases/download
+bun add "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
+```
+
+The application provides the peer dependencies itself; the toolkit bundles none of them:
+
+```bash
+bun add "react@^19.0.0" "react-dom@^19.0.0" "@mui/material@^9.0.0" "@mui/system@^9.0.0" \
+  "@emotion/react@^11.0.0" "@emotion/styled@^11.0.0" "react-hook-form@^7.0.0" \
+  "i18next@>=23.0.0 <27.0.0" "react-i18next@>=14.0.0 <18.0.0"
+```
+
+## Load the stylesheet
+
+Import the stylesheet once, at the application root, before any toolkit component renders. It
+carries the Inter and Golos Text `@font-face` rules and the carousel CSS; without it, text falls
+back to the browser default face.
+
+```tsx
+import '@vilnacrm/ui-toolkit/styles.css';
+```
+
+## Render a component
+
+```tsx
+import { UiButton, UiInput } from '@vilnacrm/ui-toolkit';
+
+export default function SignIn() {
+  return (
+    <form>
+      <UiInput label="Email" type="email" required />
+      <UiButton variant="contained" type="submit">
+        Sign in
+      </UiButton>
+    </form>
+  );
+}
+```
+
+Every component is also published on its own subpath, which is the smaller import and the one the
+prop types resolve through:
+
+```tsx
+import UiButton from '@vilnacrm/ui-toolkit/ui-button';
+import type { UiButtonProps } from '@vilnacrm/ui-toolkit/ui-button';
+```
+
+## Where to go next
+
+- **Theming** — the exported palette and breakpoint tokens, and how far an application theme
+  reaches into the components.
+- **Localization** — which components translate themselves and how to load the shipped `en` and
+  `uk` resources.
+- Each `UiComponents/*` entry in the sidebar is a component's autodocs page: its props table, the
+  states it renders, and a live playground.
+
+The consumer-side brief in the repository's `CONSUMING.md` covers pinning a release, verifying the
+recorded `sha512`, and moving to a later one.
