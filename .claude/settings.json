@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make help)",
+      "Bash(make lint:*)",
+      "Bash(make format-check)",
+      "Bash(make build)",
+      "Bash(make ci)",
+      "Bash(make test-unit:*)",
+      "Bash(make test-integration:*)",
+      "Bash(make test-bats:*)",
+      "Bash(make start-bun)",
+      "Bash(make down)",
+      "Bash(bun install --frozen-lockfile)",
+      "Bash(bun x tsc:*)",
+      "Bash(bun x eslint:*)",
+      "Bash(bun x prettier:*)",
+      "Bash(bun x markdownlint:*)",
+      "Bash(bun x bats:*)",
+      "Bash(bun scripts/ci/:*)",
+      "Bash(node ./node_modules/jest/bin/jest.js:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git ls-files:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

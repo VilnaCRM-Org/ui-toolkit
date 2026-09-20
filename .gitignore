@@ -77,5 +77,7 @@ tests/memory-leak/results
 .ralph/logs/
 _bmad-output/
 
-# Claude Code autoharness session/tool artifacts (local only, never committed)
-.claude/autoharness/
+# Claude Code (shared settings and hooks only)
+.claude/*
+!.claude/settings.json
+!.claude/hooks/

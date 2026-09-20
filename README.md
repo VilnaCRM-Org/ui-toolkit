@@ -640,6 +640,10 @@ cp .env.example .env
 make help
 ```
 
+AI coding agents start from [CLAUDE.md](CLAUDE.md) (command map, environment bootstrap) and are
+bound by [agents.md](agents.md) (test-coverage policy); `.devcontainer/devcontainer.json` builds
+the same image CI runs for Codespaces and hosted agent sessions.
+
 ### Proving your branch green
 
 Two aggregate targets replay the merge bar locally, so you never have to reassemble it from

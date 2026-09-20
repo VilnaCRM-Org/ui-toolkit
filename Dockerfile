@@ -43,6 +43,8 @@ WORKDIR /app
 # rewrote every inode and made overlayfs duplicate the whole tree into the next
 # layer (dive wasted-bytes gate). Every tracked top-level entry is listed; .qlty is
 # the only omission and .dockerignore already excludes it.
+COPY --chown=appuser:appuser .claude/hooks ./.claude/hooks
+COPY --chown=appuser:appuser .devcontainer ./.devcontainer
 COPY --chown=appuser:appuser .github ./.github
 COPY --chown=appuser:appuser .husky ./.husky
 COPY --chown=appuser:appuser .storybook ./.storybook
@@ -53,9 +55,10 @@ COPY --chown=appuser:appuser specs ./specs
 COPY --chown=appuser:appuser src ./src
 COPY --chown=appuser:appuser tests ./tests
 COPY --chown=appuser:appuser \
-      .dependency-cruiser.js .dive-ci .dockerignore .editorconfig .env.example .gitignore \
-      .gitleaks.toml .hadolint.yaml .markdownlint.yaml .markdownlintignore .prettierignore \
-      .prettierrc CLAUDE.md CONSUMING.md CONTRIBUTING.md Dockerfile Dockerfile.playwright \
+      .claude/settings.json .dependency-cruiser.js .dive-ci .dockerignore .editorconfig \
+      .env.example .gitignore .gitleaks.toml .hadolint.yaml .markdownlint.yaml \
+      .markdownlintignore .prettierignore .prettierrc CLAUDE.md \
+      CONSUMING.md CONTRIBUTING.md Dockerfile Dockerfile.playwright \
       Dockerfile.rca LICENSE Makefile README.md SECURITY.md agents.md api-extractor.json \
       babel.config.js build.config.mjs bun.lock checkNodeVersion.js codecov.yml \
       commitlint.config.js docker-compose.yml eslint.config.mjs jest.config.ts \
