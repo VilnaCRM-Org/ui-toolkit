@@ -633,10 +633,11 @@ gh api -X POST repos/VilnaCRM-Org/ui-toolkit/rulesets --input .github/rulesets/m
 ```
 
 (`-X PUT repos/VilnaCRM-Org/ui-toolkit/rulesets/<id>` updates an existing one; the id is in
-`gh api repos/VilnaCRM-Org/ui-toolkit/rulesets`.) Before a `main` ruleset goes live, add the
-release GitHub App (`VILNACRM_APP_ID`) as a bypass actor, or the `autorelease` push of the version
-commit fails with `GH006` (#162). Required-check names must match a job that runs on every pull
-request; a check that can be skipped counts as a pass (see the mutation gate above).
+`gh api repos/VilnaCRM-Org/ui-toolkit/rulesets`.) `main.json` lists the release GitHub App
+(`vilnacrm-app`, App id 941231 from `gh api apps/vilnacrm-app`) as an `Integration` bypass actor;
+without it the `autorelease` push of the version commit fails with `GH006` (#162). Required-check
+names must match a job that runs on every pull request; a check that can be skipped counts as a
+pass (see the mutation gate above).
 
 ### Pull Request
 

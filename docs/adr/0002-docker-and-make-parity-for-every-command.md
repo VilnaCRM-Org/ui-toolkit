@@ -19,9 +19,11 @@ under.
 
 ## Decision outcome
 
-Every command is a Makefile target executed inside a Docker Compose service (`bun`,
-`storybook`, `playwright`, `rca`) built from a digest-pinned image, and the GitHub Actions
-workflows call the same targets. `make ci` and `make verify` replay the merge bar locally;
+Every gate is a Makefile target, and the GitHub Actions workflows call the same targets. The
+suites and the container-dependent linters execute inside a Docker Compose service (`bun`,
+`storybook`, `playwright`, `rca`) built from a digest-pinned image; the few host-side targets
+(`lint-test-structure`, the gitleaks and trivy scans, `git-hooks-install`) drive the host shell
+or the Docker CLI directly. `make ci` and `make verify` replay the merge bar locally;
 `tests/bats/aggregate_gate_targets.bats` holds the workflow gate list and the `verify`
 dependency graph together.
 

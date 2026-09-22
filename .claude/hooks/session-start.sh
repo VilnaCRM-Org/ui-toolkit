@@ -26,10 +26,8 @@ Native on the host (after the install above):
   bun x prettier . --check
   bun x markdownlint "**/*.md"
   bun scripts/ci/check-referenced-paths.ts
-  NODE_OPTIONS=--no-experimental-strip-types node ./node_modules/jest/bin/jest.js
-  NODE_OPTIONS=--no-experimental-strip-types node ./node_modules/jest/bin/jest.js --config jest.integration.config.ts
-  bun x bats -r tests/bats
-Docker only (pinned images): make lint-metrics, make lint-deps, make test-mutation, make test-e2e,
-  make test-visual, make test-a11y, make test-storybook, make test-memory-leak, make lighthouse-*
+Docker only (pinned images): make test-unit, make test-integration, make test-bats, make lint-deps,
+  make lint-metrics, make test-mutation, make test-e2e, make test-visual, make test-a11y,
+  make test-storybook, make test-memory-leak, make lighthouse-*
 Full map: make help. Test policy: agents.md. Merge bar: CONTRIBUTING.md.
 MAP
