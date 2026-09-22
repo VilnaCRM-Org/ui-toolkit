@@ -1,0 +1,23 @@
+{
+  "name": "ui-toolkit",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/app",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+  "remoteUser": "appuser",
+  "updateRemoteUserUID": true,
+  "overrideCommand": true,
+  "postCreateCommand": "bun install --frozen-lockfile",
+  "forwardPorts": [6006],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "DavidAnson.vscode-markdownlint"
+      ]
+    }
+  }
+}

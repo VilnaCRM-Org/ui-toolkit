@@ -4,6 +4,14 @@
 
 React UI component library built with Bun, Storybook, and MUI.
 
+## Documentation
+
+The component catalogue is published at
+[vilnacrm-org.github.io/ui-toolkit](https://vilnacrm-org.github.io/ui-toolkit/) from every push
+to `main` by the `storybook deploy` workflow. It opens on the orientation pages — getting started,
+theming, localization — followed by one autodocs page per component with its props table, rendered
+states and a live playground. The same catalogue runs locally with `make storybook-start`.
+
 ## Installing
 
 `@vilnacrm/ui-toolkit` is distributed as a tarball attached to each GitHub release, not through
@@ -631,6 +639,10 @@ cp .env.example .env
 ```bash
 make help
 ```
+
+AI coding agents start from [CLAUDE.md](CLAUDE.md) (command map, environment bootstrap) and are
+bound by [agents.md](agents.md) (test-coverage policy); `.devcontainer/devcontainer.json` builds
+the same image CI runs for Codespaces and hosted agent sessions.
 
 ### Proving your branch green
 

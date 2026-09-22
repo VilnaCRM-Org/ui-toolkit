@@ -14,6 +14,11 @@ const preview: Preview = {
   argTypesEnhancers: [collapseOptionalUndefined],
   parameters: {
     actions: { argTypesRegex: '^on[A-Z].*' },
+    options: {
+      storySort: {
+        order: ['Docs', ['Getting started', 'Theming', 'Localization'], '*'],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,

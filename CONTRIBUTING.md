@@ -2,9 +2,8 @@
 
 Thank you for investing your time in contributing to our project!
 
-Read our
-[Code of Conduct](https://www.contributor-covenant.org/version/2/0/code_of_conduct/)
-to keep our community approachable and respectable.
+Read our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community approachable and
+respectable.
 
 In this guide you will
 get an overview of the contribution
@@ -610,6 +609,35 @@ else
   printf '%s\n' "$object_sha"
 fi
 ```
+
+### Architecture decision records
+
+Load-bearing decisions — a runtime, a gate, a release channel, a licence, a public contract —
+are recorded under [docs/adr/](docs/adr/) in the MADR shape;
+[0000](docs/adr/0000-record-architecture-decisions.md) sets the rules. A pull request that
+changes one of those decisions, or introduces a new one of the same weight, carries its ADR in
+the same change: next free `NNNN`, kebab-case title, status `proposed` until merged, then
+`accepted`. Supersede rather than edit; link both records. The files lint like any other
+Markdown (`make lint-md`, `make format-check`).
+
+### Branch protection rulesets
+
+[.github/rulesets/](.github/rulesets/) is the reviewable copy of the protection on `main` and on
+the release tags. `main.json` carries the required status checks exactly as the live
+configuration reports them (`gh api repos/VilnaCRM-Org/ui-toolkit/branches/main --jq .protection`)
+and the admin bypass that configuration implies; `protect-release-tags.json` is the export of the
+live tag ruleset. Change the file first, in a reviewed pull request, then apply it:
+
+```bash
+gh api -X POST repos/VilnaCRM-Org/ui-toolkit/rulesets --input .github/rulesets/main.json
+```
+
+(`-X PUT repos/VilnaCRM-Org/ui-toolkit/rulesets/<id>` updates an existing one; the id is in
+`gh api repos/VilnaCRM-Org/ui-toolkit/rulesets`.) `main.json` lists the release GitHub App
+(`vilnacrm-app`, App id 941231 from `gh api apps/vilnacrm-app`) as an `Integration` bypass actor;
+without it the `autorelease` push of the version commit fails with `GH006` (#162). Required-check
+names must match a job that runs on every pull request; a check that can be skipped counts as a
+pass (see the mutation gate above).
 
 ### Pull Request
 

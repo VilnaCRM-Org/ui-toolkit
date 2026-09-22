@@ -11,7 +11,9 @@ into a discoverable, root-level instruction file.
 Stryker mutation testing. The package manager is `bun@1.3.5` and Node is `^20.19.0 ||
 ^22.13.0 || >=24`. Components are reuse-first (canonical behavior from `crm`, visual gap-fill
 from `website`) and must stay deterministic and async-stateless. All commands are Makefile
-targets run from the repository root, inside the Docker `bun` service.
+targets run from the repository root, inside the Docker `bun` service. Environment bootstrap —
+the tracked `.claude/settings.json` with its SessionStart hook, the `.devcontainer/`, and the
+command map — is in [CLAUDE.md](CLAUDE.md).
 
 Because this is a component library, the failure mode this policy guards against is real:
 agents verify the primary render and skip the disabled, loading, error, empty, and boundary
