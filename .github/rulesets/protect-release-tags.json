@@ -3,10 +3,7 @@
   "conditions": {
     "ref_name": {
       "exclude": [],
-      "include": [
-        "refs/tags/v*",
-        "refs/tags/[0-9]*"
-      ]
+      "include": ["refs/tags/v*", "refs/tags/[0-9]*"]
     }
   },
   "enforcement": "active",
