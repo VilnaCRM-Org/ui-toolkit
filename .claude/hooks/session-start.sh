@@ -4,10 +4,10 @@ set -uo pipefail
 cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}" || exit 0
 
 if command -v bun >/dev/null 2>&1; then
-  if bun install --frozen-lockfile >/dev/null 2>&1; then
-    echo "bun install --frozen-lockfile: ok (bun $(bun --version))"
+  if bun install --frozen-lockfile --ignore-scripts >/dev/null 2>&1; then
+    echo "bun install --frozen-lockfile --ignore-scripts: ok (bun $(bun --version)); run make git-hooks-install for husky"
   else
-    echo "bun install --frozen-lockfile: FAILED; native commands below will not work until it does"
+    echo "bun install --frozen-lockfile --ignore-scripts: FAILED; native commands below will not work until it does"
   fi
 else
   echo "bun: not installed; every command below needs Docker (make start-bun first)"
@@ -20,7 +20,7 @@ else
 fi
 
 cat <<'MAP'
-Native on the host (after bun install):
+Native on the host (after the install above):
   bun x tsc --newLine LF
   bun x eslint --max-warnings 0 .
   bun x prettier . --check
