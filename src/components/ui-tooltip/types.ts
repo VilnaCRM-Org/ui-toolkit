@@ -1,18 +1,10 @@
 import type { SxProps, Theme, TooltipProps } from '@mui/material';
 import type { ReactNode } from 'react';
 
-type WrapperControlledProps =
-  | 'open'
-  | 'onOpen'
-  | 'onClose'
-  | 'children'
-  | 'title'
-  | 'id'
-  | 'placement'
-  | 'arrow'
-  | 'sx';
+type DisclosureProps = 'open' | 'onOpen' | 'onClose' | 'children' | 'title' | 'id';
+type PresentationProps = 'placement' | 'arrow' | 'sx';
 
-export interface UiTooltipProps extends Omit<TooltipProps, WrapperControlledProps> {
+export interface UiTooltipProps extends Omit<TooltipProps, DisclosureProps | PresentationProps> {
   children: ReactNode;
   title: string | ReactNode;
   placement?: 'top' | 'bottom' | 'left' | 'right' | undefined;

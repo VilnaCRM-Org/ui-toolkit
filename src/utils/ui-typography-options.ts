@@ -39,88 +39,48 @@ function headingVariants(palette: Palette): TypographyVariantsOptions {
   };
 }
 
+type Metrics = readonly [fontWeight: string, fontSize: string, lineHeight: string];
+
+function textVariant(metrics: Metrics, color: string, fontFamily: string): CSSProperties {
+  const [fontWeight, fontSize, lineHeight] = metrics;
+  return { fontWeight, fontSize, lineHeight, color, fontFamily };
+}
+
 function labelVariants(palette: Palette): TypographyVariantsOptions {
   return {
-    medium16: {
-      fontFamily: fontFamilies.inter,
-      fontWeight: '500',
-      fontSize: '1rem',
-      lineHeight: '1.125rem',
-      color: palette.grey300.main,
-    },
-    medium15: {
-      fontFamily: fontFamilies.golos,
-      fontWeight: '500',
-      fontSize: '0.9375rem',
-      lineHeight: '1.125rem',
-      color: palette.grey250.main,
-    },
-    medium14: {
-      fontWeight: '500',
-      fontSize: '0.875rem',
-      lineHeight: '1.125rem',
-      color: palette.grey200.main,
-      fontFamily: fontFamilies.inter,
-    },
-    regular16: {
-      fontWeight: '500',
-      fontSize: '1rem',
-      lineHeight: '1.125rem',
-      color: palette.grey300.main,
-      fontFamily: fontFamilies.golos,
-    },
+    medium16: textVariant(['500', '1rem', '1.125rem'], palette.grey300.main, fontFamilies.inter),
+    medium15: textVariant(
+      ['500', '0.9375rem', '1.125rem'],
+      palette.grey250.main,
+      fontFamilies.golos
+    ),
+    medium14: textVariant(
+      ['500', '0.875rem', '1.125rem'],
+      palette.grey200.main,
+      fontFamilies.inter
+    ),
+    regular16: textVariant(['500', '1rem', '1.125rem'], palette.grey300.main, fontFamilies.golos),
   };
 }
 
 function bodyVariants(palette: Palette): TypographyVariantsOptions {
+  const ink: string = palette.darkPrimary.main;
   return {
-    bodyText18: {
-      fontWeight: '400',
-      fontSize: '1.125rem',
-      lineHeight: '1.875rem',
-      color: palette.darkPrimary.main,
-      fontFamily: fontFamilies.golos,
-    },
-    bodyText16: {
-      fontWeight: '400',
-      fontSize: '1rem',
-      lineHeight: '1.625rem',
-      color: palette.darkPrimary.main,
-      fontFamily: fontFamilies.golos,
-    },
-    mobileText: {
-      fontWeight: '400',
-      fontSize: '0.9375rem',
-      lineHeight: '1.563rem',
-      color: palette.darkPrimary.main,
-      fontFamily: fontFamilies.golos,
-    },
+    bodyText18: textVariant(['400', '1.125rem', '1.875rem'], ink, fontFamilies.golos),
+    bodyText16: textVariant(['400', '1rem', '1.625rem'], ink, fontFamilies.golos),
+    mobileText: textVariant(['400', '0.9375rem', '1.563rem'], ink, fontFamilies.golos),
   };
 }
 
 function displayVariants(palette: Palette): TypographyVariantsOptions {
   return {
-    bold22: {
-      fontWeight: '700',
-      fontSize: '1.375rem',
-      lineHeight: 'normal',
-      color: palette.grey250.main,
-      fontFamily: fontFamilies.golos,
-    },
-    demi18: {
-      fontWeight: '600',
-      fontSize: '1.125rem',
-      lineHeight: 'normal',
-      color: palette.darkPrimary.main,
-      fontFamily: fontFamilies.golos,
-    },
-    button: {
-      fontWeight: '600',
-      fontSize: '1.125rem',
-      lineHeight: 'normal',
-      color: palette.white.main,
-      fontFamily: fontFamilies.golos,
-    },
+    bold22: textVariant(['700', '1.375rem', 'normal'], palette.grey250.main, fontFamilies.golos),
+    demi18: textVariant(
+      ['600', '1.125rem', 'normal'],
+      palette.darkPrimary.main,
+      fontFamilies.golos
+    ),
+    button: textVariant(['600', '1.125rem', 'normal'], palette.white.main, fontFamilies.golos),
   };
 }
 
