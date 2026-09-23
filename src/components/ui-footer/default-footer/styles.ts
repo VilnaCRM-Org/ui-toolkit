@@ -5,7 +5,7 @@ import colorTheme from '../../ui-color-theme';
 
 export default {
   footerWrapper: {
-    borderTop: '1px solid #e1e7ea',
+    borderTop: `1px solid ${colorTheme.palette.brandGray.main}`,
     background: colorTheme.palette.white.main,
     boxShadow: '0px -5px 46px 0px rgba(198, 209, 220, 0.25)',
   },

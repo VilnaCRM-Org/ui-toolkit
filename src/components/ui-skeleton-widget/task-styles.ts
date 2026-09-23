@@ -1,6 +1,7 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
+import { sharedPalette } from '../ui-color-theme';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
 import type { SkeletonTaskBar } from './types';
@@ -31,7 +32,7 @@ const TASK_GRID_PADDING: string = '26px 13px 0 16px';
 /** Scroll affordance (`297:15891`): a 4px brand-grey track, thumb at 27.8%. */
 export const SCROLLBAR_WIDTH: string = '4px';
 export const SCROLL_THUMB_HEIGHT: string = '27.8%';
-const SCROLL_THUMB_COLOR: string = '#D0D4D8';
+const SCROLL_THUMB_COLOR: string = sharedPalette.grey400.main;
 
 export const taskBodyStyles: SystemStyleObject<Theme> = {
   display: 'flex',
