@@ -83,9 +83,10 @@ peer_dependencies() {
   fi
 }
 
-@test "README documents theming, the internal theme scope caveat, and localization" {
+@test "README documents theming, the UiThemeProvider contract, and localization" {
   grep -qE '^## Theming$' "$README"
-  grep -qF 'own theme scope' "$README"
+  grep -qF '<UiThemeProvider variant="crm"' "$README"
+  grep -qF 'createUiTheme({' "$README"
   grep -qE '^## Localization$' "$README"
 }
 
