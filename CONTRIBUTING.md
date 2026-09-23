@@ -594,6 +594,15 @@ inventoried.
   issue current instead of turning unrelated pull requests red over a backlog no author caused.
   Fix a finding by upgrading the dependency or the base package (`bun why <package>` names the
   direct dependency); the gates have no ignore list.
+- **Licences and IP.** The `licence and IP compliance` workflow packs the tarball and runs
+  `make lint-licenses` against it; the release workflow runs the same target before it pushes the
+  release commit, so a finding fails the release. `scripts/ci/check-licenses.ts` fails when the
+  shipped `package.json` is not `CC0-1.0` or `LICENSE` is not its text, when a package the build
+  bundles (read from the shipped source maps) or the production dependency closure carries a
+  licence outside the allow-list in `scripts/ci/license-policy.ts`, when a bundled package has no
+  entry in `build/THIRD-PARTY-NOTICES.txt` (written by the build), when a shipped font's embedded
+  licence metadata is not OFL-1.1, and when a shipped text file names an internal-only URL or a
+  proprietary marker. The same target then runs the gitleaks scanner over the unpacked tarball.
 
 When you add a step that uses an action, resolve its SHA before committing. An
 annotated tag points at a tag object rather than at the commit, so the reference has to be

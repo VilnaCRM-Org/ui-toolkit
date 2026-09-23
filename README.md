@@ -604,7 +604,10 @@ Supply-chain posture is measured in CI: the `sbom` workflow publishes a CycloneD
 package and for each CI image, the `OSSF Scorecard` workflow publishes the repository score
 behind the badge above, `make lint-secrets` fails a pull request that commits a credential, and
 `make lint-vulns` plus the `scan-image-*` targets fail one that ships a fixable HIGH/CRITICAL
-advisory in the production dependency closure or in a CI image's OS packages. See
+advisory in the production dependency closure or in a CI image's OS packages. `make lint-licenses`
+fails a pull request, and the release, whose packed tarball carries a licence outside the
+allow-list, an unattributed bundled package, an internal-only URL, a proprietary marker or a
+secret. See
 [Supply-chain pinning and inventory](CONTRIBUTING.md#supply-chain-pinning-and-inventory).
 
 ## Development
