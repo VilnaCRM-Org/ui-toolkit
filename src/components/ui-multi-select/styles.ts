@@ -14,11 +14,11 @@ type SlotStyle = SystemStyleObject<Theme>;
 
 const EMPTY_VALUE: UiMultiSelectOption[] = [];
 
-const filledStrokeSx: (theme: Theme) => SlotStyle = cacheByTheme(
-  (theme: Theme): SlotStyle => ({
-    '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.grey300.main },
-  })
-);
+function buildFilledStroke(theme: Theme): SlotStyle {
+  return { '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.grey300.main } };
+}
+
+const filledStrokeSx: (theme: Theme) => SlotStyle = cacheByTheme(buildFilledStroke);
 
 const HIDE_CLEAR_SX: SlotStyle = {
   '& .MuiAutocomplete-clearIndicator': { display: 'none' },
