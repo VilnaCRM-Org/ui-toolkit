@@ -4,6 +4,7 @@ import React from 'react';
 
 import UiLink from '../../src/components/ui-link';
 import type { UiLinkProps } from '../../src/components/ui-link/types';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import { testText, testUrl } from './constants';
 import { emotionCssFor } from './utils/emotion-css';
@@ -121,7 +122,25 @@ describe('UiLink', () => {
     });
   });
 
-  it('applies its own MuiLink theme regardless of parent theme overrides', () => {
+  it('paints the toolkit link colour without a provider', () => {
+    render(<UiLink href={testUrl}>{testText}</UiLink>);
+
+    expect(screen.getByRole('link', { name: testText })).toHaveStyle({
+      color: 'rgb(30, 174, 255)',
+    });
+  });
+
+  it('follows a consumer theme palette', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { primary: { main: '#ff0000' } } })}>
+        <UiLink href={testUrl}>{testText}</UiLink>
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole('link', { name: testText })).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+  });
+
+  it('keeps its own link styles regardless of parent theme overrides', () => {
     const parentTheme: ReturnType<typeof createTheme> = createTheme({
       components: {
         MuiLink: {
@@ -138,11 +157,10 @@ describe('UiLink', () => {
       </ThemeProvider>
     );
 
-    // UiLink wraps its own ThemeProvider, so the parent's `underline: 'none'`
-    // default is not inherited; its own theme (fontWeight 700, underline) wins.
     const link: HTMLElement = screen.getByRole('link', { name: testText });
     expect(link).toHaveClass('MuiLink-root');
     expect(link).not.toHaveClass('MuiLink-underlineNone');
+    expect(link).toHaveClass('MuiLink-underlineAlways');
     expect(link).toHaveStyle({ fontWeight: '700' });
   });
 });

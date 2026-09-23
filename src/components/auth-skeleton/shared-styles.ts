@@ -3,6 +3,7 @@ import { CSSObject } from '@mui/material';
 import { fontFamilies } from '@/utils/font-tokens';
 
 import breakpointsTheme from '../ui-breakpoints';
+import { sharedPalette } from '../ui-color-theme';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
 export const fieldGapMargins: CSSObject = {
@@ -27,7 +28,7 @@ export const formSection: CSSObject = {
   paddingRight: '0.375rem',
   paddingBottom: '1.5rem',
   fontFamily: fontFamilies.golos,
-  backgroundColor: '#FBFBFB',
+  backgroundColor: sharedPalette.backgroundGrey100.main,
   [`@media (min-width:${breakpointsTheme.breakpoints.values.md}px)`]: {
     paddingTop: '8.4375rem',
     paddingBottom: '8.4375rem',
@@ -43,7 +44,7 @@ export const formWrapper: CSSObject = {
   width: '100%',
   padding: '1.5rem 1.5rem 1.375rem',
   margin: '0 auto',
-  backgroundColor: '#fff',
+  backgroundColor: sharedPalette.white.main,
   border: `1px solid ${SKELETON_BORDER_COLOR}`,
   borderRadius: '16px',
   boxShadow: '0px 7px 40px 0px rgba(211, 216, 224, 0.2)',

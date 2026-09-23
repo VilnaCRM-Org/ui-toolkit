@@ -1,9 +1,11 @@
+import { ThemeProvider } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import UiLink from '../../src/components/ui-link';
 import UiSearchInput from '../../src/components/ui-search-input';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 
@@ -404,5 +406,26 @@ describe('UiSearchInput — decorative magnifier glyph', () => {
     // rest and brand-blue on hover/focus.
     expect(path).toHaveAttribute('fill', 'currentColor');
     expect(path).not.toHaveAttribute('stroke');
+  });
+});
+
+describe('UiSearchInput theming', () => {
+  function inputRoot(): HTMLElement | null {
+    /* eslint-disable-next-line testing-library/no-node-access */
+    return screen.getByRole('combobox').closest('.MuiOutlinedInput-root');
+  }
+
+  it('paints the toolkit ink on the field with no provider', () => {
+    render(<UiSearchInput aria-label="Search" />);
+    expect(inputRoot()).toHaveStyle({ color: 'rgb(26, 28, 30)' });
+  });
+
+  it('follows a consumer theme palette override', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { darkPrimary: { main: '#ff0000' } } })}>
+        <UiSearchInput aria-label="Search" />
+      </ThemeProvider>
+    );
+    expect(inputRoot()).toHaveStyle({ color: 'rgb(255, 0, 0)' });
   });
 });

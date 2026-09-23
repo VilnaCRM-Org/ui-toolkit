@@ -1,5 +1,7 @@
 import { keyframes, Keyframes } from '@emotion/react';
 
+import { sharedPalette } from '../ui-color-theme';
+
 export const shimmerAnimation: Keyframes = keyframes`
   0% {
     background-position: 0% 0;
@@ -19,7 +21,7 @@ export const shimmerGradient: string = `linear-gradient(
 export const SMALL_MOBILE_BREAKPOINT: number = 375;
 export const SMALL_MOBILE_BREAKPOINT_UPPER: number = SMALL_MOBILE_BREAKPOINT + 1;
 export const SKELETON_BORDER_RADIUS: string = '57px';
-export const SKELETON_BORDER_COLOR: string = '#E1E7EA';
+export const SKELETON_BORDER_COLOR: string = sharedPalette.brandGray.main;
 
 export const shadowPulseAnimation: Keyframes = keyframes`
   0% {

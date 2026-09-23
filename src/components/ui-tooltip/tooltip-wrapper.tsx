@@ -1,6 +1,11 @@
 import { ClickAwayListener, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import type { Theme } from '@mui/material';
 import React from 'react';
 
+import { useUiTheme } from '@/utils/ui-theme';
+
+import { tooltipSlotProps, triggerSx } from './styles';
+import buildTriggerProps from './trigger-props';
 import type { UiTooltipProps } from './types';
 
 type TooltipDisclosure = {
@@ -66,21 +71,29 @@ export default function WrapperUiTooltip({
   sx,
   children,
   triggerLabel,
+  slotProps,
+  ...rest
 }: UiTooltipProps): React.ReactElement {
-  const { open, tooltipId, closeTooltip, toggleTooltip, handleKeyDown } = useTooltipDisclosure();
+  const theme: Theme = useUiTheme();
+  const disclosure: TooltipDisclosure = useTooltipDisclosure();
+  const { open, tooltipId, closeTooltip } = disclosure;
 
   return (
     <ClickAwayListener onClickAway={closeTooltip}>
-      <Tooltip id={tooltipId} open={open} title={title} placement={placement} arrow={arrow} sx={sx}>
+      <Tooltip
+        {...rest}
+        id={tooltipId}
+        open={open}
+        title={title}
+        placement={placement}
+        arrow={arrow}
+        sx={sx}
+        slotProps={tooltipSlotProps(theme, slotProps)}
+      >
         <Typography
+          sx={triggerSx}
           component="span"
-          role="button"
-          tabIndex={0}
-          aria-expanded={open}
-          aria-controls={open ? tooltipId : undefined}
-          aria-label={triggerLabel}
-          onClick={toggleTooltip}
-          onKeyDown={handleKeyDown}
+          {...buildTriggerProps(disclosure, triggerLabel)}
         >
           {children}
         </Typography>

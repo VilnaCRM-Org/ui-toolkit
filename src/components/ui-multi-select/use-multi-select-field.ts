@@ -1,5 +1,8 @@
-import type { AutocompleteRenderInputParams } from '@mui/material';
+import type { AutocompleteRenderInputParams, Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
+
+import { useUiTheme } from '@/utils/ui-theme';
 
 import {
   createFieldOptionRenderer,
@@ -13,12 +16,24 @@ import { GhostOverlay } from '../ghost-overlay';
 import { announceChange } from './announce';
 import { createChipRenderer, type ChipRenderer } from './chip-renderer';
 import { multiSelectLoadingAdornment } from './loading-adornment';
+import {
+  multiSelectFieldStyles,
+  multiSelectSlotStyles,
+  type MultiSelectSlotStyles,
+} from './styles';
 import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
 import { useMultiSelectGhost, type MultiSelectGhost } from './use-multi-select-ghost';
 
 /** Listbox slot props: named from the field, and multi-selectable (MUI omits this). */
 export interface MultiListboxSlotProps {
-  listbox: { 'aria-label'?: string | undefined; 'aria-multiselectable': true };
+  listbox: {
+    'aria-label'?: string | undefined;
+    'aria-multiselectable': true;
+    sx: SystemStyleObject<Theme>;
+  };
+  paper: { sx: SystemStyleObject<Theme> };
+  clearIndicator: { sx: SystemStyleObject<Theme> };
+  popupIndicator: { sx: SystemStyleObject<Theme> };
 }
 
 export interface MultiSelectField {
@@ -58,10 +73,16 @@ function ghostOverlay(ghost: MultiSelectGhost): React.ReactNode {
 // Names the popup listbox from the visible label, falling back to `aria-label`
 // (including when `label` is empty/whitespace), and marks it multi-selectable —
 // MUI leaves `aria-multiselectable` off even for `Autocomplete multiple`.
-function listboxSlotProps(props: UiMultiSelectProps): MultiListboxSlotProps {
+function listboxSlotProps(props: UiMultiSelectProps, theme: Theme): MultiListboxSlotProps {
   const label: string | undefined = props.label;
   const named: string | undefined = hasText(label) ? label : props['aria-label'];
-  return { listbox: { 'aria-label': named, 'aria-multiselectable': true } };
+  const styles: MultiSelectSlotStyles = multiSelectSlotStyles(theme);
+  return {
+    listbox: { 'aria-label': named, 'aria-multiselectable': true, sx: styles.listbox },
+    paper: { sx: styles.paper },
+    clearIndicator: { sx: styles.clearIndicator },
+    popupIndicator: { sx: styles.popupIndicator },
+  };
 }
 
 // The `renderInput` factory, wired with the ghost overlay + its input key/focus
@@ -69,7 +90,8 @@ function listboxSlotProps(props: UiMultiSelectProps): MultiListboxSlotProps {
 // so a filled multi-select does not spuriously block submit (§4.4 of the spec).
 function buildRenderInput(
   props: UiMultiSelectProps,
-  ghost: MultiSelectGhost
+  ghost: MultiSelectGhost,
+  theme: Theme
 ): (params: AutocompleteRenderInputParams) => React.ReactElement {
   const filled: boolean = (props.value ?? EMPTY).length > 0;
   return createFieldRenderInput({
@@ -87,6 +109,7 @@ function buildRenderInput(
       onFocus: ghost.handleFocus,
       onBlur: ghost.handleBlur,
     },
+    slotStyles: multiSelectFieldStyles(theme),
   });
 }
 
@@ -109,6 +132,7 @@ export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField
   );
 
   const announced: string = useFieldLoadingAnnouncement(props);
+  const theme: Theme = useUiTheme();
 
   return {
     status,
@@ -116,9 +140,9 @@ export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField
     text: ghost.typed,
     handleChange: (_event, next): void => applySelection(next),
     handleInputChange: ghost.handleInputChange,
-    renderInput: buildRenderInput(props, ghost),
+    renderInput: buildRenderInput(props, ghost, theme),
     renderValue: createChipRenderer(props.disabled === true),
     renderOption: RENDER_OPTION,
-    slotProps: listboxSlotProps(props),
+    slotProps: listboxSlotProps(props, theme),
   };
 }

@@ -1,6 +1,8 @@
 import type { AutocompleteInputChangeReason, AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
+import { useUiTheme } from '@/utils/ui-theme';
+
 import {
   useFieldLoadingAnnouncement,
   useListboxSlotProps,
@@ -66,7 +68,11 @@ export function useSelectField(props: UiSelectWithSearchProps): SelectField {
   );
 
   const announced: string = useFieldLoadingAnnouncement(props);
-  const renderInput: SelectField['renderInput'] = createSelectRenderInput(props, ghost);
+  const renderInput: SelectField['renderInput'] = createSelectRenderInput(
+    props,
+    ghost,
+    useUiTheme()
+  );
   const slotProps: ListboxSlotProps = useListboxSlotProps(props.label, props['aria-label']);
 
   return {

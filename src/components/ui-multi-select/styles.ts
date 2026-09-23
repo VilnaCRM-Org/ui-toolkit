@@ -1,37 +1,29 @@
-// Chip and delete-affordance styling for the multi-select. Colours come from the
-// shared theme; contrast hardening of the chip/delete tokens is deferred to the
-// accessibility-visuals PR (see Story 1.3), consistent with the other Epic 2
-// controls. The sr-only helper for the live region is shared via field-controls.
 import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import type { SystemStyleObject } from '@mui/system';
 
 import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { cacheByTheme } from '@/utils/ui-theme';
+
+import { mergeFieldStyles, outlinedFieldStyles, type FieldSlotStyles } from '../field-controls';
+
+import type { UiMultiSelectOption, UiMultiSelectProps } from './types';
 
 export { srOnlySx } from '../field-controls';
 
 const palette: Theme['palette'] = colorTheme.palette;
 
-// Figma "Multiselect" chip. REST (node 535:37538): a faint-blue fill with a
-// brand-blue Inter Medium 16/18 label and a plain brand-blue × — no border, no
-// circle. HOVER (node 622:44563): the chip gains a 1px brand-blue border and its ×
-// becomes a filled brand-blue circle with a white glyph. 8px radius, 9px/12px
-// inset, 4px gap to the ×. (Blue-on-faint-blue is below AA text contrast — the
-// deferred accessibility-visuals hardening, consistent with the other controls.)
 export const chipSx: SxProps<Theme> = {
   height: 'auto',
   borderRadius: '0.5rem',
   backgroundColor: alpha(palette.primary.main, 0.1),
-  // Transparent 1px border at rest reserves the space so the hover border adds no
-  // layout shift; it colours in on hover.
   border: '1px solid transparent',
   color: palette.primary.main,
   fontFamily: fontFamilies.inter,
   fontSize: '1rem',
   fontWeight: 500,
   lineHeight: '1.125rem',
-  // Figma Inter Medium 16/18 has letterSpacing 0; MUI's Chip adds ~0.15px, which
-  // widens the label — pin it to 0 so the badge is the Figma width.
   letterSpacing: 0,
   '& .MuiChip-label': {
     padding: '0.5625rem 0 0.5625rem 0.75rem',
@@ -48,14 +40,6 @@ export const chipSx: SxProps<Theme> = {
   },
   '&.Mui-disabled': { opacity: 0.6 },
 };
-
-// The delete affordance is the Figma 20px × (node 535:37540) so the badge is the
-// exact design width. DEV-24 records that this is under SC 2.5.8's 24px minimum
-// with no exception closing it — the "Equivalent" exception needs a different
-// control on the same page that itself meets 24 CSS px — so it is an accepted
-// deviation, mitigated by the keyboard removal path (Backspace / arrow-then-Delete,
-// which is SC 2.1.1). A plain brand-blue glyph at rest, a filled brand-blue circle
-// with a white glyph on chip hover (from `chipSx`).
 export const deleteButtonSx: SxProps<Theme> = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -76,3 +60,151 @@ export const deleteCircleSx: SxProps<Theme> = {
   backgroundColor: 'transparent',
   color: palette.primary.main,
 };
+
+type SlotStyle = SystemStyleObject<Theme>;
+
+const EMPTY_VALUE: UiMultiSelectOption[] = [];
+
+const FILLED_STROKE_SX: SlotStyle = {
+  '& .MuiOutlinedInput-notchedOutline': { borderColor: colorTheme.palette.grey300.main },
+};
+
+const HIDE_CLEAR_SX: SlotStyle = {
+  '& .MuiAutocomplete-clearIndicator': { display: 'none' },
+};
+
+export function multiSelectRootSx(config: UiMultiSelectProps): SxProps<Theme> {
+  const consumerSx: SxProps<Theme> = config.sx ?? {};
+  const derived: SlotStyle[] = [
+    ...((config.value ?? EMPTY_VALUE).length > 0 ? [FILLED_STROKE_SX] : []),
+    ...(config.loading === true ? [HIDE_CLEAR_SX] : []),
+  ];
+  if (derived.length === 0) {
+    return consumerSx;
+  }
+  return [...derived, ...(Array.isArray(consumerSx) ? consumerSx : [consumerSx])];
+}
+
+const AUTOCOMPLETE_ROOT_SX: SlotStyle = {
+  '& .MuiAutocomplete-inputRoot': {
+    minHeight: '4rem',
+    paddingTop: '0.5rem',
+    paddingBottom: '0.5rem',
+    paddingLeft: '0.625rem',
+    paddingRight: '0.875rem',
+  },
+  '& .MuiAutocomplete-input': {
+    padding: 0,
+    paddingLeft: '1.0625rem',
+  },
+  '& .MuiAutocomplete-endAdornment': {
+    top: '1rem',
+    transform: 'none',
+    height: '2rem',
+    display: 'flex',
+    alignItems: 'center',
+  },
+};
+
+export function multiSelectComboboxSx(config: UiMultiSelectProps): SxProps<Theme> {
+  const rest: SxProps<Theme> = multiSelectRootSx(config);
+  return [AUTOCOMPLETE_ROOT_SX, ...(Array.isArray(rest) ? rest : [rest])];
+}
+
+function outlinedInputOverrides(theme: Theme): Partial<FieldSlotStyles> {
+  const { palette } = theme;
+  return {
+    inputRoot: {
+      fontFamily: fontFamilies.inter,
+      fontSize: '1rem',
+      lineHeight: '1.125rem',
+      color: palette.darkPrimary.main,
+      '&:hover:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': {
+        borderColor: palette.grey300.main,
+      },
+    },
+    htmlInput: {
+      '&::placeholder': {
+        fontSize: '1rem',
+        lineHeight: '1.125rem',
+      },
+    },
+    notchedOutline: {
+      borderColor: palette.grey400.main,
+    },
+  };
+}
+
+export const multiSelectFieldStyles: (theme: Theme) => FieldSlotStyles = cacheByTheme(
+  (theme: Theme): FieldSlotStyles =>
+    mergeFieldStyles(outlinedFieldStyles(theme), outlinedInputOverrides(theme))
+);
+
+function popupIndicatorStyles(theme: Theme): SlotStyle {
+  return {
+    color: theme.palette.grey300.main,
+    marginRight: '0.9375rem',
+  };
+}
+
+function clearIndicatorStyles(theme: Theme): SlotStyle {
+  return {
+    visibility: 'visible',
+    color: theme.palette.grey300.main,
+    marginRight: '0.125rem',
+    '& svg': { fontSize: '1.5rem' },
+  };
+}
+
+function paperStyles(theme: Theme): SlotStyle {
+  return {
+    borderRadius: '0.5rem',
+    border: `1px solid ${theme.palette.grey400.main}`,
+    boxShadow: '0px 8px 27px 0px rgba(49, 59, 67, 0.14)',
+    marginTop: '0.5rem',
+  };
+}
+
+function optionStyles(theme: Theme): SlotStyle {
+  const { palette } = theme;
+  return {
+    minHeight: '3.25rem',
+    paddingLeft: '1.1875rem',
+    fontFamily: fontFamilies.inter,
+    fontSize: '1rem',
+    fontWeight: 500,
+    color: palette.darkPrimary.main,
+    '&.Mui-focused': {
+      backgroundColor: palette.backgroundGrey100.main,
+    },
+    '&[aria-selected="true"]': {
+      backgroundColor: 'rgba(30, 174, 255, 0.1)',
+    },
+    '&[aria-selected="true"].Mui-focused': {
+      backgroundColor: 'rgba(30, 174, 255, 0.1)',
+    },
+  };
+}
+
+function listboxStyles(theme: Theme): SlotStyle {
+  return {
+    padding: 0,
+    '& .MuiAutocomplete-option': optionStyles(theme),
+  };
+}
+
+export interface MultiSelectSlotStyles {
+  popupIndicator: SlotStyle;
+  clearIndicator: SlotStyle;
+  paper: SlotStyle;
+  listbox: SlotStyle;
+}
+
+export const multiSelectSlotStyles: (theme: Theme) => MultiSelectSlotStyles = cacheByTheme(
+  (theme: Theme): MultiSelectSlotStyles => ({
+    popupIndicator: popupIndicatorStyles(theme),
+    clearIndicator: clearIndicatorStyles(theme),
+    paper: paperStyles(theme),
+    listbox: listboxStyles(theme),
+  })
+);

@@ -1,17 +1,13 @@
 import { Box, Button } from '@mui/material';
+import type { Theme } from '@mui/material';
 import React from 'react';
 
-import { srOnlySx } from '../field-controls';
-import ScopedThemeProvider from '../theme-scope';
+import { useUiTheme } from '@/utils/ui-theme';
 
-import {
-  busySx,
-  ButtonSpinner,
-  useBusyClick,
-  useButtonBusy,
-  type ButtonBusyState,
-} from './loading';
-import { theme } from './theme';
+import { srOnlySx } from '../field-controls';
+
+import { ButtonSpinner, useBusyClick, useButtonBusy, type ButtonBusyState } from './loading';
+import { buttonSx } from './styles';
 import type { UiButtonProps } from './types';
 
 function resolveLinkTarget(to?: UiButtonProps['to']): string | undefined {
@@ -33,9 +29,6 @@ type ButtonElementProps = {
   type?: UiButtonProps['type'];
 };
 
-// Custom link components (e.g. a router Link) navigate via `to`, not a flattened
-// `href`; forwarding the raw target keeps them operable. Built-in `a`/`button`
-// elements have no `to` prop, so they fall back to the synthesized href.
 function buildComponentProps(
   resolvedComponent: React.ElementType | undefined,
   isCustomComponent: boolean,
@@ -90,17 +83,16 @@ function UiButton({
   const elementProps: ButtonElementProps = resolveButtonProps({ to, href, component, type });
   const state: ButtonBusyState = useButtonBusy(loading, loadingText);
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = useBusyClick(state.busy, onClick);
+  const theme: Theme = useUiTheme();
 
   return (
-    <ScopedThemeProvider theme={theme}>
-      {/* Explicit props are written AFTER the spread so they win. `loading` is
-          deliberately destructured out and never reaches MUI — see types.ts. */}
+    <>
       <Button
         {...elementProps}
         {...rest}
         aria-disabled={state.busy ? true : rest['aria-disabled']}
         onClick={handleClick}
-        sx={busySx(state.busy, rest.sx)}
+        sx={buttonSx(theme, { ...rest, busy: state.busy }, rest.sx)}
       >
         {children}
         {state.busy ? <ButtonSpinner /> : null}
@@ -108,7 +100,7 @@ function UiButton({
       <Box role="status" aria-atomic="true" sx={srOnlySx}>
         {state.announced}
       </Box>
-    </ScopedThemeProvider>
+    </>
   );
 }
 

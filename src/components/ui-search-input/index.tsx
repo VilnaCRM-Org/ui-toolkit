@@ -1,10 +1,9 @@
-import { Box, ThemeProvider } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
 
 import { FieldLabel, hasText, srOnlySx } from '../field-controls';
 
 import { renderSearchAutocomplete } from './search-autocomplete';
-import theme from './theme';
 import type { UiSearchInputProps } from './types';
 import { useSearchField } from './use-search-field';
 import { useSearchWarnings } from './use-warnings';
@@ -17,7 +16,7 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
   const fieldId: string = props.id ?? generatedId;
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <Box sx={[FIELD_STACK_SX, ...(Array.isArray(props.sx) ? props.sx : [props.sx])]}>
         {hasText(props.label) && (
           <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
@@ -32,7 +31,7 @@ function UiSearchInput(props: Readonly<UiSearchInputProps>): React.ReactElement 
       <Box role="status" aria-atomic="true" sx={srOnlySx}>
         {field.announced}
       </Box>
-    </ThemeProvider>
+    </>
   );
 }
 

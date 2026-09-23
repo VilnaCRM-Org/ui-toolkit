@@ -5,8 +5,13 @@ import React from 'react';
 
 import {
   createFieldRenderInput,
+  outlinedFieldStyles,
   type FieldRenderInputConfig,
+  type FieldSlotStyles,
 } from '../../src/components/field-controls';
+import { uiTheme } from '../../src/utils/ui-theme';
+
+const slotStyles: FieldSlotStyles = outlinedFieldStyles(uiTheme);
 
 // Every case drives the factory through a real MUI Autocomplete, so `params` carries the
 // exact runtime shape (id, slotProps.input/htmlInput) the merge is written against.
@@ -25,7 +30,7 @@ describe('createFieldRenderInput — plain field (no overlay, no input handlers)
     render(
       <Autocomplete
         options={['A', 'B']}
-        renderInput={createFieldRenderInput({ ariaLabel: 'City' })}
+        renderInput={createFieldRenderInput({ ariaLabel: 'City', slotStyles })}
       />
     );
     const combobox: HTMLElement = screen.getByRole('combobox', { name: 'City' });
@@ -41,7 +46,7 @@ describe('createFieldRenderInput — plain field (no overlay, no input handlers)
   });
 
   it('leaves the field unwrapped when no overlay is configured', () => {
-    renderField({ ariaLabel: 'City' });
+    renderField({ ariaLabel: 'City', slotStyles });
 
     // The overlay wrapper is a style-only Box (position:relative) with no role of its
     // own, so it has to be read off the DOM. With `overlay` absent the TextField must
@@ -63,6 +68,7 @@ describe('createFieldRenderInput — caller style on the native input', () => {
   it('merges the caller style onto the input instead of dropping it', () => {
     renderField({
       ariaLabel: 'City',
+      slotStyles,
       htmlInputProps: { style: { caretColor: 'rgb(30, 174, 255)' } },
     });
 
@@ -72,5 +78,37 @@ describe('createFieldRenderInput — caller style on the native input', () => {
     expect(screen.getByRole('combobox', { name: 'City' })).toHaveStyle({
       caretColor: 'rgb(30, 174, 255)',
     });
+  });
+});
+
+describe('createFieldRenderInput — slot styles', () => {
+  const probeStyles: FieldSlotStyles = {
+    inputRoot: { backgroundColor: 'rgb(1, 2, 3)' },
+    notchedOutline: { borderColor: 'rgb(4, 5, 6)' },
+    htmlInput: { color: 'rgb(7, 8, 9)' },
+    formHelperText: { color: 'rgb(10, 11, 12)' },
+  };
+
+  it('puts each slot style on the element that slot renders', () => {
+    render(
+      <Autocomplete
+        options={['A', 'B']}
+        renderInput={createFieldRenderInput({
+          ariaLabel: 'City',
+          helperText: 'Pick one',
+          slotStyles: probeStyles,
+        })}
+      />
+    );
+    const combobox: HTMLElement = screen.getByRole('combobox', { name: 'City' });
+    // eslint-disable-next-line testing-library/no-node-access -- slot class, no role
+    const inputRoot: Element | null = combobox.closest('.MuiOutlinedInput-root');
+    // eslint-disable-next-line testing-library/no-node-access -- slot class, no role
+    const outline: Element | null | undefined = inputRoot?.querySelector('fieldset');
+
+    expect(combobox).toHaveStyle({ color: 'rgb(7, 8, 9)' });
+    expect(inputRoot).toHaveStyle({ backgroundColor: 'rgb(1, 2, 3)' });
+    expect(outline).toHaveStyle({ borderColor: 'rgb(4, 5, 6)' });
+    expect(screen.getByText('Pick one')).toHaveStyle({ color: 'rgb(10, 11, 12)' });
   });
 });

@@ -1,7 +1,10 @@
+import { ThemeProvider } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiTypography from '../../src/components/ui-typography';
+import { fontFamilies } from '../../src/utils/font-tokens';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import { testText } from './constants';
 
@@ -57,9 +60,6 @@ describe('UiTypography', () => {
 
 describe('UiTypography default component vs variant mapping', () => {
   it('forces the default "p" element even when a non-"p" variant is set', (): void => {
-    // component defaults to 'p' regardless of variant. Kills StringLiteral
-    // `component || 'p'` -> `component || ''`: with '' MUI Typography falls back to
-    // its variant mapping (variant="h1" -> <h1>) instead of the forced <p>.
     render(<UiTypography variant="h1">{testText}</UiTypography>);
 
     expect(screen.getByText(testText).tagName).toBe('P');
@@ -93,5 +93,43 @@ describe('UiTypography htmlFor branch', () => {
     const element: HTMLElement = screen.getByText(testText);
     expect(element.tagName).toBe('LABEL');
     expect(element).not.toHaveAttribute('for');
+  });
+});
+
+describe('UiTypography theming', () => {
+  it('paints the toolkit variant with no provider', (): void => {
+    render(<UiTypography variant="bodyText16">{testText}</UiTypography>);
+
+    expect(screen.getByText(testText)).toHaveStyle({
+      color: 'rgb(26, 28, 30)',
+      fontSize: '1rem',
+      lineHeight: '1.625rem',
+    });
+  });
+
+  it('paints the golos body1 style when no variant is given', (): void => {
+    render(<UiTypography>{testText}</UiTypography>);
+
+    expect(screen.getByText(testText)).toHaveStyle({ fontFamily: fontFamilies.golos });
+  });
+
+  it('keeps consumer sx after the variant style', (): void => {
+    render(
+      <UiTypography variant="bodyText16" sx={[{ color: '#00ff00' }]}>
+        {testText}
+      </UiTypography>
+    );
+
+    expect(screen.getByText(testText)).toHaveStyle({ color: 'rgb(0, 255, 0)' });
+  });
+
+  it('follows a consumer theme palette override', (): void => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { darkPrimary: { main: '#ff0000' } } })}>
+        <UiTypography variant="bodyText16">{testText}</UiTypography>
+      </ThemeProvider>
+    );
+
+    expect(screen.getByText(testText)).toHaveStyle({ color: 'rgb(255, 0, 0)' });
   });
 });
