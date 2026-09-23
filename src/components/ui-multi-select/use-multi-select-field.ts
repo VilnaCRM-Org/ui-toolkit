@@ -53,6 +53,7 @@ export interface MultiSelectField {
   renderValue: ChipRenderer;
   renderOption: FieldOptionRenderer<UiMultiSelectOption>;
   slotProps: MultiListboxSlotProps;
+  theme: Theme;
 }
 
 const EMPTY: UiMultiSelectOption[] = [];
@@ -144,5 +145,6 @@ export function useMultiSelectField(props: UiMultiSelectProps): MultiSelectField
     renderValue: createChipRenderer(props.disabled === true),
     renderOption: RENDER_OPTION,
     slotProps: listboxSlotProps(props, theme),
+    theme,
   };
 }

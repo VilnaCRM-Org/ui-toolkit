@@ -4,7 +4,7 @@ import type { SystemStyleObject } from '@mui/system';
 
 import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
-import { cacheByTheme } from '@/utils/ui-theme';
+import { cacheByTheme, uiTheme } from '@/utils/ui-theme';
 
 import { mergeFieldStyles, outlinedFieldStyles, type FieldSlotStyles } from '../field-controls';
 
@@ -65,18 +65,23 @@ type SlotStyle = SystemStyleObject<Theme>;
 
 const EMPTY_VALUE: UiMultiSelectOption[] = [];
 
-const FILLED_STROKE_SX: SlotStyle = {
-  '& .MuiOutlinedInput-notchedOutline': { borderColor: colorTheme.palette.grey300.main },
-};
+const filledStrokeSx: (theme: Theme) => SlotStyle = cacheByTheme(
+  (theme: Theme): SlotStyle => ({
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.grey300.main },
+  })
+);
 
 const HIDE_CLEAR_SX: SlotStyle = {
   '& .MuiAutocomplete-clearIndicator': { display: 'none' },
 };
 
-export function multiSelectRootSx(config: UiMultiSelectProps): SxProps<Theme> {
+export function multiSelectRootSx(
+  config: UiMultiSelectProps,
+  theme: Theme = uiTheme
+): SxProps<Theme> {
   const consumerSx: SxProps<Theme> = config.sx ?? {};
   const derived: SlotStyle[] = [
-    ...((config.value ?? EMPTY_VALUE).length > 0 ? [FILLED_STROKE_SX] : []),
+    ...((config.value ?? EMPTY_VALUE).length > 0 ? [filledStrokeSx(theme)] : []),
     ...(config.loading === true ? [HIDE_CLEAR_SX] : []),
   ];
   if (derived.length === 0) {
@@ -106,8 +111,8 @@ const AUTOCOMPLETE_ROOT_SX: SlotStyle = {
   },
 };
 
-export function multiSelectComboboxSx(config: UiMultiSelectProps): SxProps<Theme> {
-  const rest: SxProps<Theme> = multiSelectRootSx(config);
+export function multiSelectComboboxSx(config: UiMultiSelectProps, theme: Theme): SxProps<Theme> {
+  const rest: SxProps<Theme> = multiSelectRootSx(config, theme);
   return [AUTOCOMPLETE_ROOT_SX, ...(Array.isArray(rest) ? rest : [rest])];
 }
 

@@ -976,6 +976,15 @@ describe('UiMultiSelect — consumer theme', () => {
     expect(screen.getByRole('button', { name: 'Open' })).toHaveStyle({ color: 'rgb(255, 0, 0)' });
   });
 
+  it('paints the filled stroke from the consumer theme', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { grey300: { main: '#ff0000' } } })}>
+        <UiMultiSelect options={options} value={[options[0]]} aria-label="Cities" onChange={noop} />
+      </ThemeProvider>
+    );
+    expect(fieldStrokeColor()).toBe('#ff0000');
+  });
+
   it('styles the open listbox from the consumer theme', () => {
     render(
       <ThemeProvider theme={createUiTheme({ palette: { darkPrimary: { main: '#ff0000' } } })}>

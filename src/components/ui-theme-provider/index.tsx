@@ -15,7 +15,7 @@ function UiThemeProvider({
   children,
 }: Readonly<UiThemeProviderProps>): React.ReactElement {
   const resolved: Theme = React.useMemo(
-    () => createUiTheme({ ...theme, variant }),
+    () => createUiTheme({ ...theme, variant: variant ?? theme?.variant }),
     [theme, variant]
   );
   return <ThemeProvider theme={resolved}>{children}</ThemeProvider>;

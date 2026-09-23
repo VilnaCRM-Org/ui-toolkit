@@ -46,6 +46,26 @@ describe('UiThemeProvider', () => {
     expect(probeText()).toBe(`#ff0000 ${sharedPalette.brandGray.main} 480`);
   });
 
+  it('keeps a variant carried inside the theme option when the prop is omitted', () => {
+    render(
+      <UiThemeProvider theme={{ variant: 'crm' }}>
+        <Probe />
+      </UiThemeProvider>
+    );
+
+    expect(probeText()).toBe(`${sharedPalette.primary.main} ${sharedPalette.brandGray.main} 480`);
+  });
+
+  it('lets the variant prop win over the one inside the theme option', () => {
+    render(
+      <UiThemeProvider variant="website" theme={{ variant: 'crm' }}>
+        <Probe />
+      </UiThemeProvider>
+    );
+
+    expect(probeText()).toBe(`${sharedPalette.primary.main} ${sharedPalette.brandGray.main} 640`);
+  });
+
   it('rebuilds the theme when the props change', () => {
     const { rerender } = render(
       <UiThemeProvider theme={{ palette: { primary: { main: '#ff0000' } } }}>

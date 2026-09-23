@@ -59,7 +59,7 @@ export function MultiSelectCombobox(props: Readonly<MultiSelectComboboxProps>): 
       loading={config.loading}
       loadingText={config.loadingText ?? DEFAULT_LOADING_TEXT}
       size={config.size}
-      sx={multiSelectComboboxSx(config)}
+      sx={multiSelectComboboxSx(config, field.theme)}
       id={fieldId}
       isOptionEqualToValue={isOptionEqualToValue}
       getOptionLabel={getOptionLabel}
