@@ -1,4 +1,4 @@
-const SFNT_SIGNATURES: readonly number[] = [0x00010000, 0x4f54544f, 0x74727565];
+const SFNT_SIGNATURES: ReadonlySet<number> = new Set([0x00010000, 0x4f54544f, 0x74727565]);
 const TABLE_RECORD_SIZE: number = 16;
 const TABLE_DIRECTORY_OFFSET: number = 12;
 const NAME_RECORD_SIZE: number = 12;
@@ -53,7 +53,7 @@ function licenseDescription(font: Buffer, table: number): string | undefined {
 }
 
 function readDescription(font: Buffer): string | undefined {
-  if (!SFNT_SIGNATURES.includes(font.readUInt32BE(0))) return undefined;
+  if (!SFNT_SIGNATURES.has(font.readUInt32BE(0))) return undefined;
   const table: number | undefined = nameTableOffset(font);
   return table === undefined ? undefined : licenseDescription(font, table);
 }

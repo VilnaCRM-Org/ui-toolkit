@@ -43,9 +43,9 @@ export const LICENSE_POLICY: LicensePolicy = {
 };
 
 const PRIVATE_HOST =
-  'localhost|127(?:\\.\\d{1,3}){3}|0\\.0\\.0\\.0|10(?:\\.\\d{1,3}){3}|192\\.168(?:\\.\\d{1,3}){2}' +
-  '|172\\.(?:1[6-9]|2\\d|3[01])(?:\\.\\d{1,3}){2}' +
-  '|[\\w-]+(?:\\.[\\w-]+)*\\.(?:internal|local|localdomain|lan|corp|intranet|home\\.arpa)';
+  String.raw`localhost|127(?:\.\d{1,3}){3}|0\.0\.0\.0|10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}` +
+  String.raw`|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2}` +
+  String.raw`|[\w-]+(?:\.[\w-]+)*\.(?:internal|local|localdomain|lan|corp|intranet|home\.arpa)`;
 
 const SURFACE_RULES: readonly SurfaceRule[] = [
   {
@@ -64,7 +64,10 @@ const SURFACE_RULES: readonly SurfaceRule[] = [
   { rule: 'proprietary-marker', pattern: /\btrade secret\b/gi, thirdPartyExempt: true },
 ];
 
-const THIRD_PARTY_TEXT_FILES: readonly string[] = ['LICENSE', LICENSE_POLICY.noticesFile];
+const THIRD_PARTY_TEXT_FILES: ReadonlySet<string> = new Set([
+  'LICENSE',
+  LICENSE_POLICY.noticesFile,
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -87,11 +90,34 @@ function isDefined(value: string | undefined): value is string {
   return value !== undefined;
 }
 
+function tokens(expression: string): string[] {
+  return expression.split(/\s/).filter(token => token !== '');
+}
+
 function identifiers(expression: string): string[] {
-  return expression
-    .replace(/[()]/g, ' ')
-    .split(/\s+(?:OR|AND)\s+|\s+/)
-    .filter(token => token !== '');
+  return tokens(expression.replace(/[()]/g, ' ')).filter(
+    token => token !== 'OR' && token !== 'AND'
+  );
+}
+
+function splitOn(parts: string[], keyword: string): string[][] {
+  return parts.reduce<string[][]>(
+    (groups, token) => {
+      if (token === keyword) {
+        groups.push([]);
+      } else {
+        groups[groups.length - 1]?.push(token);
+      }
+      return groups;
+    },
+    [[]]
+  );
+}
+
+function isAllowedAlternative(alternative: string[], allowed: readonly string[]): boolean {
+  return splitOn(alternative, 'AND').every(
+    term => term.length === 1 && allowed.includes(term[0] as string)
+  );
 }
 
 function unwrap(expression: string): string {
@@ -107,9 +133,9 @@ export function isAllowedExpression(expression: string, allowed: readonly string
   if (/[()]|\bWITH\b/.test(body)) {
     return identifiers(body).every(id => allowed.includes(id));
   }
-  return body
-    .split(/\s+OR\s+/)
-    .some(alternative => alternative.split(/\s+AND\s+/).every(id => allowed.includes(id.trim())));
+  const alternatives: string[][] = splitOn(tokens(body), 'OR');
+  if (alternatives.some(alternative => alternative.length === 0)) return false;
+  return alternatives.some(alternative => isAllowedAlternative(alternative, allowed));
 }
 
 export function packageLicenseViolation(
@@ -163,13 +189,13 @@ export function noticeViolation(
   version: string,
   notices: string | undefined
 ): string | undefined {
-  if (notices !== undefined && notices.includes(`${name}@${version}`)) return undefined;
+  if (notices?.includes(`${name}@${version}`)) return undefined;
   return `${name}@${version} is bundled without an entry in ${LICENSE_POLICY.noticesFile}`;
 }
 
 function isThirdPartyText(file: string): boolean {
   const base: string = file.split('/').pop() ?? file;
-  return THIRD_PARTY_TEXT_FILES.includes(base);
+  return THIRD_PARTY_TEXT_FILES.has(base);
 }
 
 function ruleFindings(file: string, text: string, rule: SurfaceRule): SurfaceFinding[] {

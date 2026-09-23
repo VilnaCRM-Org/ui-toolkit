@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
 import fontLicenseDescription from './font-license';
 import {
@@ -55,7 +55,7 @@ function walk(dir: string): string[] {
 }
 
 function unpack(tarball: string, scratch: string): Unpacked {
-  execFileSync('tar', ['-xzf', tarball, '-C', scratch]);
+  execFileSync('/bin/tar', ['-xzf', tarball, '-C', scratch]);
   const root: string = join(scratch, 'package');
   return { root, files: walk(root).map(file => relative(root, file)) };
 }
@@ -82,7 +82,7 @@ function bundledPackageDirs(unpacked: Unpacked): string[] {
     .filter(file => file.endsWith('.map'))
     .flatMap(file => sourceMapSources(unpacked, file))
     .map(bundledPackageDir);
-  return [...new Set(dirs.filter(isString))].sort();
+  return [...new Set(dirs.filter(isString))].sort((a, b) => a.localeCompare(b));
 }
 
 function unmappedModules(unpacked: Unpacked): string[] {
@@ -102,7 +102,7 @@ function installedManifest(packageDir: string): Record<string, unknown> | undefi
 function bundledViolations(packageDir: string, notices: string | undefined): string[] {
   const manifest: Record<string, unknown> | undefined = installedManifest(packageDir);
   if (manifest === undefined) return [`${packageDir} is bundled but not installed`];
-  const name: string = String(manifest.name ?? packageDir);
+  const name: string = typeof manifest.name === 'string' ? manifest.name : packageDir;
   return [
     packageLicenseViolation(name, manifest, LICENSE_POLICY),
     noticeViolation(name, String(manifest.version), notices),
@@ -126,7 +126,7 @@ function productionClosure(manifest: Record<string, unknown>): string[] {
       queue.push(...productionNames(installedManifest(`node_modules/${name}`)));
     }
   }
-  return [...seen].sort();
+  return [...seen].sort((a, b) => a.localeCompare(b));
 }
 
 function dependencyViolation(name: string): string | undefined {
@@ -188,9 +188,17 @@ function report(tarball: string, violations: string[]): number {
   return 1;
 }
 
+function containedPackageDir(packageDir: string): string {
+  const resolved: string = resolve(PROJECT_ROOT, packageDir);
+  if (!resolved.startsWith(`${PROJECT_ROOT}${sep}`)) {
+    fail(`package dir ${packageDir} resolves outside ${PROJECT_ROOT}`);
+  }
+  return resolved;
+}
+
 function main(packageDir: string | undefined): number {
   if (packageDir === undefined) fail('usage: check-licenses.ts <package-dir>');
-  const tarball: string = singleTarball(resolve(PROJECT_ROOT, packageDir));
+  const tarball: string = singleTarball(containedPackageDir(packageDir));
   const scratch: string = mkdtempSync(join(tmpdir(), 'check-licenses-'));
   try {
     return report(relative(PROJECT_ROOT, tarball), scan(unpack(tarball, scratch)));

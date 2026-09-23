@@ -14,7 +14,7 @@ export function bundledPackageDirs(metafile) {
   const dirs = Object.keys(metafile.inputs)
     .map(input => PACKAGE_DIR.exec(input.replace(/\\/g, '/'))?.[0])
     .filter(dir => dir !== undefined);
-  return [...new Set(dirs)].sort();
+  return [...new Set(dirs)].sort((a, b) => a.localeCompare(b));
 }
 
 function licenseText(packageDir) {
