@@ -1,14 +1,18 @@
-import type { AutocompleteRenderInputParams } from '@mui/material';
-import React from 'react';
+import type { AutocompleteRenderInputParams, Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
+import type React from 'react';
+
+import { useUiTheme } from '@/utils/ui-theme';
 
 import {
   useFieldLoadingAnnouncement,
   useListboxSlotProps,
   type ListboxSlotProps,
 } from '../field-controls';
-import { GhostOverlay } from '../ghost-overlay';
 
 import { createSearchRenderInput } from './render-input';
+import { ghostInputProps, ghostOverlay } from './search-field-parts';
+import { SEARCH_AUTOCOMPLETE_SX, searchFieldSlotStyles, searchSlotProps } from './styles';
 import type { UiSearchInputProps } from './types';
 import { useGhostText } from './use-ghost-text';
 
@@ -16,22 +20,16 @@ export interface SearchField {
   text: string;
   handleInputChange: (event: React.SyntheticEvent, next: string) => void;
   renderInput: (params: AutocompleteRenderInputParams) => React.ReactElement;
-  slotProps: ListboxSlotProps;
-  /** Polite live-region text: empty until a fetch crosses the announce delay. */
+  slotProps: ReturnType<typeof searchSlotProps>;
+  rootSx: SystemStyleObject<Theme>;
   announced: string;
 }
 
-// Derives the input-change handler, `renderInput` callback (with the inline ghost
-// overlay and its input handlers) and listbox slotProps for UiSearchInput, keeping
-// the component itself small enough for the complexity gate.
 export function useSearchField(props: UiSearchInputProps): SearchField {
   const { label, placeholder, required, error, helperText } = props;
   const ariaLabel: string | undefined = props['aria-label'];
+  const theme: Theme = useUiTheme();
   const ghost: ReturnType<typeof useGhostText> = useGhostText(props);
-
-  const overlay: React.ReactNode = ghost.active
-    ? React.createElement(GhostOverlay, { typed: ghost.text, completion: ghost.completion })
-    : null;
 
   const announced: string = useFieldLoadingAnnouncement(props);
 
@@ -42,22 +40,20 @@ export function useSearchField(props: UiSearchInputProps): SearchField {
     error,
     helperText,
     ariaLabel,
-    overlay,
+    overlay: ghostOverlay(ghost),
     loading: props.loading,
-    htmlInputProps: {
-      onKeyDown: ghost.handleKeyDown,
-      onFocus: ghost.handleFocus,
-      onBlur: ghost.handleBlur,
-    },
+    slotStyles: searchFieldSlotStyles(theme),
+    htmlInputProps: ghostInputProps(ghost),
   });
 
-  const slotProps: ListboxSlotProps = useListboxSlotProps(label, ariaLabel);
+  const listbox: ListboxSlotProps = useListboxSlotProps(label, ariaLabel);
 
   return {
     text: ghost.text,
     handleInputChange: ghost.handleInputChange,
     renderInput,
-    slotProps,
+    slotProps: searchSlotProps(theme, listbox, props.open),
+    rootSx: SEARCH_AUTOCOMPLETE_SX,
     announced,
   };
 }

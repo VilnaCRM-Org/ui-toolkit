@@ -1,4 +1,4 @@
-import type { AutocompleteRenderValueGetItemProps } from '@mui/material';
+import { ThemeProvider, type AutocompleteRenderValueGetItemProps } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
@@ -6,8 +6,8 @@ import React from 'react';
 import UiLink from '../../src/components/ui-link';
 import UiMultiSelect from '../../src/components/ui-multi-select';
 import { createChipRenderer } from '../../src/components/ui-multi-select/chip-renderer';
-import multiSelectTheme from '../../src/components/ui-multi-select/theme';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 
@@ -945,20 +945,57 @@ describe('createChipRenderer — per-chip disabled', () => {
 
 describe('UiMultiSelect — trailing indicator alignment', () => {
   it('fixes the indicator row height so the chevron centres with or without the clear x', () => {
-    const overrides: Record<string, Record<string, unknown>> = multiSelectTheme.components
-      ?.MuiAutocomplete?.styleOverrides as unknown as Record<string, Record<string, unknown>>;
-    expect(overrides.endAdornment).toBeDefined();
-    const endAdornment: Record<string, unknown> = overrides.endAdornment as Record<string, unknown>;
+    render(<UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} />);
+    // eslint-disable-next-line testing-library/no-node-access -- indicator row has no role
+    const row: Element | null = screen.getByRole('button', { name: 'Open' }).parentElement;
+    expect(row).toHaveStyle({
+      top: '1rem',
+      transform: 'none',
+      height: '2rem',
+      display: 'flex',
+      alignItems: 'center',
+    });
+  });
+});
 
-    // `top`/`transform` pin the indicators to the FIRST chip row, so they do not
-    // re-centre when chips wrap into a taller field. Because that pin measures
-    // from the row's top, the row needs a stable height: the clear-X is a 32px
-    // box and the chevron only 24px, so without this an empty field (which
-    // mounts no clear-X) collapsed the row to 24px and drew the chevron 4px high.
-    expect(endAdornment.top).toBe('1rem');
-    expect(endAdornment.transform).toBe('none');
-    expect(endAdornment.height).toBe('2rem');
-    expect(endAdornment.display).toBe('flex');
-    expect(endAdornment.alignItems).toBe('center');
+describe('UiMultiSelect — consumer theme', () => {
+  it('paints the toolkit grey300 chevron with no provider', () => {
+    render(<UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} />);
+    expect(screen.getByRole('button', { name: 'Open' })).toHaveStyle({
+      color: FILLED_STROKE,
+      marginRight: '0.9375rem',
+    });
+  });
+
+  it('follows a consumer theme built with createUiTheme', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { grey300: { main: '#ff0000' } } })}>
+        <UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} />
+      </ThemeProvider>
+    );
+    expect(screen.getByRole('button', { name: 'Open' })).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+  });
+
+  it('paints the filled stroke from the consumer theme', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { grey300: { main: '#ff0000' } } })}>
+        <UiMultiSelect options={options} value={[options[0]]} aria-label="Cities" onChange={noop} />
+      </ThemeProvider>
+    );
+    expect(fieldStrokeColor()).toBe('#ff0000');
+  });
+
+  it('styles the open listbox from the consumer theme', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { darkPrimary: { main: '#ff0000' } } })}>
+        <UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} open />
+      </ThemeProvider>
+    );
+    expect(screen.getByRole('option', { name: 'Kyiv' })).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+  });
+
+  it('styles the open listbox with the toolkit ink and no provider', () => {
+    render(<UiMultiSelect options={options} value={[]} aria-label="Cities" onChange={noop} open />);
+    expect(screen.getByRole('option', { name: 'Kyiv' })).toHaveStyle({ minHeight: '3.25rem' });
   });
 });

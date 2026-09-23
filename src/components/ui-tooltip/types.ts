@@ -1,15 +1,14 @@
-import type { SxProps, Theme } from '@mui/material';
+import type { SxProps, Theme, TooltipProps } from '@mui/material';
 import type { ReactNode } from 'react';
 
-export interface UiTooltipProps {
+type DisclosureProps = 'open' | 'onOpen' | 'onClose' | 'children' | 'title' | 'id';
+type PresentationProps = 'placement' | 'arrow' | 'sx';
+
+export interface UiTooltipProps extends Omit<TooltipProps, DisclosureProps | PresentationProps> {
   children: ReactNode;
   title: string | ReactNode;
   placement?: 'top' | 'bottom' | 'left' | 'right' | undefined;
   arrow?: boolean | undefined;
   sx?: SxProps<Theme> | undefined;
-  /**
-   * Accessible name for the tooltip trigger. Required when `children` is a
-   * non-text node (e.g. an icon), otherwise the trigger button has no name.
-   */
   triggerLabel?: string | undefined;
 }

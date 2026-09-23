@@ -1,11 +1,10 @@
-import { Box, ThemeProvider } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
 
 import { FieldLabel, hasText } from '../field-controls';
 
 import { MultiSelectCombobox } from './combobox';
 import { srOnlySx } from './styles';
-import multiSelectTheme from './theme';
 import type { UiMultiSelectProps } from './types';
 import { useMultiSelectField, type MultiSelectField } from './use-multi-select-field';
 import { useMultiSelectWarnings } from './use-warnings';
@@ -23,7 +22,7 @@ function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement 
   const fieldId: string = props.id ?? generatedId;
 
   return (
-    <ThemeProvider theme={multiSelectTheme}>
+    <>
       <Box sx={FIELD_STACK_SX}>
         {hasText(props.label) && (
           <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
@@ -42,7 +41,7 @@ function UiMultiSelect(props: Readonly<UiMultiSelectProps>): React.ReactElement 
       <Box role="status" aria-atomic="true" sx={srOnlySx}>
         {field.announced}
       </Box>
-    </ThemeProvider>
+    </>
   );
 }
 

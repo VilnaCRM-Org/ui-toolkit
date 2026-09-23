@@ -1,10 +1,11 @@
-import type { AutocompleteRenderInputParams } from '@mui/material';
+import type { AutocompleteRenderInputParams, Theme } from '@mui/material';
 import React from 'react';
 
 import { createFieldRenderInput } from '../field-controls';
 import { GhostOverlay } from '../ghost-overlay';
 
 import { selectLoadingAdornment } from './loading-adornment';
+import { selectFieldStyles } from './styles';
 import type { UiSelectWithSearchProps } from './types';
 import type { SelectGhost } from './use-select-ghost';
 
@@ -21,7 +22,8 @@ function ghostOverlay(ghost: SelectGhost): React.ReactNode {
 // control's label/state plus the ghost overlay and its native-input handlers.
 export function createSelectRenderInput(
   props: UiSelectWithSearchProps,
-  ghost: SelectGhost
+  ghost: SelectGhost,
+  theme: Theme
 ): (params: AutocompleteRenderInputParams) => React.ReactElement {
   return createFieldRenderInput({
     label: props.label,
@@ -38,5 +40,6 @@ export function createSelectRenderInput(
       onFocus: ghost.handleFocus,
       onBlur: ghost.handleBlur,
     },
+    slotStyles: selectFieldStyles(theme),
   });
 }

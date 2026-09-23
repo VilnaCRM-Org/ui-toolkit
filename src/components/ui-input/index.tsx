@@ -1,13 +1,13 @@
-import { TextField } from '@mui/material';
+import { TextField, type Theme } from '@mui/material';
 import React from 'react';
 
-import ScopedThemeProvider from '@/components/theme-scope';
 import { useDevWarning } from '@/utils/dev-warn';
+import { useUiTheme } from '@/utils/ui-theme';
 
 import { hasText } from '../field-controls';
 
 import { inputAria, type InputAriaAttrs } from './aria';
-import theme from './theme';
+import { inputRootSx, styledSlotProps } from './styles';
 import type { UiInputProps } from './types';
 
 type HtmlInputSlotProp = NonNullable<NonNullable<UiInputProps['slotProps']>['htmlInput']>;
@@ -128,7 +128,8 @@ function inputSlotProps({
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>((props, ref) => {
-  const { InputProps, slotProps, describedBy, ...rest } = props;
+  const { InputProps, slotProps, describedBy, sx, ...rest } = props;
+  const theme: Theme = useUiTheme();
   useInputAccessibilityWarnings(props);
   const generatedId: string = React.useId();
   // Only claim an id when this control has ARIA to write, so a field that uses
@@ -147,9 +148,13 @@ const UiInput: React.ForwardRefExoticComponent<
   });
 
   return (
-    <ScopedThemeProvider theme={theme}>
-      <TextField {...rest} id={fieldId} inputRef={ref} slotProps={mergedSlotProps} />
-    </ScopedThemeProvider>
+    <TextField
+      {...rest}
+      id={fieldId}
+      inputRef={ref}
+      sx={inputRootSx(theme, sx)}
+      slotProps={styledSlotProps(theme, mergedSlotProps)}
+    />
   );
 });
 

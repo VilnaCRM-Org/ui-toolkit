@@ -5,7 +5,7 @@ import React from 'react';
 import { LOADING_ANNOUNCE_DELAY_MS } from '@/components/field-controls/use-loading-announcement';
 
 import UiButton from '../../src/components/ui-button';
-import { busySx } from '../../src/components/ui-button/loading';
+import { busyStyles, buttonSx } from '../../src/components/ui-button/styles';
 import UiMultiSelect from '../../src/components/ui-multi-select';
 import { multiSelectRootSx } from '../../src/components/ui-multi-select/combobox';
 import type { UiMultiSelectOption } from '../../src/components/ui-multi-select/types';
@@ -14,6 +14,7 @@ import { searchLoadingAdornment } from '../../src/components/ui-search-input/loa
 import UiSelectWithSearch from '../../src/components/ui-select-with-search';
 import { selectRootSx } from '../../src/components/ui-select-with-search/select-autocomplete';
 import type { UiSelectWithSearchOption } from '../../src/components/ui-select-with-search/types';
+import { uiTheme } from '../../src/utils/ui-theme';
 
 const OPTIONS: UiSelectWithSearchOption[] = [
   { label: 'Kyiv', value: 'kyiv' },
@@ -226,12 +227,12 @@ describe('UiButton loading', () => {
   });
 
   it('passes a consumer sx through untouched when not busy', () => {
-    expect(busySx(false, { width: 10 })).toEqual({ width: 10 });
-    expect(busySx(false, undefined)).toBeUndefined();
-    const busy: unknown[] = busySx(true, { width: 10 }) as unknown[];
-    expect(busy[1]).toEqual({ width: 10 });
-    expect(busySx(true, undefined)).toHaveLength(2);
-    expect(busySx(true, [{ width: 10 }, { height: 20 }])).toHaveLength(3);
+    const idle: unknown[] = buttonSx(uiTheme, { busy: false }, { width: 10 }) as unknown[];
+    expect(idle[idle.length - 1]).toEqual({ width: 10 });
+    expect(idle).not.toContain(busyStyles(uiTheme));
+    const busy: unknown[] = buttonSx(uiTheme, { busy: true }, { width: 10 }) as unknown[];
+    expect(busy.slice(-2)).toEqual([busyStyles(uiTheme), { width: 10 }]);
+    expect(buttonSx(uiTheme, { busy: true }, [{ width: 10 }, { height: 20 }])).toHaveLength(4);
   });
 
   it('speaks caller-supplied copy from its own status region', () => {

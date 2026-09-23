@@ -75,7 +75,7 @@ validated per component by the unit suites above — `Tab`/`Shift+Tab` traversal
 
 - `DEV-25` (`ratified`) — the shared `field-controls` theme deliberately **strengthens** the
   keyboard focus boundary over the Figma caret-only accent
-  (`src/components/field-controls/theme.ts`).
+  (`src/components/field-controls/field-styles.ts`).
 - `DEV-03` (`deferred-tracked`) — repo-wide focus-ring visual parity and contrast remediation is
   routed to one dedicated accessibility-visuals PR; behavioural accessibility shipped complete.
 - The calendar honours the WCAG 2.5.8 target-size floor

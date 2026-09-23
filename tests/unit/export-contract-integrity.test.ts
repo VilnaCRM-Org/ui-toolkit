@@ -89,6 +89,9 @@ import type {
   UiStatusBadgeProps,
   UiTaskCardProps,
   UiTextFieldFormProps,
+  UiThemeOptions,
+  UiThemeProviderProps,
+  UiThemeVariant,
   UiToolbarProps,
   UiTooltipProps,
   UiTypographyProps,
@@ -381,12 +384,15 @@ type PublicTypeSurface = [
   Named<UiStatusBadgeProps>,
   Named<UiTaskCardProps>,
   Named<UiTextFieldFormProps<{ field: string }>>,
+  Named<UiThemeOptions>,
+  Named<UiThemeProviderProps>,
+  Named<UiThemeVariant>,
   Named<UiToolbarProps>,
   Named<UiTooltipProps>,
   Named<UiTypographyProps>,
   Named<UiUploadStatus>,
 ];
-const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 90;
+const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 93;
 
 describe('export contract integrity (Story 5.3, #33)', () => {
   describe('A — the register covers the module tree (R1, R4)', () => {

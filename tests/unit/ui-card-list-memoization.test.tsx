@@ -28,7 +28,6 @@ jest.mock('../../src/components/ui-typography', () => {
 
   return {
     __esModule: true,
-    // `typographyTheme` stays real: CardContent hoists it into a theme scope.
     ...actual,
     default: jest.fn((props: { children?: React.ReactNode }) =>
       mockReact.createElement('span', null, props.children)

@@ -4,7 +4,55 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Theming
 
-The package exports the design tokens the components are built from:
+## Wrap the application in `UiThemeProvider`
+
+Mount `UiThemeProvider` once, at the application root. It builds the toolkit theme and hands it to
+MUI's `ThemeProvider`:
+
+- `variant` — `'website'` (the default) or `'crm'`; selects the breakpoint set.
+- `theme` — MUI `ThemeOptions`, deep-merged over the toolkit tokens, so an override such as
+  `palette.primary.main` reaches every component that styles from the theme: `UiButton`,
+  `UiInput`, `UiLink`, `UiTypography`, `UiTooltip`, `UiSearchInput`, `UiSelectWithSearch`,
+  `UiMultiSelect` and `UiCalendarMultiSelect`, and anything built from them. The other components
+  paint the fixed `sharedPalette` values.
+
+```tsx
+import type { ThemeOptions } from '@mui/material';
+import { UiThemeProvider } from '@vilnacrm/ui-toolkit';
+
+const brand: ThemeOptions = { palette: { primary: { main: '#0B6BCB' } } };
+
+export default function App({ children }: { children: React.ReactNode }) {
+  return (
+    <UiThemeProvider variant="crm" theme={brand}>
+      {children}
+    </UiThemeProvider>
+  );
+}
+```
+
+## Use MUI's own `ThemeProvider`
+
+An application that already mounts MUI's `ThemeProvider` passes it `createUiTheme({ ... })`, which
+takes the same options plus `variant`; `uiTheme` is `createUiTheme()` with no options.
+
+```tsx
+import { ThemeProvider } from '@mui/material';
+import { createUiTheme } from '@vilnacrm/ui-toolkit';
+
+const theme = createUiTheme({ variant: 'crm', palette: { primary: { main: '#0B6BCB' } } });
+
+export default function App({ children }: { children: React.ReactNode }) {
+  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+}
+```
+
+A theme built any other way, such as a plain `createTheme`, lacks the toolkit tokens, so the
+components ignore it and render with the toolkit defaults.
+
+## Tokens
+
+The tokens are also exported on their own:
 
 - `sharedPalette` — the colour tokens, in MUI palette shape (`primary`, `secondary`, `error`,
   `success`, the method accents, hover and active variants). `websiteColorTheme` and
@@ -14,33 +62,6 @@ The package exports the design tokens the components are built from:
   `crmBreakpointValues` (`xs` 320, `sm` 480, then the same); `websiteBreakpointsTheme` and
   `crmBreakpointsTheme` are the matching MUI themes, and `UiBreakpoints` is the website one.
 - `heightBreakpoints` — the `compact` (550) and `medium` (700) viewport-height thresholds.
-
-## Compose the tokens into an application theme
-
-```tsx
-import { ThemeProvider, createTheme } from '@mui/material';
-import { crmBreakpointValues, sharedPalette } from '@vilnacrm/ui-toolkit';
-
-const theme = createTheme({
-  breakpoints: { values: crmBreakpointValues },
-  palette: sharedPalette,
-});
-
-export default function App({ children }: { children: React.ReactNode }) {
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
-}
-```
-
-## How far the application theme reaches
-
-`UiButton`, `UiInput`, `UiLink`, `UiTypography`, `UiToolbar`, `UiTooltip`, `UiSearchInput`,
-`UiSelectWithSearch`, `UiMultiSelect`, `UiCalendarMultiSelect` and the card text inside
-`UiCardList` mount their own theme scope, so an application `ThemeProvider` does not restyle
-them: a palette or typography override from outside is not seen by those components. Style them
-through `sx` and the MUI `slotProps` they forward. The other components resolve against whatever
-theme surrounds them.
-
-Moving the eleven onto one consumer-extensible provider is tracked in issues #72 and #83.
 
 ## Font families
 

@@ -1,11 +1,7 @@
 import { Autocomplete } from '@mui/material';
 import React from 'react';
 
-import {
-  createFieldOptionRenderer,
-  DEFAULT_LOADING_TEXT,
-  OPEN_FIELD_POPPER,
-} from '../field-controls';
+import { createFieldOptionRenderer, DEFAULT_LOADING_TEXT } from '../field-controls';
 
 import type { UiSearchInputProps } from './types';
 import type { SearchField } from './use-search-field';
@@ -46,7 +42,8 @@ export function renderSearchAutocomplete(
       noOptionsText={props.noOptionsText}
       renderOption={renderSearchOption}
       renderInput={field.renderInput}
-      slotProps={props.open ? { ...field.slotProps, popper: OPEN_FIELD_POPPER } : field.slotProps}
+      sx={field.rootSx}
+      slotProps={field.slotProps}
     />
   );
 }

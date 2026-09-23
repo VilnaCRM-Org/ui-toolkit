@@ -53,7 +53,40 @@ const devDependencyPatterns = [
 // MUI/primitive elements this toolkit's thin wrappers forward props to. Spreading
 // onto them is intentional (the wrappers exist to pass-through), so they extend
 // the CRM's TextField/FormProvider allow-list for this repo.
-const propSpreadingExceptions = ['TextField', 'FormProvider', 'Button', 'Typography', 'UiInput'];
+const propSpreadingExceptions = [
+  'TextField',
+  'FormProvider',
+  'Button',
+  'Typography',
+  'UiInput',
+  'Tooltip',
+];
+
+const themeScopeMessage =
+  'Components read the theme through useUiTheme() from @/utils/ui-theme; only ui-theme-provider mounts a ThemeProvider and only the token modules call createTheme (issues #72, #83).';
+
+const themeScopeRestrictedImports = [
+  '@mui/material',
+  '@mui/material/styles',
+  '@mui/system',
+  '@mui/styles',
+].map(name => ({
+  name,
+  importNames: ['ThemeProvider', 'createTheme'],
+  message: themeScopeMessage,
+}));
+
+const themeScopeRestrictedPatterns = [
+  {
+    group: [
+      '@mui/*/ThemeProvider',
+      '@mui/*/styles/ThemeProvider',
+      '@mui/*/createTheme',
+      '@mui/*/styles/createTheme',
+    ],
+    message: themeScopeMessage,
+  },
+];
 
 // swiper is deliberately absent from build.config.mjs's `external` list, so esbuild
 // inlines it (and its carousel CSS) into the published bundle. It therefore lives in
@@ -338,6 +371,24 @@ export default [
           selector: String.raw`Property:matches([key.name='fontFamily'], [key.value='fontFamily']) > TemplateLiteral > TemplateElement[value.raw=/^\s*['"]?(Inter|Golos Text)/]`,
           message:
             'Use fontFamilies.inter / fontFamilies.golos from @/utils/font-tokens; a bare font name cannot be overridden by the consumer (issue #154).',
+        },
+      ],
+    },
+  },
+
+  {
+    files: ['src/components/**/*.ts', 'src/components/**/*.tsx'],
+    ignores: [
+      'src/components/ui-theme-provider/**',
+      'src/components/ui-color-theme/**',
+      'src/components/ui-breakpoints/**',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: themeScopeRestrictedImports,
+          patterns: [{ group: ['@/features/*/*'] }, ...themeScopeRestrictedPatterns],
         },
       ],
     },

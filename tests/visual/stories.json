@@ -760,6 +760,11 @@
     "name": "Validation Surfaces Field Error"
   },
   {
+    "id": "uicomponents-uithemeprovider--consumer-palette-override",
+    "title": "UiComponents/UiThemeProvider",
+    "name": "Consumer Palette Override"
+  },
+  {
     "id": "uicomponents-uitoolbar--toolbar",
     "title": "UiComponents/UiToolbar",
     "name": "Toolbar"
