@@ -612,4 +612,19 @@ describe('UiSelectWithSearch theme resolution', () => {
 
     expect(root).toHaveStyle({ marginTop: '7px' });
   });
+
+  it('applies a consumer sx object after the toolkit root styles', () => {
+    render(
+      <UiSelectWithSearch
+        options={options}
+        aria-label="City"
+        onChange={noop}
+        sx={{ marginTop: '9px' }}
+      />
+    );
+    // eslint-disable-next-line testing-library/no-node-access -- the autocomplete root has no role
+    const root: Element | null = screen.getByRole('combobox').closest('.MuiAutocomplete-root');
+
+    expect(root).toHaveStyle({ marginTop: '9px' });
+  });
 });

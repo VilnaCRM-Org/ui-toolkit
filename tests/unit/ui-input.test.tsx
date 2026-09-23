@@ -461,3 +461,13 @@ describe('UiInput theming', () => {
     expect(screen.getByRole('textbox', { name: 'Name' })).toBeInTheDocument();
   });
 });
+
+describe('UiInput consumer sx', () => {
+  it('applies an sx array to the field root after the toolkit styles', () => {
+    render(<UiInput placeholder={testPlaceholder} sx={[{ marginTop: '7px' }]} />);
+    // eslint-disable-next-line testing-library/no-node-access -- the field root has no role
+    const root: Element | null = screen.getByRole('textbox').closest('.MuiTextField-root');
+
+    expect(root).toHaveStyle({ marginTop: '7px' });
+  });
+});
