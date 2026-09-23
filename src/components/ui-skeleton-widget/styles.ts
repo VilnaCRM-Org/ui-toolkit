@@ -1,6 +1,7 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
+import { sharedPalette } from '../ui-color-theme';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
 import type { SkeletonWidgetCard } from './types';
@@ -16,7 +17,7 @@ const CARD_BACKGROUND: string = '#F9FAFC';
 const CARD_RADIUS: string = '12px';
 
 /** Header band: white, 48px tall, divided from the body by the brand grey. */
-const HEADER_BACKGROUND: string = '#FFFFFF';
+const HEADER_BACKGROUND: string = sharedPalette.white.main;
 const HEADER_HEIGHT: string = '48px';
 /** 16px from the card's left edge; the dots glyph box ends 15px from the right. */
 const HEADER_PADDING: string = '0 15px 0 16px';
@@ -25,7 +26,7 @@ export const TITLE_BAR_WIDTH: string = '147px';
 
 // `dots-horizontal` (`538:38701`): three 4px discs on a 7px pitch, inked in the
 // palette's grey300. It is the one live affordance the header keeps painted.
-const HEADER_DOT_COLOR: string = '#969B9D';
+const HEADER_DOT_COLOR: string = sharedPalette.grey300.main;
 export const HEADER_DOT_SIZE: string = '4px';
 const HEADER_DOT_GAP: string = '3px';
 export const HEADER_DOT_KEYS: string[] = ['dot-1', 'dot-2', 'dot-3'];

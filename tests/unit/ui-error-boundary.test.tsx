@@ -165,10 +165,7 @@ describe('UiErrorBoundary default fallback', () => {
     expect(screen.getByRole('alert')).toHaveClass('MuiTypography-bold22');
   });
 
-  // Drift guard: styles.ts deliberately hardcodes the hex (the failure path
-  // imports no theme module), so this assertion is what fails if the design
-  // token moves and the literal copy silently goes stale.
-  it('keeps the literal fallback colour equal to sharedPalette.error.main', () => {
+  it('paints the fallback in sharedPalette.error.main', () => {
     expect(styles.fallback.color).toBe(sharedPalette.error.main);
   });
 });
