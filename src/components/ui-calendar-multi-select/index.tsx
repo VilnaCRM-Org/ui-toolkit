@@ -1,7 +1,5 @@
-import { Box, ThemeProvider } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
-
-import { outlinedFieldTheme } from '../field-controls';
 
 import CalendarLabel from './calendar-label';
 import CalendarMessages from './calendar-messages';
@@ -22,24 +20,22 @@ function UiCalendarMultiSelect(props: Readonly<UiCalendarMultiSelectProps>): Rea
   const field: ReturnType<typeof useCalendarField> = useCalendarField(props);
 
   return (
-    <ThemeProvider theme={outlinedFieldTheme}>
-      <Box
-        role="group"
-        aria-labelledby={field.labelledBy}
-        aria-label={field.ariaLabel}
-        aria-disabled={field.disabled || undefined}
-        sx={field.sx}
-      >
-        <CalendarLabel
-          label={props.label}
-          required={field.required}
-          show={field.hasVisibleLabel}
-          id={field.labelId}
-        />
-        <CalendarSurface field={field} calendar={calendar} />
-        <CalendarMessages field={field} helperText={props.helperText} />
-      </Box>
-    </ThemeProvider>
+    <Box
+      role="group"
+      aria-labelledby={field.labelledBy}
+      aria-label={field.ariaLabel}
+      aria-disabled={field.disabled || undefined}
+      sx={field.sx}
+    >
+      <CalendarLabel
+        label={props.label}
+        required={field.required}
+        show={field.hasVisibleLabel}
+        id={field.labelId}
+      />
+      <CalendarSurface field={field} calendar={calendar} />
+      <CalendarMessages field={field} helperText={props.helperText} />
+    </Box>
   );
 }
 

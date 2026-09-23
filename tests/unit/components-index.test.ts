@@ -22,10 +22,14 @@ import type {
   UiSegmentedControlProps,
   UiSocialIconButtonProps,
   UiStatusBadgeProps,
+  UiThemeOptions,
+  UiThemeProviderProps,
+  UiThemeVariant,
 } from '../../src/components';
 
 const expectedPublicExports: string[] = [
   'AuthSkeleton',
+  'createUiTheme',
   'crmBreakpointValues',
   'crmBreakpointsTheme',
   'crmColorTheme',
@@ -83,9 +87,11 @@ const expectedPublicExports: string[] = [
   'UiStatusBadge',
   'UiTaskCard',
   'UiTextFieldForm',
+  'UiThemeProvider',
   'UiToolbar',
   'UiTooltip',
   'UiTypography',
+  'uiTheme',
   'websiteBreakpointValues',
   'websiteBreakpointsTheme',
   'websiteColorTheme',
@@ -115,6 +121,9 @@ describe('components index', () => {
     expect(publicComponents.UiTooltip).toBeDefined();
     expect(publicComponents.UiTaskCard).toBeDefined();
     expect(publicComponents.UiIntegrationCard).toBeDefined();
+    expect(publicComponents.UiThemeProvider).toBeDefined();
+    expect(publicComponents.uiTheme.breakpoints.values.sm).toBe(640);
+    expect(publicComponents.createUiTheme({ variant: 'crm' }).breakpoints.values.sm).toBe(480);
   });
 
   // `UiIntegrationCardProps` and `IntegrationLogo` are type-only exports, so the
@@ -195,5 +204,14 @@ describe('components index', () => {
     expect(control.options[0]).toBe(segment);
     expect(segment.value).toBe('week');
     expect(social.network).toBe('github');
+  });
+
+  it('exports the theme-provider variant, options and props types', () => {
+    const variant: UiThemeVariant = 'crm';
+    const options: UiThemeOptions = { variant };
+    const props: UiThemeProviderProps = { variant, theme: options, children: null };
+
+    expect(options.variant).toBe('crm');
+    expect(props.theme).toBe(options);
   });
 });

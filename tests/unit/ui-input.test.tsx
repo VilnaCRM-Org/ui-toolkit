@@ -1,8 +1,10 @@
+import { ThemeProvider } from '@mui/material';
 import { render, fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 
 import UiInput from '../../src/components/ui-input';
 import { inputAria, inputDescribedBy } from '../../src/components/ui-input/aria';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import { testText, testEmail, testPlaceholder } from './constants';
 import mockConsoleWarn from './utils/mock-console-warn';
@@ -422,5 +424,40 @@ describe('UiInput — a callback htmlInput slot survives the ARIA merge', () => 
     const input: HTMLElement = screen.getByRole('textbox');
     expect(input).toHaveAttribute('data-source', 'callback');
     expect(input).toBeRequired();
+  });
+});
+
+describe('UiInput theming', () => {
+  it('paints the toolkit error helper colour without a provider', () => {
+    render(<UiInput label="Name" error helperText="Required" />);
+
+    expect(screen.getByText('Required')).toHaveStyle({ color: '#DC3939' });
+  });
+
+  it('follows a consumer theme error colour', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { error: { main: '#ff0000' } } })}>
+        <UiInput label="Name" error helperText="Required" />
+      </ThemeProvider>
+    );
+
+    expect(screen.getByText('Required')).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+  });
+
+  it('keeps consumer slot sx and callbacks after the toolkit styles', () => {
+    render(
+      <UiInput
+        label="Name"
+        helperText="Hint"
+        sx={{ marginTop: '3px' }}
+        slotProps={{
+          formHelperText: () => ({ sx: { color: 'rgb(0, 0, 255)' } }),
+          input: { slotProps: { notchedOutline: { sx: { borderWidth: '3px' } } } },
+        }}
+      />
+    );
+
+    expect(screen.getByText('Hint')).toHaveStyle({ color: 'rgb(0, 0, 255)' });
+    expect(screen.getByRole('textbox', { name: 'Name' })).toBeInTheDocument();
   });
 });

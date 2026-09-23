@@ -1,11 +1,10 @@
-import { Box, ThemeProvider } from '@mui/material';
+import { Box } from '@mui/material';
 import React from 'react';
 
 import { FieldLabel, hasText, srOnlySx } from '../field-controls';
 
 import { useClearFocusGuard } from './clear-focus';
 import { SelectAutocomplete } from './select-autocomplete';
-import selectTheme from './theme';
 import type { UiSelectWithSearchProps } from './types';
 import { useSelectField } from './use-select-field';
 import { useSelectAccessibilityWarnings } from './use-warnings';
@@ -34,7 +33,7 @@ function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.Rea
   const fieldId: string = props.id ?? generatedId;
 
   return (
-    <ThemeProvider theme={selectTheme}>
+    <>
       <Box ref={rootRef} sx={FIELD_STACK_SX}>
         {hasText(props.label) && (
           <FieldLabel htmlFor={fieldId} required={props.required} error={props.error}>
@@ -44,7 +43,7 @@ function UiSelectWithSearch(props: Readonly<UiSelectWithSearchProps>): React.Rea
         <SelectAutocomplete control={props} fieldId={fieldId} field={field} />
       </Box>
       <BusyStatus text={field.announced} />
-    </ThemeProvider>
+    </>
   );
 }
 

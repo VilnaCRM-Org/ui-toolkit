@@ -1,5 +1,9 @@
-import { Box, FormHelperText } from '@mui/material';
+import { Box, FormHelperText, type Theme } from '@mui/material';
 import React from 'react';
+
+import { useUiTheme } from '@/utils/ui-theme';
+
+import { outlinedFieldStyles } from '../field-controls';
 
 import { srOnlySx } from './styles';
 import type { CalendarField } from './use-calendar-field';
@@ -17,10 +21,15 @@ function CalendarMessages({
   field,
   helperText,
 }: Readonly<CalendarMessagesProps>): React.ReactElement {
+  const theme: Theme = useUiTheme();
   return (
     <>
       {helperText != null && (
-        <FormHelperText id={field.helperId} error={field.invalid}>
+        <FormHelperText
+          id={field.helperId}
+          error={field.invalid}
+          sx={outlinedFieldStyles(theme).formHelperText}
+        >
           {helperText}
         </FormHelperText>
       )}

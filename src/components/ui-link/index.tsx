@@ -1,12 +1,12 @@
 import { Box, Link } from '@mui/material';
+import type { Theme } from '@mui/material';
 import React from 'react';
 
 import { useDevWarning } from '@/utils/dev-warn';
-
-import ScopedThemeProvider from '../theme-scope';
+import { useUiTheme } from '@/utils/ui-theme';
 
 import newTabLabelWarning from './new-tab-label-warning';
-import theme from './theme';
+import { linkSx } from './styles';
 import type { UiLinkProps } from './types';
 
 const visuallyHidden: React.CSSProperties = {
@@ -54,27 +54,27 @@ function UiLink({
   // `rel` — a reverse-tabnabbing hole — and skipped the new-tab hint with it.
   const opensInNewTab: boolean = target?.toLowerCase() === '_blank';
   useDevWarning(newTabLabelWarning(opensInNewTab, newTabLabel));
+  const theme: Theme = useUiTheme();
 
   return (
-    <ScopedThemeProvider theme={theme}>
-      <Link
-        href={href}
-        target={target}
-        rel={mergeRel(opensInNewTab, rel)}
-        sx={sx}
-        aria-disabled={disabled ? true : undefined}
-        tabIndex={disabled ? -1 : undefined}
-        onClick={disabled ? suppressNavigation : undefined}
-        onAuxClick={disabled ? suppressNavigation : undefined}
-      >
-        {children}
-        {opensInNewTab && newTabLabel ? (
-          <Box component="span" sx={visuallyHidden}>
-            {` ${newTabLabel}`}
-          </Box>
-        ) : null}
-      </Link>
-    </ScopedThemeProvider>
+    <Link
+      href={href}
+      target={target}
+      rel={mergeRel(opensInNewTab, rel)}
+      underline="always"
+      sx={linkSx(theme, sx)}
+      aria-disabled={disabled ? true : undefined}
+      tabIndex={disabled ? -1 : undefined}
+      onClick={disabled ? suppressNavigation : undefined}
+      onAuxClick={disabled ? suppressNavigation : undefined}
+    >
+      {children}
+      {opensInNewTab && newTabLabel ? (
+        <Box component="span" sx={visuallyHidden}>
+          {` ${newTabLabel}`}
+        </Box>
+      ) : null}
+    </Link>
   );
 }
 

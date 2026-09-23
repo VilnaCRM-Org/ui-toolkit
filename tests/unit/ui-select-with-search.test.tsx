@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
@@ -6,6 +7,7 @@ import UiLink from '../../src/components/ui-link';
 import UiSelectWithSearch from '../../src/components/ui-select-with-search';
 import { restoreFieldFocus } from '../../src/components/ui-select-with-search/clear-focus';
 import type { UiSelectWithSearchOption } from '../../src/components/ui-select-with-search/types';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 
@@ -574,5 +576,40 @@ describe("restoreFieldFocus — the guard's element half", () => {
 
     expect(() => restoreFieldFocus(container)).not.toThrow();
     expect(clear).toHaveFocus();
+  });
+});
+
+describe('UiSelectWithSearch theme resolution', () => {
+  function select(): React.ReactElement {
+    return <UiSelectWithSearch options={options} aria-label="City" open onChange={noop} />;
+  }
+
+  it('paints the toolkit option ink with no provider', () => {
+    render(select());
+    expect(screen.getByRole('option', { name: 'Kyiv' })).toHaveStyle({ color: '#1B2327' });
+  });
+
+  it('follows a consumer theme palette override', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { darkSecondary: { main: '#ff0000' } } })}>
+        {select()}
+      </ThemeProvider>
+    );
+    expect(screen.getByRole('option', { name: 'Kyiv' })).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+  });
+
+  it('applies a consumer sx array after the toolkit root styles', () => {
+    render(
+      <UiSelectWithSearch
+        options={options}
+        aria-label="City"
+        onChange={noop}
+        sx={[{ marginTop: '7px' }]}
+      />
+    );
+    // eslint-disable-next-line testing-library/no-node-access -- the autocomplete root has no role
+    const root: Element | null = screen.getByRole('combobox').closest('.MuiAutocomplete-root');
+
+    expect(root).toHaveStyle({ marginTop: '7px' });
   });
 });

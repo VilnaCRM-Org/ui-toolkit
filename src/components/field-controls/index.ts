@@ -1,4 +1,5 @@
-export { default as outlinedFieldTheme } from './theme';
+export { mergeFieldStyles, outlinedFieldStyles } from './field-styles';
+export type { FieldSlotStyles } from './field-styles';
 export { ChevronDownGlyph } from './chevron-down';
 export { Glyph } from './glyph';
 export type { GlyphProps } from './glyph';

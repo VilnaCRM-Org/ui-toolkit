@@ -1,9 +1,11 @@
+import { ThemeProvider } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import UiCalendarMultiSelect from '../../src/components/ui-calendar-multi-select';
 import UiLink from '../../src/components/ui-link';
+import { createUiTheme } from '../../src/utils/ui-theme';
 
 import mockConsoleWarn from './utils/mock-console-warn';
 
@@ -968,5 +970,21 @@ describe('UiCalendarMultiSelect — the visible label', () => {
 
     expect(screen.queryByText('*', { selector: '[aria-hidden="true"]' })).not.toBeInTheDocument();
     expect(screen.getByRole('group', { name: /Vacation days.*required/i })).toBeInTheDocument();
+  });
+});
+
+describe('UiCalendarMultiSelect theming', () => {
+  it('paints the toolkit helper-text colour with no provider', () => {
+    render(<UiCalendarMultiSelect aria-label="Dates" helperText="Pick dates" />);
+    expect(screen.getByText('Pick dates')).toHaveStyle({ color: 'rgb(87, 89, 91)' });
+  });
+
+  it('follows a consumer theme palette override on the helper text', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { grey250: { main: '#ff0000' } } })}>
+        <UiCalendarMultiSelect aria-label="Dates" helperText="Pick dates" />
+      </ThemeProvider>
+    );
+    expect(screen.getByText('Pick dates')).toHaveStyle({ color: 'rgb(255, 0, 0)' });
   });
 });

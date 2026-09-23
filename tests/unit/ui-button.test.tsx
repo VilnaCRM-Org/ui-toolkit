@@ -1,20 +1,26 @@
+import { ThemeProvider } from '@mui/material';
 import { render, fireEvent, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import React from 'react';
 
 import UiButton from '../../src/components/ui-button';
+import { buttonVariants } from '../../src/components/ui-button/styles';
 import {
-  containedStyles,
-  dangerStyles,
-  outlinedStyles,
-  theme as buttonTheme,
-} from '../../src/components/ui-button/theme';
+  type ButtonVariantRule,
+  containedStyles as containedStylesFor,
+  dangerStyles as dangerStylesFor,
+  outlinedStyles as outlinedStylesFor,
+} from '../../src/components/ui-button/variant-styles';
 import { fontFamilies } from '../../src/utils/font-tokens';
+import { createUiTheme, uiTheme } from '../../src/utils/ui-theme';
 
 import { testText } from './constants';
 
 // Board A y=1354 (rest 439:19822 / hover 439:19824 / active 439:19826 / disabled
 // 439:19828). Local consts so a palette-token swap fails this test.
+const containedStyles: Record<string, unknown> = containedStylesFor(uiTheme);
+const outlinedStyles: Record<string, unknown> = outlinedStylesFor(uiTheme);
+const dangerStyles: Record<string, unknown> = dangerStylesFor(uiTheme);
 const dangerRestFill: string = 'rgba(220, 57, 57, 0.1)';
 const dangerBorderColor: string = '#DF7878';
 const dangerRestInk: string = '#DC3939';
@@ -489,14 +495,8 @@ function mediumBox(variant: string): MediumBox {
   return box;
 }
 
-type ButtonVariantRule = {
-  props: { variant?: string; size?: string; name?: string };
-  style: Record<string, unknown>;
-};
-
 function namedRule(name: string): Record<string, unknown> {
-  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
-    []) as ButtonVariantRule[];
+  const rules: ButtonVariantRule[] = buttonVariants(uiTheme);
   const match: ButtonVariantRule | undefined = rules.find(
     (rule: ButtonVariantRule) => rule.props.name === name
   );
@@ -507,8 +507,7 @@ function namedRule(name: string): Record<string, unknown> {
 }
 
 function sizedRule(variant: string, size: string): Record<string, unknown> {
-  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
-    []) as ButtonVariantRule[];
+  const rules: ButtonVariantRule[] = buttonVariants(uiTheme);
   const match: ButtonVariantRule | undefined = rules.find(
     (rule: ButtonVariantRule) =>
       rule.props.variant === variant && rule.props.size === size && rule.props.name === undefined
@@ -520,8 +519,7 @@ function sizedRule(variant: string, size: string): Record<string, unknown> {
 }
 
 function mediumRule(variant: string): Record<string, unknown> {
-  const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
-    []) as ButtonVariantRule[];
+  const rules: ButtonVariantRule[] = buttonVariants(uiTheme);
   const match: ButtonVariantRule | undefined = rules.find(
     (rule: ButtonVariantRule) =>
       rule.props.variant === variant &&
@@ -603,8 +601,7 @@ describe('UiButton medium label box (Figma 439:19253, issue #157)', () => {
   });
 
   it('registers socialButton as an outlined medium button, which is why it is exposed', () => {
-    const rules: ButtonVariantRule[] = (buttonTheme.components?.MuiButton?.variants ??
-      []) as ButtonVariantRule[];
+    const rules: ButtonVariantRule[] = buttonVariants(uiTheme);
     const social: ButtonVariantRule = rules.find(
       (rule: ButtonVariantRule) => rule.props.name === 'socialButton'
     ) as ButtonVariantRule;
@@ -647,12 +644,74 @@ describe('UiButton bordered pills share the filled pill box (issue #159)', () =>
   });
 
   it('subtracts the border from the danger padding so the pill is 98x42', () => {
-    const style: Record<string, unknown> = dangerStyles as Record<string, unknown>;
+    const style: Record<string, unknown> = dangerStyles;
     const { vertical, horizontal } = insets(style);
     const lineBox: number = parseFloat(String(style.lineHeight)) * 16;
 
     expect(vertical + OUTLINED_BORDER).toBe(DANGER_VERTICAL_PADDING);
     expect(horizontal + OUTLINED_BORDER).toBe(DANGER_HORIZONTAL_PADDING);
     expect(lineBox + 2 * vertical + 2 * OUTLINED_BORDER).toBe(DANGER_FIGMA_HEIGHT);
+  });
+});
+
+describe('UiButton resolves its paint from the surrounding theme', () => {
+  it('paints the toolkit contained fill and Golos family with no provider', () => {
+    render(
+      <UiButton variant="contained" size="small">
+        {testText}
+      </UiButton>
+    );
+
+    const button: HTMLElement = screen.getByRole('button', { name: testText });
+    expect(button).toHaveStyle({ backgroundColor: uiTheme.palette.primary.main });
+    expect(button).toHaveStyle({ fontFamily: fontFamilies.golos });
+  });
+
+  it('pins the Golos family on the default text variant no toolkit rule matches', () => {
+    render(<UiButton>{testText}</UiButton>);
+
+    expect(screen.getByRole('button', { name: testText })).toHaveStyle({
+      fontFamily: fontFamilies.golos,
+    });
+  });
+
+  it('follows a consumer theme palette override instead of a private provider', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { primary: { main: '#ff0000' } } })}>
+        <UiButton variant="contained" size="small">
+          {testText}
+        </UiButton>
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole('button', { name: testText })).toHaveStyle({
+      backgroundColor: 'rgb(255, 0, 0)',
+    });
+  });
+
+  it('follows a consumer danger token on the danger pill', () => {
+    render(
+      <ThemeProvider theme={createUiTheme({ palette: { error: { main: '#ff0000' } } })}>
+        <UiButton variant="contained" size="small" name="danger">
+          {testText}
+        </UiButton>
+      </ThemeProvider>
+    );
+
+    expect(screen.getByRole('button', { name: testText })).toHaveStyle({
+      color: 'rgb(255, 0, 0)',
+    });
+  });
+
+  it('turns the label ink transparent while busy', () => {
+    render(
+      <UiButton variant="outlined" size="small" loading>
+        {testText}
+      </UiButton>
+    );
+
+    expect(screen.getByRole('button', { name: testText })).toHaveStyle({
+      color: 'rgba(0, 0, 0, 0)',
+    });
   });
 });

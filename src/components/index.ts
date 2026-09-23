@@ -142,6 +142,9 @@ export {
   websiteBreakpointValues,
   websiteBreakpointsTheme,
 } from './ui-breakpoints';
+export { default as UiThemeProvider, createUiTheme, uiTheme } from './ui-theme-provider';
+export type { UiThemeOptions, UiThemeVariant } from './ui-theme-provider';
+export type { UiThemeProviderProps } from './ui-theme-provider/types';
 export { default as UiTextFieldForm } from './ui-text-field-form';
 export type { CustomTextField, FieldRules, UiTextFieldFormProps } from './ui-text-field-form/types';
 export { default as UiTooltip } from './ui-tooltip';

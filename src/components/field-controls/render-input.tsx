@@ -2,10 +2,8 @@ import { Box, TextField } from '@mui/material';
 import type { AutocompleteRenderInputParams } from '@mui/material';
 import React from 'react';
 
-import { composeEndAdornment } from './compose-end-adornment';
-import { hasText } from './has-text';
-
-type HtmlInputProps = React.InputHTMLAttributes<HTMLInputElement>;
+import { buildFieldSlotProps } from './field-slot-props';
+import type { FieldSlotStyles } from './field-styles';
 
 export interface FieldRenderInputConfig {
   label?: string | undefined;
@@ -26,48 +24,18 @@ export interface FieldRenderInputConfig {
    */
   loadingAdornment?: React.ReactNode | undefined;
   /** Extra native-input props (handlers/style) merged over MUI's own; handlers compose. */
-  htmlInputProps?: HtmlInputProps | undefined;
+  htmlInputProps?: React.InputHTMLAttributes<HTMLInputElement> | undefined;
   /**
    * The inline ghost overlay (search/select typeahead), rendered as a sibling of the
    * field. When present the field is wrapped in a positioned Box so the overlay can
    * be pinned over the input; when absent the bare field renders unchanged.
    */
   overlay?: React.ReactNode | undefined;
+  slotStyles: FieldSlotStyles;
 }
 
 // A positioned wrapper so the aria-hidden ghost overlay can be pinned over the input.
 const WRAPPER_SX = { position: 'relative', width: '100%' } as const;
-
-// Runs both handlers so a caller-supplied onKeyDown/onFocus/onBlur augments MUI's
-// combobox wiring instead of clobbering it (list nav, focus/open state).
-function compose<E>(
-  own: ((e: E) => void) | undefined,
-  extra: ((e: E) => void) | undefined
-): ((e: E) => void) | undefined {
-  if (own && extra)
-    return (event: E): void => {
-      own(event);
-      extra(event);
-    };
-  return own ?? extra;
-}
-
-function buildHtmlInput(
-  params: AutocompleteRenderInputParams,
-  config: FieldRenderInputConfig
-): HtmlInputProps {
-  const own: HtmlInputProps = params.slotProps.htmlInput;
-  const extra: HtmlInputProps = config.htmlInputProps ?? {};
-  return {
-    ...own,
-    ...extra,
-    'aria-label': hasText(config.label) ? undefined : config.ariaLabel,
-    onKeyDown: compose(own.onKeyDown, extra.onKeyDown),
-    onFocus: compose(own.onFocus, extra.onFocus),
-    onBlur: compose(own.onBlur, extra.onBlur),
-    style: { ...own.style, ...extra.style },
-  };
-}
 
 // Shared Autocomplete `renderInput` factory for the search/select controls.
 // `{...params}` is spread so MUI's combobox wiring survives: `params.id` (enables
@@ -86,18 +54,7 @@ export function createFieldRenderInput(
         error={config.error}
         helperText={config.helperText}
         variant={config.variant}
-        slotProps={{
-          ...params.slotProps,
-          input: {
-            ...params.slotProps.input,
-            startAdornment: config.startAdornment ?? params.slotProps.input.startAdornment,
-            endAdornment: composeEndAdornment(
-              config.loadingAdornment,
-              params.slotProps.input.endAdornment
-            ),
-          },
-          htmlInput: buildHtmlInput(params, config),
-        }}
+        slotProps={buildFieldSlotProps(params, config)}
       />
     );
     // A ghost-enabled field always passes `overlay` (null while the completion is
