@@ -6,6 +6,7 @@ import { createRequire } from 'module';
 import { execFileSync } from 'child_process';
 
 import { assertBundleFootprint } from './scripts/ci/check-bundle-footprint.mjs';
+import { writeThirdPartyNotices } from './scripts/ci/third-party-notices.mjs';
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDir = path.dirname(currentFile);
@@ -297,6 +298,11 @@ esbuild
     await generateTypeDeclarations();
     generateSubpathDeclarations(componentEntryPoints(), result.metafile);
     generateLocalesDeclarations(result.metafile);
+    writeThirdPartyNotices({
+      metafile: result.metafile,
+      buildDir: path.resolve(currentDir, 'build'),
+      rootDir: currentDir,
+    });
     assertBundleFootprint({
       metafile: result.metafile,
       budgetPath: path.resolve(currentDir, 'config', 'bundle-budget.json'),
