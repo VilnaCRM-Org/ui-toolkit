@@ -69,7 +69,37 @@ import type { UiButtonProps } from '@vilnacrm/ui-toolkit/ui-button';
 
 ## Theming
 
-The package exports the design tokens the components are built from:
+Wrap the application once in `UiThemeProvider`. It builds the toolkit theme and hands it to MUI's
+`ThemeProvider`:
+
+- `variant` — `'website'` (the default) or `'crm'`; selects the breakpoint set.
+- `theme` — MUI `ThemeOptions`, deep-merged over the toolkit tokens, so an override such as
+  `palette.primary.main` reaches every component that styles from the theme: `UiButton`,
+  `UiInput`, `UiLink`, `UiTypography`, `UiTooltip`, `UiSearchInput`, `UiSelectWithSearch`,
+  `UiMultiSelect` and `UiCalendarMultiSelect`, and anything built from them. The other components
+  paint the fixed `sharedPalette` values.
+
+```tsx
+import type { ThemeOptions } from '@mui/material';
+import { UiThemeProvider } from '@vilnacrm/ui-toolkit';
+
+const brand: ThemeOptions = { palette: { primary: { main: '#0B6BCB' } } };
+
+export default function App({ children }: { children: React.ReactNode }) {
+  return (
+    <UiThemeProvider variant="crm" theme={brand}>
+      {children}
+    </UiThemeProvider>
+  );
+}
+```
+
+An application that mounts MUI's own `ThemeProvider` passes it `createUiTheme({ ... })` instead,
+which takes the same options plus `variant`; `uiTheme` is `createUiTheme()` with no options. A
+theme built any other way, such as a plain `createTheme`, lacks the toolkit tokens, so the
+components ignore it and render with the toolkit defaults.
+
+The tokens are also exported on their own:
 
 - `sharedPalette` — the colour tokens, in MUI palette shape (`primary`, `secondary`, `error`,
   `success`, the method accents, hover and active variants). `websiteColorTheme` and
@@ -79,30 +109,6 @@ The package exports the design tokens the components are built from:
   `crmBreakpointValues` (`xs` 320, `sm` 480, then the same); `websiteBreakpointsTheme` and
   `crmBreakpointsTheme` are the matching MUI themes, and `UiBreakpoints` is the website one.
 - `heightBreakpoints` — the `compact` (550) and `medium` (700) viewport-height thresholds.
-
-Compose them into the application's own theme:
-
-```tsx
-import { ThemeProvider, createTheme } from '@mui/material';
-import { crmBreakpointValues, sharedPalette } from '@vilnacrm/ui-toolkit';
-
-const theme = createTheme({
-  breakpoints: { values: crmBreakpointValues },
-  palette: sharedPalette,
-});
-
-export default function App({ children }: { children: React.ReactNode }) {
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
-}
-```
-
-One caveat governs how far that theme reaches. `UiButton`, `UiInput`, `UiLink`, `UiTypography`,
-`UiToolbar`, `UiTooltip`, `UiSearchInput`, `UiSelectWithSearch`, `UiMultiSelect`,
-`UiCalendarMultiSelect` and the card text inside `UiCardList` mount their own theme scope, so an
-application `ThemeProvider` does not restyle them: a palette or typography override from outside
-is not seen by those components. Style them through `sx` and the MUI `slotProps` they forward. The
-other components resolve against whatever theme surrounds them. Moving the eleven onto one
-consumer-extensible provider is tracked in #72 and #83.
 
 ### Font families
 
@@ -215,6 +221,9 @@ and `Layout` is `@vilnacrm/ui-toolkit/layout`.
 | `crmBreakpointsTheme`     | Theme over `crmBreakpointValues`                                     |
 | `UiBreakpoints`           | Default export of `ui-breakpoints`: `websiteBreakpointsTheme`        |
 | `heightBreakpoints`       | `compact` 550 and `medium` 700 viewport-height thresholds            |
+| `UiThemeProvider`         | App-level theme provider ([Theming](#theming))                       |
+| `createUiTheme`           | Builds the toolkit theme from MUI `ThemeOptions` plus `variant`      |
+| `uiTheme`                 | `createUiTheme()` with no options                                    |
 
 Each component's prop types are exported alongside it (`UiButtonProps`, `UiInputProps`, …).
 `tests/bats/consumer_docs_contract.bats` fails when a root export is missing from this table.
@@ -428,8 +437,7 @@ Two gates keep the file honest:
 To add a key, add it to every locale in the same change. To add a locale, add a top-level entry
 carrying the full `en` key set. No string is count-based today; when the first one lands, use
 i18next's `_one` / `_other` plural suffixes rather than branching in the component. Right-to-left
-layouts are not supported: the component themes carry no `direction` and expose no injection point
-for one, which is part of the theming contract tracked in #72 and #83.
+layouts are not supported: no component is built or tested for `direction: 'rtl'`.
 
 ## Development warnings
 

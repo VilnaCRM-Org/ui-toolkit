@@ -386,7 +386,7 @@ Ukrainian title **«Фон дошки»**, width **220**. Tiles: `Rest` · `Hove
 
 Figma: rest `439:19822` · hover `439:19824` · active `439:19826` · disabled
 `439:19828` (Board A y=1354, 98×42 each). Edits land **only** in
-`src/components/ui-button/theme.ts` (+ `types.ts`/`index.tsx` if the variant
+`src/components/ui-button/variant-styles.ts` (+ `types.ts`/`index.tsx` if the variant
 name needs declaring) and `src/components/ui-button/button.stories.tsx`, plus
 a test block in `tests/unit/ui-button.test.tsx`. `baseButtonStyles` already
 carries Golos Text 500 / 0.938rem / 1.125rem line-height / 3.563rem radius —
@@ -425,7 +425,7 @@ boundary introduced here (the one deliberate exception to this story's
 
 ### File plan
 
-`src/components/ui-button/theme.ts` (extended), `src/components/ui-button/button.stories.tsx`
+`src/components/ui-button/variant-styles.ts` (extended), `src/components/ui-button/button.stories.tsx`
 (new `Danger` story), a danger block appended to `tests/unit/ui-button.test.tsx` or an
 appended block in the existing button test file.
 
@@ -1098,7 +1098,7 @@ is the whole change set rather than a hand-kept subset.
 - `src/components/ui-button/button.stories.tsx`
 - `src/components/ui-button/index.tsx`
 - `src/components/ui-button/loading.tsx`
-- `src/components/ui-button/theme.ts`
+- `src/components/ui-button/variant-styles.ts`
 - `src/components/ui-button/types.ts`
 
 **Existing module — `ui-checkbox`**
@@ -1112,7 +1112,7 @@ is the whole change set rather than a hand-kept subset.
 
 **Existing module — `ui-input`**
 
-- `src/components/ui-input/theme.ts`
+- `src/components/ui-input/slot-styles.ts`
 
 **Existing module — `ui-multi-select`**
 
@@ -1120,7 +1120,7 @@ is the whole change set rather than a hand-kept subset.
 - `src/components/ui-multi-select/index.tsx`
 - `src/components/ui-multi-select/loading-adornment.tsx`
 - `src/components/ui-multi-select/multi-select.stories.tsx`
-- `src/components/ui-multi-select/theme.ts`
+- `src/components/ui-multi-select/styles.ts`
 - `src/components/ui-multi-select/types.ts`
 - `src/components/ui-multi-select/use-multi-select-field.ts`
 
@@ -1131,7 +1131,7 @@ is the whole change set rather than a hand-kept subset.
 - `src/components/ui-search-input/render-input.tsx`
 - `src/components/ui-search-input/search-autocomplete.tsx`
 - `src/components/ui-search-input/search-input.stories.tsx`
-- `src/components/ui-search-input/theme.ts`
+- `src/components/ui-search-input/styles.ts`
 - `src/components/ui-search-input/types.ts`
 - `src/components/ui-search-input/use-search-field.ts`
 
@@ -1142,17 +1142,17 @@ is the whole change set rather than a hand-kept subset.
 - `src/components/ui-select-with-search/render-input.ts`
 - `src/components/ui-select-with-search/select-autocomplete.tsx`
 - `src/components/ui-select-with-search/select-with-search.stories.tsx`
-- `src/components/ui-select-with-search/theme.ts`
+- `src/components/ui-select-with-search/styles.ts`
 - `src/components/ui-select-with-search/types.ts`
 - `src/components/ui-select-with-search/use-select-field.ts`
 
 **Existing module — `ui-tooltip`**
 
-- `src/components/ui-tooltip/theme.ts`
+- `src/components/ui-tooltip/styles.ts`
 
 **Existing module — `ui-typography`**
 
-- `src/components/ui-typography/theme.ts`
+- `src/utils/ui-typography-options.ts`
 
 **Showcase parity board**
 
