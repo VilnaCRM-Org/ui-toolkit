@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative, resolve, sep } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 
 import fontLicenseDescription from './font-license';
 import {
@@ -188,17 +188,9 @@ function report(tarball: string, violations: string[]): number {
   return 1;
 }
 
-function containedPackageDir(packageDir: string): string {
-  const resolved: string = resolve(PROJECT_ROOT, packageDir);
-  if (!resolved.startsWith(`${PROJECT_ROOT}${sep}`)) {
-    fail(`package dir ${packageDir} resolves outside ${PROJECT_ROOT}`);
-  }
-  return resolved;
-}
-
 function main(packageDir: string | undefined): number {
   if (packageDir === undefined) fail('usage: check-licenses.ts <package-dir>');
-  const tarball: string = singleTarball(containedPackageDir(packageDir));
+  const tarball: string = singleTarball(join(PROJECT_ROOT, basename(packageDir)));
   const scratch: string = mkdtempSync(join(tmpdir(), 'check-licenses-'));
   try {
     return report(relative(PROJECT_ROOT, tarball), scan(unpack(tarball, scratch)));
