@@ -44,6 +44,7 @@ DEPENDENCY_AUDIT_REPORTER = scripts/ci/report-dependency-audit.sh
 # into the next one.
 PACKAGE_DIR = dist
 PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
+LICENSE_CHECKER = scripts/ci/check-licenses.ts
 
 # Aggregate gate sets: the local definition of the merge bar. `ci` is the fast
 # pre-push set, `verify` is everything a merge requires. The pull-request workflows
@@ -52,7 +53,8 @@ PACKAGE_VERIFIER = scripts/ci/verify-package-tarball.sh
 # fails when a workflow runs a gate `verify` cannot reach.
 CI_GATES = lint build test-unit test-integration test-bats
 VERIFY_EXTRA_GATES = test-mutation test-e2e test-visual test-storybook test-memory-leak lighthouse-desktop lighthouse-mobile \
-	lint-secrets scan-secrets-history lint-vulns scan-image-bun scan-image-playwright scan-image-rca test-a11y
+	lint-secrets scan-secrets-history lint-vulns scan-image-bun scan-image-playwright scan-image-rca test-a11y \
+	package lint-licenses
 VERIFY_GATES = $(CI_GATES) $(VERIFY_EXTRA_GATES)
 GATE_SET_NAME = gates
 GATE_SET =
@@ -71,7 +73,7 @@ MAKE_GATE = $(MAKE) --no-print-directory
 	lint-dep-ranges lint-peer-ranges lint-unused-deps lint-i18n-keys lint-release-version lint-deps lint-metrics lint-metrics-run lint-ci-paths \
 	test-mutation-shard copy-mutation-report stage-mutation-reports merge-mutation-reports \
 	ci verify run-gates lint-secrets scan-secrets-history \
-	lint-vulns scan-image-bun scan-image-playwright scan-image-rca report-dependency-audit
+	lint-vulns scan-image-bun scan-image-playwright scan-image-rca report-dependency-audit lint-licenses
 
 PLAYWRIGHT_TEST_ARGS =
 PLAYWRIGHT_RUN_FLAGS =
@@ -274,6 +276,15 @@ package: ## Build and copy the publishable npm tarball out of the running bun co
 		&& $(EXEC_BUN) sh $(PACKAGE_VERIFIER) $(PACKAGE_DIR) \
 		&& rm -rf ./$(PACKAGE_DIR) \
 		&& $(DOCKER_COMPOSE) cp bun:/app/$(PACKAGE_DIR) ./$(PACKAGE_DIR)
+
+lint-licenses: ## Fail the packed tarball on a disallowed or unattributed licence, a LICENSE/SPDX mismatch, an internal URL, a proprietary marker or a secret (after make package).
+	@container_id=$$($(DOCKER_COMPOSE) ps -q bun); \
+	if [ -z "$$container_id" ]; then \
+		echo "bun service is not running; run 'make start-bun' and 'make package' first"; \
+		exit 1; \
+	fi; \
+	$(EXEC_BUN) bun $(LICENSE_CHECKER) $(PACKAGE_DIR)
+	@GITLEAKS_IMAGE="$(GITLEAKS_IMAGE)" SECRETS_MODE=package SECRETS_PACKAGE_DIR="$(PACKAGE_DIR)" bash $(SECRETS_SCANNER)
 
 test-e2e: PLAYWRIGHT_TEST_TARGET = ./tests/e2e
 test-e2e: ## Start Storybook and run e2e tests inside a Docker container.
