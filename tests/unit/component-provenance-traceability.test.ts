@@ -442,10 +442,11 @@ const matrixArtifacts: string[] = matrixRows
   .map(matrixArtifact)
   .filter((name): name is string => name !== undefined);
 
-// Every implementation artifact owes a row except the shared template, the
-// status file (not an artifact) and this story's own artifact, which carries
-// the matrix rather than appearing in it.
-const MATRIX_EXCLUDED_FILES: string[] = ['story-dod-template.md', DOD_ARTIFACT_NAME];
+const MATRIX_EXCLUDED_FILES: string[] = [
+  'story-dod-template.md',
+  DOD_ARTIFACT_NAME,
+  'final-validation-certificate.md',
+];
 
 function storyArtifacts(): string[] {
   return readdirSync(join(REPO_ROOT, IMPLEMENTATION_DIR))

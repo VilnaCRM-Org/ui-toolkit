@@ -66,3 +66,4 @@ scan-image-bun	bats	tests/bats/dependency_cve_gate.bats	Validated as the build-s
 scan-image-playwright	bats	tests/bats/dependency_cve_gate.bats	Validated as the build-save-scan flow over Dockerfile.playwright gating on OS packages.
 scan-image-rca	bats	tests/bats/dependency_cve_gate.bats	Validated as the build-save-scan flow over Dockerfile.rca gating on OS packages.
 report-dependency-audit	bats	tests/bats/dependency_cve_gate.bats	Validated for the clean, first-report, unchanged, and changed advisory-set branches of the tracking issue.
+lint-licenses	bats	tests/bats/license_compliance_gate.bats	Validated for the missing-container failure, the in-container licence scan and host-side package secret scan, the verify and workflow registration, and fixture tarballs the checker must pass and reject.

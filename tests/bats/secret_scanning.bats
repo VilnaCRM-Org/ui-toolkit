@@ -25,6 +25,7 @@ host_probe=""
 for arg in "$@"; do
   case "$arg" in
     *:/probe) host_probe="${arg%:/probe}" ;;
+    *:/package:ro) find "${arg%:/package:ro}" -type f | sed 's|^.*/package/|mounted package/|' >> "${COMMAND_LOG:?}" ;;
   esac
 done
 
@@ -108,7 +109,7 @@ run_scanner() {
 @test "the scanner refuses an unknown mode" {
   run_scanner SECRETS_MODE=diff
   [ "$status" -eq 1 ]
-  assert_output_contains "SECRETS_MODE must be 'tree' or 'history'"
+  assert_output_contains "SECRETS_MODE must be 'tree', 'history' or 'package'"
   assert_log_not_contains 'docker'
 }
 
@@ -153,6 +154,53 @@ run_scanner() {
   run_scanner SECRETS_MODE=history SECRETS_LOG_OPTS='origin/main..HEAD'
   [ "$status" -eq 0 ]
   assert_log_contains '--log-opts origin/main..HEAD /repo'
+}
+
+write_package_tarball() {
+  local staging="$BATS_TEST_TMPDIR/staging"
+  mkdir -p "$staging/package/build" "$WORKSPACE/dist"
+  printf 'export const a = 1;\n' > "$staging/package/build/index.mjs"
+  tar -czf "$WORKSPACE/dist/${1:-fixture-1.0.0}.tgz" -C "$staging" package
+}
+
+@test "package mode scans the unpacked tarball read-only with the committed policy" {
+  write_package_tarball
+  run_scanner SECRETS_MODE=package
+  [ "$status" -eq 0 ]
+  assert_log_contains ":/package:ro -v $WORKSPACE/.gitleaks.toml:/gitleaks.toml:ro $PINNED_IMAGE dir --no-banner --redact --exit-code 1 --config /gitleaks.toml /package"
+  assert_log_contains 'mounted package/build/index.mjs'
+  assert_output_contains 'positive control passed'
+}
+
+@test "package mode reads the directory SECRETS_PACKAGE_DIR names" {
+  write_package_tarball
+  mv "$WORKSPACE/dist" "$WORKSPACE/release"
+  run_scanner SECRETS_MODE=package SECRETS_PACKAGE_DIR=release
+  [ "$status" -eq 0 ]
+  assert_log_contains 'mounted package/build/index.mjs'
+}
+
+@test "package mode fails when the scanner reports a leak in the tarball" {
+  write_package_tarball
+  FAKE_SCAN_EXIT=1 run_scanner SECRETS_MODE=package
+  [ "$status" -eq 1 ]
+  assert_log_not_contains ':/probe'
+}
+
+@test "package mode refuses a package directory without a tarball" {
+  run_scanner SECRETS_MODE=package
+  [ "$status" -eq 1 ]
+  assert_output_contains 'needs exactly one tarball'
+  assert_log_not_contains 'docker'
+}
+
+@test "package mode refuses to guess between two tarballs" {
+  write_package_tarball fixture-1.0.0
+  write_package_tarball fixture-1.1.0
+  run_scanner SECRETS_MODE=package
+  [ "$status" -eq 1 ]
+  assert_output_contains 'needs exactly one tarball'
+  assert_log_not_contains 'docker'
 }
 
 @test "the run fails closed when the scanner lets the seeded credential through" {

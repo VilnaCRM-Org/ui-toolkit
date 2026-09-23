@@ -6,6 +6,7 @@ mode="${SECRETS_MODE:-tree}"
 config="${GITLEAKS_CONFIG:-.gitleaks.toml}"
 log_opts="${SECRETS_LOG_OPTS:-}"
 workspace="${SECRETS_WORKSPACE:-$PWD}"
+package_dir="${SECRETS_PACKAGE_DIR:-dist}"
 
 case "$image" in
   *@sha256:*) ;;
@@ -49,12 +50,28 @@ scan_history() {
 }
 
 probe=""
+unpacked=""
 cleanup_probe() {
   if [[ -n "$probe" ]]; then
     rm -rf "$probe"
   fi
+  if [[ -n "$unpacked" ]]; then
+    rm -rf "$unpacked"
+  fi
 }
 trap cleanup_probe EXIT
+
+scan_package() {
+  local tarballs=("$workspace/$package_dir"/*.tgz)
+  if [[ "${#tarballs[@]}" -ne 1 ]] || [[ ! -f "${tarballs[0]}" ]]; then
+    echo "scan-secrets: SECRETS_MODE=package needs exactly one tarball in '$workspace/$package_dir'; run make package" >&2
+    exit 1
+  fi
+  unpacked="$(mktemp -d)"
+  tar -xzf "${tarballs[0]}" -C "$unpacked"
+  docker run --rm -v "$unpacked:/package:ro" -v "$workspace/$config:/gitleaks.toml:ro" \
+    "$image" dir --no-banner --redact --exit-code 1 --config /gitleaks.toml /package
+}
 
 assert_scanner_detects() {
   local status
@@ -90,8 +107,12 @@ case "$mode" in
     echo "scan-secrets: mode=history config=$config log-opts=${log_opts:-<all>}"
     scan_history
     ;;
+  package)
+    echo "scan-secrets: mode=package config=$config package-dir=$package_dir"
+    scan_package
+    ;;
   *)
-    echo "scan-secrets: SECRETS_MODE must be 'tree' or 'history', got '$mode'" >&2
+    echo "scan-secrets: SECRETS_MODE must be 'tree', 'history' or 'package', got '$mode'" >&2
     exit 1
     ;;
 esac

@@ -1,0 +1,38 @@
+name: licence and IP compliance
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  license-compliance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Start docker build environment
+        run: make start-bun
+
+      - name: Pack the publishable tarball
+        run: make package
+
+      - name: Scan the tarball for licence, IP and secret findings
+        run: make lint-licenses
+
+      - name: Stop docker build environment
+        if: always()
+        run: make down
