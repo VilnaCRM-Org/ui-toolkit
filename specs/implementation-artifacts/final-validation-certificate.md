@@ -68,8 +68,8 @@ Enforcement: `tests/unit/board-coverage-traceability.test.ts`. Story artifact:
   source and rationale for every runtime export of `src/components/index.ts` (groups A-D of the
   drift guard).
 - Deviation ledger: `specs/planning-artifacts/deviation-ledger.md` holds 66 rows, `DEV-01` to
-  `DEV-66`. By status: 34 `ratified`, 10 `pending-ratification`, 3 `escalated`, 10
-  `deferred-tracked`, 9 `superseded`. Fifteen rows carry an `unfiled:` tracking ref rather than
+  `DEV-66`. By status: 34 `ratified`, 10 `pending-ratification`, 3 `escalated`, 9
+  `deferred-tracked`, 10 `superseded`. Fourteen rows carry an `unfiled:` tracking ref rather than
   a GitHub issue.
 - Ratification register: the 10 `pending-ratification` rows and the option-group appendix ruling
   have empty `Ratified by` and `Date` cells. The ledger states each needs a named person and a date
@@ -85,8 +85,8 @@ Enforcement: `tests/unit/component-provenance-traceability.test.ts`.
 
 ### 2.3 Export integrity
 
-`specs/planning-artifacts/export-contract.md` registers all 63 directories under
-`src/components/`: 56 `exported` and 7 `internal`, each internal row with a reason and a tracking
+`specs/planning-artifacts/export-contract.md` registers all 62 directories under
+`src/components/`: 57 `exported` and 5 `internal`, each internal row with a reason and a tracking
 ref. Rules R1-R5 (value export, props-type export, reachable types, traceable exceptions,
 filesystem-derived enforcement) are enforced by `tests/unit/export-contract-integrity.test.ts`; the
 API Extractor rollup's `ae-forgotten-export` check fails the build on an unexported reachable
