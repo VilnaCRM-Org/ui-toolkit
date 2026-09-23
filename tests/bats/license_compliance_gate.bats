@@ -197,6 +197,32 @@ line_of() {
   assert_output_contains 'deep-lib is licensed UNLICENSED'
 }
 
+@test "the checker skips an optional production dependency that is not installed" {
+  write_manifest CC0-1.0 ', "optionalDependencies": { "platform-lib": "^1.0.0" }'
+  run_checker
+  [ "$status" -eq 0 ]
+  assert_output_contains 'passes the licence and publish-surface policy'
+}
+
+@test "the checker still rejects a required production dependency that is not installed" {
+  write_manifest CC0-1.0 ', "dependencies": { "absent-lib": "^1.0.0" }'
+  run_checker
+  [ "$status" -eq 1 ]
+  assert_output_contains 'production dependency absent-lib is not installed'
+}
+
+@test "the checker checks the nested install a dependency resolves, not the hoisted copy" {
+  write_manifest CC0-1.0 ', "dependencies": { "runtime-lib": "^1.0.0" }'
+  write_installed_package runtime-lib MIT ', "dependencies": { "dup-lib": "^2.0.0" }'
+  write_installed_package dup-lib MIT
+  mkdir -p "$FIXTURE/node_modules/runtime-lib/node_modules/dup-lib"
+  printf '{ "name": "dup-lib", "version": "2.0.0", "license": "GPL-3.0-only" }\n' \
+    > "$FIXTURE/node_modules/runtime-lib/node_modules/dup-lib/package.json"
+  run_checker
+  [ "$status" -eq 1 ]
+  assert_output_contains 'dup-lib is licensed GPL-3.0-only'
+}
+
 @test "the checker rejects a manifest that is not CC0-1.0" {
   write_manifest MIT
   run_checker

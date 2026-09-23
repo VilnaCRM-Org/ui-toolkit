@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 
 import fontLicenseDescription from './font-license';
 import {
@@ -109,30 +109,71 @@ function bundledViolations(packageDir: string, notices: string | undefined): str
   ].filter(isString);
 }
 
-function productionNames(manifest: Record<string, unknown> | undefined): string[] {
+interface DependencyEdge {
+  name: string;
+  optional: boolean;
+  fromDir: string;
+}
+
+interface InstalledPackage {
+  name: string;
+  dir: string | undefined;
+  optional: boolean;
+}
+
+function dependencyEdges(
+  manifest: Record<string, unknown> | undefined,
+  fromDir: string
+): DependencyEdge[] {
   return PRODUCTION_FIELDS.flatMap(field => {
     const entries: unknown = manifest?.[field];
-    return typeof entries === 'object' && entries !== null ? Object.keys(entries) : [];
+    const names: string[] =
+      typeof entries === 'object' && entries !== null ? Object.keys(entries) : [];
+    return names.map(name => ({ name, optional: field === 'optionalDependencies', fromDir }));
   });
 }
 
-function productionClosure(manifest: Record<string, unknown>): string[] {
-  const seen: Set<string> = new Set();
-  const queue: string[] = productionNames(manifest);
-  while (queue.length > 0) {
-    const name: string = queue.shift() as string;
-    if (!seen.has(name)) {
-      seen.add(name);
-      queue.push(...productionNames(installedManifest(`node_modules/${name}`)));
-    }
-  }
-  return [...seen].sort((a, b) => a.localeCompare(b));
+function resolvePackageDir(name: string, fromDir: string): string | undefined {
+  const candidate: string = join(fromDir, 'node_modules', name);
+  if (existsSync(join(PROJECT_ROOT, candidate, 'package.json'))) return candidate;
+  const parent: string = dirname(fromDir);
+  return parent === fromDir ? undefined : resolvePackageDir(name, parent);
 }
 
-function dependencyViolation(name: string): string | undefined {
-  const manifest: Record<string, unknown> | undefined = installedManifest(`node_modules/${name}`);
-  if (manifest === undefined) return `production dependency ${name} is not installed`;
-  return packageLicenseViolation(name, manifest, LICENSE_POLICY);
+function visit(
+  edge: DependencyEdge,
+  seen: Set<string>,
+  queue: DependencyEdge[]
+): InstalledPackage[] {
+  const dir: string | undefined = resolvePackageDir(edge.name, edge.fromDir);
+  if (dir === undefined) return [{ name: edge.name, dir, optional: edge.optional }];
+  if (seen.has(dir)) return [];
+  seen.add(dir);
+  queue.push(...dependencyEdges(installedManifest(dir), dir));
+  return [{ name: edge.name, dir, optional: edge.optional }];
+}
+
+function productionClosure(manifest: Record<string, unknown>): InstalledPackage[] {
+  const seen: Set<string> = new Set();
+  const queue: DependencyEdge[] = dependencyEdges(manifest, '.');
+  const found: InstalledPackage[] = [];
+  while (queue.length > 0) {
+    found.push(...visit(queue.shift() as DependencyEdge, seen, queue));
+  }
+  return found;
+}
+
+function dependencyViolation(installed: InstalledPackage): string | undefined {
+  if (installed.dir === undefined) {
+    return installed.optional
+      ? undefined
+      : `production dependency ${installed.name} is not installed`;
+  }
+  const manifest: Record<string, unknown> = installedManifest(installed.dir) as Record<
+    string,
+    unknown
+  >;
+  return packageLicenseViolation(installed.name, manifest, LICENSE_POLICY);
 }
 
 function fontViolations(unpacked: Unpacked): string[] {

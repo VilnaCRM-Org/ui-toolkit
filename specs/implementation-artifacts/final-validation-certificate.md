@@ -30,7 +30,8 @@ Evidence baseline, verified on 2026-09-23:
   `vilnacrm-ui-toolkit-0.4.0.tgz`; the only other release is `v0.3.0`. Both were created by a
   maintainer account, not by the release workflow (`gh release list`, `gh release view`).
 - Every Epic 1-5 story issue from #10 to #33 is closed; #34 (this story) is open. Open issues
-  besides #34: #70, #72, #83, #103, #171.
+  besides #34: #70, #72, #83, #103, #171; the pull request that delivers this certificate also
+  fixes #171.
 - Figures quoted from the governance artifacts are taken from their own roll-ups, which their
   drift guards hold equal to the parsed rows.
 
@@ -128,16 +129,16 @@ Blocking — each prevents a `go` decision until its status is `resolved`:
 
 Non-blocking — tracked follow-ups that do not gate the internal release:
 
-| ID    | Item                                                                                                                                                                                                | Owner / tracking        |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| NB-01 | #171 reports 25 fixable HIGH advisories in the full `bun.lock`, all in dev tooling. The production-closure gate (`make lint-vulns`) passes, and the package ships no runtime dependency (§3.2).     | #171                    |
-| NB-02 | DEV-43 (bundled font faces with no licence note) is `deferred-tracked`. The gate now proves every shipped face embeds OFL-1.1 metadata (§4), but the full OFL text is not shipped beside the faces. | Component Lead · DEV-43 |
-| NB-03 | `package.json` has no `repository`, `homepage` or `bugs` field. The GitHub-release tarball does not need them; public npm promotion does (G-10).                                                    | Release Manager         |
-| NB-04 | The accessibility-visuals bucket (DEV-03, DEV-07, DEV-22, DEV-66) is deferred with an `unfiled:accessibility-lead` ref and no issue.                                                                | Accessibility Lead      |
-| NB-05 | Fifteen ledger rows carry `unfiled:` refs rather than GitHub issues.                                                                                                                                | Owners named per row    |
-| NB-06 | Open NFR issues: #72 and #83 (theming through private ThemeProviders), #103 (measurement rigour), #70 (enterprise-readiness scorecard).                                                             | #70, #72, #83, #103     |
-| NB-07 | Status columns in the DoD matrix still read "Open — PR #132" and "issue #28 OPEN". PR #132 merged on 2026-08-24 and issues #27-#29 are closed.                                                      | Release Manager         |
-| NB-08 | `specs/implementation-artifacts/sprint-status.yaml` still lists every delivered story as `review` and every epic as `in-progress`.                                                                  | Scrum Master            |
+| ID    | Item                                                                                                                                                                                                                                                                                                                                              | Owner / tracking        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| NB-01 | #171 (25 fixable HIGH advisories in the full `bun.lock`, all in dev tooling) is fixed by this certificate's pull request: the vulnerable transitive entries are re-pinned and `tmp` is overridden to `^0.2.7`. Confirm the weekly full-lockfile audit is clean after merge. The production closure (`make lint-vulns`) was never affected (§3.2). | #171                    |
+| NB-02 | DEV-43 (bundled font faces with no licence note) is `deferred-tracked`. The gate now proves every shipped face embeds OFL-1.1 metadata (§4), but the full OFL text is not shipped beside the faces.                                                                                                                                               | Component Lead · DEV-43 |
+| NB-03 | `package.json` has no `repository`, `homepage` or `bugs` field. The GitHub-release tarball does not need them; public npm promotion does (G-10).                                                                                                                                                                                                  | Release Manager         |
+| NB-04 | The accessibility-visuals bucket (DEV-03, DEV-07, DEV-22, DEV-66) is deferred with an `unfiled:accessibility-lead` ref and no issue.                                                                                                                                                                                                              | Accessibility Lead      |
+| NB-05 | Fifteen ledger rows carry `unfiled:` refs rather than GitHub issues.                                                                                                                                                                                                                                                                              | Owners named per row    |
+| NB-06 | Open NFR issues: #72 and #83 (theming through private ThemeProviders), #103 (measurement rigour), #70 (enterprise-readiness scorecard).                                                                                                                                                                                                           | #70, #72, #83, #103     |
+| NB-07 | Status columns in the DoD matrix still read "Open — PR #132" and "issue #28 OPEN". PR #132 merged on 2026-08-24 and issues #27-#29 are closed.                                                                                                                                                                                                    | Release Manager         |
+| NB-08 | `specs/implementation-artifacts/sprint-status.yaml` still lists every delivered story as `review` and every epic as `in-progress`.                                                                                                                                                                                                                | Scrum Master            |
 
 ## 3. Internal consumer compatibility
 
