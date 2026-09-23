@@ -758,3 +758,11 @@ So that internal package publication is a controlled and auditable decision.
 **Then** the canonical output artifact is a signed `specs/implementation-artifacts/final-validation-certificate.md` containing sign-off fields (`reviewer`, `date`, `decision`, `blocking-issues`, `follow-ups`) plus linked Definition of Done evidence references
 **And** if `specs/planning-artifacts/epics.md` is additionally annotated, the annotation must include a canonical pointer to `specs/implementation-artifacts/final-validation-certificate.md` plus `certificate-version` and `certificate-timestamp` metadata
 **And** the canonical certificate is stored under `specs/implementation-artifacts/` before Epic 5 can be marked complete and release go/no-go is approved.
+
+**Final validation certificate (annotation):**
+
+- canonical pointer: `specs/implementation-artifacts/final-validation-certificate.md`
+- certificate-version: `1.0.0`
+- certificate-timestamp: `2026-09-23`
+- sign-off status: every `decision` is `pending`; Epic 5 stays open until the certificate records
+  the Release Manager and Governance Board decisions.
