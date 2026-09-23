@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import React from 'react';
 
-import { deleteButtonSx, deleteCircleSx } from './styles';
+import { deleteButtonSx, deleteCircleSx } from './chip-styles';
 
 // The removable-chip delete affordance. MUI's `Chip` clones this element and
 // injects the delete `onClick`/`className`, so the outer `Box` must be a real DOM

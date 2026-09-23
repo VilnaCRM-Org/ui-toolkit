@@ -2,8 +2,8 @@ import { Chip } from '@mui/material';
 import type { AutocompleteRenderValueGetItemProps } from '@mui/material';
 import React from 'react';
 
+import { chipSx } from './chip-styles';
 import { buildDeleteIcon } from './delete-icon';
-import { chipSx } from './styles';
 import type { UiMultiSelectOption } from './types';
 
 type GetItemProps = AutocompleteRenderValueGetItemProps<true>;
