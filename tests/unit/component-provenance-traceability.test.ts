@@ -442,9 +442,6 @@ const matrixArtifacts: string[] = matrixRows
   .map(matrixArtifact)
   .filter((name): name is string => name !== undefined);
 
-// Every implementation artifact owes a row except the shared template, the
-// status file (not an artifact), this story's own artifact, which carries
-// the matrix rather than appearing in it, and the Story 5.4 release certificate.
 const MATRIX_EXCLUDED_FILES: string[] = [
   'story-dod-template.md',
   DOD_ARTIFACT_NAME,
