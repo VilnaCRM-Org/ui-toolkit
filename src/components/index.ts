@@ -90,6 +90,8 @@ export type {
 } from './ui-select-with-search/types';
 export { default as UiStatusBadge } from './ui-status-badge';
 export type { UiStatusBadgeProps } from './ui-status-badge/types';
+export { default as UiSxAdapter } from './ui-sx-adapter';
+export type { UiSxAdapterProps, UiSxAdapterRenderProps } from './ui-sx-adapter/types';
 export { default as UiTaskCard } from './ui-task-card';
 export type { UiTaskCardProps, TaskAssignee } from './ui-task-card/types';
 export { default as UiTypography } from './ui-typography';

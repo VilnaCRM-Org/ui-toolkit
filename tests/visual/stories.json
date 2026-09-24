@@ -725,6 +725,11 @@
     "name": "Status Badge"
   },
   {
+    "id": "uicomponents-uisxadapter--class-name-and-inline-style",
+    "title": "UiComponents/UiSxAdapter",
+    "name": "Class Name And Inline Style"
+  },
+  {
     "id": "uicomponents-uitaskcard--disabled",
     "title": "UiComponents/UiTaskCard",
     "name": "Disabled"
