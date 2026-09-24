@@ -13,10 +13,10 @@ const DROPPED_RULES_WARNING: string =
   '[ui-toolkit] UiSxAdapter received `inline` with rules an inline style cannot express ' +
   '(&:hover, @media print); they were dropped. Render without `inline` to keep them.';
 
-type ChildMock = jest.Mock<React.ReactNode, [UiSxAdapterRenderProps]>;
+type ChildMock = jest.Mock<null, [UiSxAdapterRenderProps]>;
 
 function childMock(): ChildMock {
-  return jest.fn<React.ReactNode, [UiSxAdapterRenderProps]>(() => null);
+  return jest.fn();
 }
 
 function panelChild({ className, style }: UiSxAdapterRenderProps): React.ReactElement {
