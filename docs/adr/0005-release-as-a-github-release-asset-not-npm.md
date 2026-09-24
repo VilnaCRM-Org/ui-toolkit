@@ -32,5 +32,7 @@ existing tag.
   bypass actor.
 - Consumers pin a release by URL and verify the recorded `sha512`; moving to a later release is
   an explicit edit, never an automatic range resolution.
+- The workflow attests build provenance for the tarball (`actions/attest-build-provenance`),
+  and `publishConfig.provenance` makes a future `npm publish` carry provenance too.
 - Promotion to the public registry is a separate decision, recorded when #34's licensing and IP
   gates are in place; this record is then superseded.

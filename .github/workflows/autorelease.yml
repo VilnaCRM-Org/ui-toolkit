@@ -21,6 +21,8 @@ jobs:
 
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Verify the release App credentials are available
@@ -75,6 +77,12 @@ jobs:
       - name: Fail the release on a licence, IP or secret finding in the tarball
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         run: make lint-licenses
+
+      - name: Attest build provenance for the release tarball
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: 'dist/*.tgz'
 
       - name: Push the release commit, then its tag
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
