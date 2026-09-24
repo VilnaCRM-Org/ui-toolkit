@@ -103,8 +103,9 @@ updated together when an issue is actually filed.
   (`socialButton` per-state visual grid) and `DEV-04` (`UiSearchInput` suggestion prefix-highlight).
 - **Toolkit-hygiene rulings — resolved, `#34` / `#83`.** `DEV-43` (bundled font faces with no
   licence note) was resolved by #34, which ships the upstream OFL-1.1 text beside each font family
-  and in the release tarball, and is now `superseded` on a filed `#34` ref. `DEV-40` (container sizing declared in two places) was resolved by issues #83/#72,
-  which deleted the duplicate theme override, and is now `superseded` on a filed `#83` ref.
+  and in the release tarball, and is now `superseded` on a filed `#34` ref. `DEV-40` (container
+  sizing declared in two places) was resolved by issues #83/#72, which deleted the duplicate theme
+  override, and is now `superseded` on a filed `#83` ref.
 - **Board A out-of-scope paints — resolved by delivery, `#149`.** `DEV-44` through `DEV-50`, the
   seven paints Story 3.5 ruled out of its own scope, were all delivered by Story 3.7 (#149) as
   `UiBackgroundPicker`, `UiButton` `variant="danger"`, `UiOptionCard`, `UiAddButton`,
