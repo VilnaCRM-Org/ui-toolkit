@@ -29,6 +29,7 @@
     "@mui/material": "^9.0.1",
     "@mui/system": "^9.0.1",
     "@playwright/test": "^1.41.2",
+    "@storybook/addon-a11y": "^10.4.2",
     "@storybook/addon-docs": "^10.4.2",
     "@storybook/addon-links": "^10.4.2",
     "@storybook/addon-onboarding": "^10.4.2",

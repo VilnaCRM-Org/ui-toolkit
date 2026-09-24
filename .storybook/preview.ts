@@ -6,13 +6,21 @@ import type { Preview } from '@storybook/react';
 import '../src/components/fonts.css';
 import './preview.css';
 import { initI18n } from '../src/locales';
+import { axeRunOptions } from '../tests/a11y/axe-config';
 import { collapseOptionalUndefined } from './optional-arg-types';
 
 initI18n();
 const preview: Preview = {
   tags: ['autodocs'],
   argTypesEnhancers: [collapseOptionalUndefined],
+  initialGlobals: {
+    a11y: { manual: true },
+  },
   parameters: {
+    a11y: {
+      test: 'todo',
+      options: axeRunOptions(),
+    },
     actions: { argTypesRegex: '^on[A-Z].*' },
     options: {
       storySort: {

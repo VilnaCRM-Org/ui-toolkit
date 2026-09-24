@@ -22,6 +22,9 @@ Every story is scanned in the state its `play` function leaves behind: the scan 
 preview's render to reach its terminal phase (`finished`) before running axe, so an interaction
 story is measured after its interaction, and a story whose render errors fails the scan outright.
 
+For author-time feedback, the Storybook Accessibility panel runs the same options on demand;
+it is manual and report-only, so it never changes a CI outcome.
+
 ## Definition of a11y-done
 
 A component or story is done when it passes both layers and, in addition:
