@@ -45,7 +45,9 @@ per-component defects, and they are not entries in the exception allowlist.
 1. **Brand palette: `color-contrast`** (`BRAND_DISABLED_RULES`). The Figma brand palette
    (white on `#1EAEFF`, about 2.45:1) is faithful to the design; raising contrast would change the
    brand. `lighthouserc.js` records the same decision as `'color-contrast': 'warn'` in its
-   assertion matrix, so both gates agree. Contrast is reported, never blocking.
+   assertion matrix, so both gates agree. Contrast is reported, never blocking as an audit; the
+   `categories:accessibility` error floor of 0.85 sits below the lowest measured story median
+   (`UiLink`, 0.90), so the contrast deduction alone does not fail the category gate.
 2. **Component isolation: `region`, `landmark-one-main`, `page-has-heading-one`**
    (`COMPONENT_ISOLATION_RULES`). An isolated component render or a story iframe has no page
    composition by construction: no `<main>`, no `<h1>`, no landmark wrapping its content. Those

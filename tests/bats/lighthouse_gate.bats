@@ -81,6 +81,26 @@ load_config() {
   [[ "$output" != *'"[?&]id=icon-0--only&":{"categories:performance"'* ]]
 }
 
+@test "the Lighthouse config holds every story to the accessibility and best-practices error floors" {
+  cd "$CONFIG_SANDBOX"
+  run env LHCI_FORM_FACTOR=mobile node -e '
+    const matrix = require("./lighthouserc.js").ci.assert.assertMatrix;
+    const floors = new Set(
+      matrix.map(entry =>
+        JSON.stringify([
+          entry.aggregationMethod,
+          entry.assertions["categories:accessibility"],
+          entry.assertions["categories:best-practices"],
+          entry.assertions["color-contrast"],
+        ])
+      )
+    );
+    console.log([...floors].join("\n"));
+  '
+  [ "$status" -eq 0 ]
+  [ "$output" = '["median",["error",{"minScore":0.85}],["error",{"minScore":0.9}],"warn"]' ]
+}
+
 @test "the Lighthouse config refuses an icon-only or catalogue title the Storybook index does not have" {
   cd "$CONFIG_SANDBOX"
   node -e '

@@ -8,8 +8,8 @@
 // Stories are rendered in isolation (`/iframe.html`), so page-level a11y audits
 // (html-lang, document-title, landmarks) don't apply and would unfairly sink the
 // category score. We therefore gate on COMPONENT-level a11y audits as errors
-// (contrast, accessible names, labels, ARIA) and keep the a11y and
-// best-practices category scores as warnings.
+// (contrast, accessible names, labels, ARIA) and hold the a11y and
+// best-practices category scores to error floors set below the measured medians.
 
 const fs = require('fs');
 
@@ -65,10 +65,8 @@ module.exports = {
           'aria-valid-attr': 'error',
           'aria-valid-attr-value': 'error',
           'duplicate-id-aria': 'error',
-          // a11y and best-practices category scores: warn only — isolated iframes
-          // drag a11y down via page-level audits.
-          'categories:accessibility': ['warn', { minScore: 0.9 }],
-          'categories:best-practices': ['warn', { minScore: 0.9 }],
+          'categories:accessibility': ['error', { minScore: 0.85 }],
+          'categories:best-practices': ['error', { minScore: 0.9 }],
         },
       }),
     },
