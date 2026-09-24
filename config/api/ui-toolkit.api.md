@@ -1214,7 +1214,7 @@ export interface UiStatusBadgeProps {
 }
 
 // @public (undocumented)
-export function UiSxAdapter(input: Readonly<UiSxAdapterProps>): ReactNode;
+export function UiSxAdapter(input: Readonly<UiSxAdapterProps>): React_2.ReactNode;
 
 // @public (undocumented)
 export interface UiSxAdapterProps {

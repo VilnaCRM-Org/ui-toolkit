@@ -1,6 +1,6 @@
 import { ClassNames } from '@emotion/react';
 import type { SxProps, Theme } from '@mui/material';
-import type { ReactNode } from 'react';
+import React from 'react';
 
 import { useDevWarning } from '@/utils/dev-warn';
 import { useUiTheme } from '@/utils/ui-theme';
@@ -22,14 +22,14 @@ function droppedRulesWarning(droppedRules: readonly string[]): string | null {
   );
 }
 
-function InlineSxAdapter({ sx, className, style, children }: ResolvableProps): ReactNode {
+function InlineSxAdapter({ sx, className, style, children }: ResolvableProps): React.ReactNode {
   const theme: Theme = useUiTheme();
   const resolved: InlineStyles = flattenToInline(resolveSxLayers(sx, theme));
   useDevWarning(droppedRulesWarning(resolved.droppedRules));
   return children({ className, style: { ...resolved.style, ...style } });
 }
 
-function ClassNameSxAdapter({ sx, className, style, children }: ResolvableProps): ReactNode {
+function ClassNameSxAdapter({ sx, className, style, children }: ResolvableProps): React.ReactNode {
   const theme: Theme = useUiTheme();
   return (
     <ClassNames>
@@ -46,7 +46,7 @@ function UiSxAdapter({
   style,
   inline,
   children,
-}: Readonly<UiSxAdapterProps>): ReactNode {
+}: Readonly<UiSxAdapterProps>): React.ReactNode {
   if (sx == null) {
     return children({ className, style });
   }
