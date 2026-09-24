@@ -187,6 +187,12 @@ async function generateTypeDeclarations() {
       `API Extractor failed with ${result.errorCount} error(s) and ${result.warningCount} warning(s).`
     );
   }
+  if (result.apiReportChanged) {
+    throw new Error(
+      'The public API differs from config/api/ui-toolkit.api.md. The build has rewritten the ' +
+        'report; review the diff and commit it with the change.'
+    );
+  }
 
   // Invariant: the rollup must be self-contained. Fail the build if any internal
   // `@/*` path-alias reference leaked through instead of being inlined — such a file

@@ -564,7 +564,11 @@ without declaring it — `ui-card-list.mjs` re-exports
 its card styles so `ui-card-item` can reach them within the dependency rules, but the `.d.mts`
 does not name them, which is what keeps them out of the contract. That boundary is enforced by
 `tests/unit/export-contract-integrity.test.ts` and the API Extractor rollup (#33); the
-release-readiness governance report (#34) is where the gates are consolidated.
+release-readiness governance report (#34) is where the gates are consolidated. API Extractor also
+keeps `config/api/ui-toolkit.api.md`, a report of every declaration the package root publishes: a
+build whose declarations no longer match it rewrites the report and fails, so any public-API
+change reaches review as a diff of that file. Run `node ./build.config.mjs` on the host after
+`bun install` to regenerate it.
 
 Deprecation: a public name or prop is marked `@deprecated` in its JSDoc with the replacement
 named, emits a `[ui-toolkit]` development warning when used, and stays for at least one minor
