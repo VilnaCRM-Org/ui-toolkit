@@ -592,11 +592,12 @@ make package
 ```
 
 The tarball lands in `dist/`, and the recipe fails if it does not carry the entry points that
-`package.json` promises. Each release tarball also carries a signed build-provenance attestation;
-check it before installing with
+`package.json` promises. A tarball the release workflow publishes also carries a signed
+build-provenance attestation; releases up to `v0.4.0` were created by hand and have none. Check it
+before installing with
 `gh attestation verify vilnacrm-ui-toolkit-<version>.tgz --repo VilnaCRM-Org/ui-toolkit`.
-[CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
-`website` pin a release, verify it, and move to a later one.
+[CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and `website` pin a release,
+verify it, and move to a later one.
 
 ### Bundle footprint
 
