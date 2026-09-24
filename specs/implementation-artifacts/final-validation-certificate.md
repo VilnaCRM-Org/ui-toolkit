@@ -3,8 +3,8 @@
 - **Story:** Story 5.4 — Internal Release-Readiness Governance Report
   ([#34](https://github.com/VilnaCRM-Org/ui-toolkit/issues/34))
 - **Epic:** Epic 5 — Production Adoption Readiness
-- **certificate-version:** `1.0.0`
-- **certificate-timestamp:** `2026-09-23`
+- **certificate-version:** `1.1.0`
+- **certificate-timestamp:** `2026-09-24`
 - **Canonical path:** `specs/implementation-artifacts/final-validation-certificate.md`
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 5.4: Internal Release-Readiness
   Governance Report_
@@ -23,28 +23,30 @@ governance gates `epics.md` Story 5.4 names — board coverage, provenance, expo
 quality gates — plus internal-consumer compatibility, licensing/IP clearance and requirement
 traceability.
 
-Evidence baseline, verified on 2026-09-23:
+Evidence baseline, verified on 2026-09-24:
 
-- `main` at `004c69c` (PR #172, merged 2026-09-22). `package.json` is at `0.4.0`.
+- `main` at `bd14d22` (PR #177, merged 2026-09-23), plus the pull request that delivers this
+  revision (#178). `package.json` is at `0.4.0`. Revision `1.0.0` (2026-09-23) described `main` at
+  `004c69c`.
 - Latest GitHub release: `v0.4.0`, published 2026-09-09 with the asset
   `vilnacrm-ui-toolkit-0.4.0.tgz`; the only other release is `v0.3.0`. Both were created by a
   maintainer account, not by the release workflow (`gh release list`, `gh release view`).
 - Every Epic 1-5 story issue from #10 to #33 is closed; #34 (this story) is open. Open issues
-  besides #34: #70, #72, #83, #103, #171; the pull request that delivers this certificate also
-  fixes #171.
+  besides #34: #70 and #103, whose remaining contributor-side items #178 implements. #72, #83 and
+  #171 were closed by PRs #175, #177 and #176.
 - Figures quoted from the governance artifacts are taken from their own roll-ups, which their
   drift guards hold equal to the parsed rows.
 
 ## 2. Release-readiness summary
 
-| Gate                                | Verdict                                             | Evidence   |
-| ----------------------------------- | --------------------------------------------------- | ---------- |
-| Board coverage closure (FR1)        | Closed, provisional on one open appendix ruling     | §2.1       |
-| Provenance and canonical compliance | Complete, 13 ledger rulings unratified              | §2.2       |
-| Export integrity                    | Complete and machine-enforced                       | §2.3       |
-| Quality gates (FR8)                 | PR gate set green; release pipeline red             | §2.4       |
-| Licensing and IP (AC3)              | Gate delivered; passes on a tarball packed with #34 | §4         |
-| Overall                             | Not ready: five blocking issues open                | §2.5, §3.3 |
+| Gate                                | Verdict                                           | Evidence   |
+| ----------------------------------- | ------------------------------------------------- | ---------- |
+| Board coverage closure (FR1)        | Closed, provisional on one open appendix ruling   | §2.1       |
+| Provenance and canonical compliance | Complete, 13 ledger rulings unratified            | §2.2       |
+| Export integrity                    | Complete and machine-enforced                     | §2.3       |
+| Quality gates (FR8)                 | PR gate set green; release pipeline red           | §2.4       |
+| Licensing and IP (AC3)              | Gate delivered and green in CI; OFL texts shipped | §4         |
+| Overall                             | Not ready: three blocking issues open             | §2.5, §3.3 |
 
 ### 2.1 Board coverage closure
 
@@ -69,9 +71,10 @@ Enforcement: `tests/unit/board-coverage-traceability.test.ts`. Story artifact:
   source and rationale for every runtime export of `src/components/index.ts` (groups A-D of the
   drift guard).
 - Deviation ledger: `specs/planning-artifacts/deviation-ledger.md` holds 66 rows, `DEV-01` to
-  `DEV-66`. By status: 34 `ratified`, 10 `pending-ratification`, 3 `escalated`, 10
-  `deferred-tracked`, 9 `superseded`. Fifteen rows carry an `unfiled:` tracking ref rather than
-  a GitHub issue.
+  `DEV-66`. By status: 34 `ratified`, 10 `pending-ratification`, 3 `escalated`, 8
+  `deferred-tracked`, 11 `superseded`. Thirteen rows carry an `unfiled:` tracking ref rather than
+  a GitHub issue. `DEV-43` (bundled fonts without a licence note) is `superseded` by #178, which
+  ships the OFL texts.
 - Ratification register: the 10 `pending-ratification` rows and the option-group appendix ruling
   have empty `Ratified by` and `Date` cells. The ledger states each needs a named person and a date
   before `v1.0.0` ships. The 3 `escalated` rows (DEV-08, DEV-09, DEV-16) wait on designer
@@ -79,38 +82,45 @@ Enforcement: `tests/unit/board-coverage-traceability.test.ts`. Story artifact:
 - DoD compliance matrix:
   `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md`
   measures every story artifact against `specs/implementation-artifacts/story-dod-template.md`:
-  8 rows `Complete`, 15 `Evidence-elsewhere`, 1 `Gap` (the parity layer's §6, ruled on in that
-  artifact).
+  9 rows `Complete`, 15 `Evidence-elsewhere`, 1 `Gap` (the parity layer's §6, ruled on in that
+  artifact). The ninth `Complete` row is Story 4.4.
 
 Enforcement: `tests/unit/component-provenance-traceability.test.ts`.
 
 ### 2.3 Export integrity
 
 `specs/planning-artifacts/export-contract.md` registers all 63 directories under
-`src/components/`: 56 `exported` and 7 `internal`, each internal row with a reason and a tracking
-ref. Rules R1-R5 (value export, props-type export, reachable types, traceable exceptions,
-filesystem-derived enforcement) are enforced by `tests/unit/export-contract-integrity.test.ts`; the
-API Extractor rollup's `ae-forgotten-export` check fails the build on an unexported reachable
-type. `make package` fails when the tarball lacks a promised entry point
-(`scripts/ci/verify-package-tarball.sh`). Story artifact:
+`src/components/`: 58 `exported` and 5 `internal`, each internal row with a reason and a tracking
+ref. `ui-sx-adapter` (RB-04) is the newest `exported` row. Rules R1-R5 (value export, props-type
+export, reachable types, traceable exceptions, filesystem-derived enforcement) are enforced by
+`tests/unit/export-contract-integrity.test.ts`. API Extractor keeps `config/api/ui-toolkit.api.md`,
+a report of every published declaration and every `ae-forgotten-export` finding, and from #178 the
+build fails when the declarations stop matching it, so a new unexported reachable type fails the
+build. The two findings on record, `DisclosureProps` and `PresentationProps`, are the key-name
+unions `UiTooltipProps` passes to `Omit`; a consumer never names them. `make package` fails when
+the tarball lacks a promised entry point (`scripts/ci/verify-package-tarball.sh`). Story artifact:
 `specs/implementation-artifacts/5-3-export-contract-and-entry-point-integrity.md`.
 
 ### 2.4 Quality-gate status
 
-- **Pull-request gate set.** The last merged pull request, #172, finished with 61 checks passing and
-  3 skipped by design (the cubic reviewer, and the full-lockfile and full-history scans, which run
-  on schedule or on `main`). The set covers ESLint, tsc, Markdown, Prettier, dependency ranges,
+- **Pull-request gate set.** The last merged pull request, #177, finished with 56 checks passing,
+  the full-lockfile and full-history scans skipped by design (they run on schedule or on `main`)
+  and the cubic reviewer neutral. The set covers ESLint, tsc, Markdown, Prettier, dependency ranges,
   peer ranges, unused dependencies, i18n keys, test structure, release version, CI paths,
   dependency-cruiser, rust-code-analysis, build, unit and integration Jest (100% coverage
   threshold), Bats, Stryker mutation over 16 shards (`break: 100` in `stryker.config.mjs`), e2e,
   visual, Storybook interaction, axe accessibility, memory leak, Lighthouse desktop and mobile,
-  gitleaks, trivy, SBOM, CodeQL and SonarCloud.
+  gitleaks, trivy, SBOM, CodeQL and SonarCloud. #178 adds the API Extractor report check to
+  `make build`, error floors for the Lighthouse accessibility (0.85) and best-practices (0.9)
+  category scores, CodeQL on `main` and weekly with the `security-extended` suite, and a Codecov
+  upload that fails the job when it fails.
 - **Epic closure artifacts.** Epics 1-3 and Story 3.7 carry closure artifacts
   (`specs/implementation-artifacts/1-4-epic-1-quality-gate-closure.md`,
   `specs/implementation-artifacts/2-6-epic-2-quality-gate-closure.md`,
   `specs/implementation-artifacts/3-6-epic-3-quality-gate-closure.md`,
-  `specs/implementation-artifacts/3-7-board-follow-up-controls.md`), each pinned by
-  `tests/unit/epic-quality-gate-closure.test.ts`. Epic 4 has none (RB-03).
+  `specs/implementation-artifacts/3-7-board-follow-up-controls.md`) and Epic 4
+  (`specs/implementation-artifacts/4-4-skeleton-parity-and-quality-gate-closure.md`, RB-03), each
+  pinned by `tests/unit/epic-quality-gate-closure.test.ts`.
 - **Release pipeline.** Red. See RB-01.
 - **Story 5.4 (#34).** Adds the licensing/IP gate (§4) to the pull-request set, to `make verify`
   and to the release workflow.
@@ -119,26 +129,26 @@ type. `make package` fails when the tarball lacks a promised entry point
 
 Blocking — each prevents a `go` decision until its status is `resolved`:
 
-| ID    | Blocking issue                                                                                                                                                                                                                                 | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                               | Owner                                      | Status |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ------ |
-| RB-01 | The release workflow cannot publish. The branch protection on `main` declines the release App's push with GH006, so the workflow has never published a release.                                                                                | None of the 50 `autorelease.yml` runs on `main` since 2026-06-04 succeeded, and both existing releases were created by a maintainer account. The newest, run 35792373500 (2026-09-22, `004c69c`), failed at "Push the release commit, then its tag" with `GH006: Protected branch update failed`. The daily `release-asset-check.yml` fails on the same condition (run 35855531136, 2026-09-23). #162 is closed but the bypass grant is not in effect. | Org admin (bypass grant for the App)       | `open` |
-| RB-02 | No release artifact passes the licensing/IP gate yet. The newest published asset, `vilnacrm-ui-toolkit-0.4.0.tgz`, predates the `license` field and the third-party notices.                                                                   | `bun scripts/ci/check-licenses.ts` on the downloaded v0.4.0 asset exits 1: "package.json declares no licence, not CC0-1.0" and "swiper@14.0.6 is bundled without an entry in THIRD-PARTY-NOTICES.txt". The same check passes on a tarball packed with the #34 change (§4). Resolved by the first release cut after RB-01 is fixed.                                                                                                                     | Release Manager                            | `open` |
-| RB-03 | Epic 4 has no quality-gate closure artifact. Story 4.4 (#30) was closed on 2026-09-10 without an implementation artifact, and `specs/implementation-artifacts/sprint-status.yaml` still lists it as `backlog`.                                 | `epics.md` Story 4.4 requires a Definition of Done artifact with test, story, export and parity evidence references for Epic 5. The Epic 4 modules are not in `EPIC_GATES` in `tests/unit/epic-quality-gate-closure.test.ts`. FR6 (skeleton parity) is a release blocker under `prd.md` §3.4.                                                                                                                                                          | Component Lead                             | `open` |
-| RB-04 | `prd.md` §9 exit criterion 7 is unmet. FR-07 acceptance 3 requires a documented, integration-tested adapter that maps `SxProps` to `className`/`style`; nothing under `src/` provides one and no ledger row rules it out.                      | No adapter module in `src/`. `specs/planning-artifacts/deviation-ledger.md` has no row for FR-07 acceptance 3, and `specs/planning-artifacts/export-contract.md` registers no adapter.                                                                                                                                                                                                                                                                 | Component Lead / Frontend Team             | `open` |
-| RB-05 | Rulings are unratified. 10 `pending-ratification` ledger rows and the option-group appendix ruling have no ratifier or date, and 3 `escalated` rows have no designer ruling. The board-coverage verdict is provisional on the appendix ruling. | `specs/planning-artifacts/deviation-ledger.md` "Roll-up" and "Ratification register"; `specs/planning-artifacts/board-coverage-checklist.md` "Coverage roll-up".                                                                                                                                                                                                                                                                                       | Release owner, Component Lead, Design Lead | `open` |
+| ID    | Blocking issue                                                                                                                                                                                                                                 | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Owner                                      | Status     |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------- |
+| RB-01 | The release workflow cannot publish. The branch protection on `main` declines the release App's push with GH006, so the workflow has never published a release.                                                                                | None of the `autorelease.yml` runs on `main` since 2026-06-04 succeeded, and both existing releases were created by a maintainer account. The newest, run 35919317830 (2026-09-23, `bd14d22`), failed at "Push the release commit, then its tag" with `GH006: Protected branch update failed`. #162 is closed but the bypass grant is not in effect.                                                                                                                                                          | Org admin (bypass grant for the App)       | `open`     |
+| RB-02 | No release artifact passes the licensing/IP gate yet. The newest published asset, `vilnacrm-ui-toolkit-0.4.0.tgz`, predates the `license` field and the third-party notices.                                                                   | `bun scripts/ci/check-licenses.ts` on the downloaded v0.4.0 asset exits 1: "package.json declares no licence, not CC0-1.0" and "swiper@14.0.6 is bundled without an entry in THIRD-PARTY-NOTICES.txt". The same check passes on a tarball packed with the #34 change (§4). Resolved by the first release cut after RB-01 is fixed.                                                                                                                                                                            | Release Manager                            | `open`     |
+| RB-03 | Epic 4 had no quality-gate closure artifact: Story 4.4 (#30) was closed on 2026-09-10 without one.                                                                                                                                             | Resolved by #178: `specs/implementation-artifacts/4-4-skeleton-parity-and-quality-gate-closure.md` covers the Story 4.4 acceptance criteria, and `tests/unit/epic-quality-gate-closure.test.ts` gains an `Epic 4` entry for all twelve exported skeleton modules. `specs/implementation-artifacts/sprint-status.yaml` lists Story 4.4 and Epic 4 as `done`.                                                                                                                                                   | Component Lead                             | `resolved` |
+| RB-04 | `prd.md` §9 exit criterion 7 was unmet: FR-07 acceptance 3 requires a documented, integration-tested adapter that maps `SxProps` to `className`/`style`.                                                                                       | Resolved by #178: `src/components/ui-sx-adapter/index.tsx` exports `UiSxAdapter`, which resolves `sx` against the toolkit theme into an Emotion class or, with `inline`, a `style` object. It is documented in `README.md` "Theming" and `src/docs/theming.mdx`, tested by `tests/unit/ui-sx-adapter.test.tsx` and `tests/integration/components/ui-sx-adapter.integration.test.tsx`, and registered in `specs/planning-artifacts/export-contract.md` and `specs/planning-artifacts/component-provenance.md`. | Component Lead / Frontend Team             | `resolved` |
+| RB-05 | Rulings are unratified. 10 `pending-ratification` ledger rows and the option-group appendix ruling have no ratifier or date, and 3 `escalated` rows have no designer ruling. The board-coverage verdict is provisional on the appendix ruling. | `specs/planning-artifacts/deviation-ledger.md` "Roll-up" and "Ratification register"; `specs/planning-artifacts/board-coverage-checklist.md` "Coverage roll-up".                                                                                                                                                                                                                                                                                                                                              | Release owner, Component Lead, Design Lead | `open`     |
 
 Non-blocking — tracked follow-ups that do not gate the internal release:
 
-| ID    | Item                                                                                                                                                                                                                                                                                                                                              | Owner / tracking        |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| NB-01 | #171 (25 fixable HIGH advisories in the full `bun.lock`, all in dev tooling) is fixed by this certificate's pull request: the vulnerable transitive entries are re-pinned and `tmp` is overridden to `^0.2.7`. Confirm the weekly full-lockfile audit is clean after merge. The production closure (`make lint-vulns`) was never affected (§3.2). | #171                    |
-| NB-02 | DEV-43 (bundled font faces with no licence note) is `deferred-tracked`. The gate now proves every shipped face embeds OFL-1.1 metadata (§4), but the full OFL text is not shipped beside the faces.                                                                                                                                               | Component Lead · DEV-43 |
-| NB-03 | `package.json` has no `repository`, `homepage` or `bugs` field. The GitHub-release tarball does not need them; public npm promotion does (G-10).                                                                                                                                                                                                  | Release Manager         |
-| NB-04 | The accessibility-visuals bucket (DEV-03, DEV-07, DEV-22, DEV-66) is deferred with an `unfiled:accessibility-lead` ref and no issue.                                                                                                                                                                                                              | Accessibility Lead      |
-| NB-05 | Fifteen ledger rows carry `unfiled:` refs rather than GitHub issues.                                                                                                                                                                                                                                                                              | Owners named per row    |
-| NB-06 | Open NFR issues: #72 and #83 (theming through private ThemeProviders), #103 (measurement rigour), #70 (enterprise-readiness scorecard).                                                                                                                                                                                                           | #70, #72, #83, #103     |
-| NB-07 | Status columns in the DoD matrix still read "Open — PR #132" and "issue #28 OPEN". PR #132 merged on 2026-08-24 and issues #27-#29 are closed.                                                                                                                                                                                                    | Release Manager         |
-| NB-08 | `specs/implementation-artifacts/sprint-status.yaml` still lists every delivered story as `review` and every epic as `in-progress`.                                                                                                                                                                                                                | Scrum Master            |
+| ID    | Item                                                                                                                                                                                                                                                                                                                                   | Owner / tracking        |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| NB-01 | #171 (25 fixable HIGH advisories in the full `bun.lock`, all in dev tooling) was fixed by PR #176, which re-pinned the vulnerable transitive entries and overrode `tmp` to `^0.2.7`. Confirm that the first weekly full-lockfile audit after the merge is clean. The production closure (`make lint-vulns`) was never affected (§3.2). | #171                    |
+| NB-02 | Resolved by #178: DEV-43 is `superseded`. The upstream OFL-1.1 texts sit beside the faces (`src/assets/fonts/Inter/OFL.txt`, `src/assets/fonts/Golos/OFL.txt`), the build copies them into the package, and `scripts/ci/verify-package-tarball.sh` fails a tarball without them.                                                       | Component Lead · DEV-43 |
+| NB-03 | Resolved by #178: `package.json` declares `repository`, `homepage` and `bugs`, which public npm promotion needs (G-10).                                                                                                                                                                                                                | Release Manager         |
+| NB-04 | The accessibility-visuals bucket (DEV-03, DEV-07, DEV-22, DEV-66) is deferred with an `unfiled:accessibility-lead` ref and no issue.                                                                                                                                                                                                   | Accessibility Lead      |
+| NB-05 | Thirteen ledger rows carry `unfiled:` refs rather than GitHub issues.                                                                                                                                                                                                                                                                  | Owners named per row    |
+| NB-06 | Open NFR issues: #103 (measurement rigour) and #70 (enterprise-readiness scorecard). #178 implements their contributor-side items; what remains is admin-only (Codecov activation, secret-scanning push protection, applying the checked-in rulesets). #72 and #83 were closed by PRs #175 and #177.                                   | #70, #103               |
+| NB-07 | Resolved by #178: the DoD matrix delivery-state cells now record PR #132 as merged and issues #27-#29 as closed, and the matrix gains its Story 4.4 row.                                                                                                                                                                               | Release Manager         |
+| NB-08 | Resolved by #178: `specs/implementation-artifacts/sprint-status.yaml` lists every delivered story and Epics 1-4 as `done`; Epic 5 stays `in-progress` until this certificate is signed.                                                                                                                                                | Scrum Master            |
 
 ## 3. Internal consumer compatibility
 
@@ -185,18 +195,18 @@ Gates that keep the baseline true: `make lint-peer-ranges`
 A `go` for an internal release requires every criterion from G-01 to G-08 to be `met`. Promotion to
 the public npm registry additionally requires G-09 and G-10. Any criterion `not met` is a `no-go`.
 
-| ID   | Criterion                                                                                           | Status on 2026-09-23                                         |
-| ---- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| G-01 | Every blocking issue in §2.5 is `resolved`                                                          | not met (RB-01 to RB-05 open)                                |
-| G-02 | The newest `autorelease.yml` run on `main` concluded `success` and the release asset check is green | not met (RB-01)                                              |
-| G-03 | The full pull-request gate set is green on the release commit                                       | met on PR #172; recheck at release                           |
-| G-04 | `make lint-licenses` is green on the exact tarball the release attaches                             | met on a tarball packed with #34; not met for v0.4.0 (RB-02) |
-| G-05 | The board-coverage roll-up is `CLOSED` with no provisional ruling                                   | not met (RB-05)                                              |
-| G-06 | The ratification register has a ratifier and date on every row, and no ledger row is `escalated`    | not met (RB-05)                                              |
-| G-07 | Epics 1-4 each have a quality-gate closure artifact pinned by the closure guard                     | not met (RB-03)                                              |
-| G-08 | `prd.md` §9 exit criteria 1-7 are met                                                               | not met (criterion 7, RB-04)                                 |
-| G-09 | The Legal/OSS Compliance member of the Governance Board records `go` in §8                          | pending                                                      |
-| G-10 | `package.json` carries `repository`, `homepage` and `bugs` for the public registry                  | not met (NB-03)                                              |
+| ID   | Criterion                                                                                           | Status on 2026-09-24                                                                            |
+| ---- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| G-01 | Every blocking issue in §2.5 is `resolved`                                                          | not met (RB-01, RB-02 and RB-05 open)                                                           |
+| G-02 | The newest `autorelease.yml` run on `main` concluded `success` and the release asset check is green | not met (RB-01)                                                                                 |
+| G-03 | The full pull-request gate set is green on the release commit                                       | met on PR #177; recheck at release                                                              |
+| G-04 | `make lint-licenses` is green on the exact tarball the release attaches                             | met on a tarball packed with #34; not met for v0.4.0 (RB-02)                                    |
+| G-05 | The board-coverage roll-up is `CLOSED` with no provisional ruling                                   | not met (RB-05)                                                                                 |
+| G-06 | The ratification register has a ratifier and date on every row, and no ledger row is `escalated`    | not met (RB-05)                                                                                 |
+| G-07 | Epics 1-4 each have a quality-gate closure artifact pinned by the closure guard                     | met (RB-03 resolved by #178)                                                                    |
+| G-08 | `prd.md` §9 exit criteria 1-7 are met                                                               | met (criterion 7 by `UiSxAdapter`, RB-04 resolved by #178); criterion 1 is provisional on RB-05 |
+| G-09 | The Legal/OSS Compliance member of the Governance Board records `go` in §8                          | pending                                                                                         |
+| G-10 | `package.json` carries `repository`, `homepage` and `bugs` for the public registry                  | met (NB-03 resolved by #178)                                                                    |
 
 ## 4. Licensing and IP clearance
 
@@ -238,7 +248,10 @@ exposed, and a release pipeline that fails when any of these checks fails. The g
   package (`swiper` 14.0.6, MIT, with its notice); an empty production closure; nine TTF faces
   (six Golos Text, three Inter), all embedding "SIL Open Font License, Version 1.1"; no internal
   URL or marker. gitleaks reports no leaks and its positive control passes. The published v0.4.0
-  asset fails the check (RB-02). The first CI run of the gate happens on the #34 pull request.
+  asset fails the check (RB-02). The gate has run green in CI on every pull request since #176.
+- **Font licence texts (2026-09-24).** From #178 the package also carries the full OFL-1.1 text of
+  each bundled family, `build/Golos-OFL.txt` and `build/Inter-OFL.txt`; the build fails without
+  them and `scripts/ci/verify-package-tarball.sh` rejects a tarball that lacks them.
 - **Legal/OSS Compliance sign-off.** Pending in §8. `prd.md` and `epics.md` make it a precondition
   for public npm promotion (G-09).
 
@@ -246,21 +259,21 @@ exposed, and a release pipeline that fails when any of these checks fails. The g
 
 ### 5.1 FR1, FR2, FR3 and FR8 evidence
 
-| FR  | Requirement (`epics.md`)                      | Evidence                                                                                                                                                                                                             | Status                                         |
-| --- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| FR1 | Complete board coverage                       | `specs/planning-artifacts/board-coverage-checklist.md` (46/46 `Done`), `specs/implementation-artifacts/5-1-board-coverage-closure-and-traceability.md`, `tests/unit/board-coverage-traceability.test.ts`             | Met; provisional on RB-05                      |
-| FR2 | Reuse-first provenance                        | `specs/planning-artifacts/component-provenance.md`, `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md`, `tests/unit/component-provenance-traceability.test.ts`             | Met                                            |
-| FR3 | `crm`-canonical behaviour, `website` gap-fill | `specs/planning-artifacts/deviation-ledger.md` (every divergence ledgered, 66 rows), `specs/planning-artifacts/component-provenance.md` alignment notes                                                              | Met; 13 rulings unratified (RB-05)             |
-| FR8 | Storybook, unit tests, strict tsc, exports    | `tests/unit/story-coverage.test.ts`, `tests/unit/epic-quality-gate-closure.test.ts`, `tests/unit/export-contract-integrity.test.ts`, `specs/planning-artifacts/export-contract.md`, §2.4 gate set, §4 licensing gate | Met for Epics 1-3; Epic 4 closure open (RB-03) |
+| FR  | Requirement (`epics.md`)                      | Evidence                                                                                                                                                                                                             | Status                             |
+| --- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| FR1 | Complete board coverage                       | `specs/planning-artifacts/board-coverage-checklist.md` (46/46 `Done`), `specs/implementation-artifacts/5-1-board-coverage-closure-and-traceability.md`, `tests/unit/board-coverage-traceability.test.ts`             | Met; provisional on RB-05          |
+| FR2 | Reuse-first provenance                        | `specs/planning-artifacts/component-provenance.md`, `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md`, `tests/unit/component-provenance-traceability.test.ts`             | Met                                |
+| FR3 | `crm`-canonical behaviour, `website` gap-fill | `specs/planning-artifacts/deviation-ledger.md` (every divergence ledgered, 66 rows), `specs/planning-artifacts/component-provenance.md` alignment notes                                                              | Met; 13 rulings unratified (RB-05) |
+| FR8 | Storybook, unit tests, strict tsc, exports    | `tests/unit/story-coverage.test.ts`, `tests/unit/epic-quality-gate-closure.test.ts`, `tests/unit/export-contract-integrity.test.ts`, `specs/planning-artifacts/export-contract.md`, §2.4 gate set, §4 licensing gate | Met for Epics 1-4                  |
 
 ### 5.2 FR4 to FR7 traceability
 
-| FR  | Delivered in | Traceability references                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Status                                 |
-| --- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| FR4 | Epic 1       | `specs/implementation-artifacts/1-2-core-control-state-parity-completion.md`, `specs/implementation-artifacts/1-3-accessibility-and-interaction-consistency-hardening.md`, `specs/implementation-artifacts/1-4-epic-1-quality-gate-closure.md`, `tests/unit/ui-button.test.tsx`, `tests/unit/ui-input.test.tsx`, `tests/unit/ui-check-box.test.tsx`, `tests/unit/ui-link.test.tsx`, `tests/unit/core-controls-accessibility.test.tsx`, `tests/visual/states.spec.ts`                                                                                                            | Met                                    |
-| FR5 | Epics 2-4    | `specs/implementation-artifacts/2-1-search-and-select-foundation.md` to `specs/implementation-artifacts/2-5-pagination-workflow-component-delivery.md` and `specs/implementation-artifacts/2-4a-file-upload-input-workflows.md`; `specs/implementation-artifacts/3-1-item-row-and-list-data-presentation.md` to `specs/implementation-artifacts/3-5-board-a-micro-components.md`; `specs/implementation-artifacts/4-2-skeleton-primitive-variants.md`, `specs/implementation-artifacts/4-3-composed-skeleton-layout-variants.md`; `specs/planning-artifacts/export-contract.md` | Met; Epic 4 closure open (RB-03)       |
-| FR6 | Epic 4       | `specs/implementation-artifacts/4-1-crm-skeleton-baseline-and-provenance-lock.md`, `specs/implementation-artifacts/4-2-skeleton-primitive-variants.md`, `specs/implementation-artifacts/4-3-composed-skeleton-layout-variants.md`, `tests/unit/skeleton-crm-parity.test.ts`, `specs/planning-artifacts/component-provenance.md` Epic 4 rows                                                                                                                                                                                                                                     | Evidence present; closure open (RB-03) |
-| FR7 | Epics 1-3    | `specs/implementation-artifacts/1-1-core-contract-and-export-baseline.md`, `tests/unit/ui-core-contract.test.tsx`, `tests/unit/optional-props-accept-undefined.test.ts`, `specs/planning-artifacts/deviation-ledger.md` (`contract-exception` rows)                                                                                                                                                                                                                                                                                                                             | Partially met; adapter missing (RB-04) |
+| FR  | Delivered in   | Traceability references                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Status |
+| --- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| FR4 | Epic 1         | `specs/implementation-artifacts/1-2-core-control-state-parity-completion.md`, `specs/implementation-artifacts/1-3-accessibility-and-interaction-consistency-hardening.md`, `specs/implementation-artifacts/1-4-epic-1-quality-gate-closure.md`, `tests/unit/ui-button.test.tsx`, `tests/unit/ui-input.test.tsx`, `tests/unit/ui-check-box.test.tsx`, `tests/unit/ui-link.test.tsx`, `tests/unit/core-controls-accessibility.test.tsx`, `tests/visual/states.spec.ts`                                                                                                                                                                                              | Met    |
+| FR5 | Epics 2-4      | `specs/implementation-artifacts/2-1-search-and-select-foundation.md` to `specs/implementation-artifacts/2-5-pagination-workflow-component-delivery.md` and `specs/implementation-artifacts/2-4a-file-upload-input-workflows.md`; `specs/implementation-artifacts/3-1-item-row-and-list-data-presentation.md` to `specs/implementation-artifacts/3-5-board-a-micro-components.md`; `specs/implementation-artifacts/4-2-skeleton-primitive-variants.md`, `specs/implementation-artifacts/4-3-composed-skeleton-layout-variants.md`, `specs/implementation-artifacts/4-4-skeleton-parity-and-quality-gate-closure.md`; `specs/planning-artifacts/export-contract.md` | Met    |
+| FR6 | Epic 4         | `specs/implementation-artifacts/4-1-crm-skeleton-baseline-and-provenance-lock.md`, `specs/implementation-artifacts/4-2-skeleton-primitive-variants.md`, `specs/implementation-artifacts/4-3-composed-skeleton-layout-variants.md`, `specs/implementation-artifacts/4-4-skeleton-parity-and-quality-gate-closure.md`, `tests/unit/skeleton-crm-parity.test.ts`, `specs/planning-artifacts/component-provenance.md` Epic 4 rows                                                                                                                                                                                                                                     | Met    |
+| FR7 | Epics 1-3, #34 | `specs/implementation-artifacts/1-1-core-contract-and-export-baseline.md`, `tests/unit/ui-core-contract.test.tsx`, `tests/unit/optional-props-accept-undefined.test.ts`, `specs/planning-artifacts/deviation-ledger.md` (`contract-exception` rows); acceptance 3: `src/components/ui-sx-adapter/index.tsx`, `tests/integration/components/ui-sx-adapter.integration.test.tsx`                                                                                                                                                                                                                                                                                    | Met    |
 
 ## 6. Release Manager validation checklist
 
@@ -279,8 +292,8 @@ the blocker or approver it waits on.
 - [x] FR1-FR8 traceability recorded (§5).
 - [ ] Release workflow green on `main` (RB-01, org admin).
 - [ ] A release cut through the gated pipeline (RB-02, after RB-01).
-- [ ] Epic 4 quality-gate closure artifact authored and pinned (RB-03).
-- [ ] `SxProps` adapter delivered, or FR-07 acceptance 3 formally re-ruled (RB-04).
+- [x] Epic 4 quality-gate closure artifact authored and pinned (RB-03, #178).
+- [x] `SxProps` adapter delivered (RB-04, #178).
 - [ ] Ratification register completed and escalations ruled (RB-05).
 - [ ] Governance Board decisions recorded in §8.
 
@@ -294,7 +307,8 @@ the blocker or approver it waits on.
   `specs/implementation-artifacts/1-4-epic-1-quality-gate-closure.md`,
   `specs/implementation-artifacts/2-6-epic-2-quality-gate-closure.md`,
   `specs/implementation-artifacts/3-6-epic-3-quality-gate-closure.md`,
-  `specs/implementation-artifacts/3-7-board-follow-up-controls.md`. Epic 4: none (RB-03).
+  `specs/implementation-artifacts/3-7-board-follow-up-controls.md`,
+  `specs/implementation-artifacts/4-4-skeleton-parity-and-quality-gate-closure.md`.
 - Epic 5 story DoD artifacts:
   `specs/implementation-artifacts/5-1-board-coverage-closure-and-traceability.md`,
   `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md`,
@@ -318,9 +332,9 @@ Approvers are the Release Manager and the Governance Board (`epics.md` "Governan
 `open`. The drift guard fails on any of these. The repository owner (@Kravalg) records each
 decision; the report's author records none.
 
-| Role                                    | reviewer  | date      | decision  | blocking-issues                   | follow-ups          |
-| --------------------------------------- | --------- | --------- | --------- | --------------------------------- | ------------------- |
-| Release Manager                         | `pending` | `pending` | `pending` | RB-01, RB-02, RB-03, RB-04, RB-05 | NB-03, NB-05, NB-07 |
-| Governance Board — Engineering Lead     | `pending` | `pending` | `pending` | RB-01, RB-03, RB-04               | NB-01, NB-06, NB-08 |
-| Governance Board — QA Lead              | `pending` | `pending` | `pending` | RB-03, RB-05                      | NB-04               |
-| Governance Board — Legal/OSS Compliance | `pending` | `pending` | `pending` | RB-02                             | NB-02, NB-03        |
+| Role                                    | reviewer  | date      | decision  | blocking-issues     | follow-ups   |
+| --------------------------------------- | --------- | --------- | --------- | ------------------- | ------------ |
+| Release Manager                         | `pending` | `pending` | `pending` | RB-01, RB-02, RB-05 | NB-05        |
+| Governance Board — Engineering Lead     | `pending` | `pending` | `pending` | RB-01               | NB-01, NB-06 |
+| Governance Board — QA Lead              | `pending` | `pending` | `pending` | RB-05               | NB-04        |
+| Governance Board — Legal/OSS Compliance | `pending` | `pending` | `pending` | RB-02               | —            |

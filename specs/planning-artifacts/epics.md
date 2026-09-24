@@ -762,7 +762,7 @@ So that internal package publication is a controlled and auditable decision.
 **Final validation certificate (annotation):**
 
 - canonical pointer: `specs/implementation-artifacts/final-validation-certificate.md`
-- certificate-version: `1.0.0`
-- certificate-timestamp: `2026-09-23`
+- certificate-version: `1.1.0`
+- certificate-timestamp: `2026-09-24`
 - sign-off status: every `decision` is `pending`; Epic 5 stays open until the certificate records
   the Release Manager and Governance Board decisions.

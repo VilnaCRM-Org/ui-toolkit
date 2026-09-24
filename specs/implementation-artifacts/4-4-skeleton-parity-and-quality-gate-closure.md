@@ -1,7 +1,7 @@
 # Story 4.4 — Skeleton Parity and Quality Gate Closure
 
 - **Issue:** [#30](https://github.com/VilnaCRM-Org/ui-toolkit/issues/30)
-- **PR:** this pull request (issue [#34](https://github.com/VilnaCRM-Org/ui-toolkit/issues/34))
+- **PR:** [#178](https://github.com/VilnaCRM-Org/ui-toolkit/pull/178) (issue [#34](https://github.com/VilnaCRM-Org/ui-toolkit/issues/34))
 - **Epic:** Epic 4 — Skeleton Loading Experience Parity
 - **Status:** done
 - **Source AC:** `specs/planning-artifacts/epics.md` → _Story 4.4: Skeleton Parity and Quality
