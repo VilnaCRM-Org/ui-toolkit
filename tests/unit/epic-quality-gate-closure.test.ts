@@ -5,7 +5,7 @@ import * as publicComponents from '../../src/components';
 
 import nthOf from './utils/nth-of';
 
-// Stories 1.4, 2.6 and 3.6 (#27/#28/#29) — the epic quality-gate closure guard.
+// Stories 1.4, 2.6, 3.6 and 4.4 (#27/#28/#29/#30) — the epic quality-gate closure guard.
 // Each closure story pins its epic's delivered set to four machine-checked
 // surfaces: a Storybook story module, a behaviour-level unit suite, a public
 // barrel export and a registered visual baseline. The closure artifacts in
@@ -31,7 +31,7 @@ interface EpicGate {
 }
 
 // The delivered sets come verbatim from the closure stories' acceptance
-// criteria (`specs/planning-artifacts/epics.md` — Stories 1.4, 2.6, 3.6).
+// criteria (`specs/planning-artifacts/epics.md` — Stories 1.4, 2.6, 3.6, 4.4).
 const EPIC_GATES: EpicGate[] = [
   {
     epic: 'Epic 1',
@@ -83,6 +83,19 @@ const EPIC_GATES: EpicGate[] = [
       'ui-copy-field',
       'ui-social-icon-button',
       'ui-segmented-control',
+    ],
+  },
+  {
+    epic: 'Epic 4',
+    artifact: '4-4-skeleton-parity-and-quality-gate-closure.md',
+    modules: [
+      'auth-skeleton',
+      'ui-skeleton-control-text',
+      'ui-skeleton-list',
+      'ui-skeleton-menu',
+      'ui-skeleton-tab-bar',
+      'ui-skeleton-table',
+      'ui-skeleton-widget',
     ],
   },
 ];
