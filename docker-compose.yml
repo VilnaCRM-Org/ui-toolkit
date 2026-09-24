@@ -9,6 +9,12 @@ services:
       # type-stripping so the config's extensionless import still resolves.
       NODE_OPTIONS: --no-experimental-strip-types
     restart: unless-stopped
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - DAC_OVERRIDE
   storybook:
     build: .
     # Serve a STATIC Storybook build (not `storybook dev`): the dev server's async
@@ -20,6 +26,10 @@ services:
         '-lc',
         'bun x storybook build --output-dir /app/storybook-static --quiet && python3 -m http.server 6006 --bind 0.0.0.0 --directory /app/storybook-static',
       ]
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
   playwright:
     build:
       context: .
@@ -27,6 +37,10 @@ services:
     environment:
       REACT_APP_STORYBOOK_URL: http://storybook:6006
     ipc: host
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
   rca:
     build:
       context: .
@@ -35,3 +49,7 @@ services:
       - tools
     volumes:
       - .:/app
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

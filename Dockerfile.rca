@@ -42,4 +42,6 @@ WORKDIR /app
 
 USER rca
 
+HEALTHCHECK NONE
+
 CMD ["sh", "-c", "while :; do sleep 3600; done"]
