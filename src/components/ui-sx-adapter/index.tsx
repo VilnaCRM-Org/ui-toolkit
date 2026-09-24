@@ -1,4 +1,4 @@
-import { ClassNames } from '@emotion/react';
+import { ClassNames, type ClassNamesContent } from '@emotion/react';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
@@ -6,11 +6,15 @@ import { useDevWarning } from '@/utils/dev-warn';
 import { useUiTheme } from '@/utils/ui-theme';
 
 import { flattenToInline, resolveSxLayers, type InlineStyles } from './resolve-sx';
-import type { UiSxAdapterProps } from './types';
+import type { UiSxAdapterProps, UiSxAdapterRenderProps } from './types';
 
-type ResolvableProps = Omit<Readonly<UiSxAdapterProps>, 'sx' | 'inline'> & {
-  sx: SxProps<Theme>;
-};
+interface Resolution {
+  sx: SxProps<Theme> | undefined;
+  className: string | undefined;
+  style: React.CSSProperties | undefined;
+  theme: Theme;
+  inlineStyles: InlineStyles | null;
+}
 
 function droppedRulesWarning(droppedRules: readonly string[]): string | null {
   if (droppedRules.length === 0) {
@@ -22,22 +26,18 @@ function droppedRulesWarning(droppedRules: readonly string[]): string | null {
   );
 }
 
-function InlineSxAdapter({ sx, className, style, children }: ResolvableProps): React.ReactNode {
-  const theme: Theme = useUiTheme();
-  const resolved: InlineStyles = flattenToInline(resolveSxLayers(sx, theme));
-  useDevWarning(droppedRulesWarning(resolved.droppedRules));
-  return children({ className, style: { ...resolved.style, ...style } });
-}
-
-function ClassNameSxAdapter({ sx, className, style, children }: ResolvableProps): React.ReactNode {
-  const theme: Theme = useUiTheme();
-  return (
-    <ClassNames>
-      {({ css, cx }) =>
-        children({ className: cx(css(resolveSxLayers(sx, theme)), className), style })
-      }
-    </ClassNames>
-  );
+function renderPropsFor(
+  resolution: Resolution,
+  { css, cx }: ClassNamesContent
+): UiSxAdapterRenderProps {
+  const { sx, className, style, theme, inlineStyles } = resolution;
+  if (sx == null) {
+    return { className, style };
+  }
+  if (inlineStyles != null) {
+    return { className, style: { ...inlineStyles.style, ...style } };
+  }
+  return { className: cx(css(resolveSxLayers(sx, theme)), className), style };
 }
 
 function UiSxAdapter({
@@ -47,21 +47,12 @@ function UiSxAdapter({
   inline,
   children,
 }: Readonly<UiSxAdapterProps>): React.ReactNode {
-  if (sx == null) {
-    return children({ className, style });
-  }
-  if (inline === true) {
-    return (
-      <InlineSxAdapter sx={sx} className={className} style={style}>
-        {children}
-      </InlineSxAdapter>
-    );
-  }
-  return (
-    <ClassNameSxAdapter sx={sx} className={className} style={style}>
-      {children}
-    </ClassNameSxAdapter>
-  );
+  const theme: Theme = useUiTheme();
+  const inlineStyles: InlineStyles | null =
+    inline === true ? flattenToInline(resolveSxLayers(sx, theme)) : null;
+  useDevWarning(droppedRulesWarning(inlineStyles?.droppedRules ?? []));
+  const resolution: Resolution = { sx, className, style, theme, inlineStyles };
+  return <ClassNames>{content => children(renderPropsFor(resolution, content))}</ClassNames>;
 }
 
 export default UiSxAdapter;

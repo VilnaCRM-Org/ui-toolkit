@@ -152,6 +152,41 @@ describe('UiSxAdapter — class-name mode', () => {
     expect(css).toMatch(new RegExp(`:hover\\s*\\{\\s*color:\\s*${BRAND_HEX};?\\s*\\}`, 'i'));
     expect(css).toContain(`min-width:${uiTheme.breakpoints.values.md}px`);
   });
+  it('keeps nested rules in class-name mode without a warning', () => {
+    const warn: jest.SpyInstance = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(<UiSxAdapter sx={{ '&:hover': { color: 'primary.main' } }}>{panelChild}</UiSxAdapter>);
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
+describe('UiSxAdapter — mode changes', () => {
+  it('keeps the child mounted when sx arrives', () => {
+    const { rerender } = render(<UiSxAdapter>{panelChild}</UiSxAdapter>);
+    const node: HTMLElement = panel();
+
+    rerender(<UiSxAdapter sx={{ p: 1 }}>{panelChild}</UiSxAdapter>);
+
+    expect(panel()).toBe(node);
+    expect(node).toHaveStyle({ padding: '8px' });
+  });
+
+  it('keeps the child mounted when inline is switched off', () => {
+    const { rerender } = render(
+      <UiSxAdapter sx={{ p: 1 }} inline>
+        {panelChild}
+      </UiSxAdapter>
+    );
+    const node: HTMLElement = panel();
+
+    rerender(<UiSxAdapter sx={{ p: 1 }}>{panelChild}</UiSxAdapter>);
+
+    expect(panel()).toBe(node);
+    expect(node.className).toMatch(/^css-\S+$/);
+    expect(node).toHaveStyle({ padding: '8px' });
+  });
 });
 
 describe('UiSxAdapter — inline mode', () => {
@@ -248,6 +283,10 @@ describe('resolveSxLayers', () => {
 
   it('drops null and false layers from an array sx', () => {
     expect(resolveSxLayers([null, false, { m: 1 }], uiTheme)).toEqual([{ margin: '8px' }]);
+  });
+
+  it('returns no layer when there is no sx', () => {
+    expect(resolveSxLayers(undefined, uiTheme)).toEqual([]);
   });
 
   it('returns no layer for a function sx that resolves to null', () => {

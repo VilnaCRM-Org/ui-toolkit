@@ -12,7 +12,7 @@ function isStyleLayer(layer: unknown): layer is CSSObject {
   return typeof layer === 'object' && layer !== null;
 }
 
-export function resolveSxLayers(sx: SxProps<Theme>, theme: Theme): CSSObject[] {
+export function resolveSxLayers(sx: SxProps<Theme> | undefined, theme: Theme): CSSObject[] {
   const resolved: unknown = styleFunctionSx({ sx, theme });
   const layers: unknown[] = Array.isArray(resolved) ? resolved : [resolved];
   return layers.filter(isStyleLayer);
