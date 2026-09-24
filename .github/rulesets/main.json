@@ -38,6 +38,14 @@
             "integration_id": 15368
           },
           {
+            "context": "codecov/patch",
+            "integration_id": 254
+          },
+          {
+            "context": "codecov/project",
+            "integration_id": 254
+          },
+          {
             "context": "package SBOM",
             "integration_id": 15368
           },
