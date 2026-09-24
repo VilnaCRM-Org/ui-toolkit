@@ -130,7 +130,7 @@ _Instantiates `specs/implementation-artifacts/story-dod-template.md`._
 - [x] The five primitives' tests moved out of the shared suite into dedicated suites; the test
       count is unchanged (61 before and after).
 - [x] Type check, lint and Prettier green on the changed files.
-- [x] Jest and the container-only gates deferred to CI; the diff contains no `src/` change.
+- [x] Jest and the container-only gates deferred to CI; the Story 4.4 changes touch no `src/` file.
 
 ### 4. Stories (Storybook) added/updated
 
