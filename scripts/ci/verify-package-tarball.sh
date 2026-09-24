@@ -44,7 +44,9 @@ for required in \
   package/build/ui-button.mjs \
   package/build/ui-button.d.mts \
   package/build/locales.mjs \
-  package/build/locales.d.mts; do
+  package/build/locales.d.mts \
+  package/build/Golos-OFL.txt \
+  package/build/Inter-OFL.txt; do
   if ! printf '%s\n' "$contents" | grep -qxF -- "$required"; then
     echo "$tarball is missing $required" >&2
     exit 1

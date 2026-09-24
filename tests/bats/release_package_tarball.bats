@@ -42,7 +42,8 @@ setup() {
 @test "verifier accepts a tarball carrying every published entry point" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
-    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts \
+    build/Golos-OFL.txt build/Inter-OFL.txt
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 0 ]
@@ -106,6 +107,17 @@ setup() {
   assert_output_contains 'is missing package/build/locales.d.mts'
 }
 
+@test "verifier rejects a tarball missing a bundled font's OFL text" {
+  make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
+    package.json build/index.mjs build/index.d.mts build/index.css \
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts \
+    build/Golos-OFL.txt
+
+  run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'is missing package/build/Inter-OFL.txt'
+}
+
 @test "verifier fails when the package directory holds no tarball" {
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 1 ]
@@ -115,10 +127,12 @@ setup() {
 @test "verifier refuses to guess when several tarballs are present" {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
-    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts \
+    build/Golos-OFL.txt build/Inter-OFL.txt
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.1.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
-    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts \
+    build/Golos-OFL.txt build/Inter-OFL.txt
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 1 ]

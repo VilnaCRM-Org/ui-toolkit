@@ -79,10 +79,10 @@ that behaviour's contract is written down.
 import, so every consumer of the barrel ships the faces. `fonts.css` declares two
 families from `src/assets/fonts`: **Golos Text** (all six weights in
 `src/assets/fonts/Golos` — Regular, Medium, SemiBold, Bold, ExtraBold, Black) and
-**Inter** (Regular, Medium, Bold, `src/assets/fonts/Inter`). No licence or
-attribution file accompanies them — verified: `src/assets` contains no
-`LICENSE`/`OFL`/`README` of any kind — so the redistribution terms under which
-the toolkit ships these binaries are unrecorded. That gap is DEV-43.
+**Inter** (Regular, Medium, Bold, `src/assets/fonts/Inter`). Each family's
+upstream SIL OFL-1.1 text sits beside its faces (`src/assets/fonts/Golos/OFL.txt`,
+`src/assets/fonts/Inter/OFL.txt`), and the build copies both into `build/` so the
+published package carries them. That gap was DEV-43, now superseded by #34.
 
 ## Registry
 

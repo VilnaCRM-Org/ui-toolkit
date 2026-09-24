@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { copyFileSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { createRequire } from 'module';
@@ -228,6 +228,18 @@ function generateLocalesDeclarations(metafile) {
   }
 }
 
+function copyFontLicenses() {
+  const fontsDir = path.resolve(currentDir, 'src', 'assets', 'fonts');
+  for (const family of readdirSync(fontsDir, { withFileTypes: true })) {
+    if (!family.isDirectory()) continue;
+    const licence = path.resolve(fontsDir, family.name, 'OFL.txt');
+    if (!existsSync(licence)) {
+      throw new Error(`src/assets/fonts/${family.name} ships font faces without an OFL.txt.`);
+    }
+    copyFileSync(licence, path.resolve(currentDir, 'build', `${family.name}-OFL.txt`));
+  }
+}
+
 async function assertPublishable() {
   const { publint } = await import('publint');
   const { formatMessage } = await import('publint/utils');
@@ -298,6 +310,7 @@ esbuild
     await generateTypeDeclarations();
     generateSubpathDeclarations(componentEntryPoints(), result.metafile);
     generateLocalesDeclarations(result.metafile);
+    copyFontLicenses();
     writeThirdPartyNotices({
       metafile: result.metafile,
       buildDir: path.resolve(currentDir, 'build'),
