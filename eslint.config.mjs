@@ -1,11 +1,12 @@
+import { fixupPluginRules } from '@eslint/compat';
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments';
 import js from '@eslint/js';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
-import eslintComments from 'eslint-plugin-eslint-comments';
 import importPlugin from 'eslint-plugin-import';
 import jestDom from 'eslint-plugin-jest-dom';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
-import react from 'eslint-plugin-react';
+import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import storybook from 'eslint-plugin-storybook';
 import testingLibrary from 'eslint-plugin-testing-library';
@@ -13,6 +14,8 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+const react = fixupPluginRules(reactPlugin);
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const tsconfigPath = path.join(rootDir, 'tsconfig.json');
@@ -153,7 +156,7 @@ export default [
       react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
-      'eslint-comments': eslintComments,
+      '@eslint-community/eslint-comments': eslintComments,
       'testing-library': testingLibrary,
       'jest-dom': jestDom,
     },
@@ -163,11 +166,13 @@ export default [
   {
     files: jsxGlobs,
     ...react.configs.flat.recommended,
+    plugins: { react },
     settings: { react: { version: 'detect' } },
   },
   {
     files: jsxGlobs,
     ...react.configs.flat['jsx-runtime'],
+    plugins: { react },
   },
 
   // TypeScript: type-aware parser + @typescript-eslint/recommended.
@@ -200,7 +205,7 @@ export default [
     },
     plugins: {
       import: importPlugin,
-      'eslint-comments': eslintComments,
+      '@eslint-community/eslint-comments': eslintComments,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
     },
@@ -219,7 +224,7 @@ export default [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
       ...eslintComments.configs.recommended.rules,
-      'eslint-comments/no-use': [
+      '@eslint-community/eslint-comments/no-use': [
         'error',
         { allow: ['eslint-disable-next-line', 'eslint-disable', 'eslint-enable'] },
       ],
@@ -230,7 +235,7 @@ export default [
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'import/prefer-default-export': 'off',
       'max-len': ['error', { code: 100 }],
-      'eslint-comments/disable-enable-pair': 'off',
+      '@eslint-community/eslint-comments/disable-enable-pair': 'off',
       'no-restricted-imports': ['error', { patterns: ['@/features/*/*'] }],
       'no-param-reassign': ['error', { props: true, ignorePropertyModificationsFor: ['state'] }],
       'no-extra-semi': 'off',

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.59.1-jammy@sha256:8a0360d39d1973be506dd59002904a774f6d697d4946c94063b3fd006461c8ff
+FROM mcr.microsoft.com/playwright:v1.63.0-jammy@sha256:167d0506cfbe3c294fb214b2d11737326eeee028aa611fa1ba538e5057675847
 # alpine-exception: Playwright's official browser image is Debian (jammy); Chromium/Firefox/WebKit and their system libraries require glibc, and Microsoft publishes no Alpine/musl Playwright base.
 
 # perf-exception:size,dive: glibc-only Playwright vendor base
@@ -10,7 +10,7 @@ ENV BUN_INSTALL_CACHE_DIR=/home/pwuser/.bun-cache
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-      curl=7.81.0-1ubuntu1.27 \
+      curl=7.81.0-1ubuntu1.29 \
       g++=4:11.2.0-1ubuntu1 \
       libssl3=3.0.2-0ubuntu1.29 \
       make=4.3-4.1build1 \

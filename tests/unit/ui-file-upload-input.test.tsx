@@ -520,7 +520,7 @@ describe('UiFileUploadInput — upload lifecycle', () => {
     renderField({ files: [PNG], status: 'uploading', progress: 45 });
 
     const bar: HTMLElement = screen.getByRole('progressbar');
-    expect(bar).toHaveAttribute('aria-valuenow', '45');
+    expect(bar).toHaveValue(45);
     expect(bar).toHaveAccessibleName('Upload progress');
     expect(screen.getByText('Uploading')).toBeInTheDocument();
   });
@@ -528,24 +528,30 @@ describe('UiFileUploadInput — upload lifecycle', () => {
   it('renders an empty bar when the app reports no percentage', () => {
     renderField({ files: [PNG], status: 'uploading' });
 
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    const bar: HTMLElement = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-valuenow');
+    expect(bar).toHaveValue(0);
   });
 
   it('clamps an out-of-range percentage into 0–100', () => {
     const { rerender } = render(
       <UiFileUploadInput label={LABEL} files={[PNG]} status="uploading" progress={140} />
     );
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    expect(screen.getByRole('progressbar')).toHaveValue(100);
 
     rerender(<UiFileUploadInput label={LABEL} files={[PNG]} status="uploading" progress={-20} />);
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    const bar: HTMLElement = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-valuenow');
+    expect(bar).toHaveValue(0);
   });
 
   it('treats a non-finite percentage as no progress rather than a full bar', () => {
     // `loaded / total * 100` is NaN when a response has no Content-Length.
     renderField({ files: [PNG], status: 'uploading', progress: Number.NaN });
 
-    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    const bar: HTMLElement = screen.getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-valuenow');
+    expect(bar).toHaveValue(0);
   });
 
   it('reports success as text, not colour alone', () => {

@@ -33,7 +33,10 @@ function loadShardReports(dir: string): { name: string; report: MutationReport }
   try {
     entries = readdirSync(dir);
   } catch (error) {
-    throw new Error(`Could not read mutation report directory "${dir}": ${String(error)}`);
+    throw Object.assign(
+      new Error(`Could not read mutation report directory "${dir}": ${String(error)}`),
+      { cause: error }
+    );
   }
 
   return entries
@@ -44,7 +47,10 @@ function loadShardReports(dir: string): { name: string; report: MutationReport }
       try {
         return { name, report: JSON.parse(raw) as MutationReport };
       } catch (error) {
-        throw new Error(`Mutation report "${name}" is not valid JSON: ${String(error)}`);
+        throw Object.assign(
+          new Error(`Mutation report "${name}" is not valid JSON: ${String(error)}`),
+          { cause: error }
+        );
       }
     });
 }
