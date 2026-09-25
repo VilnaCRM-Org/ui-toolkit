@@ -108,7 +108,7 @@ name = "eslint"
 # range), so Qlty and `make lint-next` stay the same check.
 version = "10.11.0"
 package_file = "package.json"
-package_filters = ["eslint", "jest", "prettier"]
+package_filters = ["eslint", "globals", "jest", "prettier"]
 
 [[plugin]]
 name = "hadolint"
