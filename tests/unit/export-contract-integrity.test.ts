@@ -87,6 +87,8 @@ import type {
   UiSkeletonWidgetProps,
   UiSocialIconButtonProps,
   UiStatusBadgeProps,
+  UiSxAdapterProps,
+  UiSxAdapterRenderProps,
   UiTaskCardProps,
   UiTextFieldFormProps,
   UiThemeOptions,
@@ -382,6 +384,8 @@ type PublicTypeSurface = [
   Named<UiSkeletonWidgetProps>,
   Named<UiSocialIconButtonProps>,
   Named<UiStatusBadgeProps>,
+  Named<UiSxAdapterProps>,
+  Named<UiSxAdapterRenderProps>,
   Named<UiTaskCardProps>,
   Named<UiTextFieldFormProps<{ field: string }>>,
   Named<UiThemeOptions>,
@@ -392,7 +396,7 @@ type PublicTypeSurface = [
   Named<UiTypographyProps>,
   Named<UiUploadStatus>,
 ];
-const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 93;
+const BOUND_TYPE_COUNT: PublicTypeSurface['length'] = 95;
 
 describe('export contract integrity (Story 5.3, #33)', () => {
   describe('A — the register covers the module tree (R1, R4)', () => {

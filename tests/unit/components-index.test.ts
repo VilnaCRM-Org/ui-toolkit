@@ -22,6 +22,8 @@ import type {
   UiSegmentedControlProps,
   UiSocialIconButtonProps,
   UiStatusBadgeProps,
+  UiSxAdapterProps,
+  UiSxAdapterRenderProps,
   UiThemeOptions,
   UiThemeProviderProps,
   UiThemeVariant,
@@ -85,6 +87,7 @@ const expectedPublicExports: string[] = [
   'UiSkeletonWidget',
   'UiSocialIconButton',
   'UiStatusBadge',
+  'UiSxAdapter',
   'UiTaskCard',
   'UiTextFieldForm',
   'UiThemeProvider',
@@ -122,6 +125,7 @@ describe('components index', () => {
     expect(publicComponents.UiTaskCard).toBeDefined();
     expect(publicComponents.UiIntegrationCard).toBeDefined();
     expect(publicComponents.UiThemeProvider).toBeDefined();
+    expect(publicComponents.UiSxAdapter).toBeDefined();
     expect(publicComponents.uiTheme.breakpoints.values.sm).toBe(640);
     expect(publicComponents.createUiTheme({ variant: 'crm' }).breakpoints.values.sm).toBe(480);
   });
@@ -213,5 +217,13 @@ describe('components index', () => {
 
     expect(options.variant).toBe('crm');
     expect(props.theme).toBe(options);
+  });
+
+  it('exports the sx-adapter props and render-props types', () => {
+    const rendered: UiSxAdapterRenderProps = { className: 'panel', style: { opacity: 1 } };
+    const props: UiSxAdapterProps = { sx: { p: 2 }, inline: true, children: () => null };
+
+    expect(rendered.className).toBe('panel');
+    expect(props.children(rendered)).toBeNull();
   });
 });

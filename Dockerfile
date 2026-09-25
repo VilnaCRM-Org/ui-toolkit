@@ -77,4 +77,6 @@ RUN if [ -f package.json ]; then \
 
 USER appuser
 
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD ["bun", "--version"]
+
 CMD ["sh", "-lc", "while :; do sleep 3600; done"]

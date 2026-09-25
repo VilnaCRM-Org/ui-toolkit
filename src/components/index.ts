@@ -3,11 +3,11 @@ import './fonts.css';
 export { default as AuthSkeleton } from './auth-skeleton';
 export type { AuthSkeletonProps } from './auth-skeleton/index';
 export { default as UiActionIconBar } from './ui-action-icon-bar';
-export type { NeutralActionIconName } from './ui-action-icon-bar/types';
 export type {
-  UiActionIconBarProps,
-  UiActionIconBarAction,
   ActionIconName,
+  NeutralActionIconName,
+  UiActionIconBarAction,
+  UiActionIconBarProps,
 } from './ui-action-icon-bar/types';
 export { default as UiAddButton } from './ui-add-button';
 export type { UiAddButtonProps } from './ui-add-button/types';
@@ -73,8 +73,7 @@ export type { UiPaginationProps } from './ui-pagination/types';
 export { default as UiPaymentOptionCard } from './ui-payment-option-card';
 export type { UiPaymentOptionCardProps } from './ui-payment-option-card/types';
 export { default as UiPinInput } from './ui-pin-input';
-export type { UiPinCellLabel } from './ui-pin-input/types';
-export type { UiPinInputProps } from './ui-pin-input/types';
+export type { UiPinCellLabel, UiPinInputProps } from './ui-pin-input/types';
 export { default as UiProfileSelectCard } from './ui-profile-select-card';
 export type { UiProfileSelectCardProps, ProfileSelectItem } from './ui-profile-select-card/types';
 export { default as UiRadioGroup } from './ui-radio-group';
@@ -90,6 +89,8 @@ export type {
 } from './ui-select-with-search/types';
 export { default as UiStatusBadge } from './ui-status-badge';
 export type { UiStatusBadgeProps } from './ui-status-badge/types';
+export { default as UiSxAdapter } from './ui-sx-adapter';
+export type { UiSxAdapterProps, UiSxAdapterRenderProps } from './ui-sx-adapter/types';
 export { default as UiTaskCard } from './ui-task-card';
 export type { UiTaskCardProps, TaskAssignee } from './ui-task-card/types';
 export { default as UiTypography } from './ui-typography';
@@ -151,12 +152,10 @@ export { default as UiTooltip } from './ui-tooltip';
 export type { UiTooltipProps } from './ui-tooltip/types';
 export { default as UiErrorBoundary } from './ui-error-boundary';
 export type {
-  UiErrorBoundaryFallbackRender,
-  UiErrorBoundaryReset,
-} from './ui-error-boundary/types';
-export type {
   UiErrorBoundaryErrorHandler,
   UiErrorBoundaryFallback,
+  UiErrorBoundaryFallbackRender,
   UiErrorBoundaryProps,
+  UiErrorBoundaryReset,
   UiErrorBoundaryState,
 } from './ui-error-boundary/types';

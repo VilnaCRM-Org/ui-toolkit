@@ -632,10 +632,11 @@ Markdown (`make lint-md`, `make format-check`).
 ### Branch protection rulesets
 
 [.github/rulesets/](.github/rulesets/) is the reviewable copy of the protection on `main` and on
-the release tags. `main.json` carries the required status checks exactly as the live
-configuration reports them (`gh api repos/VilnaCRM-Org/ui-toolkit/branches/main --jq .protection`)
-and the admin bypass that configuration implies; `protect-release-tags.json` is the export of the
-live tag ruleset. Change the file first, in a reviewed pull request, then apply it:
+the release tags. `main.json` carries the required status checks the live configuration reports
+(`gh api repos/VilnaCRM-Org/ui-toolkit/branches/main --jq .protection`), the Codecov
+`codecov/patch` and `codecov/project` statuses (#103) that the next application adds, and the
+admin bypass that configuration implies; `protect-release-tags.json` is the export of the live tag
+ruleset. Change the file first, in a reviewed pull request, then apply it:
 
 ```bash
 gh api -X POST repos/VilnaCRM-Org/ui-toolkit/rulesets --input .github/rulesets/main.json

@@ -10,7 +10,12 @@
     "enabled": true,
     "untrimmedFilePath": "<projectFolder>/build/index.d.mts"
   },
-  "apiReport": { "enabled": false },
+  "apiReport": {
+    "enabled": true,
+    "reportFileName": "ui-toolkit.api.md",
+    "reportFolder": "<projectFolder>/config/api/",
+    "reportTempFolder": "<projectFolder>/temp/api/"
+  },
   "docModel": { "enabled": false },
   "tsdocMetadata": { "enabled": false },
   "messages": {

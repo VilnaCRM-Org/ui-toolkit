@@ -62,6 +62,12 @@ function shippedFonts(): string[] {
     .map(name => join(FONTS_DIR, name));
 }
 
+function shippedFontFamilies(): string[] {
+  return readdirSync(FONTS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name);
+}
+
 describe('license policy', () => {
   describe('regression guard against the real package', () => {
     it('finds the shipped manifest and LICENSE compliant', () => {
@@ -77,6 +83,12 @@ describe('license policy', () => {
     it.each(shippedFonts())('%s embeds an OFL-1.1 licence the allow-list permits', file => {
       const description: string | undefined = fontLicenseDescription(readFileSync(file));
       expect(fontLicenseViolation(file, description, LICENSE_POLICY)).toBeUndefined();
+    });
+
+    it.each(shippedFontFamilies())('%s ships the SIL OFL-1.1 text beside its faces', family => {
+      const licence: string = readFileSync(join(FONTS_DIR, family, 'OFL.txt'), 'utf8');
+      expect(licence).toMatch(/^Copyright \d{4} The .+ Project Authors \(https:\/\/github\.com\//);
+      expect(licence).toContain('SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007');
     });
   });
 

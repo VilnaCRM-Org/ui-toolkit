@@ -32,5 +32,9 @@ existing tag.
   bypass actor.
 - Consumers pin a release by URL and verify the recorded `sha512`; moving to a later release is
   an explicit edit, never an automatic range resolution.
+- `release-provenance.yml` runs when a release is published: it packs the tarball again from the
+  release tag, attests it (`actions/attest-build-provenance`) and replaces the asset with those
+  bytes, so the attestation names the tagged commit rather than the commit that triggered the
+  release. `publishConfig.provenance` makes a future `npm publish` carry provenance too.
 - Promotion to the public registry is a separate decision, recorded when #34's licensing and IP
   gates are in place; this record is then superseded.

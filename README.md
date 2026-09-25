@@ -110,6 +110,32 @@ The tokens are also exported on their own:
   `crmBreakpointsTheme` are the matching MUI themes, and `UiBreakpoints` is the website one.
 - `heightBreakpoints` — the `compact` (550) and `medium` (700) viewport-height thresholds.
 
+### Styling an element that cannot take `sx`
+
+`UiSxAdapter` resolves an `sx` value against the toolkit theme and hands the result to a render
+function, so a plain element, or a third-party component that only accepts `className` and
+`style`, gets the same theme tokens as a toolkit component: palette paths such as
+`'primary.main'`, spacing units, the variant's breakpoints and the typography variants.
+
+```tsx
+import { UiSxAdapter } from '@vilnacrm/ui-toolkit';
+
+export function Card() {
+  return (
+    <UiSxAdapter sx={{ p: 2, color: 'primary.main', '&:hover': { color: 'error.main' } }}>
+      {({ className, style }) => <ThirdPartyCard className={className} style={style} />}
+    </UiSxAdapter>
+  );
+}
+```
+
+By default the adapter maps `sx` to a generated class name, combined with the caller's `className`,
+and keeps pseudo-classes, nested selectors and media queries. Pass `inline` to map it to a `style`
+object instead, merged under the caller's `style`, for a target that cannot use a class, such as an
+element inside a shadow root. An inline style cannot carry pseudo-classes, selectors or media
+queries, so `inline` drops those rules and a development warning names them. Without `sx`, the
+caller's `className` and `style` pass through unchanged.
+
 ### Font families
 
 The components never name a font face directly. Every `fontFamily` resolves through one of two
@@ -224,6 +250,7 @@ and `Layout` is `@vilnacrm/ui-toolkit/layout`.
 | `UiThemeProvider`         | App-level theme provider ([Theming](#theming))                       |
 | `createUiTheme`           | Builds the toolkit theme from MUI `ThemeOptions` plus `variant`      |
 | `uiTheme`                 | `createUiTheme()` with no options                                    |
+| `UiSxAdapter`             | Maps `sx` to a class name or a style ([Theming](#theming))           |
 
 Each component's prop types are exported alongside it (`UiButtonProps`, `UiInputProps`, …).
 `tests/bats/consumer_docs_contract.bats` fails when a root export is missing from this table.
@@ -537,7 +564,11 @@ without declaring it — `ui-card-list.mjs` re-exports
 its card styles so `ui-card-item` can reach them within the dependency rules, but the `.d.mts`
 does not name them, which is what keeps them out of the contract. That boundary is enforced by
 `tests/unit/export-contract-integrity.test.ts` and the API Extractor rollup (#33); the
-release-readiness governance report (#34) is where the gates are consolidated.
+release-readiness governance report (#34) is where the gates are consolidated. API Extractor also
+keeps `config/api/ui-toolkit.api.md`, a report of every declaration the package root publishes: a
+build whose declarations no longer match it rewrites the report and fails, so any public-API
+change reaches review as a diff of that file. Run `node ./build.config.mjs` on the host after
+`bun install` to regenerate it.
 
 Deprecation: a public name or prop is marked `@deprecated` in its JSDoc with the replacement
 named, emits a `[ui-toolkit]` development warning when used, and stays for at least one minor
@@ -565,8 +596,13 @@ make package
 ```
 
 The tarball lands in `dist/`, and the recipe fails if it does not carry the entry points that
-`package.json` promises. [CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and
-`website` pin a release, verify it, and move to a later one.
+`package.json` promises. When a release is published, `release-provenance.yml` packs the tarball
+again from the release tag, attests it and replaces the asset with those bytes, so the signed
+build-provenance attestation names the tagged commit; releases up to `v0.4.0` were created by hand
+and have none. Check it before installing with
+`gh attestation verify vilnacrm-ui-toolkit-<version>.tgz --repo VilnaCRM-Org/ui-toolkit`.
+[CONSUMING.md](CONSUMING.md) is the consumer-side brief: how `crm` and `website` pin a release,
+verify it, and move to a later one.
 
 ### Bundle footprint
 
