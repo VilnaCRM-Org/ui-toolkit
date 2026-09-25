@@ -28,7 +28,7 @@
     "@microsoft/api-extractor": "^7.39.4",
     "@mui/material": "^9.0.1",
     "@mui/system": "^9.0.1",
-    "@playwright/test": "^1.41.2",
+    "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "^10.4.2",
     "@storybook/addon-docs": "^10.4.2",
     "@storybook/addon-links": "^10.4.2",
