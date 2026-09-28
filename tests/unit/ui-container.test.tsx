@@ -11,8 +11,18 @@ describe('UiContainer', () => {
       </UiContainer>
     );
 
-    const container: HTMLElement = screen.getByLabelText('container');
-    expect(container).toBeInTheDocument();
-    expect(container).toHaveTextContent('Container content');
+    expect(screen.getByText('Container content')).toBeInTheDocument();
+  });
+
+  it('stays a nameless generic wrapper', () => {
+    render(
+      <UiContainer>
+        <div>Container content</div>
+      </UiContainer>
+    );
+
+    expect(screen.queryByLabelText('container')).not.toBeInTheDocument();
+    // eslint-disable-next-line testing-library/no-node-access
+    expect(screen.getByText('Container content').parentElement).not.toHaveAttribute('aria-label');
   });
 });

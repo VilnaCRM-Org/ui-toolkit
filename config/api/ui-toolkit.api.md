@@ -7,7 +7,7 @@
 import type { ButtonProps } from '@mui/material/Button';
 import type { Control } from 'react-hook-form';
 import type { CSSProperties } from 'react';
-import { DefaultValues } from 'react-hook-form';
+import type { DefaultValues } from 'react-hook-form';
 import type { ElementType } from 'react';
 import type { ErrorInfo } from 'react';
 import { FieldValues } from 'react-hook-form';
@@ -17,15 +17,15 @@ import type { Path } from 'react-hook-form';
 import type { PathValue } from 'react-hook-form';
 import { default as React_2 } from 'react';
 import type { ReactElement } from 'react';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { RegisterOptions } from 'react-hook-form';
-import { SubmitHandler } from 'react-hook-form';
+import type { SubmitHandler } from 'react-hook-form';
 import type { SxProps } from '@mui/material';
 import type { TextFieldProps } from '@mui/material/TextField';
 import { Theme } from '@mui/material';
 import type { ThemeOptions } from '@mui/material';
 import type { TooltipProps } from '@mui/material';
-import { UseFormProps } from 'react-hook-form';
+import type { UseFormProps } from 'react-hook-form';
 
 // @public
 export type ActionIconName = NeutralActionIconName | 'eye' | 'trash';
@@ -37,6 +37,7 @@ export function AuthSkeleton(input: Readonly<AuthSkeletonProps>): React_2.ReactE
 export type AuthSkeletonProps = {
     disableAnimation?: boolean | undefined;
     ariaLabel?: string | undefined;
+    idPrefix?: string | undefined;
 };
 
 // @public
@@ -354,6 +355,7 @@ export function UiButton(input: React_2.PropsWithChildren<UiButtonProps>): React
 
 // @public (undocumented)
 export interface UiButtonProps extends ButtonProps {
+    loadingMode?: 'aria-disabled' | 'native' | undefined;
     loadingText?: string | undefined;
     rel?: string | undefined;
     target?: React_2.HTMLAttributeAnchorTarget | undefined;
@@ -582,7 +584,11 @@ export interface UiFilterChipProps {
 }
 
 // @public (undocumented)
-export function UiFooter(): React_2.ReactElement;
+export function UiFooter(input: Readonly<{
+    variant?: 'website' | 'crm' | undefined;
+    privacyHref?: string | undefined;
+    usagePolicyHref?: string | undefined;
+}>): React_2.ReactElement;
 
 // @public (undocumented)
 export type UiFooterProps = {
@@ -617,6 +623,10 @@ export interface UiFormProps<T extends FieldValues> {
     isSubmitDisabled?: boolean | undefined;
     // (undocumented)
     isSubmitting?: boolean | undefined;
+    offlineNotice?: {
+        offline: string;
+        restored: string;
+    } | undefined;
     // (undocumented)
     onSubmit: SubmitHandler<T>;
     onSubmitError?: ((error: unknown) => void) | undefined;
@@ -628,11 +638,13 @@ export interface UiFormProps<T extends FieldValues> {
     showTitle?: boolean | undefined;
     // (undocumented)
     submitLabel: string;
+    submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
     submittingLabel?: string | undefined;
     // (undocumented)
     subtitle?: ReactNode | undefined;
     // (undocumented)
     title: ReactNode;
+    titleComponent?: React_2.ElementType | undefined;
 }
 
 // @public (undocumented)
@@ -1330,6 +1342,7 @@ export interface UiTypographyProps extends HTMLAttributes<HTMLElement> {
     htmlFor?: string | undefined;
     // (undocumented)
     id?: string | undefined;
+    inheritTheme?: boolean | undefined;
     // (undocumented)
     sx?: SxProps<Theme> | undefined;
     // (undocumented)

@@ -25,4 +25,11 @@ export interface UiTypographyProps extends HTMLAttributes<HTMLElement> {
   component?: ElementType | undefined;
   id?: string | undefined;
   htmlFor?: string | undefined;
+  /**
+   * Style `variant` from the ambient MUI theme instead of the kit's typography.
+   * By default the kit's tokens apply unless an ancestor theme already carries
+   * them, so an app with its own typography theme (CRM) would otherwise have to
+   * mount the kit theme at its root to keep its own look.
+   */
+  inheritTheme?: boolean | undefined;
 }

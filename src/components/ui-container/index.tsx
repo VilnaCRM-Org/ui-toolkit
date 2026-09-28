@@ -8,9 +8,5 @@ export type UiContainerProps = {
 };
 
 export default function UiContainer({ children }: UiContainerProps): React.ReactElement {
-  return (
-    <Box sx={styles.container} aria-label="container">
-      {children}
-    </Box>
-  );
+  return <Box sx={styles.container}>{children}</Box>;
 }

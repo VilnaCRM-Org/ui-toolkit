@@ -64,8 +64,27 @@ bun add "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
 
 Set `VERSION` by hand instead to pin an older release.
 
-That writes the full URL into `dependencies` and records the tarball's `sha512` integrity hash in
-`bun.lock`. Commit both files together — the hash is what makes the pin tamper-evident.
+That writes the full URL into `dependencies` and `bun.lock`. Commit both files together.
+
+`bun.lock` stores no integrity hash for a tarball URL, so the lockfile alone does not make the pin
+tamper-evident. Every release carries `vilnacrm-ui-toolkit-<version>.tgz.sha256` next to the
+tarball, written after the provenance-attested tarball replaces the asset. Verify against it in
+the consumer's CI:
+
+```bash
+curl -fsSLO "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
+curl -fsSLO "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz.sha256"
+sha256sum -c "vilnacrm-ui-toolkit-$VERSION.tgz.sha256"
+EXPECTED_SHA256='<digest committed in the consumer repository>'
+printf '%s  %s\n' "$EXPECTED_SHA256" "vilnacrm-ui-toolkit-$VERSION.tgz" | sha256sum -c -
+```
+
+`sha256sum -c` against the downloaded `.sha256` sidecar only proves the tarball matches the
+checksum published alongside it in the same release — if both assets were replaced together, that
+check still passes. The second `sha256sum -c` compares against `EXPECTED_SHA256`, a digest recorded
+once in the consumer repository (commit it next to the pinned `VERSION`) and never re-derived from
+the release itself; that is the check that actually proves the asset matches what the consumer
+pinned.
 
 Import the stylesheet exactly once, in the application's root entry, before any toolkit component
 renders:
@@ -110,9 +129,9 @@ make lint-tsc
 make test-unit
 ```
 
-A clean `--frozen-lockfile` install proves the committed hash matches the published asset. The
-type-check proves the bundled declarations resolve. If the repository names these targets
-differently, use its own type-check and unit-test targets.
+A clean `--frozen-lockfile` install proves the URL resolves; the checksum step above proves the
+asset is the one that was pinned. The type-check proves the bundled declarations resolve. If the
+repository names these targets differently, use its own type-check and unit-test targets.
 
 ## Moving to a later release
 
@@ -128,7 +147,27 @@ reviewable diff, and nothing moves under the consumer without a commit.
   a package whose every entry point resolves to a missing file.
 - Container and CI installs need network access to `objects.githubusercontent.com`, which is where
   release-asset downloads redirect. An allowlisted egress proxy has to permit it.
-- Never re-cut a release with an existing version number. The old `sha512` is pinned in every
-  consumer's `bun.lock`, so a replaced asset turns into a hard install failure across both repos.
-  Publish a new version instead.
-- The package is ESM-only. `require('@vilnacrm/ui-toolkit')` will not work; use `import`.
+- Never re-cut a release with an existing version number. Its digest is pinned in every consumer,
+  so a replaced asset turns into a checksum failure across both repos. Publish a new version
+  instead.
+- The package is ESM-only. `require('@vilnacrm/ui-toolkit')` will not work; use `import`. Every
+  JavaScript entry point also carries a `default` condition, so a CommonJS-mode Jest resolves the
+  root and every JS subpath without a `moduleNameMapper` entry; it still has to transform the
+  package (see the README's Jest note). `./styles.css` is the exception: it is exported as a
+  direct file target with no `default` condition, so it still needs its own `moduleNameMapper`
+  entry mapping it to a style stub, same as any other stylesheet import.
+
+## CRM-specific opt-ins
+
+The defaults are the website's behaviour. CRM opts into its own with props:
+
+- `UiButton` `loadingMode="native"`: natively disabled grey loader, `loadingIndicator` honoured,
+  no status region.
+- `UiForm` `titleComponent="h1"`: the title is the page heading.
+- `UiForm` `offlineNotice={{ offline, restored }}`: an offline status notice after the title; the
+  submit is disabled and described by it while offline.
+- `UiForm` `submitLoadingMode="native"`: the submit button's `loadingMode`.
+- `UiFooter` `variant="crm"`: the logo plus same-tab privacy and usage-policy links.
+- `AuthSkeleton` `idPrefix=""`: bare `auth-skeleton-*` ids.
+- `UiTypography` `inheritTheme`: variants from the app's own MUI theme, so the kit theme need not
+  sit at the root.

@@ -80,6 +80,15 @@ export const busyStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
   })
 );
 
+const nativeBusyStyles: ButtonStyle = { '&:disabled': { color: 'transparent' } };
+
+function busyEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
+  if (!state.busy) {
+    return [];
+  }
+  return state.native ? [busyStyles(theme), nativeBusyStyles] : [busyStyles(theme)];
+}
+
 function consumerEntries(sx: SxProps<Theme> | undefined): SxEntry[] {
   const consumerSx: SxProps<Theme> = sx ?? {};
   return (Array.isArray(consumerSx) ? consumerSx : [consumerSx]) as SxEntry[];
@@ -90,11 +99,10 @@ export function buttonSx(
   state: ButtonSxState,
   sx: SxProps<Theme> | undefined
 ): SxProps<Theme> {
-  const busyEntries: ButtonStyle[] = state.busy ? [busyStyles(theme)] : [];
   return [
     fontFamilyPin,
     ...matchedVariantStyles(theme, state),
-    ...busyEntries,
+    ...busyEntries(theme, state),
     ...consumerEntries(sx),
   ] as SxProps<Theme>;
 }

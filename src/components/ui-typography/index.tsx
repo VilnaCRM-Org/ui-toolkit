@@ -15,6 +15,7 @@ function UiTypography({
   id,
   role,
   htmlFor,
+  inheritTheme = false,
   ...rest
 }: UiTypographyProps): React.ReactElement {
   const componentProp: { component: React.ElementType } = { component: component || 'p' };
@@ -22,7 +23,7 @@ function UiTypography({
   const theme: Theme = useUiTheme();
   return (
     <Typography
-      sx={typographySx(theme, variant, sx)}
+      sx={inheritTheme ? sx : typographySx(theme, variant, sx)}
       {...componentProp}
       variant={variant}
       id={id}

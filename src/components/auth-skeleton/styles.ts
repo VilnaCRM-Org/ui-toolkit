@@ -1,3 +1,7 @@
+import type { CSSObject, Theme } from '@mui/material';
+
+import { smUpQuery } from '@/utils/ui-breakpoint-queries';
+
 import breakpointsTheme from '../ui-breakpoints';
 import {
   SKELETON_BORDER_COLOR,
@@ -40,7 +44,7 @@ export default {
       marginBottom: '1.25rem',
     },
   },
-  subtitleFirstLine: {
+  subtitleFirstLine: (theme: Theme): CSSObject => ({
     width: '17.25rem',
     height: '1.5625rem',
     [`@media (max-width:${AUTH_SKELETON_TINY_BREAKPOINT})`]: {
@@ -48,11 +52,11 @@ export default {
       width: '100%',
       marginBottom: '0.375rem',
     },
-    [`@media (min-width:${breakpointsTheme.breakpoints.values.sm}px)`]: {
+    [smUpQuery(theme)]: {
       height: '1.625rem',
       width: '18.5rem',
     },
-  },
+  }),
   subtitleSecondLine: {
     display: 'none',
     width: '8rem',
@@ -61,9 +65,7 @@ export default {
       height: '1.375rem',
     },
   },
-  fieldContainer: {
-    ...fieldGapMargins,
-  },
+  fieldContainer: fieldGapMargins,
   fieldLabel: {
     width: '40%',
     height: '1.125rem',
