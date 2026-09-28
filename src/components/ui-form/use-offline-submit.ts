@@ -16,7 +16,7 @@ function useOfflineFocus(
 ): void {
   useLayoutEffect((): void => {
     if (!online && document.activeElement === submitRef.current) {
-      noticeRef.current?.focus();
+      (noticeRef.current as HTMLSpanElement).focus();
     }
   }, [online, submitRef, noticeRef]);
 }

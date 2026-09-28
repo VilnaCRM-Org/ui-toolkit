@@ -7,7 +7,7 @@
 import type { ButtonProps } from '@mui/material/Button';
 import type { Control } from 'react-hook-form';
 import type { CSSProperties } from 'react';
-import { DefaultValues } from 'react-hook-form';
+import type { DefaultValues } from 'react-hook-form';
 import type { ElementType } from 'react';
 import type { ErrorInfo } from 'react';
 import { FieldValues } from 'react-hook-form';
@@ -17,15 +17,15 @@ import type { Path } from 'react-hook-form';
 import type { PathValue } from 'react-hook-form';
 import { default as React_2 } from 'react';
 import type { ReactElement } from 'react';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { RegisterOptions } from 'react-hook-form';
-import { SubmitHandler } from 'react-hook-form';
+import type { SubmitHandler } from 'react-hook-form';
 import type { SxProps } from '@mui/material';
 import type { TextFieldProps } from '@mui/material/TextField';
 import { Theme } from '@mui/material';
 import type { ThemeOptions } from '@mui/material';
 import type { TooltipProps } from '@mui/material';
-import { UseFormProps } from 'react-hook-form';
+import type { UseFormProps } from 'react-hook-form';
 
 // @public
 export type ActionIconName = NeutralActionIconName | 'eye' | 'trash';
@@ -638,7 +638,7 @@ export interface UiFormProps<T extends FieldValues> {
     showTitle?: boolean | undefined;
     // (undocumented)
     submitLabel: string;
-    submitLoadingMode?: UiButtonProps['loadingMode'];
+    submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
     submittingLabel?: string | undefined;
     // (undocumented)
     subtitle?: ReactNode | undefined;
