@@ -1,3 +1,25 @@
+# [0.5.0](https://github.com/VilnaCRM-Org/ui-toolkit/compare/v0.4.0...v0.5.0) (2026-09-28)
+
+
+### Bug Fixes
+
+* **#138:** restore CRM/Figma parity for UiBackToMain and the UiForm submit loader ([#139](https://github.com/VilnaCRM-Org/ui-toolkit/issues/139)) ([5b385da](https://github.com/VilnaCRM-Org/ui-toolkit/commit/5b385daa96f12d71431d324793e8ba2ec04a180a)), closes [#138](https://github.com/VilnaCRM-Org/ui-toolkit/issues/138)
+* **#153,#159,#89:** optional-prop undefined, bordered pill boxes, eslint backstop ([#164](https://github.com/VilnaCRM-Org/ui-toolkit/issues/164)) ([1c8d9a6](https://github.com/VilnaCRM-Org/ui-toolkit/commit/1c8d9a61a5491c54a0ae055193c1b455634c6c1d)), closes [#153](https://github.com/VilnaCRM-Org/ui-toolkit/issues/153) [#159](https://github.com/VilnaCRM-Org/ui-toolkit/issues/159) [#89](https://github.com/VilnaCRM-Org/ui-toolkit/issues/89)
+* **#92,#93,#157,#160:** unused-dep gate, medium-button label box, release push order ([#137](https://github.com/VilnaCRM-Org/ui-toolkit/issues/137)) ([74e63f6](https://github.com/VilnaCRM-Org/ui-toolkit/commit/74e63f6d0df0a97814227fad098ba9563f0dedd1)), closes [#92](https://github.com/VilnaCRM-Org/ui-toolkit/issues/92) [#93](https://github.com/VilnaCRM-Org/ui-toolkit/issues/93) [#157](https://github.com/VilnaCRM-Org/ui-toolkit/issues/157) [#160](https://github.com/VilnaCRM-Org/ui-toolkit/issues/160)
+
+
+### Features
+
+* **#34,#171:** release-readiness certificate, licence gate, lockfile advisories ([#176](https://github.com/VilnaCRM-Org/ui-toolkit/issues/176)) ([fad12b2](https://github.com/VilnaCRM-Org/ui-toolkit/commit/fad12b27119554c1e4f474fe4a8ab6d6540584ff)), closes [#34](https://github.com/VilnaCRM-Org/ui-toolkit/issues/34) [#171](https://github.com/VilnaCRM-Org/ui-toolkit/issues/171)
+* **#34,#70,#103:** sx adapter, epic 4 closure, supply-chain and measurement gates ([#178](https://github.com/VilnaCRM-Org/ui-toolkit/issues/178)) ([9457bcb](https://github.com/VilnaCRM-Org/ui-toolkit/commit/9457bcbc3153f0b264f6faf035e52f6641e9cd6e)), closes [#34](https://github.com/VilnaCRM-Org/ui-toolkit/issues/34) [#70](https://github.com/VilnaCRM-Org/ui-toolkit/issues/70) [#103](https://github.com/VilnaCRM-Org/ui-toolkit/issues/103)
+* **#72:** gate raw sharedPalette hex literals in component source ([#177](https://github.com/VilnaCRM-Org/ui-toolkit/issues/177)) ([bd14d22](https://github.com/VilnaCRM-Org/ui-toolkit/commit/bd14d22bbc7635ad7ac024f18957ce4ff794c2c6)), closes [#72](https://github.com/VilnaCRM-Org/ui-toolkit/issues/72)
+* **#75,#66,#154,#140:** locales subpath, axe gates, font tokens, new-tab cue, exact visuals ([#168](https://github.com/VilnaCRM-Org/ui-toolkit/issues/168)) ([033ade0](https://github.com/VilnaCRM-Org/ui-toolkit/commit/033ade0282c64ab502d6edab06503bcb983ebf5e)), closes [#75](https://github.com/VilnaCRM-Org/ui-toolkit/issues/75) [#66](https://github.com/VilnaCRM-Org/ui-toolkit/issues/66) [#154](https://github.com/VilnaCRM-Org/ui-toolkit/issues/154) [#140](https://github.com/VilnaCRM-Org/ui-toolkit/issues/140)
+* **#77,#78,#80,#85,#90:** warning prefix, i18n gates, esm contract, stability policy, readme ([#166](https://github.com/VilnaCRM-Org/ui-toolkit/issues/166)) ([2cbad40](https://github.com/VilnaCRM-Org/ui-toolkit/commit/2cbad40ec0ad8e52d6c744034566d2659ed41bf8)), closes [#77](https://github.com/VilnaCRM-Org/ui-toolkit/issues/77) [#78](https://github.com/VilnaCRM-Org/ui-toolkit/issues/78) [#80](https://github.com/VilnaCRM-Org/ui-toolkit/issues/80) [#85](https://github.com/VilnaCRM-Org/ui-toolkit/issues/85) [#90](https://github.com/VilnaCRM-Org/ui-toolkit/issues/90)
+* **#83,#72:** consumer-extensible theming through UiThemeProvider ([#175](https://github.com/VilnaCRM-Org/ui-toolkit/issues/175)) ([9192ab0](https://github.com/VilnaCRM-Org/ui-toolkit/commit/9192ab06dec949b8a28bca2b8db0d40510c28841)), closes [#83](https://github.com/VilnaCRM-Org/ui-toolkit/issues/83) [#72](https://github.com/VilnaCRM-Org/ui-toolkit/issues/72)
+* **#88,#95,#99:** storybook pages deploy, agent bootstrap, governance files ([#172](https://github.com/VilnaCRM-Org/ui-toolkit/issues/172)) ([004c69c](https://github.com/VilnaCRM-Org/ui-toolkit/commit/004c69c3a34764a21911b59f1996405e86aa0d72)), closes [#88](https://github.com/VilnaCRM-Org/ui-toolkit/issues/88) [#95](https://github.com/VilnaCRM-Org/ui-toolkit/issues/95) [#99](https://github.com/VilnaCRM-Org/ui-toolkit/issues/99)
+
+
+
 # [0.4.0](https://github.com/VilnaCRM-Org/ui-toolkit/compare/v0.3.0...v0.4.0) (2026-09-08)
 
 
