@@ -16,6 +16,7 @@
     ],
     "ui-back-to-main": ["ui-button", "ui-container"],
     "ui-card-list": ["ui-image", "ui-tooltip"],
+    "ui-footer": ["ui-container"],
     "ui-form": ["ui-button"],
     "ui-skeleton-control-text": ["ui-skeleton-block", "ui-skeleton-text"],
     "ui-skeleton-list": ["ui-skeleton-block"],

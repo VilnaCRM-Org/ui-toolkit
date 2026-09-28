@@ -31,10 +31,10 @@ function EmailField(): React.ReactElement {
 
 function SignIn({
   onSubmit,
-  offlineNotice = COPY,
+  offlineAware = true,
 }: Readonly<{
   onSubmit: (data: SignInForm) => void;
-  offlineNotice?: typeof COPY | undefined;
+  offlineAware?: boolean;
 }>): React.ReactElement {
   return (
     <UiForm<SignInForm>
@@ -44,7 +44,7 @@ function SignIn({
       titleComponent="h1"
       submitLabel="Submit"
       submitLoadingMode="native"
-      offlineNotice={offlineNotice}
+      offlineNotice={offlineAware ? COPY : undefined}
     >
       <EmailField />
     </UiForm>
@@ -119,7 +119,7 @@ describe('UiForm with the CRM options (integration)', () => {
   });
 
   it('ignores connectivity without the offline notice', () => {
-    render(<SignIn onSubmit={jest.fn()} offlineNotice={undefined} />);
+    render(<SignIn onSubmit={jest.fn()} offlineAware={false} />);
     setOnline(false);
     expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled();
     expect(screen.queryByText(COPY.offline)).not.toBeInTheDocument();

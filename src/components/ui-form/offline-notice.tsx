@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import UiTypography from '../ui-typography';
 
 import styles from './styles';
+import type { OfflineSubmit } from './use-offline-submit';
 
 export const RESTORED_NOTICE_MS: number = 5_000;
 
@@ -19,6 +20,15 @@ type OfflineNoticeProps = {
   noticeRef: React.RefObject<HTMLSpanElement | null>;
 };
 
+function scheduleRestoredNotice(setRestored: (restored: boolean) => void): () => void {
+  setRestored(true);
+  const timer: ReturnType<typeof setTimeout> = setTimeout(
+    (): void => setRestored(false),
+    RESTORED_NOTICE_MS
+  );
+  return (): void => clearTimeout(timer);
+}
+
 function useRestoredNotice(online: boolean): boolean {
   const [restored, setRestored] = useState(false);
   const wasOffline: React.RefObject<boolean> = useRef(false);
@@ -28,15 +38,7 @@ function useRestoredNotice(online: boolean): boolean {
       wasOffline.current = true;
       return undefined;
     }
-    if (!wasOffline.current) {
-      return undefined;
-    }
-    setRestored(true);
-    const timer: ReturnType<typeof setTimeout> = setTimeout(
-      (): void => setRestored(false),
-      RESTORED_NOTICE_MS
-    );
-    return (): void => clearTimeout(timer);
+    return wasOffline.current ? scheduleRestoredNotice(setRestored) : undefined;
   }, [online]);
 
   return restored;
@@ -49,7 +51,7 @@ function noticeMessage(online: boolean, restored: boolean, copy: OfflineNoticeCo
   return restored ? copy.restored : '';
 }
 
-export default function OfflineNotice({
+function OfflineNotice({
   id,
   online,
   copy,
@@ -73,5 +75,25 @@ export default function OfflineNotice({
         </UiTypography>
       ) : null}
     </Box>
+  );
+}
+
+export default function FormOfflineNotice({
+  offline,
+  copy,
+}: Readonly<{
+  offline: OfflineSubmit;
+  copy: OfflineNoticeCopy | undefined;
+}>): React.ReactElement | null {
+  if (!copy) {
+    return null;
+  }
+  return (
+    <OfflineNotice
+      id={offline.noticeId}
+      online={offline.online}
+      copy={copy}
+      noticeRef={offline.noticeRef}
+    />
   );
 }

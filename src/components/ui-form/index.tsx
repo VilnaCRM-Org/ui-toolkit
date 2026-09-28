@@ -1,98 +1,14 @@
-import { Box } from '@mui/material';
 import React, { ReactNode } from 'react';
-import {
-  DefaultValues,
-  FieldValues,
-  SubmitHandler,
-  UseFormProps,
-  UseFormReturn,
-  useForm,
-} from 'react-hook-form';
+import { FieldValues, SubmitHandler, UseFormReturn, useForm } from 'react-hook-form';
 
-import UiButton from '../ui-button';
-import type { UiButtonProps } from '../ui-button/types';
-import UiTypography from '../ui-typography';
-
+import { ErrorBanner, FormHeader, SubmitControls } from './form-parts';
 import FormProviderBridge from './form-provider-bridge';
-import OfflineNotice, { type OfflineNoticeCopy } from './offline-notice';
-import styles from './styles';
+import FormOfflineNotice from './offline-notice';
 import buildSubmitHandler from './submit-handler';
-import useFocusOnError from './use-focus-on-error';
+import type { FormViewProps, UiFormProps } from './types';
 import useOfflineSubmit, { type OfflineSubmit } from './use-offline-submit';
 
-export interface UiFormProps<T extends FieldValues> {
-  onSubmit: SubmitHandler<T>;
-  defaultValues: DefaultValues<T>;
-  children: ReactNode;
-  formOptions?: Omit<UseFormProps<T>, 'defaultValues'> | undefined;
-  isSubmitting?: boolean | undefined;
-  /**
-   * Form-level failure copy, rendered in a `role="alert"` banner that takes
-   * focus when it appears or its message changes. Clear it when a new submit
-   * starts: React re-renders only on a changed value, so a repeated identical
-   * failure that is never cleared can be neither re-announced nor refocused.
-   */
-  error?: string | null | undefined;
-  submitLabel: string;
-  /**
-   * Spoken by the submit button's polite `role="status"` region once a submit
-   * has been in flight long enough to be worth announcing — forwarded as the
-   * button's `loadingText`, so it falls back to the kit's shared loading copy.
-   */
-  submittingLabel?: string | undefined;
-  title: ReactNode;
-  subtitle?: ReactNode | undefined;
-  showTitle?: boolean | undefined;
-  showSubtitle?: boolean | undefined;
-  resetOnSuccess?: boolean | undefined;
-  isSubmitDisabled?: boolean | undefined;
-  /**
-   * Receives whatever value a rejected `onSubmit` carried, so the rejection is contained
-   * instead of escaping. With no handler attached the rejection is still contained and a
-   * development-only warning is emitted in its place.
-   *
-   * Accessibility: the `error` display prop's banner and an escalation into an error
-   * boundary are mutually exclusive paths for one failure. Wiring both produces two
-   * competing `role="alert"` regions, whose announcements are duplicated, interrupted,
-   * or dropped. Pick exactly one path per failure.
-   */
-  onSubmitError?: ((error: unknown) => void) | undefined;
-  /** Element the title renders as, e.g. `'h1'` on a page whose heading it is. Defaults to `'p'`. */
-  titleComponent?: React.ElementType | undefined;
-  /** Forwarded to the submit button's `loadingMode`. */
-  submitLoadingMode?: UiButtonProps['loadingMode'];
-  /**
-   * Opts into offline handling: while the browser is offline the submit is
-   * disabled and described by a status notice after the title that shows
-   * `offline`, and `restored` shows for five seconds after reconnection. Focus
-   * on the submit when the connection drops moves to the notice.
-   */
-  offlineNotice?: { offline: string; restored: string } | undefined;
-}
-
-type SubmitControlsProps = {
-  submitting: boolean;
-  isSubmitDisabled: boolean;
-  submitLabel: string;
-  submittingLabel: string | undefined;
-  loadingMode: UiButtonProps['loadingMode'];
-  describedBy: string | undefined;
-  buttonRef: OfflineSubmit['submitRef'];
-};
-
-// Display props collected from UiForm via `...view` rest and passed as a single
-// prop. Their defaults are applied in FormBody's destructure (not UiForm's
-// signature), so a new display prop on UiFormProps must also be defaulted there.
-type FormViewProps<T extends FieldValues> = Omit<
-  UiFormProps<T>,
-  | 'onSubmit'
-  | 'defaultValues'
-  | 'formOptions'
-  | 'isSubmitting'
-  | 'resetOnSuccess'
-  | 'children'
-  | 'onSubmitError'
->;
+export type { UiFormProps } from './types';
 
 type FormBodyProps<T extends FieldValues> = {
   methods: UseFormReturn<T>;
@@ -102,103 +18,6 @@ type FormBodyProps<T extends FieldValues> = {
   view: FormViewProps<T>;
 };
 
-// CRM parity: a submit failure moves focus to the alert banner so the error is
-// both announced and brought into view (the focus ring is the error-token
-// outline from `styles.errorBannerFocus`). See `useFocusOnError` for when.
-function ErrorBanner({ error }: { error?: string | null }): React.ReactElement | null {
-  const bannerRef: React.RefObject<HTMLDivElement | null> = useFocusOnError<HTMLDivElement>(error);
-
-  if (!error) {
-    return null;
-  }
-
-  return (
-    <Box ref={bannerRef} tabIndex={-1} sx={styles.errorBannerFocus}>
-      <UiTypography role="alert" sx={{ color: 'red', marginBottom: '1rem' }}>
-        {error}
-      </UiTypography>
-    </Box>
-  );
-}
-
-function FormHeader({
-  title,
-  subtitle,
-  showTitle,
-  showSubtitle,
-  titleComponent,
-}: {
-  title: ReactNode;
-  subtitle?: ReactNode;
-  showTitle: boolean;
-  showSubtitle: boolean;
-  titleComponent?: React.ElementType | undefined;
-}): React.ReactElement {
-  return (
-    <>
-      {showTitle && title ? (
-        <UiTypography variant="h4" component={titleComponent} sx={styles.formTitle}>
-          {title}
-        </UiTypography>
-      ) : null}
-      {showSubtitle && subtitle ? (
-        <UiTypography sx={styles.formSubtitle}>{subtitle}</UiTypography>
-      ) : null}
-    </>
-  );
-}
-
-// CRM parity: the spinner renders INSIDE the submit button, replacing the old
-// external size-70 loader below the form. The busy state is UiButton's own
-// contract — the kit's shared arc, `aria-disabled` rather than a native
-// `disabled` (which would drop a keyboard user's focus the moment their own
-// activation starts the fetch), and the one polite status announcement.
-function SubmitControls({
-  submitting,
-  isSubmitDisabled,
-  submitLabel,
-  submittingLabel,
-  loadingMode,
-  describedBy,
-  buttonRef,
-}: SubmitControlsProps): React.ReactElement {
-  return (
-    <UiButton
-      ref={buttonRef}
-      type="submit"
-      loading={submitting}
-      loadingText={submittingLabel}
-      loadingMode={loadingMode}
-      disabled={isSubmitDisabled}
-      aria-describedby={describedBy}
-      variant="contained"
-      sx={styles.submitButton}
-    >
-      {submitLabel}
-    </UiButton>
-  );
-}
-
-function FormOfflineNotice({
-  offline,
-  copy,
-}: Readonly<{
-  offline: OfflineSubmit;
-  copy: OfflineNoticeCopy | undefined;
-}>): React.ReactElement | null {
-  if (!copy) {
-    return null;
-  }
-  return (
-    <OfflineNotice
-      id={offline.noticeId}
-      online={offline.online}
-      copy={copy}
-      noticeRef={offline.noticeRef}
-    />
-  );
-}
-
 function FormBody<T extends FieldValues>({
   methods,
   handleSubmit,
@@ -206,42 +25,15 @@ function FormBody<T extends FieldValues>({
   children,
   view,
 }: FormBodyProps<T>): React.ReactElement {
-  const {
-    error = null,
-    title,
-    subtitle = null,
-    showTitle = true,
-    showSubtitle = true,
-    isSubmitDisabled = false,
-    submitLabel,
-    submittingLabel,
-    titleComponent,
-    submitLoadingMode,
-    offlineNotice,
-  } = view;
-  const offline: OfflineSubmit = useOfflineSubmit(offlineNotice !== undefined);
+  const offline: OfflineSubmit = useOfflineSubmit(view.offlineNotice !== undefined);
 
   return (
     <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
-      <ErrorBanner error={error} />
-      <FormHeader
-        title={title}
-        subtitle={subtitle}
-        showTitle={showTitle}
-        showSubtitle={showSubtitle}
-        titleComponent={titleComponent}
-      />
-      <FormOfflineNotice offline={offline} copy={offlineNotice} />
+      <ErrorBanner error={view.error} />
+      <FormHeader view={view} />
+      <FormOfflineNotice offline={offline} copy={view.offlineNotice} />
       {children}
-      <SubmitControls
-        submitting={submitting}
-        isSubmitDisabled={isSubmitDisabled || !offline.online}
-        submitLabel={submitLabel}
-        submittingLabel={submittingLabel}
-        loadingMode={submitLoadingMode}
-        describedBy={offlineNotice ? offline.noticeId : undefined}
-        buttonRef={offline.submitRef}
-      />
+      <SubmitControls view={view} submitting={submitting} offline={offline} />
     </form>
   );
 }
