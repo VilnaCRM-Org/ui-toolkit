@@ -75,10 +75,16 @@ the consumer's CI:
 curl -fsSLO "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
 curl -fsSLO "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz.sha256"
 sha256sum -c "vilnacrm-ui-toolkit-$VERSION.tgz.sha256"
+EXPECTED_SHA256='<digest committed in the consumer repository>'
+printf '%s  %s\n' "$EXPECTED_SHA256" "vilnacrm-ui-toolkit-$VERSION.tgz" | sha256sum -c -
 ```
 
-Pin the expected digest in the consumer repository rather than trusting the downloaded `.sha256`
-alone.
+`sha256sum -c` against the downloaded `.sha256` sidecar only proves the tarball matches the
+checksum published alongside it in the same release — if both assets were replaced together, that
+check still passes. The second `sha256sum -c` compares against `EXPECTED_SHA256`, a digest recorded
+once in the consumer repository (commit it next to the pinned `VERSION`) and never re-derived from
+the release itself; that is the check that actually proves the asset matches what the consumer
+pinned.
 
 Import the stylesheet exactly once, in the application's root entry, before any toolkit component
 renders:
@@ -145,9 +151,11 @@ reviewable diff, and nothing moves under the consumer without a commit.
   so a replaced asset turns into a checksum failure across both repos. Publish a new version
   instead.
 - The package is ESM-only. `require('@vilnacrm/ui-toolkit')` will not work; use `import`. Every
-  entry point also carries a `default` condition, so a CommonJS-mode Jest resolves the root and
-  every subpath without a `moduleNameMapper` entry; it still has to transform the package (see the
-  README's Jest note).
+  JavaScript entry point also carries a `default` condition, so a CommonJS-mode Jest resolves the
+  root and every JS subpath without a `moduleNameMapper` entry; it still has to transform the
+  package (see the README's Jest note). `./styles.css` is the exception: it is exported as a
+  direct file target with no `default` condition, so it still needs its own `moduleNameMapper`
+  entry mapping it to a style stub, same as any other stylesheet import.
 
 ## CRM-specific opt-ins
 

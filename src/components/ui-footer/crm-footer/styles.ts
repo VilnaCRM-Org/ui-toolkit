@@ -65,11 +65,11 @@ export default {
     textDecoration: 'none',
     backgroundColor: colorTheme.palette.backgroundGrey200.main,
     '&:hover': {
-      color: colorTheme.palette.textLinkHover.main,
+      color: colorTheme.palette.textLinkHoverAccessible.main,
     },
     '&:focus-visible': {
-      color: colorTheme.palette.textLinkHover.main,
-      outline: `2px solid ${colorTheme.palette.primary.main}`,
+      color: colorTheme.palette.textLinkHoverAccessible.main,
+      outline: `2px solid ${colorTheme.palette.textLinkHoverAccessible.main}`,
       outlineOffset: '2px',
     },
     [`@media (min-width:${md}px)`]: {

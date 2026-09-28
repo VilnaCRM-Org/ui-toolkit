@@ -532,11 +532,17 @@ that TypeScript would read as CommonJS, fails the build. `tests/unit/export-cont
 pins the `exports` map itself.
 
 Jest consumers: Jest does not transform `node_modules` by default, so either run under Jest's ESM
-support, or exempt the package with
-`transformIgnorePatterns: ['/node_modules/(?!@vilnacrm/ui-toolkit/)']` and map
-`@vilnacrm/ui-toolkit/styles.css` to a style stub through `moduleNameMapper`. Every entry point
-carries a `default` condition next to `import`, so CommonJS-mode Jest resolves the root and each
-subpath on its own.
+support (`--experimental-vm-modules`, verified against Node 24.9+, since Jest 30's native
+`require(esm)` support needs it — later than the `^20.19.0`/`^22.13.0` floor this package
+supports), or exempt the package with
+`transformIgnorePatterns: ['/node_modules/(?!@vilnacrm/ui-toolkit/)']`, map
+`@vilnacrm/ui-toolkit/styles.css` to a style stub through `moduleNameMapper`, and add a `transform`
+entry for the package's `.mjs` files (e.g. `'@vilnacrm/ui-toolkit/.+\\.mjs$': 'babel-jest'`) that
+emits CommonJS. Every entry point carries a `default` condition next to `import`, so CommonJS-mode
+Jest _resolves_ the root and each subpath on its own — but resolution is not transformation:
+`transformIgnorePatterns` only controls which files Jest is allowed to transform, and the default
+`transform` pattern (`\.[jt]sx?$`) does not match `.mjs`, so the resolved ESM file still needs an
+explicit transform or `require()` fails to parse its `import`/`export` syntax.
 
 ## Versioning and stability
 
