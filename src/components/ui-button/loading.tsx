@@ -56,11 +56,12 @@ export function useBusyClick(
   );
 }
 
-/** The centred, decorative arc drawn over the transparent label. */
-export function ButtonSpinner(): React.ReactElement {
-  return (
-    <Box sx={CENTRE_SX}>
-      <FieldSpinner />
-    </Box>
-  );
+/**
+ * The centred, decorative arc drawn over the transparent label, or the
+ * consumer's `loadingIndicator` in the `native` loading mode.
+ */
+export function ButtonSpinner({
+  indicator,
+}: Readonly<{ indicator?: React.ReactNode | undefined }>): React.ReactElement {
+  return <Box sx={CENTRE_SX}>{indicator ?? <FieldSpinner />}</Box>;
 }

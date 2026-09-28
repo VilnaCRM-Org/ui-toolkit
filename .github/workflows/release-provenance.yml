@@ -55,7 +55,10 @@ jobs:
             exit 1
           fi
 
-          gh release upload "$RELEASE_TAG" "${tarballs[0]}" --clobber
+          checksum="${tarballs[0]}.sha256"
+          (cd "$(dirname "${tarballs[0]}")" && sha256sum "$(basename "${tarballs[0]}")") > "$checksum"
+
+          gh release upload "$RELEASE_TAG" "${tarballs[0]}" "$checksum" --clobber
 
       - name: Stop docker build environment
         if: always()

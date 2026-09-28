@@ -32,6 +32,12 @@ export type AuthSkeletonProps = {
    * state marker, not a notification, and the shapes themselves are decorative.
    */
   ariaLabel?: string | undefined;
+  /**
+   * Prefix for every rendered id. Defaults to a `React.useId()` token so two
+   * skeletons never collide; pass `''` for the bare `auth-skeleton-*` ids when
+   * the page renders exactly one skeleton and its tests select them by id.
+   */
+  idPrefix?: string | undefined;
 };
 
 type Wrap = <T extends object>(baseSx: T) => (T | typeof STATIC_SX)[];
@@ -102,7 +108,7 @@ function SocialBlocks({ wrap, uid }: Readonly<PartProps>): React.ReactElement {
 
 function DividerBlock({ wrap, uid }: Readonly<PartProps>): React.ReactElement {
   return (
-    <Divider role="presentation" sx={styles.divider}>
+    <Divider id={`${uid}auth-skeleton-divider`} role="presentation" sx={styles.divider}>
       <UiSkeletonText
         id={`${uid}auth-skeleton-divider-text`}
         size="l"
@@ -127,9 +133,11 @@ function FormBody({ wrap, uid, disableAnimation }: Readonly<BodyProps>): React.R
 export default function AuthSkeleton({
   disableAnimation = false,
   ariaLabel = 'Loading form',
+  idPrefix,
 }: Readonly<AuthSkeletonProps>): React.ReactElement {
   const wrap: Wrap = buildWrap(disableAnimation);
-  const uid: string = React.useId();
+  const generatedId: string = React.useId();
+  const uid: string = idPrefix ?? generatedId;
 
   return (
     <ComposedSkeleton loadingText={ariaLabel} sx={styles.formSection}>

@@ -1,14 +1,15 @@
-import { CSSObject } from '@mui/material';
+import { CSSObject, type Theme } from '@mui/material';
 
 import { fontFamilies } from '@/utils/font-tokens';
+import { smUpQuery } from '@/utils/ui-breakpoint-queries';
 
 import breakpointsTheme from '../ui-breakpoints';
 import { sharedPalette } from '../ui-color-theme';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
-export const fieldGapMargins: CSSObject = {
+export const fieldGapMargins: (theme: Theme) => CSSObject = (theme: Theme): CSSObject => ({
   marginBottom: '0.5rem',
-  [`@media (min-width:${breakpointsTheme.breakpoints.values.sm}px)`]: {
+  [smUpQuery(theme)]: {
     marginBottom: '1.125rem',
   },
   [`@media (min-width:${breakpointsTheme.breakpoints.values.md}px)`]: {
@@ -20,7 +21,7 @@ export const fieldGapMargins: CSSObject = {
   [`@media (min-width:${breakpointsTheme.breakpoints.values.xl}px)`]: {
     marginBottom: '1rem',
   },
-};
+});
 
 export const formSection: CSSObject = {
   paddingTop: '0.5rem',

@@ -10,12 +10,15 @@ import {
 } from 'react-hook-form';
 
 import UiButton from '../ui-button';
+import type { UiButtonProps } from '../ui-button/types';
 import UiTypography from '../ui-typography';
 
 import FormProviderBridge from './form-provider-bridge';
+import OfflineNotice, { type OfflineNoticeCopy } from './offline-notice';
 import styles from './styles';
 import buildSubmitHandler from './submit-handler';
 import useFocusOnError from './use-focus-on-error';
+import useOfflineSubmit, { type OfflineSubmit } from './use-offline-submit';
 
 export interface UiFormProps<T extends FieldValues> {
   onSubmit: SubmitHandler<T>;
@@ -54,6 +57,17 @@ export interface UiFormProps<T extends FieldValues> {
    * or dropped. Pick exactly one path per failure.
    */
   onSubmitError?: ((error: unknown) => void) | undefined;
+  /** Element the title renders as, e.g. `'h1'` on a page whose heading it is. Defaults to `'p'`. */
+  titleComponent?: React.ElementType | undefined;
+  /** Forwarded to the submit button's `loadingMode`. */
+  submitLoadingMode?: UiButtonProps['loadingMode'];
+  /**
+   * Opts into offline handling: while the browser is offline the submit is
+   * disabled and described by a status notice after the title that shows
+   * `offline`, and `restored` shows for five seconds after reconnection. Focus
+   * on the submit when the connection drops moves to the notice.
+   */
+  offlineNotice?: { offline: string; restored: string } | undefined;
 }
 
 type SubmitControlsProps = {
@@ -61,6 +75,9 @@ type SubmitControlsProps = {
   isSubmitDisabled: boolean;
   submitLabel: string;
   submittingLabel: string | undefined;
+  loadingMode: UiButtonProps['loadingMode'];
+  describedBy: string | undefined;
+  buttonRef: OfflineSubmit['submitRef'];
 };
 
 // Display props collected from UiForm via `...view` rest and passed as a single
@@ -109,16 +126,18 @@ function FormHeader({
   subtitle,
   showTitle,
   showSubtitle,
+  titleComponent,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   showTitle: boolean;
   showSubtitle: boolean;
+  titleComponent?: React.ElementType | undefined;
 }): React.ReactElement {
   return (
     <>
       {showTitle && title ? (
-        <UiTypography variant="h4" sx={styles.formTitle}>
+        <UiTypography variant="h4" component={titleComponent} sx={styles.formTitle}>
           {title}
         </UiTypography>
       ) : null}
@@ -139,18 +158,44 @@ function SubmitControls({
   isSubmitDisabled,
   submitLabel,
   submittingLabel,
+  loadingMode,
+  describedBy,
+  buttonRef,
 }: SubmitControlsProps): React.ReactElement {
   return (
     <UiButton
+      ref={buttonRef}
       type="submit"
       loading={submitting}
       loadingText={submittingLabel}
+      loadingMode={loadingMode}
       disabled={isSubmitDisabled}
+      aria-describedby={describedBy}
       variant="contained"
       sx={styles.submitButton}
     >
       {submitLabel}
     </UiButton>
+  );
+}
+
+function FormOfflineNotice({
+  offline,
+  copy,
+}: Readonly<{
+  offline: OfflineSubmit;
+  copy: OfflineNoticeCopy | undefined;
+}>): React.ReactElement | null {
+  if (!copy) {
+    return null;
+  }
+  return (
+    <OfflineNotice
+      id={offline.noticeId}
+      online={offline.online}
+      copy={copy}
+      noticeRef={offline.noticeRef}
+    />
   );
 }
 
@@ -170,7 +215,11 @@ function FormBody<T extends FieldValues>({
     isSubmitDisabled = false,
     submitLabel,
     submittingLabel,
+    titleComponent,
+    submitLoadingMode,
+    offlineNotice,
   } = view;
+  const offline: OfflineSubmit = useOfflineSubmit(offlineNotice !== undefined);
 
   return (
     <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
@@ -180,13 +229,18 @@ function FormBody<T extends FieldValues>({
         subtitle={subtitle}
         showTitle={showTitle}
         showSubtitle={showSubtitle}
+        titleComponent={titleComponent}
       />
+      <FormOfflineNotice offline={offline} copy={offlineNotice} />
       {children}
       <SubmitControls
         submitting={submitting}
-        isSubmitDisabled={isSubmitDisabled}
+        isSubmitDisabled={isSubmitDisabled || !offline.online}
         submitLabel={submitLabel}
         submittingLabel={submittingLabel}
+        loadingMode={submitLoadingMode}
+        describedBy={offlineNotice ? offline.noticeId : undefined}
+        buttonRef={offline.submitRef}
       />
     </form>
   );

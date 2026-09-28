@@ -37,6 +37,7 @@ export function AuthSkeleton(input: Readonly<AuthSkeletonProps>): React_2.ReactE
 export type AuthSkeletonProps = {
     disableAnimation?: boolean | undefined;
     ariaLabel?: string | undefined;
+    idPrefix?: string | undefined;
 };
 
 // @public
@@ -354,6 +355,7 @@ export function UiButton(input: React_2.PropsWithChildren<UiButtonProps>): React
 
 // @public (undocumented)
 export interface UiButtonProps extends ButtonProps {
+    loadingMode?: 'aria-disabled' | 'native' | undefined;
     loadingText?: string | undefined;
     rel?: string | undefined;
     target?: React_2.HTMLAttributeAnchorTarget | undefined;
@@ -582,7 +584,11 @@ export interface UiFilterChipProps {
 }
 
 // @public (undocumented)
-export function UiFooter(): React_2.ReactElement;
+export function UiFooter(input: Readonly<{
+    variant?: 'website' | 'crm' | undefined;
+    privacyHref?: string | undefined;
+    usagePolicyHref?: string | undefined;
+}>): React_2.ReactElement;
 
 // @public (undocumented)
 export type UiFooterProps = {
@@ -617,6 +623,10 @@ export interface UiFormProps<T extends FieldValues> {
     isSubmitDisabled?: boolean | undefined;
     // (undocumented)
     isSubmitting?: boolean | undefined;
+    offlineNotice?: {
+        offline: string;
+        restored: string;
+    } | undefined;
     // (undocumented)
     onSubmit: SubmitHandler<T>;
     onSubmitError?: ((error: unknown) => void) | undefined;
@@ -628,11 +638,13 @@ export interface UiFormProps<T extends FieldValues> {
     showTitle?: boolean | undefined;
     // (undocumented)
     submitLabel: string;
+    submitLoadingMode?: UiButtonProps['loadingMode'];
     submittingLabel?: string | undefined;
     // (undocumented)
     subtitle?: ReactNode | undefined;
     // (undocumented)
     title: ReactNode;
+    titleComponent?: React_2.ElementType | undefined;
 }
 
 // @public (undocumented)
@@ -1330,6 +1342,7 @@ export interface UiTypographyProps extends HTMLAttributes<HTMLElement> {
     htmlFor?: string | undefined;
     // (undocumented)
     id?: string | undefined;
+    inheritTheme?: boolean | undefined;
     // (undocumented)
     sx?: SxProps<Theme> | undefined;
     // (undocumented)

@@ -537,11 +537,19 @@ describe('export contract integrity (Story 5.3, #33)', () => {
     // barrel's own names, so it reaches no type the barrel does not re-export.
     it('maps the root, per-component, stylesheet and locales subpaths to the build output', () => {
       expect(manifest.exports).toEqual({
-        '.': { types: './build/index.d.mts', import: './build/index.mjs' },
+        '.': {
+          types: './build/index.d.mts',
+          import: './build/index.mjs',
+          default: './build/index.mjs',
+        },
         './styles.css': './build/index.css',
-        './locales': { types: './build/locales.d.mts', import: './build/locales.mjs' },
+        './locales': {
+          types: './build/locales.d.mts',
+          import: './build/locales.mjs',
+          default: './build/locales.mjs',
+        },
         './package.json': './package.json',
-        './*': { types: './build/*.d.mts', import: './build/*.mjs' },
+        './*': { types: './build/*.d.mts', import: './build/*.mjs', default: './build/*.mjs' },
       });
     });
 

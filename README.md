@@ -534,7 +534,9 @@ pins the `exports` map itself.
 Jest consumers: Jest does not transform `node_modules` by default, so either run under Jest's ESM
 support, or exempt the package with
 `transformIgnorePatterns: ['/node_modules/(?!@vilnacrm/ui-toolkit/)']` and map
-`@vilnacrm/ui-toolkit/styles.css` to a style stub through `moduleNameMapper`.
+`@vilnacrm/ui-toolkit/styles.css` to a style stub through `moduleNameMapper`. Every entry point
+carries a `default` condition next to `import`, so CommonJS-mode Jest resolves the root and each
+subpath on its own.
 
 ## Versioning and stability
 

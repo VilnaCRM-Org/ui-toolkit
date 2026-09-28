@@ -57,17 +57,19 @@ function componentEntryPoints() {
 function barrelNamesFor(barrel, directory) {
   const escaped = directory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const from = `from '\\./${escaped}(?:/[^']+)?'`;
-  const defaultAs = new RegExp(`export \\{ default as (\\w+) \\} ${from}`).exec(barrel);
+  let defaultExport = null;
   const values = [];
   const types = [];
   for (const match of barrel.matchAll(new RegExp(`export (type )?\\{([^}]*)\\} ${from}`, 'g'))) {
     for (const specifier of match[2].split(',')) {
       const name = specifier.trim();
-      if (!name || name.startsWith('default as')) continue;
+      const defaultAs = /^default as (\w+)$/.exec(name);
+      if (defaultAs && !match[1]) defaultExport = defaultAs[1];
+      if (!name || defaultAs) continue;
       (match[1] ? types : values).push(name);
     }
   }
-  return { defaultExport: defaultAs ? defaultAs[1] : null, values, types };
+  return { defaultExport, values, types };
 }
 
 // The names a built subpath actually exports, taken from esbuild's own metafile.

@@ -69,6 +69,27 @@ function resolveButtonProps({
   };
 }
 
+type BusyAttributes = { disabled?: boolean | undefined; 'aria-disabled'?: boolean | undefined };
+
+function busyAttributes(
+  busy: boolean,
+  native: boolean,
+  { disabled, 'aria-disabled': ariaDisabled }: Pick<UiButtonProps, 'disabled' | 'aria-disabled'>
+): BusyAttributes {
+  if (native) {
+    return { disabled: disabled === true || busy };
+  }
+  return { 'aria-disabled': busy ? true : (ariaDisabled as boolean | undefined) };
+}
+
+function LoadingStatus({ announced }: Readonly<{ announced: string }>): React.ReactElement {
+  return (
+    <Box role="status" aria-atomic="true" sx={srOnlySx}>
+      {announced}
+    </Box>
+  );
+}
+
 function UiButton({
   to,
   href,
@@ -76,11 +97,14 @@ function UiButton({
   type = 'button',
   loading,
   loadingText,
+  loadingMode,
+  loadingIndicator,
   onClick,
   children,
   ...rest
 }: React.PropsWithChildren<UiButtonProps>): React.ReactElement {
   const elementProps: ButtonElementProps = resolveButtonProps({ to, href, component, type });
+  const native: boolean = loadingMode === 'native';
   const state: ButtonBusyState = useButtonBusy(loading, loadingText);
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = useBusyClick(state.busy, onClick);
   const theme: Theme = useUiTheme();
@@ -90,16 +114,14 @@ function UiButton({
       <Button
         {...elementProps}
         {...rest}
-        aria-disabled={state.busy ? true : rest['aria-disabled']}
+        {...busyAttributes(state.busy, native, rest)}
         onClick={handleClick}
-        sx={buttonSx(theme, { ...rest, busy: state.busy }, rest.sx)}
+        sx={buttonSx(theme, { ...rest, busy: state.busy, native }, rest.sx)}
       >
         {children}
-        {state.busy ? <ButtonSpinner /> : null}
+        {state.busy ? <ButtonSpinner indicator={native ? loadingIndicator : undefined} /> : null}
       </Button>
-      <Box role="status" aria-atomic="true" sx={srOnlySx}>
-        {state.announced}
-      </Box>
+      {loading === undefined || native ? null : <LoadingStatus announced={state.announced} />}
     </>
   );
 }

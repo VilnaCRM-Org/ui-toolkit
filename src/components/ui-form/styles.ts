@@ -1,4 +1,7 @@
+import type { CSSObject, Theme } from '@mui/material';
+
 import { fontFamilies } from '@/utils/font-tokens';
+import { smUpQuery } from '@/utils/ui-breakpoint-queries';
 
 import breakpointsTheme from '../ui-breakpoints';
 import colorTheme from '../ui-color-theme';
@@ -35,21 +38,21 @@ export default {
       marginBottom: '0.9375rem',
     },
   },
-  formSubtitle: {
+  formSubtitle: (theme: Theme): CSSObject => ({
     fontFamily: fontFamilies.golos,
     fontWeight: 400,
     fontSize: '0.9375rem',
     lineHeight: '1.67',
     letterSpacing: 0,
     marginBottom: '1.0625rem',
-    [`@media (min-width:${breakpointsTheme.breakpoints.values.sm}px)`]: {
+    [smUpQuery(theme)]: {
       fontSize: '1rem',
       lineHeight: '1.625',
     },
     [`@media (min-width:${breakpointsTheme.breakpoints.values.lg}px)`]: {
       marginBottom: '1.25rem',
     },
-  },
+  }),
   submitButton: {
     width: '100%',
     height: '3.125rem',
@@ -93,5 +96,30 @@ export default {
       fontSize: '1.125rem',
       lineHeight: 1,
     },
+  },
+  offlineNoticeEmpty: {
+    display: 'block',
+    outline: 'none',
+  },
+  offlineNotice: {
+    display: 'block',
+    marginBottom: '1rem',
+    padding: '0.75rem 1rem',
+    borderRadius: '0.5rem',
+    border: `1px solid ${colorTheme.palette.grey500.main}`,
+    backgroundColor: colorTheme.palette.brandGray.main,
+    outline: 'none',
+    '&:focus-visible': {
+      outline: `2px solid ${colorTheme.palette.darkPrimary.main}`,
+      outlineOffset: '2px',
+    },
+  },
+  offlineNoticeText: {
+    display: 'block',
+    fontFamily: fontFamilies.golos,
+    fontWeight: 500,
+    fontSize: '0.9375rem',
+    lineHeight: '1.5',
+    color: colorTheme.palette.darkSecondary.main,
   },
 };

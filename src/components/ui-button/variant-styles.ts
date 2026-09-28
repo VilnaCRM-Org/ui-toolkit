@@ -17,7 +17,7 @@ export type ButtonVariantRule = {
   style: ButtonStyle;
 };
 
-export type ButtonSxState = ButtonVariantProps & { busy: boolean };
+export type ButtonSxState = ButtonVariantProps & { busy: boolean; native?: boolean | undefined };
 
 const baseButtonStyles: ButtonStyle = {
   textTransform: 'none',
