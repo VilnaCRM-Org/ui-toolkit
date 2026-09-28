@@ -56,7 +56,6 @@ declare module '@mui/material/styles' {
     notchMobileAfter: Palette['primary'];
     textLinkHover: Palette['primary'];
     textLinkActive: Palette['primary'];
-    textLinkHoverAccessible: Palette['primary'];
   }
 
   interface PaletteOptions {
@@ -88,7 +87,6 @@ declare module '@mui/material/styles' {
     notchMobileAfter?: PaletteOptions['primary'] | undefined;
     textLinkHover?: PaletteOptions['primary'] | undefined;
     textLinkActive?: PaletteOptions['primary'] | undefined;
-    textLinkHoverAccessible?: PaletteOptions['primary'] | undefined;
   }
 }
 

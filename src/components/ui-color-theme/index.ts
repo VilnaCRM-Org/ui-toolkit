@@ -112,9 +112,6 @@ export const sharedPalette = {
   textLinkActive: {
     main: '#0399ED',
   },
-  textLinkHoverAccessible: {
-    main: '#006DAB',
-  },
 } as const satisfies Record<string, { main: string }>;
 
 export const websiteColorTheme: Theme = createTheme({
