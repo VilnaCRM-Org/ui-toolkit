@@ -243,6 +243,9 @@ export const sharedPalette: {
     readonly textLinkActive: {
         readonly main: "#0399ED";
     };
+    readonly textLinkHoverAccessible: {
+        readonly main: "#006DAB";
+    };
 };
 
 // @public (undocumented)
