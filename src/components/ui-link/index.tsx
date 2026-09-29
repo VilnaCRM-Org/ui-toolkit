@@ -40,6 +40,17 @@ function suppressNavigation(event: React.MouseEvent<HTMLAnchorElement>): void {
   event.preventDefault();
 }
 
+const disabledActivation: React.ComponentProps<typeof Link> = {
+  'aria-disabled': true,
+  tabIndex: -1,
+  onClick: suppressNavigation,
+  onAuxClick: suppressNavigation,
+  onClickCapture: undefined,
+  onAuxClickCapture: undefined,
+};
+
+const enabledActivation: React.ComponentProps<typeof Link> = {};
+
 function UiLink({
   children,
   href,
@@ -50,8 +61,6 @@ function UiLink({
   newTabLabel,
   tone = 'brand',
   underline = 'always',
-  onClick,
-  onAuxClick,
   ...rest
 }: UiLinkProps): React.ReactElement {
   // HTML matches the `_blank` keyword ASCII case-insensitively, so an exact
@@ -64,15 +73,12 @@ function UiLink({
   return (
     <Link
       {...rest}
+      {...(disabled ? disabledActivation : enabledActivation)}
       href={href}
       target={target}
       rel={mergeRel(opensInNewTab, rel)}
       underline={underline}
       sx={linkSx(theme, { tone, underline }, sx)}
-      aria-disabled={disabled ? true : rest['aria-disabled']}
-      tabIndex={disabled ? -1 : rest.tabIndex}
-      onClick={disabled ? suppressNavigation : onClick}
-      onAuxClick={disabled ? suppressNavigation : onAuxClick}
     >
       {children}
       {opensInNewTab && newTabLabel ? (

@@ -2,14 +2,11 @@ import { Box, Button } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { useUiTheme } from '@/utils/ui-theme';
-
 import { srOnlySx } from '../field-controls';
 
 import { ButtonSpinner, useBusyClick, useButtonBusy, type ButtonBusyState } from './loading';
-import { buttonSx } from './styles';
 import type { UiButtonProps } from './types';
-import type { ButtonSxState, ButtonVariantProps } from './variant-styles';
+import useButtonSx from './use-button-sx';
 
 function resolveLinkTarget(to?: UiButtonProps['to']): string | undefined {
   if (!to) {
@@ -81,15 +78,6 @@ function busyAttributes(
     return { disabled: disabled === true || busy };
   }
   return { 'aria-disabled': busy ? true : (ariaDisabled as boolean | undefined) };
-}
-
-function useButtonSx(
-  rest: ButtonVariantProps & { sx?: SxProps<Theme> | undefined },
-  busy: boolean,
-  appearance: Pick<ButtonSxState, 'native' | 'focusOutline'>
-): SxProps<Theme> {
-  const theme: Theme = useUiTheme();
-  return buttonSx(theme, { ...rest, ...appearance, busy }, rest.sx);
 }
 
 function LoadingStatus({ announced }: Readonly<{ announced: string }>): React.ReactElement {

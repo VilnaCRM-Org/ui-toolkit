@@ -89,7 +89,7 @@ function busyEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
   return state.native ? [busyStyles(theme), nativeBusyStyles] : [busyStyles(theme)];
 }
 
-export const focusOutlineStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
+const focusOutlineStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
   (theme: Theme): ButtonStyle => ({
     '&:focus-visible': {
       outline: `2px solid ${theme.palette.grey200.main}`,

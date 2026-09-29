@@ -131,4 +131,39 @@ describe('UiLink forwarded props', () => {
     expect(link()).toHaveAttribute('tabindex', '-1');
     expect(link()).toHaveAttribute('aria-disabled', 'true');
   });
+
+  it('forwards the capture-phase activation handlers while enabled', () => {
+    const onClickCapture: jest.Mock = jest.fn();
+    const onAuxClickCapture: jest.Mock = jest.fn();
+    render(
+      <UiLink href="/reset" onClickCapture={onClickCapture} onAuxClickCapture={onAuxClickCapture}>
+        {NAME}
+      </UiLink>
+    );
+
+    fireEvent.click(link());
+    fireEvent(link(), new MouseEvent('auxclick', { bubbles: true, button: 1 }));
+    expect(onClickCapture).toHaveBeenCalledTimes(1);
+    expect(onAuxClickCapture).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops the capture-phase activation handlers while disabled', () => {
+    const onClickCapture: jest.Mock = jest.fn();
+    const onAuxClickCapture: jest.Mock = jest.fn();
+    render(
+      <UiLink
+        href="/reset"
+        disabled
+        onClickCapture={onClickCapture}
+        onAuxClickCapture={onAuxClickCapture}
+      >
+        {NAME}
+      </UiLink>
+    );
+
+    fireEvent.click(link());
+    fireEvent(link(), new MouseEvent('auxclick', { bubbles: true, button: 1 }));
+    expect(onClickCapture).not.toHaveBeenCalled();
+    expect(onAuxClickCapture).not.toHaveBeenCalled();
+  });
 });

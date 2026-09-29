@@ -67,13 +67,15 @@ function base128(value: number): Buffer {
 
 type Woff2Table = { entry: Buffer; data: Buffer };
 
-function woff2(tables: Woff2Table[]): Buffer {
+function woff2(tables: Woff2Table[], collection?: Buffer): Buffer {
   const stream: Buffer = brotliCompressSync(Buffer.concat(tables.map(table => table.data)));
   const header: Buffer = Buffer.alloc(48);
   header.write('wOF2', 0, 'latin1');
+  header.write(collection ? 'ttcf' : 'true', 4, 'latin1');
   header.writeUInt16BE(tables.length, 12);
   header.writeUInt32BE(stream.length, 20);
-  return Buffer.concat([header, ...tables.map(table => table.entry), stream]);
+  const directory: Buffer[] = tables.map(table => table.entry);
+  return Buffer.concat([header, ...directory, ...(collection ? [collection] : []), stream]);
 }
 
 function woff2Table(flags: number, data: Buffer, extra: Buffer[] = []): Woff2Table {
@@ -362,6 +364,36 @@ describe('license policy', () => {
       const hmtx: Woff2Table = woff2Table(3, Buffer.alloc(130));
       const custom: Woff2Table = woff2Table(63, table, [Buffer.from('name', 'latin1')]);
       expect(fontLicenseDescription(woff2([glyf, hmtx, custom]))).toBe('Custom');
+    });
+
+    it('reads a transform length for a glyf table stored under a custom tag', () => {
+      const table: Buffer = nameTable([{ platform: 3, nameId: 13, bytes: utf16be('Custom glyf') }]);
+      const glyf: Woff2Table = {
+        entry: Buffer.concat([
+          Buffer.from([63]),
+          Buffer.from('glyf', 'latin1'),
+          base128(300),
+          base128(120),
+        ]),
+        data: Buffer.alloc(120),
+      };
+      expect(fontLicenseDescription(woff2([glyf, woff2Table(5, table)]))).toBe('Custom glyf');
+    });
+
+    it('skips a font collection directory before the compressed tables', () => {
+      const table: Buffer = nameTable([{ platform: 3, nameId: 13, bytes: utf16be('Collection') }]);
+      const collection: Buffer = Buffer.concat([
+        Buffer.from([0, 1, 0, 0]),
+        Buffer.from([1]),
+        Buffer.from([253, 0, 3]),
+        Buffer.from('true', 'latin1'),
+        Buffer.from([0, 254, 0, 255, 1]),
+      ]);
+      const font: Buffer = woff2(
+        [woff2Table(1, Buffer.alloc(54)), woff2Table(5, table)],
+        collection
+      );
+      expect(fontLicenseDescription(font)).toBe('Collection');
     });
 
     it('reads an untransformed glyf table at its original length', () => {

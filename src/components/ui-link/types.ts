@@ -21,7 +21,10 @@ export type UiLinkProps = {
   disabled?: boolean | undefined;
   tone?: 'brand' | 'accessible' | undefined;
   underline?: 'always' | 'hover' | 'none' | undefined;
-} & Omit<LinkProps, 'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color'> &
+} & Omit<
+  LinkProps,
+  'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color' | 'component'
+> &
   (
     | {
         target: '_blank';
