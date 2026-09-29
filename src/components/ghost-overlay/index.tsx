@@ -3,7 +3,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 import React from 'react';
 
-import colorTheme from '../ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 const palette: (typeof colorTheme)['palette'] = colorTheme.palette;
 

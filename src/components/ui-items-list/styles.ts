@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from '@mui/material';
 
-import { websiteBreakpointValues } from '../ui-breakpoints';
+import { websiteBreakpointValues } from '@/utils/breakpoint-tokens';
 
 // The list mirrors the website's swagger operation stack, so it follows the WEBSITE
 // breakpoint scale: `for-large-screens` is max-width 1024px, `for-small-screens`

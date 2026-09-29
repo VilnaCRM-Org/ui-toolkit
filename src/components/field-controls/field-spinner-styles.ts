@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '../ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 /** 20px — the shared `field-controls` Glyph box, and the default. */
 export const FIELD_SPINNER_MD: string = '1.25rem';

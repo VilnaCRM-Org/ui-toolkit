@@ -1,7 +1,7 @@
 import type { ActionIconName } from '@/components/ui-action-icon-bar/types';
-import { crmBreakpointValues } from '@/components/ui-breakpoints';
 import type { IntegrationLogo } from '@/components/ui-integration-card/types';
 import type { ProfileSelectItem } from '@/components/ui-profile-select-card/types';
+import { crmBreakpointValues } from '@/utils/breakpoint-tokens';
 
 import boardAvatars from './board-avatars.json';
 import boardLogos from './board-logos.json';

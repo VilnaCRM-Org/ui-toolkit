@@ -14,7 +14,7 @@ import { searchLoadingAdornment } from '../../src/components/ui-search-input/loa
 import UiSelectWithSearch from '../../src/components/ui-select-with-search';
 import { selectRootSx } from '../../src/components/ui-select-with-search/select-autocomplete';
 import type { UiSelectWithSearchOption } from '../../src/components/ui-select-with-search/types';
-import { uiTheme } from '../../src/utils/ui-theme';
+import { uiTheme } from '../../src/components/ui-theme-provider';
 
 const OPTIONS: UiSelectWithSearchOption[] = [
   { label: 'Kyiv', value: 'kyiv' },

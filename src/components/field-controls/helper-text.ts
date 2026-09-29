@@ -1,10 +1,12 @@
-import type { Palette, Theme } from '@mui/material';
+import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
-export function helperTextTypography(palette: Palette): SystemStyleObject<Theme> {
+export function helperTextTypography(
+  palette: Record<'grey250' | 'error', { main: string }>
+): SystemStyleObject<Theme> {
   return {
     margin: '0.25rem 0 0 0',
     fontFamily: fontFamilies.inter,

@@ -14,11 +14,11 @@
 import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import type { ActionIconName } from './types';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Stable class hook so the button root paints the danger backdrop through a
 // descendant selector instead of threading the pointer state through the tree.

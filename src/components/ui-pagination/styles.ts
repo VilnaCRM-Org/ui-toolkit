@@ -1,14 +1,14 @@
 import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 // Colours resolve to the shared theme tokens so the navigator matches the rest
 // of the kit without duplicating hex values. The Figma numbers (48px cell, 8px
 // radius, Inter Medium 16/18, 48px group gap, 6px cell gap, 20px chevron) are
 // mapped straight onto these recipes.
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // The bar (Figma node 360:12218): the three groups (prev link / page cells / next
 // link) laid out in a horizontal flow, vertically centred, 48px apart.

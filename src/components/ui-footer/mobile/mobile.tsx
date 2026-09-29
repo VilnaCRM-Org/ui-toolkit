@@ -17,7 +17,7 @@ function SocialLinksRow({
   socialLinks,
 }: Readonly<{ socialLinks: SocialMedia[] }>): React.ReactElement {
   return (
-    <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
+    <Stack direction="row" sx={[styles.listWrapper, { alignItems: 'center' }]}>
       {/* socialLinks is sourced from the propless UiFooter's internal ./constants,
           never from consumer input, so no nullish guard is needed here (unlike the
           consumer-facing UiImage.src / UiCardList.cardList props). */}

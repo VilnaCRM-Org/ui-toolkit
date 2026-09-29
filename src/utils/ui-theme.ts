@@ -2,8 +2,8 @@ import { createTheme, useTheme } from '@mui/material';
 import type { Palette, Theme, ThemeOptions } from '@mui/material';
 import type { TypographyVariantsOptions } from '@mui/material/styles';
 
-import { crmBreakpointValues, websiteBreakpointValues } from '@/components/ui-breakpoints';
-import { sharedPalette } from '@/components/ui-color-theme';
+import { crmBreakpointValues, websiteBreakpointValues } from '@/utils/breakpoint-tokens';
+import { crmPalette, sharedPalette } from '@/utils/palette-tokens';
 
 import { cacheByTheme, isPlainObject, mergeOptions, type OptionsRecord } from './theme-options';
 import { uiTypographyOptions, uiTypographyVariantMapping } from './ui-typography-options';
@@ -21,6 +21,11 @@ type TypographyInput = ThemeOptions['typography'];
 const breakpointValues: Record<UiThemeVariant, Readonly<Record<string, number>>> = {
   website: websiteBreakpointValues,
   crm: crmBreakpointValues,
+};
+
+const variantPalettes: Record<UiThemeVariant, typeof sharedPalette | typeof crmPalette> = {
+  website: sharedPalette,
+  crm: crmPalette,
 };
 
 function resolveTypography(input: TypographyInput, palette: Palette): OptionsRecord {
@@ -41,7 +46,7 @@ function baseOptions(variant: UiThemeVariant): OptionsRecord {
   return {
     breakpoints: { values: { ...breakpointValues[variant] } },
     palette: {
-      ...sharedPalette,
+      ...variantPalettes[variant],
       primary: { ...sharedPalette.primary, contrastText: sharedPalette.white.main },
     },
     components: {
@@ -69,12 +74,17 @@ function hasUiTokens(theme: Theme): boolean {
   );
 }
 
-export const uiTheme: Theme = createUiTheme();
+let defaultTheme: Theme | undefined;
+
+export function defaultUiTheme(): Theme {
+  defaultTheme ??= createUiTheme();
+  return defaultTheme;
+}
 
 export const isUiTheme: (theme: Theme) => boolean = cacheByTheme(hasUiTokens);
 
 export function resolveUiTheme(theme: Theme): Theme {
-  return isUiTheme(theme) ? theme : uiTheme;
+  return isUiTheme(theme) ? theme : defaultUiTheme();
 }
 
 export function useUiTheme(): Theme {

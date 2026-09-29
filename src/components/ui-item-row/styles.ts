@@ -5,12 +5,11 @@
 // within the maintainability budget.
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
+import { websiteBreakpointValues } from '@/utils/breakpoint-tokens';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-import { websiteBreakpointValues } from '../ui-breakpoints';
-
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // The row mirrors the website's swagger operation block, so it uses the WEBSITE
 // breakpoint scale, not the CRM one: `for-small-screens` is max-width 640px and

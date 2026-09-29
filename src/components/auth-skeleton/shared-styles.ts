@@ -1,10 +1,10 @@
 import { CSSObject, type Theme } from '@mui/material';
 
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 import { fontFamilies } from '@/utils/font-tokens';
+import { sharedPalette } from '@/utils/palette-tokens';
 import { smUpQuery } from '@/utils/ui-breakpoint-queries';
 
-import breakpointsTheme from '../ui-breakpoints';
-import { sharedPalette } from '../ui-color-theme';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
 export const fieldGapMargins: (theme: Theme) => CSSObject = (theme: Theme): CSSObject => ({

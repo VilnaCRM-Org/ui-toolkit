@@ -1,4 +1,5 @@
-import breakpointsTheme from '../ui-breakpoints';
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
+
 import {
   SKELETON_BORDER_COLOR,
   SKELETON_BORDER_RADIUS,

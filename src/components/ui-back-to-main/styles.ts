@@ -2,28 +2,29 @@ import { SxProps } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
+import { uiBreakpointValues } from '@/utils/ui-breakpoint-queries';
 
-import breakpointsTheme from '../ui-breakpoints';
-import colorTheme from '../ui-color-theme';
+const palette: UiPaletteTokens = colorTheme.palette;
 
-const palette: Theme['palette'] = colorTheme.palette;
-
-const lgUp: string = `@media (min-width:${breakpointsTheme.breakpoints.values.lg}px)`;
+function lgUp(theme: Theme): string {
+  return `@media (min-width:${uiBreakpointValues(theme).lg}px)`;
+}
 
 // CRM parity (crm `ui-back-to-main` + `styles/colors.ts`): a white band with the
 // link inked in CRM's `grey[50]`, which CRM maps to #969B9D — the kit `grey300`
 // token. The values resolve from the kit's OWN tokens (not the host theme's
 // `grey[50]`/`background.default`), so a host without those entries can no longer
 // collapse the link into an invisible near-white-on-white render.
-const section: SxProps<Theme> = {
+const section: SxProps<Theme> = (theme: Theme) => ({
   paddingTop: '1rem',
   paddingBottom: '1rem',
   backgroundColor: palette.white.main,
-  [lgUp]: {
+  [lgUp(theme)]: {
     paddingTop: '1.25rem',
     paddingBottom: '1.25rem',
   },
-};
+});
 
 // The focus ring is `darkPrimary`, not the CRM brand-blue: #1EAEFF on the white
 // band measures 2.46:1 (< the 3:1 SC 1.4.11 floor, DEV-65) and the ring is the
@@ -53,7 +54,7 @@ const icon: SxProps<Theme> = {
 // Label ink is the design-source #969B9D (2.81:1 on white, DEV-66) — deferred to
 // the same accessibility-visuals sweep as the item-row muted state and the
 // action-icon-bar glyphs (D-03); remediate together there.
-const backText: SxProps<Theme> = {
+const backText: SxProps<Theme> = (theme: Theme) => ({
   marginLeft: '0.5rem',
   // A literal family, never `theme.typography.fontFamily`: the ambient theme
   // outside a consumer's ThemeProvider is MUI's default, which pinned the label
@@ -64,11 +65,11 @@ const backText: SxProps<Theme> = {
   lineHeight: '1.125rem',
   textTransform: 'none',
   color: palette.grey300.main,
-  [lgUp]: {
+  [lgUp(theme)]: {
     lineHeight: '1.125rem',
     letterSpacing: 0,
   },
-};
+});
 
 const backToMainStyles: Record<string, SxProps<Theme>> = {
   section,

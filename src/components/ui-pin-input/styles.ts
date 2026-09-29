@@ -8,12 +8,12 @@
 // own fill colour instead of deleting the stroke the way Figma does.
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import { helperTextSx } from '../field-controls';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Stable class hook so the showcase board (and a consumer) can force a cell's
 // pointer/focus chrome from the group root instead of threading state down.

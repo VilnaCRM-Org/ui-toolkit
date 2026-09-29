@@ -22,7 +22,7 @@ function FooterTopBar({
       <Box sx={styles.topWrapper}>
         <Stack
           direction="row"
-          sx={{ ...styles.topContent, justifyContent: 'space-between', alignItems: 'center' }}
+          sx={[styles.topContent, { justifyContent: 'space-between', alignItems: 'center' }]}
         >
           <img src={logoUrl} alt={logoAlt} width={143} height={48} loading="lazy" />
           <PrivacyPolicy />
@@ -50,7 +50,7 @@ function FooterBottomBar({
           </UiTypography>
           <Stack direction="row" sx={{ gap: '0.875rem', alignItems: 'center' }}>
             <VilnaCRMEmail />
-            <Stack direction="row" sx={{ ...styles.listWrapper, alignItems: 'center' }}>
+            <Stack direction="row" sx={[styles.listWrapper, { alignItems: 'center' }]}>
               {/* socialLinks is sourced from the propless UiFooter's internal
                   ./constants, never from consumer input, so no nullish guard is
                   needed here (unlike UiImage.src / UiCardList.cardList). */}

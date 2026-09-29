@@ -1,9 +1,9 @@
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Figma "radiobutton" (node 151:6441): a 20px circle with a white fill. The
 // unselected state is a 1px #D0D4D8 stroke; the selected state is a 5px #1EAEFF

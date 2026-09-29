@@ -2,14 +2,13 @@
 // Kept apart from the layout `styles.ts` so each module stays small: this file
 // owns the accent/tint/ink/shadow values, `styles.ts` owns the sx layout that
 // consumes a resolved recipe.
-import type { Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import type { ItemRowMethod } from './types';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // ACCENT drives the border + badge ink; the rest accents reuse the shared brand
 // tokens, the hover accents are the darkened item-row tokens.

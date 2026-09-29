@@ -1,0 +1,115 @@
+export const sharedPalette = {
+  primary: {
+    main: '#1EAEFF',
+  },
+  secondary: {
+    main: '#FFC01E',
+  },
+  error: {
+    main: '#DC3939',
+  },
+  strokeDanger: {
+    main: '#DF7878',
+  },
+  success: {
+    main: '#38B386',
+  },
+  white: {
+    main: '#FFF',
+  },
+  darkPrimary: {
+    main: '#1A1C1E',
+  },
+  darkSecondary: {
+    main: '#1B2327',
+  },
+  brandGray: {
+    main: '#E1E7EA',
+  },
+  grey200: {
+    main: '#404142',
+  },
+  grey250: {
+    main: '#57595B',
+  },
+  grey300: {
+    main: '#969B9D',
+  },
+  grey400: {
+    main: '#D0D4D8',
+  },
+  grey500: {
+    main: '#EAECEE',
+  },
+  backgroundGrey100: {
+    main: '#FBFBFB',
+  },
+  backgroundGrey200: {
+    main: '#f4f5f6',
+  },
+  backgroundGrey300: {
+    main: '#F5F6F7',
+  },
+  containedButtonHover: {
+    main: '#00A3FF',
+  },
+  patchMethod: {
+    main: '#9B59B6',
+  },
+  getMethodHover: {
+    main: '#0091E2',
+  },
+  putMethodHover: {
+    main: '#DD9F00',
+  },
+  postMethodHover: {
+    main: '#00AE70',
+  },
+  deleteMethodHover: {
+    main: '#FF2F2F',
+  },
+  patchMethodHover: {
+    main: '#7A4092',
+  },
+  mutedInkHover: {
+    main: '#1C2022',
+  },
+  containedButtonActive: {
+    main: '#0399ED',
+  },
+  notchDeskBefore: {
+    main: '#080805',
+  },
+  notchDeskAfter: {
+    main: '#0e314c',
+  },
+  notchMobileBefore: {
+    main: '#0c0b0e',
+  },
+  notchMobileAfter: {
+    main: '#0f0b25',
+  },
+  textLinkHover: {
+    main: '#297FFF',
+  },
+  textLinkActive: {
+    main: '#0399ED',
+  },
+} as const satisfies Record<string, { main: string }>;
+
+export const crmPalette = {
+  ...sharedPalette,
+  success: {
+    main: '#4CAF50',
+  },
+  warning: {
+    main: '#FF9800',
+  },
+  info: {
+    main: '#2196F3',
+  },
+} as const satisfies Record<string, { main: string }>;
+
+export type UiPaletteTokens = typeof sharedPalette;
+
+export const colorTokens: { readonly palette: UiPaletteTokens } = { palette: sharedPalette };

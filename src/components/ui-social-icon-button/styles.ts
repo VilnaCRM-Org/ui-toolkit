@@ -7,9 +7,9 @@
 import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 /** The rest fill's tint strength: `primary` at 10% opacity. */
 const REST_TINT: number = 0.1;

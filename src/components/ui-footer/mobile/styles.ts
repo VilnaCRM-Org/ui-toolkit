@@ -1,6 +1,9 @@
-import breakpointsTheme from '@/components/ui-breakpoints';
-import colorTheme from '@/components/ui-color-theme';
+import type { Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
+
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
+import { uiBreakpointValues } from '@/utils/ui-breakpoint-queries';
 
 export default {
   wrapper: {
@@ -29,14 +32,14 @@ export default {
     mt: '1rem',
   },
 
-  listWrapper: {
+  listWrapper: (theme: Theme): SystemStyleObject<Theme> => ({
     gap: '0.5rem',
     justifyContent: 'center',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).md}px)`]: {
       gap: '0.25rem',
     },
     '@media (max-width: 350px)': {
       gap: '0',
     },
-  },
+  }),
 };

@@ -2,8 +2,7 @@ import { FormLabel } from '@mui/material';
 import React from 'react';
 
 import { fontFamilies } from '@/utils/font-tokens';
-
-import colorTheme from '../ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 // External static field label. Figma places the label ABOVE the field (Inter
 // Medium 14/18, #404142, with a 9px gap) rather than inside MUI's notched

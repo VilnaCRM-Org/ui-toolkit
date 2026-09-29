@@ -1,7 +1,8 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import { sharedPalette } from '../ui-color-theme';
+import { sharedPalette } from '@/utils/palette-tokens';
+
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
 import type { SkeletonWidgetCard } from './types';

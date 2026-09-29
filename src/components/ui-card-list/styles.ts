@@ -1,5 +1,5 @@
-import breakpointsTheme from '../ui-breakpoints';
-import colorTheme from '../ui-color-theme';
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 import { hoveredCard, largeImage, smallImage, smallWrapper } from './shared-card-styles';
 

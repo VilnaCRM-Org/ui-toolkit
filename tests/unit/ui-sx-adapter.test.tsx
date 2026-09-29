@@ -5,7 +5,7 @@ import React from 'react';
 import UiSxAdapter from '../../src/components/ui-sx-adapter';
 import { flattenToInline, resolveSxLayers } from '../../src/components/ui-sx-adapter/resolve-sx';
 import type { UiSxAdapterRenderProps } from '../../src/components/ui-sx-adapter/types';
-import { uiTheme } from '../../src/utils/ui-theme';
+import { uiTheme } from '../../src/components/ui-theme-provider';
 
 const BRAND_HEX: string = uiTheme.palette.primary.main;
 const BRAND_RGB: string = 'rgb(30, 174, 255)';

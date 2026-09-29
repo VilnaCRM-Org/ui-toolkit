@@ -1,10 +1,9 @@
 import type { CSSObject, Theme } from '@mui/material';
 
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 import { smUpQuery } from '@/utils/ui-breakpoint-queries';
-
-import breakpointsTheme from '../ui-breakpoints';
-import colorTheme from '../ui-color-theme';
 
 export default {
   // CRM parity: the error banner takes programmatic focus when a submit fails;

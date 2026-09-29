@@ -171,3 +171,9 @@ The defaults are the website's behaviour. CRM opts into its own with props:
 - `AuthSkeleton` `idPrefix=""`: bare `auth-skeleton-*` ids.
 - `UiTypography` `inheritTheme`: variants from the app's own MUI theme, so the kit theme need not
   sit at the root.
+- `createUiTheme({ variant: 'crm' })` / `<UiThemeProvider variant="crm">`: CRM breakpoints
+  (`sm` 480) and the CRM palette (`crmPalette`: success `#4CAF50`, warning `#FF9800`, info
+  `#2196F3`). The container, footer, back-to-main, form and skeleton breakpoints resolve from
+  it at render time.
+- Theme subpaths keep the website theme as their `default` export. Import the named
+  `crmBreakpointsTheme` and `crmColorTheme` instead.

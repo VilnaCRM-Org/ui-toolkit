@@ -9,7 +9,7 @@ import {
   type FieldRenderInputConfig,
   type FieldSlotStyles,
 } from '../../src/components/field-controls';
-import { uiTheme } from '../../src/utils/ui-theme';
+import { uiTheme } from '../../src/components/ui-theme-provider';
 
 const slotStyles: FieldSlotStyles = outlinedFieldStyles(uiTheme);
 

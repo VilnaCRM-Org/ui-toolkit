@@ -1,8 +1,8 @@
 import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import { helperTextSx } from '../field-controls';
 
@@ -32,7 +32,7 @@ import { helperTextSx } from '../field-controls';
 
 export { dropzoneSx, fileTextSx, statusPillSx } from './state-styles';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 /** Figma steps the label to grey250 while the field is active (a file dragging over). */
 export const groupLabelActiveColor: string = palette.grey250.main;

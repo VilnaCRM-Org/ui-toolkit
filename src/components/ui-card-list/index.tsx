@@ -1,9 +1,8 @@
 import { Box, useMediaQuery } from '@mui/material';
 import React from 'react';
 
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 import { useDevWarning } from '@/utils/dev-warn';
-
-import breakpointsTheme from '../ui-breakpoints';
 
 import CardGrid from './card-grid';
 import CardSwiper from './card-swiper';

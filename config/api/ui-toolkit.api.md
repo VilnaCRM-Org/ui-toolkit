@@ -84,6 +84,112 @@ export const crmBreakpointValues: {
 export const crmColorTheme: Theme;
 
 // @public (undocumented)
+export const crmPalette: {
+    readonly success: {
+        readonly main: "#4CAF50";
+    };
+    readonly warning: {
+        readonly main: "#FF9800";
+    };
+    readonly info: {
+        readonly main: "#2196F3";
+    };
+    readonly primary: {
+        readonly main: "#1EAEFF";
+    };
+    readonly secondary: {
+        readonly main: "#FFC01E";
+    };
+    readonly error: {
+        readonly main: "#DC3939";
+    };
+    readonly strokeDanger: {
+        readonly main: "#DF7878";
+    };
+    readonly white: {
+        readonly main: "#FFF";
+    };
+    readonly darkPrimary: {
+        readonly main: "#1A1C1E";
+    };
+    readonly darkSecondary: {
+        readonly main: "#1B2327";
+    };
+    readonly brandGray: {
+        readonly main: "#E1E7EA";
+    };
+    readonly grey200: {
+        readonly main: "#404142";
+    };
+    readonly grey250: {
+        readonly main: "#57595B";
+    };
+    readonly grey300: {
+        readonly main: "#969B9D";
+    };
+    readonly grey400: {
+        readonly main: "#D0D4D8";
+    };
+    readonly grey500: {
+        readonly main: "#EAECEE";
+    };
+    readonly backgroundGrey100: {
+        readonly main: "#FBFBFB";
+    };
+    readonly backgroundGrey200: {
+        readonly main: "#f4f5f6";
+    };
+    readonly backgroundGrey300: {
+        readonly main: "#F5F6F7";
+    };
+    readonly containedButtonHover: {
+        readonly main: "#00A3FF";
+    };
+    readonly patchMethod: {
+        readonly main: "#9B59B6";
+    };
+    readonly getMethodHover: {
+        readonly main: "#0091E2";
+    };
+    readonly putMethodHover: {
+        readonly main: "#DD9F00";
+    };
+    readonly postMethodHover: {
+        readonly main: "#00AE70";
+    };
+    readonly deleteMethodHover: {
+        readonly main: "#FF2F2F";
+    };
+    readonly patchMethodHover: {
+        readonly main: "#7A4092";
+    };
+    readonly mutedInkHover: {
+        readonly main: "#1C2022";
+    };
+    readonly containedButtonActive: {
+        readonly main: "#0399ED";
+    };
+    readonly notchDeskBefore: {
+        readonly main: "#080805";
+    };
+    readonly notchDeskAfter: {
+        readonly main: "#0e314c";
+    };
+    readonly notchMobileBefore: {
+        readonly main: "#0c0b0e";
+    };
+    readonly notchMobileAfter: {
+        readonly main: "#0f0b25";
+    };
+    readonly textLinkHover: {
+        readonly main: "#297FFF";
+    };
+    readonly textLinkActive: {
+        readonly main: "#0399ED";
+    };
+};
+
+// @public (undocumented)
 export type CustomTextField<T extends FieldValues> = UiInputProps & {
     control: Control<T>;
     rules?: FieldRules<T> | undefined;

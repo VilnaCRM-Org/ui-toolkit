@@ -134,7 +134,7 @@ export type { UiSocialIconButtonProps, SocialNetwork } from './ui-social-icon-bu
 export { default as UiToolbar } from './ui-toolbar';
 export type { UiToolbarProps } from './ui-toolbar';
 export { default as UiColorTheme } from './ui-color-theme';
-export { crmColorTheme, sharedPalette, websiteColorTheme } from './ui-color-theme';
+export { crmColorTheme, crmPalette, sharedPalette, websiteColorTheme } from './ui-color-theme';
 export { default as UiBreakpoints } from './ui-breakpoints';
 export {
   crmBreakpointValues,

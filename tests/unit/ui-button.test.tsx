@@ -11,8 +11,8 @@ import {
   dangerStyles as dangerStylesFor,
   outlinedStyles as outlinedStylesFor,
 } from '../../src/components/ui-button/variant-styles';
+import { createUiTheme, uiTheme } from '../../src/components/ui-theme-provider';
 import { fontFamilies } from '../../src/utils/font-tokens';
-import { createUiTheme, uiTheme } from '../../src/utils/ui-theme';
 
 import { testText } from './constants';
 

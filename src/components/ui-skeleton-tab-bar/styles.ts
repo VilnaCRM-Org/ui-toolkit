@@ -1,7 +1,8 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
-import colorTheme from '../ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
+
 import { getSkeletonKeys } from '../ui-skeletons';
 
 // Board D tab bar, measured live from Figma file `xZ7ccrH6d4QyqLQsayFSEX` node

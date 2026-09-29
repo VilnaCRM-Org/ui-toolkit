@@ -1,8 +1,8 @@
 import type { CSSObject, Theme } from '@mui/material';
 
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 import { smUpQuery } from '@/utils/ui-breakpoint-queries';
 
-import breakpointsTheme from '../ui-breakpoints';
 import {
   SKELETON_BORDER_COLOR,
   SMALL_MOBILE_BREAKPOINT,

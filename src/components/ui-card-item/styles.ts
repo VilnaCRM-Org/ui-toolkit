@@ -1,6 +1,7 @@
-import breakpointsTheme from '../ui-breakpoints';
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
+
 import { hoveredCard, largeImage, smallImage, smallWrapper } from '../ui-card-list';
-import colorTheme from '../ui-color-theme';
 
 export default {
   smallWrapper,

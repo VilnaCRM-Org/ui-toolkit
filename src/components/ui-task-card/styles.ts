@@ -5,10 +5,10 @@
 // static; the wired (button) branch adds cursor, hover and the focus ring.
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Stable class hooks so the root owns every hover rule via descendant selectors.
 export const TITLE_CLASS: string = 'ui-task-card__title';

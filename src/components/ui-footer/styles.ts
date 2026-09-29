@@ -1,19 +1,22 @@
-import breakpointsTheme from '../ui-breakpoints';
-import colorTheme from '../ui-color-theme';
+import type { Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
+
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
+import { uiBreakpointValues } from '@/utils/ui-breakpoint-queries';
 
 export default {
-  default: {
+  default: (theme: Theme): SystemStyleObject<Theme> => ({
     display: 'block',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).md}px)`]: {
       display: 'none',
     },
-  },
-  adaptive: {
+  }),
+  adaptive: (theme: Theme): SystemStyleObject<Theme> => ({
     display: 'none',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).md}px)`]: {
       display: 'block',
     },
-  },
+  }),
   footerWrapper: {
     borderTop: `1px solid ${colorTheme.palette.brandGray.main}`,
     background: colorTheme.palette.white.main,
@@ -24,14 +27,14 @@ export default {
     maxWidth: '1222px',
     margin: '0 auto',
   },
-  topContent: {
+  topContent: (theme: Theme): SystemStyleObject<Theme> => ({
     paddingLeft: '1rem',
     paddingRight: '1rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).lg}px)`]: {
       paddingLeft: '2rem',
       paddingRight: '1.5rem',
     },
-  },
+  }),
   bottomWrapper: {
     borderRadius: '1rem 1rem 0px 0px',
     background: colorTheme.palette.backgroundGrey200.main,
@@ -41,7 +44,7 @@ export default {
     maxWidth: '1222px',
     margin: '0 auto',
   },
-  copyrightAndLinks: {
+  copyrightAndLinks: (theme: Theme): SystemStyleObject<Theme> => ({
     paddingLeft: '1.3rem',
     paddingRight: '1rem',
     height: '3.688rem',
@@ -49,12 +52,12 @@ export default {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: '0.3rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).lg}px)`]: {
       paddingRight: '2rem',
       paddingLeft: '2rem',
       pb: '0.2rem',
     },
-  },
+  }),
   copyright: {
     color: colorTheme.palette.grey200.main,
   },

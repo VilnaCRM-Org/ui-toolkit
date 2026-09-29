@@ -4,10 +4,10 @@
 // disabled paint must also hit the static no-ARIA branch (`ui-profile-select-card`).
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Module's one raw colour (Figma's untokened "Landing shadow" tint): rest and
 // open share it at 27px; hover is a distinct, tighter 15px.
