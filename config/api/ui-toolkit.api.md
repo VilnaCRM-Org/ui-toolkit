@@ -12,6 +12,7 @@ import type { ElementType } from 'react';
 import type { ErrorInfo } from 'react';
 import { FieldValues } from 'react-hook-form';
 import type { HTMLAttributes } from 'react';
+import type { LinkProps } from '@mui/material';
 import type { OutlinedInputProps } from '@mui/material/OutlinedInput';
 import type { Path } from 'react-hook-form';
 import type { PathValue } from 'react-hook-form';
@@ -355,6 +356,8 @@ export function UiButton(input: React_2.PropsWithChildren<UiButtonProps>): React
 
 // @public (undocumented)
 export interface UiButtonProps extends ButtonProps {
+    // (undocumented)
+    focusOutline?: boolean | undefined;
     loadingMode?: 'aria-disabled' | 'native' | undefined;
     loadingText?: string | undefined;
     rel?: string | undefined;
@@ -620,6 +623,8 @@ export interface UiFormProps<T extends FieldValues> {
     // (undocumented)
     formOptions?: Omit<UseFormProps<T>, 'defaultValues'> | undefined;
     // (undocumented)
+    inheritTheme?: boolean | undefined;
+    // (undocumented)
     isSubmitDisabled?: boolean | undefined;
     // (undocumented)
     isSubmitting?: boolean | undefined;
@@ -636,6 +641,8 @@ export interface UiFormProps<T extends FieldValues> {
     showSubtitle?: boolean | undefined;
     // (undocumented)
     showTitle?: boolean | undefined;
+    // (undocumented)
+    submitFocusOutline?: UiButtonProps['focusOutline'] | undefined;
     // (undocumented)
     submitLabel: string;
     submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
@@ -738,7 +745,9 @@ export type UiLinkProps = {
     rel?: string | undefined;
     sx?: SxProps<Theme> | undefined;
     disabled?: boolean | undefined;
-} & ({
+    tone?: 'brand' | 'accessible' | undefined;
+    underline?: 'always' | 'hover' | 'none' | undefined;
+} & Omit<LinkProps, 'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color'> & ({
     target: '_blank';
     newTabLabel: string;
 } | {

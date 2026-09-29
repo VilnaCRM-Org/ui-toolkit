@@ -1,5 +1,5 @@
 import { Box, Button } from '@mui/material';
-import type { Theme } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
 import { useUiTheme } from '@/utils/ui-theme';
@@ -9,6 +9,7 @@ import { srOnlySx } from '../field-controls';
 import { ButtonSpinner, useBusyClick, useButtonBusy, type ButtonBusyState } from './loading';
 import { buttonSx } from './styles';
 import type { UiButtonProps } from './types';
+import type { ButtonSxState, ButtonVariantProps } from './variant-styles';
 
 function resolveLinkTarget(to?: UiButtonProps['to']): string | undefined {
   if (!to) {
@@ -82,6 +83,15 @@ function busyAttributes(
   return { 'aria-disabled': busy ? true : (ariaDisabled as boolean | undefined) };
 }
 
+function useButtonSx(
+  rest: ButtonVariantProps & { sx?: SxProps<Theme> | undefined },
+  busy: boolean,
+  appearance: Pick<ButtonSxState, 'native' | 'focusOutline'>
+): SxProps<Theme> {
+  const theme: Theme = useUiTheme();
+  return buttonSx(theme, { ...rest, ...appearance, busy }, rest.sx);
+}
+
 function LoadingStatus({ announced }: Readonly<{ announced: string }>): React.ReactElement {
   return (
     <Box role="status" aria-atomic="true" sx={srOnlySx}>
@@ -99,6 +109,7 @@ function UiButton({
   loadingText,
   loadingMode,
   loadingIndicator,
+  focusOutline,
   onClick,
   children,
   ...rest
@@ -107,7 +118,7 @@ function UiButton({
   const native: boolean = loadingMode === 'native';
   const state: ButtonBusyState = useButtonBusy(loading, loadingText);
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = useBusyClick(state.busy, onClick);
-  const theme: Theme = useUiTheme();
+  const sx: SxProps<Theme> = useButtonSx(rest, state.busy, { native, focusOutline });
 
   return (
     <>
@@ -116,7 +127,7 @@ function UiButton({
         {...rest}
         {...busyAttributes(state.busy, native, rest)}
         onClick={handleClick}
-        sx={buttonSx(theme, { ...rest, busy: state.busy, native }, rest.sx)}
+        sx={sx}
       >
         {children}
         {state.busy ? <ButtonSpinner indicator={native ? loadingIndicator : undefined} /> : null}

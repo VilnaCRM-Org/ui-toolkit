@@ -1,3 +1,4 @@
+import { ThemeProvider, createTheme } from '@mui/material';
 import { render, screen } from '@testing-library/react';
 import i18next from 'i18next';
 import React from 'react';
@@ -30,6 +31,19 @@ describe('UiFooter crm variant', () => {
   it('renders no social links', () => {
     render(<UiFooter variant="crm" />);
     expect(screen.getAllByRole('link')).toHaveLength(2);
+  });
+
+  it('sets the link labels in the app theme typography', () => {
+    render(
+      <ThemeProvider theme={createTheme({ typography: { fontFamily: 'AppFace' } })}>
+        <UiFooter variant="crm" />
+      </ThemeProvider>
+    );
+    expect(screen.getByText(privacyText)).toHaveStyle({
+      fontFamily: 'AppFace',
+      fontWeight: '500',
+      fontSize: '1rem',
+    });
   });
 
   it('keeps the website footer as the default', () => {

@@ -48,6 +48,11 @@ function UiLink({
   sx,
   disabled,
   newTabLabel,
+  tone = 'brand',
+  underline = 'always',
+  onClick,
+  onAuxClick,
+  ...rest
 }: UiLinkProps): React.ReactElement {
   // HTML matches the `_blank` keyword ASCII case-insensitively, so an exact
   // comparison let `target="_BLANK"` open a new browsing context with no
@@ -58,15 +63,16 @@ function UiLink({
 
   return (
     <Link
+      {...rest}
       href={href}
       target={target}
       rel={mergeRel(opensInNewTab, rel)}
-      underline="always"
-      sx={linkSx(theme, sx)}
-      aria-disabled={disabled ? true : undefined}
-      tabIndex={disabled ? -1 : undefined}
-      onClick={disabled ? suppressNavigation : undefined}
-      onAuxClick={disabled ? suppressNavigation : undefined}
+      underline={underline}
+      sx={linkSx(theme, { tone, underline }, sx)}
+      aria-disabled={disabled ? true : rest['aria-disabled']}
+      tabIndex={disabled ? -1 : rest.tabIndex}
+      onClick={disabled ? suppressNavigation : onClick}
+      onAuxClick={disabled ? suppressNavigation : onAuxClick}
     >
       {children}
       {opensInNewTab && newTabLabel ? (

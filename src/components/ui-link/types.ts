@@ -1,4 +1,4 @@
-import type { SxProps, Theme } from '@mui/material';
+import type { LinkProps, SxProps, Theme } from '@mui/material';
 import type { ReactNode } from 'react';
 
 /**
@@ -19,19 +19,22 @@ export type UiLinkProps = {
    * navigate. The `rel`/new-tab contract is unaffected by `disabled`.
    */
   disabled?: boolean | undefined;
-} & (
-  | {
-      target: '_blank';
-      /**
-       * Visually-hidden hint appended when the link opens in a new tab. Required
-       * with `target="_blank"`: pass the application's already-translated string.
-       * Pass `''` to render no cue (e.g. when the consumer renders its own
-       * external-link affordance).
-       */
-      newTabLabel: string;
-    }
-  | {
-      target?: '_self' | '_parent' | '_top' | undefined;
-      newTabLabel?: string | undefined;
-    }
-);
+  tone?: 'brand' | 'accessible' | undefined;
+  underline?: 'always' | 'hover' | 'none' | undefined;
+} & Omit<LinkProps, 'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color'> &
+  (
+    | {
+        target: '_blank';
+        /**
+         * Visually-hidden hint appended when the link opens in a new tab. Required
+         * with `target="_blank"`: pass the application's already-translated string.
+         * Pass `''` to render no cue (e.g. when the consumer renders its own
+         * external-link affordance).
+         */
+        newTabLabel: string;
+      }
+    | {
+        target?: '_self' | '_parent' | '_top' | undefined;
+        newTabLabel?: string | undefined;
+      }
+  );

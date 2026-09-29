@@ -63,6 +63,7 @@ const propSpreadingExceptions = [
   'Typography',
   'UiInput',
   'Tooltip',
+  'Link',
 ];
 
 const themeScopeMessage =

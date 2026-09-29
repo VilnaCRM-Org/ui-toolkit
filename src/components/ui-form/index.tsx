@@ -29,7 +29,7 @@ function FormBody<T extends FieldValues>({
 
   return (
     <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
-      <ErrorBanner error={view.error} />
+      <ErrorBanner error={view.error} inheritTheme={view.inheritTheme} />
       <FormHeader view={view} />
       <FormOfflineNotice offline={offline} copy={view.offlineNotice} />
       {children}

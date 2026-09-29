@@ -89,6 +89,23 @@ function busyEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
   return state.native ? [busyStyles(theme), nativeBusyStyles] : [busyStyles(theme)];
 }
 
+export const focusOutlineStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
+  (theme: Theme): ButtonStyle => ({
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.grey200.main}`,
+      outlineOffset: '2px',
+      boxShadow: 'none',
+    },
+    '&.MuiButton-contained:focus-visible': {
+      backgroundColor: theme.palette.containedButtonHover.main,
+    },
+  })
+);
+
+function focusEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
+  return state.focusOutline === true ? [focusOutlineStyles(theme)] : [];
+}
+
 function consumerEntries(sx: SxProps<Theme> | undefined): SxEntry[] {
   const consumerSx: SxProps<Theme> = sx ?? {};
   return (Array.isArray(consumerSx) ? consumerSx : [consumerSx]) as SxEntry[];
@@ -102,6 +119,7 @@ export function buttonSx(
   return [
     fontFamilyPin,
     ...matchedVariantStyles(theme, state),
+    ...focusEntries(theme, state),
     ...busyEntries(theme, state),
     ...consumerEntries(sx),
   ] as SxProps<Theme>;

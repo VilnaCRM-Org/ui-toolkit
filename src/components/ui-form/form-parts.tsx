@@ -15,7 +15,11 @@ import type { OfflineSubmit } from './use-offline-submit';
 // outline from `styles.errorBannerFocus`). See `useFocusOnError` for when.
 export function ErrorBanner({
   error,
-}: Readonly<{ error?: string | null | undefined }>): React.ReactElement | null {
+  inheritTheme,
+}: Readonly<{
+  error?: string | null | undefined;
+  inheritTheme?: boolean | undefined;
+}>): React.ReactElement | null {
   const bannerRef: React.RefObject<HTMLDivElement | null> = useFocusOnError<HTMLDivElement>(error);
 
   if (!error) {
@@ -24,7 +28,11 @@ export function ErrorBanner({
 
   return (
     <Box ref={bannerRef} tabIndex={-1} sx={styles.errorBannerFocus}>
-      <UiTypography role="alert" sx={{ color: 'red', marginBottom: '1rem' }}>
+      <UiTypography
+        role="alert"
+        inheritTheme={inheritTheme}
+        sx={{ color: 'red', marginBottom: '1rem' }}
+      >
         {error}
       </UiTypography>
     </Box>
@@ -35,15 +43,23 @@ export function FormHeader<T extends FieldValues>({
   view,
 }: Readonly<{ view: FormViewProps<T> }>): React.ReactElement {
   const { title, subtitle, showTitle = true, showSubtitle = true, titleComponent } = view;
+  const { inheritTheme } = view;
   return (
     <>
       {showTitle && title ? (
-        <UiTypography variant="h4" component={titleComponent} sx={styles.formTitle}>
+        <UiTypography
+          variant="h4"
+          component={titleComponent}
+          inheritTheme={inheritTheme}
+          sx={styles.formTitle}
+        >
           {title}
         </UiTypography>
       ) : null}
       {showSubtitle && subtitle ? (
-        <UiTypography sx={styles.formSubtitle}>{subtitle}</UiTypography>
+        <UiTypography inheritTheme={inheritTheme} sx={styles.formSubtitle}>
+          {subtitle}
+        </UiTypography>
       ) : null}
     </>
   );
@@ -71,6 +87,7 @@ export function SubmitControls<T extends FieldValues>({
       loading={submitting}
       loadingText={submittingLabel}
       loadingMode={submitLoadingMode}
+      focusOutline={view.submitFocusOutline}
       disabled={isSubmitDisabled || !offline.online}
       aria-describedby={view.offlineNotice ? offline.noticeId : undefined}
       variant="contained"
