@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/react';
 
-// Load the Inter / Golos Text @font-face rules for EVERY story. Component stories
+// Load the Inter / Golos @font-face rules for EVERY story. Component stories
 // import their component directly (not the `@/components` barrel that pulls in
 // fonts.css), so without this the text falls back to the browser serif default.
 import '../src/components/fonts.css';

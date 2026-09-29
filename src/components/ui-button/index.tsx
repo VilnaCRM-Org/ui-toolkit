@@ -1,14 +1,12 @@
 import { Box, Button } from '@mui/material';
-import type { Theme } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
-
-import { useUiTheme } from '@/utils/ui-theme';
 
 import { srOnlySx } from '../field-controls';
 
 import { ButtonSpinner, useBusyClick, useButtonBusy, type ButtonBusyState } from './loading';
-import { buttonSx } from './styles';
 import type { UiButtonProps } from './types';
+import useButtonSx from './use-button-sx';
 
 function resolveLinkTarget(to?: UiButtonProps['to']): string | undefined {
   if (!to) {
@@ -99,6 +97,7 @@ function UiButton({
   loadingText,
   loadingMode,
   loadingIndicator,
+  focusOutline,
   onClick,
   children,
   ...rest
@@ -107,7 +106,7 @@ function UiButton({
   const native: boolean = loadingMode === 'native';
   const state: ButtonBusyState = useButtonBusy(loading, loadingText);
   const handleClick: React.MouseEventHandler<HTMLButtonElement> = useBusyClick(state.busy, onClick);
-  const theme: Theme = useUiTheme();
+  const sx: SxProps<Theme> = useButtonSx(rest, state.busy, { native, focusOutline });
 
   return (
     <>
@@ -116,7 +115,7 @@ function UiButton({
         {...rest}
         {...busyAttributes(state.busy, native, rest)}
         onClick={handleClick}
-        sx={buttonSx(theme, { ...rest, busy: state.busy, native }, rest.sx)}
+        sx={sx}
       >
         {children}
         {state.busy ? <ButtonSpinner indicator={native ? loadingIndicator : undefined} /> : null}

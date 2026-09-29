@@ -5,5 +5,5 @@ export const fontFamilyCustomProperties = {
 
 export const fontFamilies = {
   inter: 'var(--ui-toolkit-font-inter, Inter)',
-  golos: "var(--ui-toolkit-font-golos, 'Golos Text')",
+  golos: "var(--ui-toolkit-font-golos, 'Golos')",
 } as const;

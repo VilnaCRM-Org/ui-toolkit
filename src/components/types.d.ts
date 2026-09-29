@@ -10,7 +10,6 @@ declare module '@mui/material/styles' {
     bodyText16: CSSProperties;
     bold22: CSSProperties;
     demi18: CSSProperties;
-    button: CSSProperties;
     mobileText: CSSProperties;
   }
 
@@ -23,7 +22,6 @@ declare module '@mui/material/styles' {
     bodyText16?: CSSProperties | undefined;
     bold22?: CSSProperties | undefined;
     demi18?: CSSProperties | undefined;
-    button?: CSSProperties | undefined;
     mobileText?: CSSProperties | undefined;
   }
 
@@ -100,7 +98,6 @@ declare module '@mui/material/Typography' {
     bodyText16: true;
     bold22: true;
     demi18: true;
-    button: true;
     mobileText: true;
   }
 }

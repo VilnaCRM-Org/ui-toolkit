@@ -1,6 +1,7 @@
 /** @jest-environment node */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { brotliCompressSync } from 'node:zlib';
 
 import fontLicenseDescription from '../../scripts/ci/font-license';
 import {
@@ -56,9 +57,34 @@ function sfnt(signature: number, tag: string, table: Buffer): Buffer {
   return Buffer.concat([directory, table]);
 }
 
+function base128(value: number): Buffer {
+  const bytes: number[] = [value & 0x7f];
+  for (let rest = Math.floor(value / 128); rest > 0; rest = Math.floor(rest / 128)) {
+    bytes.unshift((rest & 0x7f) | 0x80);
+  }
+  return Buffer.from(bytes);
+}
+
+type Woff2Table = { entry: Buffer; data: Buffer };
+
+function woff2(tables: Woff2Table[], collection?: Buffer): Buffer {
+  const stream: Buffer = brotliCompressSync(Buffer.concat(tables.map(table => table.data)));
+  const header: Buffer = Buffer.alloc(48);
+  header.write('wOF2', 0, 'latin1');
+  header.write(collection ? 'ttcf' : 'true', 4, 'latin1');
+  header.writeUInt16BE(tables.length, 12);
+  header.writeUInt32BE(stream.length, 20);
+  const directory: Buffer[] = tables.map(table => table.entry);
+  return Buffer.concat([header, ...directory, ...(collection ? [collection] : []), stream]);
+}
+
+function woff2Table(flags: number, data: Buffer, extra: Buffer[] = []): Woff2Table {
+  return { entry: Buffer.concat([Buffer.from([flags]), ...extra, base128(data.length)]), data };
+}
+
 function shippedFonts(): string[] {
   return readdirSync(FONTS_DIR, { recursive: true, encoding: 'utf8' })
-    .filter(name => name.endsWith('.ttf'))
+    .filter(name => name.endsWith('.woff2'))
     .map(name => join(FONTS_DIR, name));
 }
 
@@ -321,7 +347,66 @@ describe('license policy', () => {
       expect(fontLicenseDescription(sfnt(0x00010000, 'head', Buffer.alloc(8)))).toBeUndefined();
     });
 
-    it('returns undefined for a compressed WOFF2 container', () => {
+    it('reads the licence description from a WOFF2 name table', () => {
+      const table: Buffer = nameTable([
+        { platform: 3, nameId: 13, bytes: utf16be(OFL_DESCRIPTION) },
+      ]);
+      const font: Buffer = woff2([woff2Table(1, Buffer.alloc(54)), woff2Table(5, table)]);
+      expect(fontLicenseDescription(font)).toBe(OFL_DESCRIPTION);
+    });
+
+    it('offsets past transformed glyf data and finds a name table under a custom tag', () => {
+      const table: Buffer = nameTable([{ platform: 3, nameId: 13, bytes: utf16be('Custom') }]);
+      const glyf: Woff2Table = {
+        entry: Buffer.concat([Buffer.from([10]), base128(300), base128(200)]),
+        data: Buffer.alloc(200),
+      };
+      const hmtx: Woff2Table = woff2Table(3, Buffer.alloc(130));
+      const custom: Woff2Table = woff2Table(63, table, [Buffer.from('name', 'latin1')]);
+      expect(fontLicenseDescription(woff2([glyf, hmtx, custom]))).toBe('Custom');
+    });
+
+    it('reads a transform length for a glyf table stored under a custom tag', () => {
+      const table: Buffer = nameTable([{ platform: 3, nameId: 13, bytes: utf16be('Custom glyf') }]);
+      const glyf: Woff2Table = {
+        entry: Buffer.concat([
+          Buffer.from([63]),
+          Buffer.from('glyf', 'latin1'),
+          base128(300),
+          base128(120),
+        ]),
+        data: Buffer.alloc(120),
+      };
+      expect(fontLicenseDescription(woff2([glyf, woff2Table(5, table)]))).toBe('Custom glyf');
+    });
+
+    it('skips a font collection directory before the compressed tables', () => {
+      const table: Buffer = nameTable([{ platform: 3, nameId: 13, bytes: utf16be('Collection') }]);
+      const collection: Buffer = Buffer.concat([
+        Buffer.from([0, 1, 0, 0]),
+        Buffer.from([1]),
+        Buffer.from([253, 0, 3]),
+        Buffer.from('true', 'latin1'),
+        Buffer.from([0, 254, 0, 255, 1]),
+      ]);
+      const font: Buffer = woff2(
+        [woff2Table(1, Buffer.alloc(54)), woff2Table(5, table)],
+        collection
+      );
+      expect(fontLicenseDescription(font)).toBe('Collection');
+    });
+
+    it('reads an untransformed glyf table at its original length', () => {
+      const table: Buffer = nameTable([{ platform: 3, nameId: 13, bytes: utf16be('Null') }]);
+      const glyf: Woff2Table = woff2Table(10 | (3 << 6), Buffer.alloc(40));
+      expect(fontLicenseDescription(woff2([glyf, woff2Table(5, table)]))).toBe('Null');
+    });
+
+    it('returns undefined for a WOFF2 font without a name table', () => {
+      expect(fontLicenseDescription(woff2([woff2Table(1, Buffer.alloc(54))]))).toBeUndefined();
+    });
+
+    it('returns undefined for an unreadable WOFF2 container', () => {
       expect(fontLicenseDescription(Buffer.from('wOF2 compressed face'))).toBeUndefined();
     });
 
