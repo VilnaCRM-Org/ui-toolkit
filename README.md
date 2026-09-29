@@ -40,7 +40,7 @@ moving to a later one.
 ## Quick start
 
 Import the stylesheet once, at the application root, before any toolkit component renders. It
-carries the Inter and Golos Text `@font-face` rules and the carousel CSS; without it, text falls
+carries the Inter and Golos `@font-face` rules and the carousel CSS; without it, text falls
 back to the browser default face.
 
 ```tsx
@@ -142,10 +142,10 @@ The components never name a font face directly. Every `fontFamily` resolves thro
 CSS custom properties, with the self-hosted faces that `@vilnacrm/ui-toolkit/styles.css` declares
 as the fallback:
 
-| Custom property           | Fallback face  |
-| ------------------------- | -------------- |
-| `--ui-toolkit-font-inter` | `Inter`        |
-| `--ui-toolkit-font-golos` | `'Golos Text'` |
+| Custom property           | Fallback face |
+| ------------------------- | ------------- |
+| `--ui-toolkit-font-inter` | `Inter`       |
+| `--ui-toolkit-font-golos` | `'Golos'`     |
 
 Leave both unset and the components render with the bundled faces. Set them to route the
 components through the application's own font pipeline. With `next/font`, pass the property name

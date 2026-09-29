@@ -307,7 +307,7 @@ esbuild
       '.js': 'jsx',
       '.svg': 'dataurl',
       '.css': 'css',
-      '.ttf': 'file',
+      '.woff2': 'file',
     },
     resolveExtensions: ['.js', '.ts', '.jsx', '.tsx', '.json', '.svg'],
     define: {

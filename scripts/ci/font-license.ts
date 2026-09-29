@@ -1,3 +1,5 @@
+import { brotliDecompressSync } from 'node:zlib';
+
 const SFNT_SIGNATURES: ReadonlySet<number> = new Set([0x00010000, 0x4f54544f, 0x74727565]);
 const TABLE_RECORD_SIZE: number = 16;
 const TABLE_DIRECTORY_OFFSET: number = 12;
@@ -5,6 +7,20 @@ const NAME_RECORD_SIZE: number = 12;
 const NAME_RECORDS_OFFSET: number = 6;
 const LICENSE_DESCRIPTION_ID: number = 13;
 const MACINTOSH_PLATFORM: number = 1;
+const WOFF2_SIGNATURE: number = 0x774f4632;
+const WOFF2_HEADER_SIZE: number = 48;
+const WOFF2_NAME_TAG: number = 5;
+const WOFF2_CUSTOM_TAG: number = 63;
+const WOFF2_NULL_TRANSFORM_TAGS: ReadonlyMap<number, number> = new Map([
+  [10, 3],
+  [11, 3],
+]);
+
+interface Woff2Entry {
+  isName: boolean;
+  length: number;
+  next: number;
+}
 
 interface NameRecord {
   platform: number;
@@ -52,7 +68,56 @@ function licenseDescription(font: Buffer, table: number): string | undefined {
   return undefined;
 }
 
+function readBase128(font: Buffer, offset: number): [number, number] {
+  let value: number = 0;
+  let cursor: number = offset;
+  let byte: number = 0x80;
+  while (byte & 0x80) {
+    byte = font.readUInt8(cursor);
+    value = value * 128 + (byte & 0x7f);
+    cursor += 1;
+  }
+  return [value, cursor];
+}
+
+function woff2Entry(font: Buffer, offset: number): Woff2Entry {
+  const flags: number = font.readUInt8(offset);
+  const tag: number = flags & 0x3f;
+  const tagEnd: number = tag === WOFF2_CUSTOM_TAG ? offset + 5 : offset + 1;
+  const isName: boolean =
+    tag === WOFF2_NAME_TAG ||
+    (tag === WOFF2_CUSTOM_TAG && font.toString('latin1', offset + 1, tagEnd) === 'name');
+  const [origLength, afterOrig] = readBase128(font, tagEnd);
+  if (flags >> 6 === (WOFF2_NULL_TRANSFORM_TAGS.get(tag) ?? 0)) {
+    return { isName, length: origLength, next: afterOrig };
+  }
+  const [transformLength, next] = readBase128(font, afterOrig);
+  return { isName, length: transformLength, next };
+}
+
+function woff2NameTable(font: Buffer): Buffer | undefined {
+  let cursor: number = WOFF2_HEADER_SIZE;
+  let dataOffset: number = 0;
+  let name: { offset: number; length: number } | undefined;
+  for (let index = 0; index < font.readUInt16BE(12); index += 1) {
+    const entry: Woff2Entry = woff2Entry(font, cursor);
+    name = entry.isName ? { offset: dataOffset, length: entry.length } : name;
+    dataOffset += entry.length;
+    cursor = entry.next;
+  }
+  const tables: Buffer = brotliDecompressSync(
+    font.subarray(cursor, cursor + font.readUInt32BE(20))
+  );
+  return name && tables.subarray(name.offset, name.offset + name.length);
+}
+
+function woff2Description(font: Buffer): string | undefined {
+  const table: Buffer | undefined = woff2NameTable(font);
+  return table === undefined ? undefined : licenseDescription(table, 0);
+}
+
 function readDescription(font: Buffer): string | undefined {
+  if (font.readUInt32BE(0) === WOFF2_SIGNATURE) return woff2Description(font);
   if (!SFNT_SIGNATURES.has(font.readUInt32BE(0))) return undefined;
   const table: number | undefined = nameTableOffset(font);
   return table === undefined ? undefined : licenseDescription(font, table);

@@ -6,7 +6,7 @@ MAKEFILE="$PROJECT_ROOT/Makefile"
 CHECKER="$PROJECT_ROOT/scripts/ci/check-licenses.ts"
 PR_WORKFLOW="$PROJECT_ROOT/.github/workflows/license-compliance.yml"
 RELEASE_WORKFLOW="$PROJECT_ROOT/.github/workflows/autorelease.yml"
-FIXTURE_FONT="$PROJECT_ROOT/src/assets/fonts/Inter/Inter-Regular.ttf"
+FIXTURE_FONT="$PROJECT_ROOT/src/assets/fonts/Inter/Inter-Regular.woff2"
 
 setup() {
   setup_makefile_test_env
@@ -162,7 +162,7 @@ line_of() {
 }
 
 @test "the checker passes a shipped font whose embedded licence is OFL-1.1" {
-  cp "$FIXTURE_FONT" "$PACKAGE/build/Inter-Regular-FIXTURE.ttf"
+  cp "$FIXTURE_FONT" "$PACKAGE/build/Inter-Regular-FIXTURE.woff2"
   run_checker
   [ "$status" -eq 0 ]
 }
