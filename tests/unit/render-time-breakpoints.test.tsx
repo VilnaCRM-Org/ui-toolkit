@@ -48,6 +48,9 @@ describe('breakpoints resolved at render time', () => {
     expect(mediaKeys(footerStyles.default, customTheme)).toEqual(['@media (max-width: 900px)']);
     expect(mediaKeys(footerStyles.adaptive, customTheme)).toEqual(['@media (max-width: 900px)']);
     expect(mediaKeys(footerStyles.topContent, customTheme)).toEqual(['@media (max-width: 1100px)']);
+    expect(mediaKeys(footerStyles.copyrightAndLinks, customTheme)).toEqual([
+      '@media (max-width: 1100px)',
+    ]);
   });
 
   it('lays out the crm footer logo on the breakpoints of the UI theme in scope', () => {
