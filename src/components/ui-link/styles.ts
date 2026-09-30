@@ -12,8 +12,9 @@ export const accessibleLinkPalette = {
 } as const;
 
 export type LinkAppearance = {
-  tone: 'brand' | 'accessible';
+  tone: 'brand' | 'accessible' | 'inherit';
   underline: 'always' | 'hover' | 'none';
+  responsiveSize: boolean;
 };
 
 const accessibleTone: LinkStyle = {
@@ -52,6 +53,25 @@ function buildLinkStyles(theme: Theme): LinkStyle {
 
 const linkStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildLinkStyles);
 
+const toneKeys: readonly string[] = ['color', '&:hover', '&:active'];
+
+function isDroppedKey(key: string, appearance: LinkAppearance): boolean {
+  const toneDropped: boolean = appearance.tone === 'inherit' && toneKeys.includes(key);
+  return toneDropped || (!appearance.responsiveSize && key.startsWith('@media'));
+}
+
+function baseStyles(theme: Theme, appearance: LinkAppearance): LinkStyle {
+  const base: LinkStyle = linkStyles(theme);
+  if (appearance.tone !== 'inherit' && appearance.responsiveSize) {
+    return base;
+  }
+  return Object.fromEntries(
+    Object.entries(base as Record<string, unknown>).filter(
+      ([key]: [string, unknown]): boolean => !isDroppedKey(key, appearance)
+    )
+  ) as LinkStyle;
+}
+
 function consumerSxArray(sx: SxProps<Theme> | undefined): LinkStyle[] {
   if (sx === undefined) {
     return [];
@@ -69,5 +89,5 @@ export function linkSx(
   appearance: LinkAppearance,
   sx: SxProps<Theme> | undefined
 ): SxProps<Theme> {
-  return [linkStyles(theme), ...appearanceStyles(appearance), ...consumerSxArray(sx)];
+  return [baseStyles(theme, appearance), ...appearanceStyles(appearance), ...consumerSxArray(sx)];
 }
