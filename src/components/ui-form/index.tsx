@@ -7,6 +7,7 @@ import FormOfflineNotice from './offline-notice';
 import SubmitAnnouncement from './submit-announcement';
 import buildSubmitHandler from './submit-handler';
 import type { FormViewProps, UiFormProps } from './types';
+import useNativeSubmitFocus from './use-native-submit-focus';
 import useOfflineSubmit, { type OfflineSubmit } from './use-offline-submit';
 
 export type { UiFormProps } from './types';
@@ -27,6 +28,7 @@ function FormBody<T extends FieldValues>({
   view,
 }: FormBodyProps<T>): React.ReactElement {
   const offline: OfflineSubmit = useOfflineSubmit(view.offlineNotice !== undefined);
+  useNativeSubmitFocus(view.submitLoadingMode === 'native', submitting, offline.submitRef);
 
   return (
     <form noValidate aria-busy={submitting} onSubmit={methods.handleSubmit(handleSubmit)}>
