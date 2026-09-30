@@ -22,6 +22,7 @@ write_hardcoded_fixture() {
     printf 'export const e = { fontFamily: `Golos Text` };\n'
     printf "export const f = { typography: { fontFamily: 'Inter' } };\n"
     printf "export const g = { 'fontFamily': 'Golos Text' };\n"
+    printf "export const h = { fontFamily: 'Golos, sans-serif' };\n"
   } > "$file"
 }
 
@@ -76,7 +77,7 @@ source_gate_selectors() {
   [ "$(printf '%s\n' "$selectors" | grep -c 'fontFamilies.inter / fontFamilies.golos')" -eq 2 ]
 }
 
-@test "every bare Inter / Golos Text fontFamily literal under src/ fails ESLint" {
+@test "every bare Inter / Golos / Golos Text fontFamily literal under src/ fails ESLint" {
   local fixture="$FIXTURE_DIR/hardcoded.ts"
   write_hardcoded_fixture "$fixture"
 
@@ -86,10 +87,10 @@ source_gate_selectors() {
 
   local messages
   messages="$(messages_for "$fixture")"
-  [ "$(printf '%s\n' "$messages" | wc -l)" -eq 7 ]
+  [ "$(printf '%s\n' "$messages" | wc -l)" -eq 8 ]
   [ "$(printf '%s\n' "$messages" | cut -f2 | sort -u)" = "no-restricted-syntax" ]
-  [ "$(printf '%s\n' "$messages" | cut -f1 | tr '\n' ' ')" = "1 2 3 4 5 6 7 " ]
-  [ "$(printf '%s\n' "$messages" | grep -c 'fontFamilies.inter / fontFamilies.golos')" -eq 7 ]
+  [ "$(printf '%s\n' "$messages" | cut -f1 | tr '\n' ' ')" = "1 2 3 4 5 6 7 8 " ]
+  [ "$(printf '%s\n' "$messages" | grep -c 'fontFamilies.inter / fontFamilies.golos')" -eq 8 ]
 }
 
 @test "the token, the raw var() string, a comment and an unrelated key pass the gate" {

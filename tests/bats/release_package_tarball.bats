@@ -43,7 +43,7 @@ setup() {
   make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
     package.json build/index.mjs build/index.d.mts build/index.css \
     build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts \
-    build/Golos-OFL.txt build/Inter-OFL.txt
+    build/Golos-OFL.txt build/Inter-OFL.txt build/mui-augmentation.d.mts
 
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 0 ]
@@ -116,6 +116,17 @@ setup() {
   run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
   [ "$status" -eq 1 ]
   assert_output_contains 'is missing package/build/Inter-OFL.txt'
+}
+
+@test "verifier rejects a tarball missing the MUI theme augmentation" {
+  make_tarball "$PACKAGE_DIR/ui-toolkit-1.0.0.tgz" \
+    package.json build/index.mjs build/index.d.mts build/index.css \
+    build/ui-button.mjs build/ui-button.d.mts build/locales.mjs build/locales.d.mts \
+    build/Golos-OFL.txt build/Inter-OFL.txt
+
+  run "$(VERIFY_SCRIPT)" "$PACKAGE_DIR"
+  [ "$status" -eq 1 ]
+  assert_output_contains 'is missing package/build/mui-augmentation.d.mts'
 }
 
 @test "verifier fails when the package directory holds no tarball" {

@@ -209,6 +209,24 @@ async function generateTypeDeclarations() {
   }
 }
 
+const MUI_AUGMENTATION = 'mui-augmentation.d.mts';
+
+function publishMuiAugmentation() {
+  const source = readFileSync(path.resolve(currentDir, 'src', 'components', 'types.d.ts'), 'utf8');
+  for (const target of [
+    "declare module '@mui/material/styles'",
+    "declare module '@mui/material/Typography'",
+  ]) {
+    if (!source.includes(target)) {
+      throw new Error(`src/components/types.d.ts no longer carries ${target}.`);
+    }
+  }
+  writeFileSync(path.resolve(currentDir, 'build', MUI_AUGMENTATION), source);
+  const rollupPath = path.resolve(currentDir, 'build', 'index.d.mts');
+  const rollup = readFileSync(rollupPath, 'utf8');
+  writeFileSync(rollupPath, `/// <reference path="./${MUI_AUGMENTATION}" />\n${rollup}`);
+}
+
 function generateLocalesDeclarations(metafile) {
   const text = readFileSync(path.resolve(currentDir, 'temp', 'dts', LOCALES, 'index.d.ts'), 'utf8');
   if (ALIAS_IMPORT.test(text)) {
@@ -307,7 +325,7 @@ esbuild
       '.js': 'jsx',
       '.svg': 'dataurl',
       '.css': 'css',
-      '.ttf': 'file',
+      '.woff2': 'file',
     },
     resolveExtensions: ['.js', '.ts', '.jsx', '.tsx', '.json', '.svg'],
     define: {
@@ -316,6 +334,7 @@ esbuild
   })
   .then(async result => {
     await generateTypeDeclarations();
+    publishMuiAugmentation();
     generateSubpathDeclarations(componentEntryPoints(), result.metafile);
     generateLocalesDeclarations(result.metafile);
     copyFontLicenses();

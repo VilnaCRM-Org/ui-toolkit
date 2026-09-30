@@ -21,7 +21,7 @@ The package is ESM-only and exposes four kinds of entry point:
   `@vilnacrm/ui-toolkit/ui-button`. The subpath is the component's directory name, and it exports
   the component as `default` plus its prop types as named type exports.
 - `@vilnacrm/ui-toolkit/styles.css` — the stylesheet, carrying the Swiper carousel CSS and the
-  Inter and Golos Text font faces.
+  Inter and Golos font faces (WOFF2, `font-display: swap`).
 - `@vilnacrm/ui-toolkit/locales` — the `en` and `uk` translation `resources` and the `initI18n`
   helper that loads them into i18next (see the README's Localization section).
 
@@ -171,9 +171,17 @@ The defaults are the website's behaviour. CRM opts into its own with props:
 - `AuthSkeleton` `idPrefix=""`: bare `auth-skeleton-*` ids.
 - `UiTypography` `inheritTheme`: variants from the app's own MUI theme, so the kit theme need not
   sit at the root.
+- `UiButton` `focusOutline`: CRM's `:focus-visible` ring, a 2px `#404142` outline offset by 2px.
+- `UiForm` `submitFocusOutline`: the submit button's `focusOutline`.
+- `UiForm` `inheritTheme`: the title, subtitle and error banner take the app theme's typography.
+- `UiLink` `tone="accessible"`: CRM's `#0074B5` ink (5.04:1 on white), `#00588A` on hover.
+  `underline="hover"` or `"none"` drops the forced underline. Other MUI `Link` props (`id`,
+  `aria-*`, `onClick`) are forwarded.
 - `createUiTheme({ variant: 'crm' })` / `<UiThemeProvider variant="crm">`: CRM breakpoints
   (`sm` 480) and the CRM palette (`crmPalette`: success `#4CAF50`, warning `#FF9800`, info
   `#2196F3`). The container, footer, back-to-main, form and skeleton breakpoints resolve from
   it at render time.
 - Theme subpaths keep the website theme as their `default` export. Import the named
   `crmBreakpointsTheme` and `crmColorTheme` instead.
+- `styles.css` declares one `Golos` family (WOFF2, `font-display: swap`). Point
+  `--ui-toolkit-font-golos` at your own face to use it instead.

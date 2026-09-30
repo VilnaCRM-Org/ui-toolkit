@@ -53,4 +53,5 @@ export interface UiButtonProps extends ButtonProps {
    * when it becomes natively disabled, so use it only where that is accepted.
    */
   loadingMode?: 'aria-disabled' | 'native' | undefined;
+  focusOutline?: boolean | undefined;
 }

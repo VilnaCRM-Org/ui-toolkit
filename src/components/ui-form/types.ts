@@ -45,6 +45,8 @@ export interface UiFormProps<T extends FieldValues> {
   titleComponent?: React.ElementType | undefined;
   /** Forwarded to the submit button's `loadingMode`. */
   submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
+  submitFocusOutline?: UiButtonProps['focusOutline'] | undefined;
+  inheritTheme?: boolean | undefined;
   /**
    * Opts into offline handling: while the browser is offline the submit is
    * disabled and described by a status notice after the title that shows

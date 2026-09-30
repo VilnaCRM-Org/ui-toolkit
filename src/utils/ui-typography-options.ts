@@ -1,5 +1,5 @@
 import type { Palette } from '@mui/material';
-import type { TypographyVariantsOptions } from '@mui/material/styles';
+import type { TypographyStyle, TypographyVariantsOptions } from '@mui/material/styles';
 import type { CSSProperties } from 'react';
 
 import { fontFamilies } from './font-tokens';
@@ -41,7 +41,11 @@ function headingVariants(palette: Palette): TypographyVariantsOptions {
 
 type Metrics = readonly [fontWeight: string, fontSize: string, lineHeight: string];
 
-function textVariant(metrics: Metrics, color: string, fontFamily: string): CSSProperties {
+function textVariant(
+  metrics: Metrics,
+  color: string,
+  fontFamily: string
+): CSSProperties & TypographyStyle {
   const [fontWeight, fontSize, lineHeight] = metrics;
   return { fontWeight, fontSize, lineHeight, color, fontFamily };
 }

@@ -20,7 +20,9 @@ function FooterLink({
 }: Readonly<{ href: string; label: string }>): React.ReactElement {
   return (
     <Link href={href} sx={styles.link}>
-      <UiTypography sx={styles.linkText}>{label}</UiTypography>
+      <UiTypography inheritTheme sx={styles.linkText}>
+        {label}
+      </UiTypography>
     </Link>
   );
 }

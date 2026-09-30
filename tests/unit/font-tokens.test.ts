@@ -11,13 +11,13 @@ describe('font tokens', () => {
   it('resolves each family through its custom property with the self-hosted fallback', () => {
     expect(fontFamilies).toEqual({
       inter: 'var(--ui-toolkit-font-inter, Inter)',
-      golos: "var(--ui-toolkit-font-golos, 'Golos Text')",
+      golos: "var(--ui-toolkit-font-golos, 'Golos')",
     });
   });
 
   it.each([
     ['inter', 'Inter'],
-    ['golos', "'Golos Text'"],
+    ['golos', "'Golos'"],
   ] as const)('composes the %s token from its property and fallback', (key, fallback) => {
     expect(fontFamilies[key]).toBe(`var(${fontFamilyCustomProperties[key]}, ${fallback})`);
   });

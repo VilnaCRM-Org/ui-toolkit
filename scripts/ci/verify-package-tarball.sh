@@ -46,7 +46,8 @@ for required in \
   package/build/locales.mjs \
   package/build/locales.d.mts \
   package/build/Golos-OFL.txt \
-  package/build/Inter-OFL.txt; do
+  package/build/Inter-OFL.txt \
+  package/build/mui-augmentation.d.mts; do
   if ! printf '%s\n' "$contents" | grep -qxF -- "$required"; then
     echo "$tarball is missing $required" >&2
     exit 1
