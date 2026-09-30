@@ -17,10 +17,12 @@ export default {
     },
     [`@media (min-width:${uiBreakpointValues(theme).lg}px)`]: {
       paddingTop: '0.538125rem',
+      maxHeight: '4.149375rem',
     },
     [`@media (min-width:${uiBreakpointValues(theme).xl}px)`]: {
       paddingTop: '0.5625rem',
       paddingBottom: '0.43375rem',
+      maxHeight: '4.125rem',
     },
   }),
   content: (theme: Theme): SystemStyleObject<Theme> => ({
@@ -65,6 +67,9 @@ export default {
     color: colorTheme.palette.grey200.main,
     textDecoration: 'none',
     backgroundColor: colorTheme.palette.backgroundGrey200.main,
+    '&:visited': {
+      color: colorTheme.palette.grey200.main,
+    },
     '&:hover': {
       textDecoration: 'underline',
     },
