@@ -17,7 +17,7 @@ type LoadingInput = Pick<
   'loading' | 'loadingText' | 'loadingMode' | 'loadingIndicator' | 'onClick'
 >;
 
-type BusyAttributes = { disabled?: boolean | undefined; 'aria-disabled'?: boolean | undefined };
+type BusyAttributes = { 'aria-disabled'?: boolean | undefined };
 
 type LoadingButtonProps = BusyAttributes &
   ReturnType<typeof nativeLoadingProps> & {
@@ -35,10 +35,10 @@ export type ButtonLoading = {
 function busyAttributes(
   busy: boolean,
   native: boolean,
-  { disabled, 'aria-disabled': ariaDisabled }: Pick<UiButtonProps, 'disabled' | 'aria-disabled'>
+  { 'aria-disabled': ariaDisabled }: Pick<UiButtonProps, 'aria-disabled'>
 ): BusyAttributes {
   if (native) {
-    return { disabled: disabled === true || busy };
+    return {};
   }
   return { 'aria-disabled': busy ? true : (ariaDisabled as boolean | undefined) };
 }
