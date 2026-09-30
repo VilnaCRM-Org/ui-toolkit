@@ -2,7 +2,8 @@ import type { SxProps, TextFieldProps, Theme } from '@mui/material';
 
 import type { OptionsRecord } from '@/utils/ui-theme';
 
-import { inputSlotStyles, type InputSlotStyles } from './slot-styles';
+import { densitySlotStyles } from './crm-slot-styles';
+import type { InputSlotStyles } from './slot-styles';
 import type { UiInputProps } from './types';
 
 type SlotProps = NonNullable<UiInputProps['slotProps']>;
@@ -46,8 +47,12 @@ function wrapInputSlot(styles: InputSlotStyles, slot: unknown): unknown {
   return styleInputValue(styles, slot);
 }
 
-export function styledSlotProps(theme: Theme, slotProps: UiInputProps['slotProps']): SlotProps {
-  const styles: InputSlotStyles = inputSlotStyles(theme);
+export function styledSlotProps(
+  theme: Theme,
+  slotProps: UiInputProps['slotProps'],
+  density: UiInputProps['density']
+): SlotProps {
+  const styles: InputSlotStyles = densitySlotStyles(theme, density);
   const own: SlotProps = slotProps ?? {};
   return {
     ...own,
@@ -57,6 +62,10 @@ export function styledSlotProps(theme: Theme, slotProps: UiInputProps['slotProps
   } as SlotProps;
 }
 
-export function inputRootSx(theme: Theme, sx: TextFieldProps['sx']): SxProps<Theme> {
-  return [inputSlotStyles(theme).root, ...toSxArray(sx)] as SxProps<Theme>;
+export function inputRootSx(
+  theme: Theme,
+  sx: TextFieldProps['sx'],
+  density: UiInputProps['density']
+): SxProps<Theme> {
+  return [densitySlotStyles(theme, density).root, ...toSxArray(sx)] as SxProps<Theme>;
 }

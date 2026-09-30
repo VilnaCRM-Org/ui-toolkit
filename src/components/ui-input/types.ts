@@ -13,6 +13,7 @@ export type UiInputProps = Omit<TextFieldProps, 'inputRef' | 'onBlur' | 'onChang
    * consumer gave none, because MUI derives the helper text's id from it.
    */
   describedBy?: string | undefined;
+  density?: 'crm' | undefined;
   InputProps?: OutlinedInputProps | undefined;
   onBlur?: React.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
   onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
