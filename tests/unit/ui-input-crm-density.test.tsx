@@ -14,8 +14,18 @@ import { crmBreakpointValues } from '../../src/utils/breakpoint-tokens';
 import { fontFamilies } from '../../src/utils/font-tokens';
 import { createUiTheme } from '../../src/utils/ui-theme';
 
+import { nodesMatching } from './utils/dom-queries';
+import { emotionCssFor } from './utils/emotion-css';
+
 const theme = createUiTheme();
 const crmTheme = createUiTheme({ breakpoints: { values: crmBreakpointValues } });
+
+const crmValueRule: RegExp = /input\s*\{[^}]*font-weight:\s*500;[^}]*color:\s*#57595B/;
+const valueWeightRule: RegExp = /input\s*\{[^}]*font-weight:\s*500/;
+
+function fieldCss(): string {
+  return emotionCssFor(nodesMatching('.MuiTextField-root')[0] as HTMLElement);
+}
 
 const crmNative: Record<string, unknown> = {
   fontFamily: fontFamilies.inter,
@@ -108,15 +118,14 @@ describe('UiInput crm density styles', () => {
 describe('UiInput crm density rendering', () => {
   it('paints the typed value in Inter 500 grey250', () => {
     render(<UiInput label="Name" density="crm" defaultValue="Ann" />);
-    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveStyle({
-      fontWeight: '500',
-      color: 'rgb(87, 89, 91)',
-    });
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Ann');
+    expect(fieldCss()).toMatch(crmValueRule);
   });
 
   it('keeps the default value weight off 500', () => {
     render(<UiInput label="Name" defaultValue="Ann" />);
-    expect(screen.getByRole('textbox', { name: 'Name' })).not.toHaveStyle({ fontWeight: '500' });
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Ann');
+    expect(fieldCss()).not.toMatch(valueWeightRule);
   });
 
   it('is forwarded by UiTextFieldForm', () => {
@@ -125,14 +134,13 @@ describe('UiInput crm density rendering', () => {
         <FormField density="crm" />
       </ThemeProvider>
     );
-    expect(screen.getByRole('textbox', { name: 'Email' })).toHaveStyle({
-      fontWeight: '500',
-      color: 'rgb(87, 89, 91)',
-    });
+    expect(screen.getByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(fieldCss()).toMatch(crmValueRule);
   });
 
   it('keeps UiTextFieldForm on the kit styles without density', () => {
     render(<FormField />);
-    expect(screen.getByRole('textbox', { name: 'Email' })).not.toHaveStyle({ fontWeight: '500' });
+    expect(screen.getByRole('textbox', { name: 'Email' })).toBeInTheDocument();
+    expect(fieldCss()).not.toMatch(valueWeightRule);
   });
 });

@@ -25,8 +25,8 @@ describe('UiLink inherit tone', () => {
 
     expect(link()).toHaveStyle({ color: 'rgb(25, 118, 210)' });
     const css: string = emotionCssFor(link());
-    expect(css).not.toMatch(/:hover\s*\{[^}]*color/);
-    expect(css).not.toMatch(/:active\s*\{[^}]*color/);
+    expect(css).not.toMatch(/:hover\s*\{(?:[^}]*;)?\s*color\s*:/);
+    expect(css).not.toMatch(/:active\s*\{(?:[^}]*;)?\s*color\s*:/);
     expect(css).not.toContain(sharedPalette.primary.main);
     expect(css).toMatch(/font-weight:\s*700/);
   });
@@ -55,8 +55,8 @@ describe('UiLink inherit tone', () => {
     render(<UiLink href="/x">{NAME}</UiLink>);
 
     const css: string = emotionCssFor(link());
-    expect(css).toMatch(/:hover\s*\{[^}]*color/);
-    expect(css).toMatch(/:active\s*\{[^}]*color/);
+    expect(css).toMatch(/:hover\s*\{(?:[^}]*;)?\s*color\s*:/);
+    expect(css).toMatch(/:active\s*\{(?:[^}]*;)?\s*color\s*:/);
   });
 });
 
@@ -91,6 +91,6 @@ describe('UiLink responsiveSize', () => {
 
     const css: string = emotionCssFor(link());
     expect(css).not.toContain('@media');
-    expect(css).not.toMatch(/:hover\s*\{[^}]*color/);
+    expect(css).not.toMatch(/:hover\s*\{(?:[^}]*;)?\s*color\s*:/);
   });
 });

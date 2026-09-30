@@ -73,7 +73,8 @@ describe('UiButton theme appearance', () => {
       undefined
     ) as unknown[];
     expect(sx[0]).toEqual({ fontFamily: expect.any(String), letterSpacing: 'inherit' });
-    expect(sx).toHaveLength(3);
+    expect(sx).toHaveLength(4);
+    expect(sx[3]).toEqual({});
   });
 
   it('does not forward appearance, kitInk or responsiveLabel to the DOM', () => {
@@ -106,7 +107,8 @@ describe('UiButton kit label ink', () => {
 
   it('keeps the ambient contrast ink without the opt-in', () => {
     const button: HTMLElement = mountUnder(blue, <UiButton variant="contained">Go</UiButton>);
-    expect(getComputedStyle(button).color).toBe('rgba(0, 0, 0, 0.87)');
+    expect(getComputedStyle(button).color).toBe('var(--variant-containedColor)');
+    expect(emotionCssFor(button)).toMatch(/--variant-containedColor:\s*rgba\(0, 0, 0, 0\.87\)/);
   });
 
   it('adds the ink only to a contained button', () => {

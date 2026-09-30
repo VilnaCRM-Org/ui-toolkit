@@ -53,8 +53,8 @@ describe('UiThemeProvider scope="tokens"', () => {
     );
 
     const css: string = emotionCssFor(screen.getByText('scoped'));
-    expect(css).toContain('min-width:480px');
-    expect(css).not.toContain('min-width:640px');
+    expect(css).toMatch(/min-width:\s*480px/);
+    expect(css).not.toMatch(/min-width:\s*640px/);
   });
 
   it('leaves plain MUI components on the app theme', () => {
@@ -71,10 +71,10 @@ describe('UiThemeProvider scope="tokens"', () => {
     );
 
     const headingCss: string = emotionCssFor(screen.getByText('heading'));
-    expect(headingCss).toContain('font-size:2.125rem');
-    expect(headingCss).toContain('font-weight:400');
-    expect(emotionCssFor(screen.getByRole('button', { name: 'plain' }))).toContain(
-      '--variant-containedColor:rgba(0, 0, 0, 0.87)'
+    expect(headingCss).toMatch(/font-size:\s*2\.125rem/);
+    expect(headingCss).toMatch(/font-weight:\s*400/);
+    expect(emotionCssFor(screen.getByRole('button', { name: 'plain' }))).toMatch(
+      /--variant-containedColor:\s*rgba\(0, 0, 0, 0\.87\)/
     );
     expect(seen?.breakpoints.values.md).toBe(768);
   });

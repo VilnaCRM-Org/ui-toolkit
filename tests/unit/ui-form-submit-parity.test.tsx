@@ -57,7 +57,8 @@ describe('UiForm submit kit ink', () => {
 
   it('leaves the ink and elevation alone without the opt-in', () => {
     mountForm();
-    expect(getComputedStyle(submit()).color).toBe('rgba(0, 0, 0, 0.87)');
+    expect(getComputedStyle(submit()).color).toBe('var(--variant-containedColor)');
+    expect(emotionCssFor(submit())).toMatch(/--variant-containedColor:\s*rgba\(0, 0, 0, 0\.87\)/);
     expect(emotionCssFor(submit())).not.toMatch(/:active\s*\{[^}]*box-shadow:\s*none/);
   });
 });
@@ -125,8 +126,8 @@ describe('UiForm native submit announcement', () => {
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
-  it('renders no form-level region in the default mode', () => {
+  it('keeps only the button status region in the default mode', () => {
     mountForm({ isSubmitting: false });
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('status')).toHaveLength(1);
   });
 });

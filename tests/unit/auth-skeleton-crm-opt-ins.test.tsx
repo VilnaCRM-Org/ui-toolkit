@@ -47,20 +47,20 @@ describe('AuthSkeleton layout opt-in', () => {
   it('fills and centres the section with layout="fill"', () => {
     const { container } = render(<AuthSkeleton layout="fill" />);
     const css: string = emotionCssFor(busyContainer(container));
-    expect(css).toContain('flex-grow:1');
-    expect(css).toContain('display:flex');
-    expect(css).toContain('flex-direction:column');
-    expect(css).toContain('justify-content:center');
-    expect(css).toContain('padding-top:0.5rem');
+    expect(css).toMatch(/flex-grow\s*:\s*1/);
+    expect(css).toMatch(/display\s*:\s*flex/);
+    expect(css).toMatch(/flex-direction\s*:\s*column/);
+    expect(css).toMatch(/justify-content\s*:\s*center/);
+    expect(css).toMatch(/padding-top\s*:\s*0\.5rem/);
   });
 
   it('keeps the section unflexed by default', () => {
     const { container } = render(<AuthSkeleton />);
     const css: string = emotionCssFor(busyContainer(container));
-    expect(css).toContain('padding-top:0.5rem');
+    expect(css).toMatch(/padding-top\s*:\s*0\.5rem/);
     expect(css).not.toContain('flex-grow');
     expect(css).not.toContain('justify-content');
-    expect(css).not.toContain('display:flex');
+    expect(css).not.toMatch(/display\s*:\s*flex/);
   });
 });
 
@@ -68,18 +68,18 @@ describe('AuthSkeleton card tone opt-in', () => {
   it('uses the crm border and shadow with cardTone="crm"', () => {
     const { container } = render(<AuthSkeleton cardTone="crm" disableAnimation />);
     const css: string = emotionCssFor(card(container));
-    expect(css).toContain('border:1px solid #EAECEE');
-    expect(css).toContain('box-shadow:0px 7px 40px 0px #E7E7E77D');
+    expect(css).toMatch(/border\s*:\s*1px solid #EAECEE/);
+    expect(css).toMatch(/box-shadow\s*:\s*0px 7px 40px 0px #E7E7E77D/);
     expect(css).not.toContain('#E1E7EA');
     expect(css).not.toContain('rgba(211, 216, 224, 0.2)');
-    expect(css).toContain('border-radius:16px');
+    expect(css).toMatch(/border-radius\s*:\s*16px/);
   });
 
   it('keeps the brand border and shadow by default', () => {
     const { container } = render(<AuthSkeleton disableAnimation />);
     const css: string = emotionCssFor(card(container));
-    expect(css).toContain('border:1px solid #E1E7EA');
-    expect(css).toContain('box-shadow:0px 7px 40px 0px rgba(211, 216, 224, 0.2)');
+    expect(css).toMatch(/border\s*:\s*1px solid #E1E7EA/);
+    expect(css).toMatch(/box-shadow\s*:\s*0px 7px 40px 0px rgba\(211, 216, 224, 0\.2\)/);
     expect(css).not.toContain('#EAECEE');
     expect(css).not.toContain('#E7E7E77D');
   });
@@ -95,7 +95,7 @@ describe('AuthSkeleton sm rules under an app theme', () => {
       </ThemeProvider>
     );
     const css: string = emotionCssFor(fieldRow());
-    expect(css).toContain('min-width:480px');
-    expect(css).not.toContain('min-width:640px');
+    expect(css).toMatch(/min-width\s*:\s*480px/);
+    expect(css).not.toMatch(/min-width\s*:\s*640px/);
   });
 });
