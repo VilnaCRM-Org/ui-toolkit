@@ -10,7 +10,13 @@ import {
   shadowPulseAnimation,
 } from '../ui-skeletons';
 
-import { fieldGapMargins, formSection, formWrapper } from './shared-styles';
+import {
+  crmCardTone,
+  fieldGapMargins,
+  fillLayout,
+  formSection,
+  formWrapper,
+} from './shared-styles';
 
 const AUTH_SKELETON_TINY_BREAKPOINT: string = '336px';
 
@@ -190,4 +196,6 @@ export default {
   },
   formSection,
   formWrapper,
+  fillLayout,
+  crmCardTone,
 };

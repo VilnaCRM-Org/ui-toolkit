@@ -62,3 +62,15 @@ export const formWrapper: CSSObject = {
     padding: '2.1rem 2.4375rem 1.9375rem',
   },
 };
+
+export const fillLayout: CSSObject = {
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+};
+
+export const crmCardTone: CSSObject = {
+  border: `1px solid ${sharedPalette.grey500.main}`,
+  boxShadow: '0px 7px 40px 0px #E7E7E77D',
+};

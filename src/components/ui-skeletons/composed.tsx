@@ -18,26 +18,46 @@ export interface ComposedSkeletonProps {
   sx?: SxProps<Theme> | undefined;
   /** Layout styles for the hidden shape tree (flex/grid of the composition). */
   contentSx?: SxProps<Theme> | undefined;
+  landmark?: 'section' | undefined;
   children: React.ReactNode;
 }
 
+function BusyLabel({
+  landmark,
+  loadingText,
+}: Readonly<{ landmark: 'section' | undefined; loadingText: string }>): React.ReactNode {
+  if (landmark === 'section') {
+    return null;
+  }
+  return (
+    <Box component="span" sx={srOnlySx}>
+      {loadingText}
+    </Box>
+  );
+}
+
 /**
- * Shared shell for composed skeleton layouts: a plain busy container (no
- * landmark, label, or widget role — a generic element must stay nameless)
- * holding the visually-hidden status text and the decorative shape tree.
+ * Shared shell for composed skeleton layouts: by default a nameless busy div
+ * holding the visually-hidden status text and the decorative shape tree, or a
+ * named busy `<section>` region when `landmark="section"`.
  */
 export default function ComposedSkeleton({
   id,
   loadingText = DEFAULT_LOADING_TEXT,
   sx = [],
   contentSx = [],
+  landmark,
   children,
 }: Readonly<ComposedSkeletonProps>): React.ReactElement {
   return (
-    <Box id={id} aria-busy="true" sx={[...(Array.isArray(sx) ? sx : [sx])]}>
-      <Box component="span" sx={srOnlySx}>
-        {loadingText}
-      </Box>
+    <Box
+      id={id}
+      component={landmark ?? 'div'}
+      aria-label={landmark ? loadingText : undefined}
+      aria-busy="true"
+      sx={[...(Array.isArray(sx) ? sx : [sx])]}
+    >
+      <BusyLabel landmark={landmark} loadingText={loadingText} />
       <Box aria-hidden="true" sx={[...(Array.isArray(contentSx) ? contentSx : [contentSx])]}>
         {children}
       </Box>
