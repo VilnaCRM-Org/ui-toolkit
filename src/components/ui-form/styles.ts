@@ -96,6 +96,10 @@ export default {
       lineHeight: 1,
     },
   },
+  submitFlat: {
+    '&:hover': { boxShadow: 'none' },
+    '&:active': { boxShadow: 'none' },
+  },
   offlineNoticeEmpty: {
     display: 'block',
     outline: 'none',

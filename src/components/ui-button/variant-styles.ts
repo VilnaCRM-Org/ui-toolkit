@@ -21,7 +21,14 @@ export type ButtonSxState = ButtonVariantProps & {
   busy: boolean;
   native?: boolean | undefined;
   focusOutline?: boolean | undefined;
+  appearance?: 'kit' | 'theme' | undefined;
+  kitInk?: boolean | undefined;
+  responsiveLabel?: boolean | undefined;
 };
+
+export function responsiveLabelQuery(theme: Theme): string {
+  return `@media (max-width: ${theme.breakpoints.values.sm}px)`;
+}
 
 const baseButtonStyles: ButtonStyle = {
   textTransform: 'none',
@@ -105,7 +112,7 @@ export function containedMediumStyles(theme: Theme): ButtonStyle {
     ...containedStyles(theme),
     ...mediumLabelBox,
     alignSelf: 'center',
-    [`@media (max-width: ${theme.breakpoints.values.sm}px)`]: {
+    [responsiveLabelQuery(theme)]: {
       fontSize: '0.9375rem',
       fontWeight: '400',
       lineHeight: '1.125rem',

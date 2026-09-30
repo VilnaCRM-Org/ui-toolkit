@@ -46,6 +46,10 @@ export interface UiFormProps<T extends FieldValues> {
   /** Forwarded to the submit button's `loadingMode`. */
   submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
   submitFocusOutline?: UiButtonProps['focusOutline'] | undefined;
+  submitKitInk?: boolean | undefined;
+  submitResponsiveLabel?: boolean | undefined;
+  submitLoadingIndicator?: ReactNode | undefined;
+  submittingAnnouncement?: boolean | undefined;
   inheritTheme?: boolean | undefined;
   /**
    * Opts into offline handling: while the browser is offline the submit is

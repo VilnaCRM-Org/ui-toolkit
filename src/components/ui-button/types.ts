@@ -48,10 +48,14 @@ export interface UiButtonProps extends ButtonProps {
    * How `loading` is presented. `'aria-disabled'` (the default) is described on
    * `loadingText`. `'native'` is CRM's submit-button pattern: the button goes
    * natively `disabled` into the grey disabled fill with the label ink hidden and
-   * a centred spinner (`loadingIndicator` when given), and renders no status
+   * a centred spinner (`loadingIndicator` when given, forwarded with `loading` and
+   * `loadingPosition` to MUI), and renders no status
    * region — the owning form announces the submit. A focused button drops focus
    * when it becomes natively disabled, so use it only where that is accepted.
    */
   loadingMode?: 'aria-disabled' | 'native' | undefined;
   focusOutline?: boolean | undefined;
+  appearance?: 'kit' | 'theme' | undefined;
+  kitInk?: boolean | undefined;
+  responsiveLabel?: boolean | undefined;
 }

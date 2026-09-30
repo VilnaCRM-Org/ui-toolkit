@@ -4,6 +4,7 @@ import { FieldValues, SubmitHandler, UseFormReturn, useForm } from 'react-hook-f
 import { ErrorBanner, FormHeader, SubmitControls } from './form-parts';
 import FormProviderBridge from './form-provider-bridge';
 import FormOfflineNotice from './offline-notice';
+import SubmitAnnouncement from './submit-announcement';
 import buildSubmitHandler from './submit-handler';
 import type { FormViewProps, UiFormProps } from './types';
 import useOfflineSubmit, { type OfflineSubmit } from './use-offline-submit';
@@ -34,6 +35,7 @@ function FormBody<T extends FieldValues>({
       <FormOfflineNotice offline={offline} copy={view.offlineNotice} />
       {children}
       <SubmitControls view={view} submitting={submitting} offline={offline} />
+      <SubmitAnnouncement view={view} submitting={submitting} />
     </form>
   );
 }

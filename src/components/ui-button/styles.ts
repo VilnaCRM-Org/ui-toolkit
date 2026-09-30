@@ -3,70 +3,33 @@ import type { SxProps, Theme } from '@mui/material';
 import { fontFamilies } from '@/utils/font-tokens';
 import { cacheByTheme } from '@/utils/ui-theme';
 
-import { socialButtonStyles } from './social-styles';
-import {
-  containedMediumStyles,
-  containedStyles,
-  dangerStyles,
-  mediumLabelBox,
-  outlinedStyles,
-  type ButtonStyle,
-  type ButtonSxState,
-  type ButtonVariantProps,
-  type ButtonVariantRule,
-} from './variant-styles';
+import { matchedVariantStyles, withDefaults } from './variant-rules';
+import type { ButtonStyle, ButtonSxState } from './variant-styles';
+
+export { buttonVariants } from './variant-rules';
 
 type SxEntry = Exclude<SxProps<Theme>, ReadonlyArray<unknown>>;
 
 const fontFamilyPin: ButtonStyle = { fontFamily: fontFamilies.golos, letterSpacing: 'inherit' };
 
-function sizedRules(theme: Theme): ButtonVariantRule[] {
-  return [
-    {
-      props: { variant: 'contained', size: 'small' },
-      style: { ...containedStyles(theme), padding: '1rem 1.5rem' },
-    },
-    { props: { variant: 'contained', size: 'medium' }, style: containedMediumStyles(theme) },
-    {
-      props: { variant: 'outlined', size: 'small' },
-      style: { ...outlinedStyles(theme), padding: '0.9375rem 1.4375rem' },
-    },
-    {
-      props: { variant: 'outlined', size: 'medium' },
-      style: { ...outlinedStyles(theme), ...mediumLabelBox, padding: '1.1875rem 1.9375rem' },
-    },
-  ];
-}
-
-export const buttonVariants: (theme: Theme) => ButtonVariantRule[] = cacheByTheme(
-  (theme: Theme): ButtonVariantRule[] => [
-    ...sizedRules(theme),
-    {
-      props: { name: 'socialButton', variant: 'outlined', size: 'medium' },
-      style: socialButtonStyles(theme),
-    },
-    {
-      props: { name: 'danger', variant: 'contained', size: 'small' },
-      style: dangerStyles(theme),
-    },
-  ]
+const kitInkStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
+  (theme: Theme): ButtonStyle => ({ color: theme.palette.white.main })
 );
 
-function withDefaults(props: ButtonVariantProps): ButtonVariantProps {
-  return { ...props, variant: props.variant ?? 'text', size: props.size ?? 'medium' };
+function inkEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
+  const contained: boolean = withDefaults(state).variant === 'contained';
+  return state.kitInk === true && contained ? [kitInkStyles(theme)] : [];
 }
 
-function matches(rule: ButtonVariantRule, props: ButtonVariantProps): boolean {
-  return Object.entries(rule.props).every(
-    ([key, value]) => props[key as keyof ButtonVariantProps] === value
-  );
+function themed(state: ButtonSxState): boolean {
+  return state.appearance === 'theme';
 }
 
-function matchedVariantStyles(theme: Theme, props: ButtonVariantProps): ButtonStyle[] {
-  const resolved: ButtonVariantProps = withDefaults(props);
-  return buttonVariants(theme)
-    .filter((rule: ButtonVariantRule) => matches(rule, resolved))
-    .map((rule: ButtonVariantRule) => rule.style);
+function variantEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
+  if (themed(state)) {
+    return [];
+  }
+  return [fontFamilyPin, ...inkEntries(theme, state), ...matchedVariantStyles(theme, state)];
 }
 
 export const busyStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
@@ -83,7 +46,7 @@ export const busyStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
 const nativeBusyStyles: ButtonStyle = { '&:disabled': { color: 'transparent' } };
 
 function busyEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
-  if (!state.busy) {
+  if (!state.busy || themed(state)) {
     return [];
   }
   return state.native ? [busyStyles(theme), nativeBusyStyles] : [busyStyles(theme)];
@@ -117,8 +80,7 @@ export function buttonSx(
   sx: SxProps<Theme> | undefined
 ): SxProps<Theme> {
   return [
-    fontFamilyPin,
-    ...matchedVariantStyles(theme, state),
+    ...variantEntries(theme, state),
     ...focusEntries(theme, state),
     ...busyEntries(theme, state),
     ...consumerEntries(sx),
