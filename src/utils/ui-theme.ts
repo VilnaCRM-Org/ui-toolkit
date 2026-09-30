@@ -83,8 +83,16 @@ export function defaultUiTheme(): Theme {
 
 export const isUiTheme: (theme: Theme) => boolean = cacheByTheme(hasUiTokens);
 
+const uiFallbackKey: unique symbol = Symbol.for('@vilnacrm/ui-toolkit/fallback-theme');
+
+type FallbackCarrier = Theme & { [uiFallbackKey]?: Theme | undefined };
+
+export function withUiFallback(fallback: Theme): (outer: Theme) => Theme {
+  return (outer: Theme): Theme => ({ ...outer, [uiFallbackKey]: fallback }) as FallbackCarrier;
+}
+
 export function resolveUiTheme(theme: Theme): Theme {
-  return isUiTheme(theme) ? theme : defaultUiTheme();
+  return isUiTheme(theme) ? theme : ((theme as FallbackCarrier)[uiFallbackKey] ?? defaultUiTheme());
 }
 
 export function useUiTheme(): Theme {
