@@ -99,6 +99,11 @@ which takes the same options plus `variant`; `uiTheme` is `createUiTheme()` with
 theme built any other way, such as a plain `createTheme`, lacks the toolkit tokens, so the
 components ignore it and render with the toolkit defaults.
 
+To keep such an app theme and still pick those defaults, add `scope="tokens"`:
+`<UiThemeProvider scope="tokens" variant="crm">` changes only what the toolkit components fall
+back to. Plain MUI components under it keep the app theme, and an ambient toolkit theme still
+wins.
+
 The tokens are also exported on their own:
 
 - `sharedPalette` — the colour tokens, in MUI palette shape (`primary`, `secondary`, `error`,

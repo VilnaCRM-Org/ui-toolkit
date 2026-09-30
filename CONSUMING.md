@@ -67,24 +67,27 @@ Set `VERSION` by hand instead to pin an older release.
 That writes the full URL into `dependencies` and `bun.lock`. Commit both files together.
 
 `bun.lock` stores no integrity hash for a tarball URL, so the lockfile alone does not make the pin
-tamper-evident. Every release carries `vilnacrm-ui-toolkit-<version>.tgz.sha256` next to the
-tarball, written after the provenance-attested tarball replaces the asset. Verify against it in
-the consumer's CI:
+tamper-evident. Releases are immutable, and the releases API reports a server-computed `digest`
+for every asset. `release provenance` re-packs each release from its tag, attests the tarball and
+fails when the published asset's digest differs. Verify in the consumer's CI:
 
 ```bash
 curl -fsSLO "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz"
-curl -fsSLO "$BASE/v$VERSION/vilnacrm-ui-toolkit-$VERSION.tgz.sha256"
-sha256sum -c "vilnacrm-ui-toolkit-$VERSION.tgz.sha256"
+gh api "repos/VilnaCRM-Org/ui-toolkit/releases/tags/v$VERSION" \
+  --jq ".assets[] | select(.name == \"vilnacrm-ui-toolkit-$VERSION.tgz\") | .digest"
+gh attestation verify "vilnacrm-ui-toolkit-$VERSION.tgz" --repo VilnaCRM-Org/ui-toolkit
 EXPECTED_SHA256='<digest committed in the consumer repository>'
 printf '%s  %s\n' "$EXPECTED_SHA256" "vilnacrm-ui-toolkit-$VERSION.tgz" | sha256sum -c -
 ```
 
-`sha256sum -c` against the downloaded `.sha256` sidecar only proves the tarball matches the
-checksum published alongside it in the same release — if both assets were replaced together, that
-check still passes. The second `sha256sum -c` compares against `EXPECTED_SHA256`, a digest recorded
-once in the consumer repository (commit it next to the pinned `VERSION`) and never re-derived from
-the release itself; that is the check that actually proves the asset matches what the consumer
-pinned.
+Releases after v0.6.0 also carry `vilnacrm-ui-toolkit-<version>.tgz.sha256`, attached in the same
+call that creates the release; `sha256sum -c` against it works the same way. Earlier releases have
+no `.sha256` asset.
+
+The `digest` field and the `.sha256` sidecar only prove the tarball matches what the release
+publishes. The last `sha256sum -c` compares against `EXPECTED_SHA256`, a digest recorded once in
+the consumer repository (commit it next to the pinned `VERSION`) and never re-derived from the
+release itself; that is the check that actually proves the asset matches what the consumer pinned.
 
 Import the stylesheet exactly once, in the application's root entry, before any toolkit component
 renders:
@@ -181,6 +184,29 @@ The defaults are the website's behaviour. CRM opts into its own with props:
   (`sm` 480) and the CRM palette (`crmPalette`: success `#4CAF50`, warning `#FF9800`, info
   `#2196F3`). The container, footer, back-to-main, form and skeleton breakpoints resolve from
   it at render time.
+- `<UiThemeProvider scope="tokens" variant="crm">`: kit components under an app theme that is not
+  a UI theme resolve the CRM tokens, while plain MUI components keep the app theme. Without the
+  scope they fall back to the website tokens.
+- `UiButton` `appearance="theme"`: no kit variant, font or busy `sx`, so the app theme's
+  `MuiButton` overrides style it; link handling, the busy guard and `focusOutline` still apply.
+- `UiButton` `loadingMode="native"` hands `loading` and `loadingIndicator` to MUI while busy
+  (`.MuiButton-loading` and MUI's indicator markup) and starts no announcement timer.
+- `UiButton` `kitInk`: a contained label takes the kit white instead of the app theme's
+  `primary.contrastText`. `responsiveLabel={false}` drops the contained-medium `sm` label rule.
+- `UiForm` `submitKitInk` (the submit's `kitInk`, with no hover or active shadow),
+  `submitResponsiveLabel={false}` and `submitLoadingIndicator`. In `submitLoadingMode="native"`
+  the form renders one sr-only `role="status"` carrying `submittingLabel` while submitting;
+  `submittingAnnouncement` drives it on its own.
+- `UiLink` `tone="inherit"`: no rest, hover or active colour, so the app theme and your `sx`
+  decide it. `responsiveSize={false}` drops the 1130px and `sm` font-size rules.
+- `UiInput` / `UiTextFieldForm` `density="crm"`: CRM field geometry (border-box, 79px from `md`,
+  64px max from `xl`), CRM placeholder steps, Inter 500 `#57595B` value text and a transparent
+  `<input>`; the kit focus outline stays.
+- `UiFooter` `variant="crm"`: `logo` replaces the logo image (`null` renders none) and
+  `slotProps.link.sx` styles both links. The links keep their colour when visited, and the footer
+  height is capped at `lg` and `xl`.
+- `AuthSkeleton` `landmark="section"` (a named busy region), `layout="fill"` (fills and centres
+  in a flex column) and `cardTone="crm"` (`#EAECEE` border, CRM shadow).
 - Theme subpaths keep the website theme as their `default` export. Import the named
   `crmBreakpointsTheme` and `crmColorTheme` instead.
 - `styles.css` declares one `Golos` family (WOFF2, `font-display: swap`). Point

@@ -39,6 +39,9 @@ export type AuthSkeletonProps = {
     disableAnimation?: boolean | undefined;
     ariaLabel?: string | undefined;
     idPrefix?: string | undefined;
+    landmark?: 'section' | undefined;
+    layout?: 'fill' | undefined;
+    cardTone?: 'crm' | undefined;
 };
 
 // @public
@@ -455,6 +458,7 @@ export type UiBackToMainProps = {
     to?: string | undefined;
     label?: React_2.ReactNode | undefined;
     icon?: React_2.ReactNode | undefined;
+    'aria-label'?: string | undefined;
 };
 
 // @public (undocumented)
@@ -463,10 +467,16 @@ export function UiButton(input: React_2.PropsWithChildren<UiButtonProps>): React
 // @public (undocumented)
 export interface UiButtonProps extends ButtonProps {
     // (undocumented)
+    appearance?: 'kit' | 'theme' | undefined;
+    // (undocumented)
     focusOutline?: boolean | undefined;
+    // (undocumented)
+    kitInk?: boolean | undefined;
     loadingMode?: 'aria-disabled' | 'native' | undefined;
     loadingText?: string | undefined;
     rel?: string | undefined;
+    // (undocumented)
+    responsiveLabel?: boolean | undefined;
     target?: React_2.HTMLAttributeAnchorTarget | undefined;
     // (undocumented)
     to?: ButtonLinkTarget | undefined;
@@ -697,6 +707,12 @@ export function UiFooter(input: Readonly<{
     variant?: 'website' | 'crm' | undefined;
     privacyHref?: string | undefined;
     usagePolicyHref?: string | undefined;
+    logo?: React_2.ReactNode | undefined;
+    slotProps?: {
+        link?: {
+            sx?: SxProps<Theme> | undefined;
+        } | undefined;
+    } | undefined;
 }>): React_2.ReactElement;
 
 // @public (undocumented)
@@ -750,8 +766,16 @@ export interface UiFormProps<T extends FieldValues> {
     // (undocumented)
     submitFocusOutline?: UiButtonProps['focusOutline'] | undefined;
     // (undocumented)
+    submitKitInk?: boolean | undefined;
+    // (undocumented)
     submitLabel: string;
+    // (undocumented)
+    submitLoadingIndicator?: ReactNode | undefined;
     submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
+    // (undocumented)
+    submitResponsiveLabel?: boolean | undefined;
+    // (undocumented)
+    submittingAnnouncement?: boolean | undefined;
     submittingLabel?: string | undefined;
     // (undocumented)
     subtitle?: ReactNode | undefined;
@@ -780,6 +804,7 @@ export const UiInput: React_2.ForwardRefExoticComponent<UiInputProps & React_2.R
 // @public (undocumented)
 export type UiInputProps = Omit<TextFieldProps, 'inputRef' | 'onBlur' | 'onChange'> & {
     describedBy?: string | undefined;
+    density?: 'crm' | undefined;
     InputProps?: OutlinedInputProps | undefined;
     onBlur?: React_2.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
     onChange?: React_2.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
@@ -851,7 +876,8 @@ export type UiLinkProps = {
     rel?: string | undefined;
     sx?: SxProps<Theme> | undefined;
     disabled?: boolean | undefined;
-    tone?: 'brand' | 'accessible' | undefined;
+    tone?: 'brand' | 'accessible' | 'inherit' | undefined;
+    responsiveSize?: boolean | undefined;
     underline?: 'always' | 'hover' | 'none' | undefined;
 } & Omit<LinkProps, 'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color' | 'component'> & ({
     target: '_blank';
@@ -1404,6 +1430,8 @@ export function UiThemeProvider(input: Readonly<UiThemeProviderProps>): React_2.
 export interface UiThemeProviderProps {
     // (undocumented)
     children: ReactNode;
+    // (undocumented)
+    scope?: 'theme' | 'tokens' | undefined;
     // (undocumented)
     theme?: UiThemeOptions | undefined;
     // (undocumented)
