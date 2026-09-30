@@ -12,9 +12,11 @@ type SxEntry = Exclude<SxProps<Theme>, ReadonlyArray<unknown>>;
 
 const fontFamilyPin: ButtonStyle = { fontFamily: fontFamilies.golos, letterSpacing: 'inherit' };
 
-const kitInkStyles: (theme: Theme) => ButtonStyle = cacheByTheme(
-  (theme: Theme): ButtonStyle => ({ color: theme.palette.white.main })
-);
+function buildKitInk(theme: Theme): ButtonStyle {
+  return { color: theme.palette.white.main };
+}
+
+const kitInkStyles: (theme: Theme) => ButtonStyle = cacheByTheme(buildKitInk);
 
 function inkEntries(theme: Theme, state: ButtonSxState): ButtonStyle[] {
   const contained: boolean = withDefaults(state).variant === 'contained';
