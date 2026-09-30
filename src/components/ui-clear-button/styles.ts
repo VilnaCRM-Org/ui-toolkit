@@ -6,10 +6,10 @@
 // through its own state selectors; the child styles stay static.
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Stable class hook so the root can retint the glyph independently of the label
 // (rest is the one state where their inks diverge).

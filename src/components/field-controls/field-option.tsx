@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import type { AutocompleteRenderOptionState } from '@mui/material';
 import React from 'react';
 
-import colorTheme from '../ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 import { splitOnPrefix } from './ghost-completion';
 

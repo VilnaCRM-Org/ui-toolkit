@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: write
+      contents: read
       id-token: write
       attestations: write
 
@@ -40,25 +40,12 @@ jobs:
         with:
           subject-path: 'dist/*.tgz'
 
-      - name: Replace the release asset with the attested tarball
+      - name: Verify the published release asset matches the attested tarball
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-
-          tarballs=(dist/*.tgz)
-          if [ "${#tarballs[@]}" -ne 1 ]; then
-            echo "::error::expected exactly one tarball in dist/, found ${#tarballs[@]}"
-            exit 1
-          fi
-
-          checksum="${tarballs[0]}.sha256"
-          (cd "$(dirname "${tarballs[0]}")" && sha256sum "$(basename "${tarballs[0]}")") > "$checksum"
-
-          gh release upload "$RELEASE_TAG" "${tarballs[0]}" "$checksum" --clobber
+        run: bash scripts/ci/verify-release-asset.sh "$RELEASE_TAG" dist
 
       - name: Stop docker build environment
         if: always()

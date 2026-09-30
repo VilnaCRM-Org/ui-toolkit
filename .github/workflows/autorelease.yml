@@ -111,19 +111,13 @@ jobs:
           RELEASE_NOTES: ${{ steps.changelog.outputs.clean_changelog }}
         run: |
           set -euo pipefail
-          shopt -s nullglob
 
-          tarballs=(dist/*.tgz)
-          if [ "${#tarballs[@]}" -ne 1 ]; then
-            echo "::error::expected exactly one tarball in dist/, found ${#tarballs[@]};" \
-              "the make package step did not produce the release asset"
-            exit 1
-          fi
+          tarball="$(bash scripts/ci/write-release-checksum.sh dist)"
 
           notes="$RUNNER_TEMP/release-notes.md"
           printf '%s\n' "$RELEASE_NOTES" > "$notes"
 
-          gh release create "$RELEASE_TAG" "${tarballs[0]}" \
+          gh release create "$RELEASE_TAG" "$tarball" "$tarball.sha256" \
             --title "$RELEASE_TAG" \
             --notes-file "$notes"
 

@@ -2,8 +2,8 @@ import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import type { UiUploadStatus } from './types';
 
@@ -23,7 +23,7 @@ import type { UiUploadStatus } from './types';
 // The status pill has no state in the design either: it reuses the "Tags" pill
 // (345:17479), tinted per status from an existing ui-color-theme token.
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 /** The design's tint strength for a state-coloured surface. */
 const TINT: number = 0.1;

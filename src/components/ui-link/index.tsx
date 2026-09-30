@@ -61,6 +61,7 @@ function UiLink({
   newTabLabel,
   tone = 'brand',
   underline = 'always',
+  responsiveSize = true,
   ...rest
 }: UiLinkProps): React.ReactElement {
   // HTML matches the `_blank` keyword ASCII case-insensitively, so an exact
@@ -78,7 +79,7 @@ function UiLink({
       target={target}
       rel={mergeRel(opensInNewTab, rel)}
       underline={underline}
-      sx={linkSx(theme, { tone, underline }, sx)}
+      sx={linkSx(theme, { tone, underline, responsiveSize }, sx)}
     >
       {children}
       {opensInNewTab && newTabLabel ? (

@@ -1,10 +1,8 @@
 // Design tokens shared by the calendar's style modules: the theme palette, the
 // Figma grid geometry and the mobile breakpoint.
-import type { Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
-
-import { crmBreakpointValues } from '../ui-breakpoints';
+import { crmBreakpointValues } from '@/utils/breakpoint-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 // Mobile breakpoint from the CRM scale (480px), not hardcoded.
 export const MOBILE_MAX: string = `@media (max-width: ${crmBreakpointValues.sm}px)`;
@@ -12,7 +10,7 @@ export const MOBILE_MAX: string = `@media (max-width: ${crmBreakpointValues.sm}p
 // Design tokens reused from the shared colour theme so the calendar matches the
 // field controls (8px radius, grey400 stroke, brand-blue selection, danger error
 // stroke, disabled greying) without duplicating hex values.
-export const palette: Theme['palette'] = colorTheme.palette;
+export const palette: UiPaletteTokens = colorTheme.palette;
 
 export type CalendarSize = 'small' | 'medium';
 

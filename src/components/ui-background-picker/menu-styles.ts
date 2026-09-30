@@ -4,11 +4,11 @@
 import type { SxProps, Theme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import { FOCUS_RING, FORCED_COLORS_RING, LABEL_TYPE } from './styles';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 /**
  * The selected row's fill: `primary` at 10%, the kit's established "chosen"

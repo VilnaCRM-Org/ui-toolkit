@@ -1,7 +1,9 @@
-import { fontFamilies } from '@/utils/font-tokens';
+import type { Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
 
-import breakpointsTheme from '../../ui-breakpoints';
-import colorTheme from '../../ui-color-theme';
+import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
+import { uiBreakpointValues } from '@/utils/ui-breakpoint-queries';
 
 export default {
   footerWrapper: {
@@ -16,14 +18,14 @@ export default {
     margin: '0 auto',
   },
 
-  topContent: {
+  topContent: (theme: Theme): SystemStyleObject<Theme> => ({
     paddingLeft: '1rem',
     paddingRight: '1rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).lg}px)`]: {
       paddingLeft: '2rem',
       paddingRight: '1.5rem',
     },
-  },
+  }),
 
   copyrightAndLinksWrapper: {
     width: '100%',
@@ -36,7 +38,7 @@ export default {
     background: colorTheme.palette.backgroundGrey200.main,
   },
 
-  copyrightAndLinks: {
+  copyrightAndLinks: (theme: Theme): SystemStyleObject<Theme> => ({
     paddingLeft: '1.3rem',
     paddingRight: '1rem',
     height: '3.688rem',
@@ -44,26 +46,26 @@ export default {
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: '0.3rem',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).lg}px)`]: {
       paddingRight: '2rem',
       paddingLeft: '2rem',
       pb: '0.2rem',
     },
-  },
+  }),
 
   copyright: {
     color: colorTheme.palette.grey200.main,
     fontFamily: fontFamilies.golos,
   },
 
-  listWrapper: {
+  listWrapper: (theme: Theme): SystemStyleObject<Theme> => ({
     gap: '0.5rem',
     justifyContent: 'center',
-    [`@media (max-width: ${breakpointsTheme.breakpoints.values.md}px)`]: {
+    [`@media (max-width: ${uiBreakpointValues(theme).md}px)`]: {
       gap: '0.25rem',
     },
     '@media (max-width: 350px)': {
       gap: '0',
     },
-  },
+  }),
 };

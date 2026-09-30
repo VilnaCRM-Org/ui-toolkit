@@ -1,7 +1,7 @@
 import { SxProps, Theme } from '@mui/material';
 
-import breakpointsTheme from '../ui-breakpoints';
-import colorTheme from '../ui-color-theme';
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 /**
  * Card style blocks shared by UiCardList and the standalone UiCardItem card,

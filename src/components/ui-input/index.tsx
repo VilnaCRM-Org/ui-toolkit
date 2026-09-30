@@ -128,7 +128,7 @@ function inputSlotProps({
 const UiInput: React.ForwardRefExoticComponent<
   UiInputProps & React.RefAttributes<HTMLInputElement>
 > = React.forwardRef<HTMLInputElement, UiInputProps>((props, ref) => {
-  const { InputProps, slotProps, describedBy, sx, ...rest } = props;
+  const { InputProps, slotProps, describedBy, density, sx, ...rest } = props;
   const theme: Theme = useUiTheme();
   useInputAccessibilityWarnings(props);
   const generatedId: string = React.useId();
@@ -152,8 +152,8 @@ const UiInput: React.ForwardRefExoticComponent<
       {...rest}
       id={fieldId}
       inputRef={ref}
-      sx={inputRootSx(theme, sx)}
-      slotProps={styledSlotProps(theme, mergedSlotProps)}
+      sx={inputRootSx(theme, sx, density)}
+      slotProps={styledSlotProps(theme, mergedSlotProps, density)}
     />
   );
 });

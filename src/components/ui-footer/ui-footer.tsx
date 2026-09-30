@@ -1,3 +1,4 @@
+import type { SxProps, Theme } from '@mui/material';
 import { Box } from '@mui/material';
 import React from 'react';
 
@@ -11,6 +12,8 @@ function UiFooter({
   variant,
   privacyHref,
   usagePolicyHref,
+  logo,
+  slotProps,
 }: Readonly<{
   /**
    * `'website'` (the default) is the marketing footer with socials and the
@@ -23,9 +26,18 @@ function UiFooter({
   privacyHref?: string | undefined;
   /** Usage-policy link target in the `'crm'` variant. */
   usagePolicyHref?: string | undefined;
+  logo?: React.ReactNode | undefined;
+  slotProps?: { link?: { sx?: SxProps<Theme> | undefined } | undefined } | undefined;
 }>): React.ReactElement {
   if (variant === 'crm') {
-    return <CrmFooter privacyHref={privacyHref} usagePolicyHref={usagePolicyHref} />;
+    return (
+      <CrmFooter
+        privacyHref={privacyHref}
+        usagePolicyHref={usagePolicyHref}
+        logo={logo}
+        slotProps={slotProps}
+      />
+    );
   }
   return (
     <Box component="footer" id="Contacts">

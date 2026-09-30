@@ -33,7 +33,7 @@ const tooltipStyles: (theme: Theme) => Style = cacheByTheme(buildTooltipStyles);
 
 const arrowStyles: (theme: Theme) => Style = cacheByTheme(buildArrowStyles);
 
-export const triggerSx: SxProps<Theme> = {
+const triggerStyles: Style = {
   fontFamily: fontFamilies.inter,
   letterSpacing: 'inherit',
 };
@@ -43,6 +43,10 @@ function sxList(sx: SxProps<Theme> | undefined): Style[] {
     return [];
   }
   return (Array.isArray(sx) ? sx : [sx]) as Style[];
+}
+
+export function triggerSx(sx: SxProps<Theme> | undefined): SxProps<Theme> {
+  return [triggerStyles, ...sxList(sx)];
 }
 
 function mergeEntry(style: Style, entry: SlotEntry | undefined): SlotEntry {

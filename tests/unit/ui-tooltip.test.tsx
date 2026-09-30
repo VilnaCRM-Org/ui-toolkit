@@ -62,6 +62,50 @@ describe('UiTooltip', () => {
     expect(openBubble()).toHaveStyle({ color: 'rgb(255, 0, 0)' });
   });
 
+  it('paints a consumer sx on the trigger after the toolkit defaults', () => {
+    render(
+      <UiTooltip title={bubbleText} sx={{ color: 'rgb(0, 0, 255)', textDecoration: 'underline' }}>
+        {triggerText}
+      </UiTooltip>
+    );
+
+    const trigger: HTMLElement = screen.getByRole('button', { name: triggerText });
+    expect(trigger).toHaveStyle({ color: 'rgb(0, 0, 255)', textDecoration: 'underline' });
+    expect(emotionCssFor(trigger)).toContain(`font-family: ${fontFamilies.inter}`);
+  });
+
+  it('lets a consumer sx override the toolkit trigger defaults', () => {
+    render(
+      <UiTooltip title={bubbleText} sx={{ fontFamily: 'Golos', letterSpacing: '2px' }}>
+        {triggerText}
+      </UiTooltip>
+    );
+
+    const trigger: HTMLElement = screen.getByRole('button', { name: triggerText });
+    expect(trigger).toHaveStyle({ fontFamily: 'Golos', letterSpacing: '2px' });
+  });
+
+  it('accepts a consumer trigger sx given as an array', () => {
+    render(
+      <UiTooltip title={bubbleText} sx={[{ lineHeight: 0 }, { color: 'rgb(0, 128, 0)' }]}>
+        {triggerText}
+      </UiTooltip>
+    );
+
+    const trigger: HTMLElement = screen.getByRole('button', { name: triggerText });
+    expect(trigger).toHaveStyle({ lineHeight: '0', color: 'rgb(0, 128, 0)' });
+  });
+
+  it('keeps the consumer trigger sx off the bubble', () => {
+    render(
+      <UiTooltip title={bubbleText} sx={{ color: 'rgb(255, 0, 255)' }}>
+        {triggerText}
+      </UiTooltip>
+    );
+
+    expect(openBubble()).not.toHaveStyle({ color: 'rgb(255, 0, 255)' });
+  });
+
   it('forwards remaining MUI Tooltip props', () => {
     render(
       <UiTooltip title={bubbleText} classes={{ tooltip: 'consumer-bubble' }}>

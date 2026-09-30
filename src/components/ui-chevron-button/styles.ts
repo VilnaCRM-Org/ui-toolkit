@@ -9,9 +9,9 @@
 // including disabled.
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // The one raw colour literal in this module: the Figma hover drop shadow (node
 // 451:25768) has no palette token behind it.

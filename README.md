@@ -99,12 +99,18 @@ which takes the same options plus `variant`; `uiTheme` is `createUiTheme()` with
 theme built any other way, such as a plain `createTheme`, lacks the toolkit tokens, so the
 components ignore it and render with the toolkit defaults.
 
+To keep such an app theme and still pick those defaults, add `scope="tokens"`:
+`<UiThemeProvider scope="tokens" variant="crm">` changes only what the toolkit components fall
+back to. Plain MUI components under it keep the app theme, and an ambient toolkit theme still
+wins.
+
 The tokens are also exported on their own:
 
 - `sharedPalette` — the colour tokens, in MUI palette shape (`primary`, `secondary`, `error`,
   `success`, the method accents, hover and active variants). `websiteColorTheme` and
   `crmColorTheme` are `createTheme` results carrying that palette; `UiColorTheme` is the website
-  one. The two are the same palette today, kept as separate names so the products can diverge.
+  one. `crmPalette` is `sharedPalette` with the CRM `success`, `warning` and `info` colours, and
+  `crmColorTheme` carries it.
 - `websiteBreakpointValues` (`xs` 375, `sm` 640, `md` 768, `lg` 1024, `xl` 1440) and
   `crmBreakpointValues` (`xs` 320, `sm` 480, then the same); `websiteBreakpointsTheme` and
   `crmBreakpointsTheme` are the matching MUI themes, and `UiBreakpoints` is the website one.
@@ -239,7 +245,8 @@ and `Layout` is `@vilnacrm/ui-toolkit/layout`.
 | `UiSkeletonWidget`        | Dashboard widget shimmer (task list, block or chart)                 |
 | `sharedPalette`           | Colour tokens in MUI palette shape ([Theming](#theming))             |
 | `websiteColorTheme`       | Theme carrying `sharedPalette`; `UiColorTheme` is this one           |
-| `crmColorTheme`           | The CRM colour theme, the same palette today                         |
+| `crmPalette`              | `sharedPalette` with the CRM `success`, `warning`, `info` colours    |
+| `crmColorTheme`           | The CRM colour theme, carrying `crmPalette`                          |
 | `UiColorTheme`            | Default export of `ui-color-theme`: `websiteColorTheme`              |
 | `websiteBreakpointValues` | `xs` 375, `sm` 640, `md` 768, `lg` 1024, `xl` 1440                   |
 | `crmBreakpointValues`     | `xs` 320, `sm` 480, `md` 768, `lg` 1024, `xl` 1440                   |

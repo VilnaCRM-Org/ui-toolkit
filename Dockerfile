@@ -14,8 +14,8 @@ RUN apk add --no-cache \
       g++=14.2.0-r6 \
       icu-data-full=76.1-r1 \
       jq=1.8.2-r0 \
-      libcrypto3=3.5.8-r0 \
-      libssl3=3.5.8-r0 \
+      libcrypto3=3.5.9-r0 \
+      libssl3=3.5.9-r0 \
       make=4.4.1-r3 \
       nodejs=22.23.2-r0 \
       npm=11.6.4-r0 \

@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 import type { FieldValues } from 'react-hook-form';
 
@@ -65,6 +66,10 @@ export function FormHeader<T extends FieldValues>({
   );
 }
 
+function submitSx(kitInk: boolean | undefined): SxProps<Theme> {
+  return kitInk === true ? [styles.submitButton, styles.submitFlat] : styles.submitButton;
+}
+
 // CRM parity: the spinner renders INSIDE the submit button, replacing the old
 // external size-70 loader below the form. The busy state is UiButton's own
 // contract — the kit's shared arc, `aria-disabled` rather than a native
@@ -87,11 +92,14 @@ export function SubmitControls<T extends FieldValues>({
       loading={submitting}
       loadingText={submittingLabel}
       loadingMode={submitLoadingMode}
+      loadingIndicator={view.submitLoadingIndicator}
       focusOutline={view.submitFocusOutline}
+      kitInk={view.submitKitInk}
+      responsiveLabel={view.submitResponsiveLabel}
       disabled={isSubmitDisabled || !offline.online}
       aria-describedby={view.offlineNotice ? offline.noticeId : undefined}
       variant="contained"
-      sx={styles.submitButton}
+      sx={submitSx(view.submitKitInk)}
     >
       {submitLabel}
     </UiButton>

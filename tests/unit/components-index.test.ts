@@ -35,6 +35,7 @@ const expectedPublicExports: string[] = [
   'crmBreakpointValues',
   'crmBreakpointsTheme',
   'crmColorTheme',
+  'crmPalette',
   'heightBreakpoints',
   'sharedPalette',
   'UiActionIconBar',

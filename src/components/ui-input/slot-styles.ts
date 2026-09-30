@@ -21,7 +21,7 @@ function inputRootStyles(theme: Theme): OptionsRecord {
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
       border: `1px solid ${palette.grey250.main}`,
     },
-    '&.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: palette.strokeDanger.main },
+    '&.Mui-error .MuiOutlinedInput-notchedOutline': { borderColor: palette.error.main },
     '&.Mui-disabled': {
       backgroundColor: palette.brandGray.main,
       color: palette.grey300.main,
@@ -57,6 +57,15 @@ function smallScreenStyles(): OptionsRecord {
   };
 }
 
+export function disabledNativeInputStyles(theme: Theme): OptionsRecord {
+  const { palette } = theme;
+  return {
+    backgroundColor: palette.brandGray.main,
+    color: palette.grey300.main,
+    WebkitTextFillColor: palette.grey300.main,
+  };
+}
+
 function nativeInputStyles(theme: Theme): OptionsRecord {
   const { palette } = theme;
   return {
@@ -70,11 +79,7 @@ function nativeInputStyles(theme: Theme): OptionsRecord {
       '&::placeholder': { fontSize: '1.125rem' },
     },
     [`@media (max-width: ${theme.breakpoints.values.sm}px)`]: smallScreenStyles(),
-    '&:disabled': {
-      backgroundColor: palette.brandGray.main,
-      color: palette.grey300.main,
-      WebkitTextFillColor: palette.grey300.main,
-    },
+    '&:disabled': disabledNativeInputStyles(theme),
   };
 }
 

@@ -9,10 +9,10 @@
 // no-jitter precedent).
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Stable class hooks so the root drives every descendant ink swap from its own
 // state selectors, instead of threading state through the content tree.

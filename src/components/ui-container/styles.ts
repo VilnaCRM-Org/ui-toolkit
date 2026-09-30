@@ -1,4 +1,7 @@
-import breakpointsTheme from '../ui-breakpoints';
+import type { Theme } from '@mui/material';
+import type { SystemStyleObject } from '@mui/system';
+
+import { uiBreakpointValues } from '@/utils/ui-breakpoint-queries';
 
 const containerPadding: Record<string, string> = {
   xs: '0.9375rem',
@@ -8,22 +11,22 @@ const containerPadding: Record<string, string> = {
 };
 
 export default {
-  container: {
+  container: (theme: Theme): SystemStyleObject<Theme> => ({
     width: '100%',
     paddingLeft: containerPadding.xs,
     paddingRight: containerPadding.xs,
     margin: '0 auto',
-    [`@media (min-width:${breakpointsTheme.breakpoints.values.md}px)`]: {
+    [`@media (min-width:${uiBreakpointValues(theme).md}px)`]: {
       paddingLeft: containerPadding.md,
       paddingRight: containerPadding.md,
     },
-    [`@media (min-width:${breakpointsTheme.breakpoints.values.lg}px)`]: {
+    [`@media (min-width:${uiBreakpointValues(theme).lg}px)`]: {
       paddingLeft: containerPadding.lg,
       paddingRight: containerPadding.lg,
     },
-    [`@media (min-width:${breakpointsTheme.breakpoints.values.xl}px)`]: {
+    [`@media (min-width:${uiBreakpointValues(theme).xl}px)`]: {
       paddingLeft: containerPadding.xl,
       paddingRight: containerPadding.xl,
     },
-  },
+  }),
 };

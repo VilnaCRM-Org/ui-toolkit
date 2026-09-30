@@ -1,4 +1,4 @@
-import { sharedPalette } from '../ui-color-theme';
+import { sharedPalette } from '@/utils/palette-tokens';
 
 export default {
   fallback: {

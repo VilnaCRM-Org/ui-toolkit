@@ -1,4 +1,4 @@
-import breakpointsTheme from '@/components/ui-breakpoints';
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 
 export default {
   text: {

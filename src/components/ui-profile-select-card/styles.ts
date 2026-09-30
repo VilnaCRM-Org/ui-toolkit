@@ -5,10 +5,10 @@
 // disabled — so nothing jitters between rest, hover, open and disabled).
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // Stable class hooks so the trigger root owns the disabled/hover rules via
 // descendant selectors instead of threading colours through the content tree.

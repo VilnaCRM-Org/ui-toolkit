@@ -1,12 +1,10 @@
-import { Box, Button } from '@mui/material';
+import { Button } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import React from 'react';
 
-import { srOnlySx } from '../field-controls';
-
-import { ButtonSpinner, useBusyClick, useButtonBusy, type ButtonBusyState } from './loading';
 import type { UiButtonProps } from './types';
-import useButtonSx from './use-button-sx';
+import useButtonLoading, { type ButtonLoading } from './use-button-loading';
+import useButtonSx, { splitLook } from './use-button-sx';
 
 function resolveLinkTarget(to?: UiButtonProps['to']): string | undefined {
   if (!to) {
@@ -67,27 +65,6 @@ function resolveButtonProps({
   };
 }
 
-type BusyAttributes = { disabled?: boolean | undefined; 'aria-disabled'?: boolean | undefined };
-
-function busyAttributes(
-  busy: boolean,
-  native: boolean,
-  { disabled, 'aria-disabled': ariaDisabled }: Pick<UiButtonProps, 'disabled' | 'aria-disabled'>
-): BusyAttributes {
-  if (native) {
-    return { disabled: disabled === true || busy };
-  }
-  return { 'aria-disabled': busy ? true : (ariaDisabled as boolean | undefined) };
-}
-
-function LoadingStatus({ announced }: Readonly<{ announced: string }>): React.ReactElement {
-  return (
-    <Box role="status" aria-atomic="true" sx={srOnlySx}>
-      {announced}
-    </Box>
-  );
-}
-
 function UiButton({
   to,
   href,
@@ -97,30 +74,29 @@ function UiButton({
   loadingText,
   loadingMode,
   loadingIndicator,
-  focusOutline,
   onClick,
   children,
-  ...rest
+  ...props
 }: React.PropsWithChildren<UiButtonProps>): React.ReactElement {
-  const elementProps: ButtonElementProps = resolveButtonProps({ to, href, component, type });
-  const native: boolean = loadingMode === 'native';
-  const state: ButtonBusyState = useButtonBusy(loading, loadingText);
-  const handleClick: React.MouseEventHandler<HTMLButtonElement> = useBusyClick(state.busy, onClick);
-  const sx: SxProps<Theme> = useButtonSx(rest, state.busy, { native, focusOutline });
+  const [look, rest] = splitLook(props);
+  const busy: ButtonLoading = useButtonLoading(
+    { loading, loadingText, loadingMode, loadingIndicator, onClick },
+    rest
+  );
+  const sx: SxProps<Theme> = useButtonSx(rest, busy.busy, { ...look, native: busy.native });
 
   return (
     <>
       <Button
-        {...elementProps}
+        {...resolveButtonProps({ to, href, component, type })}
         {...rest}
-        {...busyAttributes(state.busy, native, rest)}
-        onClick={handleClick}
+        {...busy.buttonProps}
         sx={sx}
       >
         {children}
-        {state.busy ? <ButtonSpinner indicator={native ? loadingIndicator : undefined} /> : null}
+        {busy.spinner}
       </Button>
-      {loading === undefined || native ? null : <LoadingStatus announced={state.announced} />}
+      {busy.status}
     </>
   );
 }

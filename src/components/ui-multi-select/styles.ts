@@ -2,7 +2,7 @@ import type { SxProps, Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
 import { fontFamilies } from '@/utils/font-tokens';
-import { cacheByTheme, uiTheme } from '@/utils/ui-theme';
+import { cacheByTheme, defaultUiTheme } from '@/utils/ui-theme';
 
 import { mergeFieldStyles, outlinedFieldStyles, type FieldSlotStyles } from '../field-controls';
 
@@ -26,7 +26,7 @@ const HIDE_CLEAR_SX: SlotStyle = {
 
 export function multiSelectRootSx(
   config: UiMultiSelectProps,
-  theme: Theme = uiTheme
+  theme: Theme = defaultUiTheme()
 ): SxProps<Theme> {
   const consumerSx: SxProps<Theme> = config.sx ?? {};
   const derived: SlotStyle[] = [

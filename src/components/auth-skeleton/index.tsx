@@ -38,6 +38,9 @@ export type AuthSkeletonProps = {
    * the page renders exactly one skeleton and its tests select them by id.
    */
   idPrefix?: string | undefined;
+  landmark?: 'section' | undefined;
+  layout?: 'fill' | undefined;
+  cardTone?: 'crm' | undefined;
 };
 
 type Wrap = <T extends object>(baseSx: T) => (T | typeof STATIC_SX)[];
@@ -46,6 +49,16 @@ type Wrap = <T extends object>(baseSx: T) => (T | typeof STATIC_SX)[];
 type PartProps = { wrap: Wrap; uid: string };
 
 type BodyProps = PartProps & { disableAnimation: boolean };
+
+type CardProps = BodyProps & { cardTone: 'crm' | undefined };
+
+const cardSx: (cardTone: 'crm' | undefined) => object = cardTone =>
+  cardTone === 'crm'
+    ? { ...styles.formWrapper, ...styles.formWrapperPulse, ...styles.crmCardTone }
+    : { ...styles.formWrapper, ...styles.formWrapperPulse };
+
+const sectionSx: (layout: 'fill' | undefined) => object[] = layout =>
+  layout === 'fill' ? [styles.formSection, styles.fillLayout] : [styles.formSection];
 
 const buildWrap: (disableAnimation: boolean) => Wrap =
   (disableAnimation: boolean): Wrap =>
@@ -118,9 +131,14 @@ function DividerBlock({ wrap, uid }: Readonly<PartProps>): React.ReactElement {
   );
 }
 
-function FormBody({ wrap, uid, disableAnimation }: Readonly<BodyProps>): React.ReactElement {
+function FormBody({
+  wrap,
+  uid,
+  disableAnimation,
+  cardTone,
+}: Readonly<CardProps>): React.ReactElement {
   return (
-    <Box sx={wrap({ ...styles.formWrapper, ...styles.formWrapperPulse })}>
+    <Box sx={wrap(cardSx(cardTone))}>
       <TitleBlock wrap={wrap} uid={uid} />
       <FieldRows wrap={wrap} uid={uid} disableAnimation={disableAnimation} />
       <UiSkeletonButton id={`${uid}auth-skeleton-submit`} sx={wrap(styles.buttonSkeleton)} />
@@ -134,14 +152,17 @@ export default function AuthSkeleton({
   disableAnimation = false,
   ariaLabel = 'Loading form',
   idPrefix,
+  landmark,
+  layout,
+  cardTone,
 }: Readonly<AuthSkeletonProps>): React.ReactElement {
   const wrap: Wrap = buildWrap(disableAnimation);
   const generatedId: string = React.useId();
   const uid: string = idPrefix ?? generatedId;
 
   return (
-    <ComposedSkeleton loadingText={ariaLabel} sx={styles.formSection}>
-      <FormBody wrap={wrap} uid={uid} disableAnimation={disableAnimation} />
+    <ComposedSkeleton loadingText={ariaLabel} landmark={landmark} sx={sectionSx(layout)}>
+      <FormBody wrap={wrap} uid={uid} disableAnimation={disableAnimation} cardTone={cardTone} />
       <UiSkeletonText
         id={`${uid}auth-skeleton-switcher`}
         size="l"

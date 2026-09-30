@@ -7,10 +7,10 @@
 import { alpha } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
 import { fontFamilies } from '@/utils/font-tokens';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // The one raw-alpha literal in this module (00-shared.md recipe convention):
 // Figma has no alpha token, only the solid `white` base. Node 439:19877's

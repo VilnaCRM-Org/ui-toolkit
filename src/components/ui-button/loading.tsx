@@ -25,8 +25,15 @@ export interface ButtonBusyState {
  * anything happened — the spinner is decorative by design, and MUI's own
  * indicator is only heard while focus stays on the control.
  */
-export function useButtonBusy(loading?: boolean | null, loadingText?: string): ButtonBusyState {
-  const announced: string = useFieldLoadingAnnouncement({ loading, loadingText });
+export function useButtonBusy(
+  loading: boolean | null | undefined,
+  loadingText: string | undefined,
+  native: boolean
+): ButtonBusyState {
+  const announced: string = useFieldLoadingAnnouncement({
+    loading: native ? undefined : loading,
+    loadingText,
+  });
   return { busy: loading === true, announced };
 }
 
@@ -56,12 +63,18 @@ export function useBusyClick(
   );
 }
 
-/**
- * The centred, decorative arc drawn over the transparent label, or the
- * consumer's `loadingIndicator` in the `native` loading mode.
- */
-export function ButtonSpinner({
-  indicator,
-}: Readonly<{ indicator?: React.ReactNode | undefined }>): React.ReactElement {
-  return <Box sx={CENTRE_SX}>{indicator ?? <FieldSpinner />}</Box>;
+export function ButtonSpinner(): React.ReactElement {
+  return (
+    <Box sx={CENTRE_SX}>
+      <FieldSpinner />
+    </Box>
+  );
+}
+
+export function nativeLoadingProps(
+  native: boolean,
+  busy: boolean,
+  indicator: React.ReactNode
+): { loading?: true; loadingIndicator?: React.ReactNode } {
+  return native && busy ? { loading: true, loadingIndicator: indicator ?? <FieldSpinner /> } : {};
 }

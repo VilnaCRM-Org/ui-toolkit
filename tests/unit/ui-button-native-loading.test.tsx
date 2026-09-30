@@ -3,7 +3,7 @@ import React from 'react';
 
 import UiButton from '../../src/components/ui-button';
 import { buttonSx } from '../../src/components/ui-button/styles';
-import { uiTheme } from '../../src/utils/ui-theme';
+import { uiTheme } from '../../src/components/ui-theme-provider';
 
 import { emotionCssFor } from './utils/emotion-css';
 

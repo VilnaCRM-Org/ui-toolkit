@@ -1,6 +1,7 @@
 import type { Theme } from '@mui/material';
 import type { SystemStyleObject } from '@mui/system';
 
+import { crmBreakpointValues } from '@/utils/breakpoint-tokens';
 import { fontFamilies } from '@/utils/font-tokens';
 import { cacheByTheme } from '@/utils/ui-theme';
 
@@ -11,7 +12,6 @@ import {
   type FieldSlotStyles,
   type ListboxSlotProps,
 } from '../field-controls';
-import { crmBreakpointValues } from '../ui-breakpoints';
 
 type SlotStyle = SystemStyleObject<Theme>;
 

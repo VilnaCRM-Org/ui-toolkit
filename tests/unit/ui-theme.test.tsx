@@ -4,6 +4,7 @@ import React from 'react';
 
 import { crmBreakpointValues, websiteBreakpointValues } from '../../src/components/ui-breakpoints';
 import { sharedPalette } from '../../src/components/ui-color-theme';
+import { uiTheme } from '../../src/components/ui-theme-provider';
 import { fontFamilies } from '../../src/utils/font-tokens';
 import {
   cacheByTheme,
@@ -11,7 +12,6 @@ import {
   isUiTheme,
   mergeOptions,
   resolveUiTheme,
-  uiTheme,
   useUiTheme,
   type UiThemeOptions,
 } from '../../src/utils/ui-theme';

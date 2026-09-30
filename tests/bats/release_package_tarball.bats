@@ -165,7 +165,7 @@ setup() {
   run grep -F 'make start-bun' "$workflow"
   [ "$status" -eq 0 ]
 
-  run grep -F 'dist/*.tgz' "$workflow"
+  run grep -F 'scripts/ci/write-release-checksum.sh dist' "$workflow"
   [ "$status" -eq 0 ]
 }
 

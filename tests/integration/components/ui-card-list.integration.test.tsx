@@ -201,6 +201,19 @@ describe('UiCardList integration (real composed child chain)', () => {
       expect(trigger).toHaveAttribute('aria-expanded', 'false');
     });
 
+    it('paints the card link styling on the tooltip trigger', () => {
+      setLargeScreen();
+
+      render(<UiCardList cardList={tooltipCardList} />);
+
+      const trigger: HTMLElement = screen.getByRole('button', { name: 'learn more', hidden: true });
+      expect(trigger).toHaveStyle({
+        cursor: 'pointer',
+        textDecoration: 'underline',
+        fontWeight: '700',
+      });
+    });
+
     it('reveals the real MUI tooltip content when the trigger is activated', async () => {
       setLargeScreen();
       const user: ReturnType<typeof userEvent.setup> = userEvent.setup();

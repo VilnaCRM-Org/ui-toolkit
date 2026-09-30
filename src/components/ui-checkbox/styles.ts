@@ -3,8 +3,7 @@ import type { Theme } from '@mui/material/styles';
 
 import Check from '@/assets/svg/check.svg';
 import { fontFamilies } from '@/utils/font-tokens';
-
-import colorTheme from '../ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 const checkIconUrl: string = typeof Check === 'string' ? Check : Check.src;
 

@@ -1,8 +1,8 @@
 import type { CSSObject, Theme } from '@mui/material';
 
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 import { smUpQuery } from '@/utils/ui-breakpoint-queries';
 
-import breakpointsTheme from '../ui-breakpoints';
 import {
   SKELETON_BORDER_COLOR,
   SMALL_MOBILE_BREAKPOINT,
@@ -10,7 +10,13 @@ import {
   shadowPulseAnimation,
 } from '../ui-skeletons';
 
-import { fieldGapMargins, formSection, formWrapper } from './shared-styles';
+import {
+  crmCardTone,
+  fieldGapMargins,
+  fillLayout,
+  formSection,
+  formWrapper,
+} from './shared-styles';
 
 const AUTH_SKELETON_TINY_BREAKPOINT: string = '336px';
 
@@ -190,4 +196,6 @@ export default {
   },
   formSection,
   formWrapper,
+  fillLayout,
+  crmCardTone,
 };

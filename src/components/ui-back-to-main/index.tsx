@@ -12,6 +12,7 @@ export type UiBackToMainProps = {
   label?: React.ReactNode | undefined;
   /** Decorative leading glyph; rendered inside an `aria-hidden` box. */
   icon?: React.ReactNode | undefined;
+  'aria-label'?: string | undefined;
 };
 
 // The CRM back-arrow export (`assets/icons/arrows/back-arrow.svg`): an 8x14
@@ -35,16 +36,12 @@ export default function UiBackToMain({
   to = '/',
   label = 'Back to main',
   icon = <DefaultBackIcon />,
+  'aria-label': ariaLabel,
 }: UiBackToMainProps): React.ReactElement {
   return (
     <Box component="section" sx={backToMainStyles.section}>
       <UiContainer>
-        <UiButton
-          disableRipple
-          sx={backToMainStyles.backButton}
-          to={to}
-          aria-label={typeof label === 'string' ? label : undefined}
-        >
+        <UiButton disableRipple sx={backToMainStyles.backButton} to={to} aria-label={ariaLabel}>
           <Box sx={backToMainStyles.icon} aria-hidden="true">
             {icon}
           </Box>

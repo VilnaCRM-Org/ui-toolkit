@@ -87,11 +87,10 @@ export default function WrapperUiTooltip({
         title={title}
         placement={placement}
         arrow={arrow}
-        sx={sx}
         slotProps={tooltipSlotProps(theme, slotProps)}
       >
         <Typography
-          sx={triggerSx}
+          sx={triggerSx(sx)}
           component="span"
           {...buildTriggerProps(disclosure, triggerLabel)}
         >

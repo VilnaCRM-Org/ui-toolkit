@@ -1,6 +1,6 @@
 import React from 'react';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
 import { Glyph } from '../field-controls';
 

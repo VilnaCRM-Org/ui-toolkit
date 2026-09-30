@@ -19,7 +19,8 @@ export type UiLinkProps = {
    * navigate. The `rel`/new-tab contract is unaffected by `disabled`.
    */
   disabled?: boolean | undefined;
-  tone?: 'brand' | 'accessible' | undefined;
+  tone?: 'brand' | 'accessible' | 'inherit' | undefined;
+  responsiveSize?: boolean | undefined;
   underline?: 'always' | 'hover' | 'none' | undefined;
 } & Omit<
   LinkProps,

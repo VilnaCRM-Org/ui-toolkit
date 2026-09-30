@@ -39,6 +39,9 @@ export type AuthSkeletonProps = {
     disableAnimation?: boolean | undefined;
     ariaLabel?: string | undefined;
     idPrefix?: string | undefined;
+    landmark?: 'section' | undefined;
+    layout?: 'fill' | undefined;
+    cardTone?: 'crm' | undefined;
 };
 
 // @public
@@ -83,6 +86,112 @@ export const crmBreakpointValues: {
 
 // @public (undocumented)
 export const crmColorTheme: Theme;
+
+// @public (undocumented)
+export const crmPalette: {
+    readonly success: {
+        readonly main: "#4CAF50";
+    };
+    readonly warning: {
+        readonly main: "#FF9800";
+    };
+    readonly info: {
+        readonly main: "#2196F3";
+    };
+    readonly primary: {
+        readonly main: "#1EAEFF";
+    };
+    readonly secondary: {
+        readonly main: "#FFC01E";
+    };
+    readonly error: {
+        readonly main: "#DC3939";
+    };
+    readonly strokeDanger: {
+        readonly main: "#DF7878";
+    };
+    readonly white: {
+        readonly main: "#FFF";
+    };
+    readonly darkPrimary: {
+        readonly main: "#1A1C1E";
+    };
+    readonly darkSecondary: {
+        readonly main: "#1B2327";
+    };
+    readonly brandGray: {
+        readonly main: "#E1E7EA";
+    };
+    readonly grey200: {
+        readonly main: "#404142";
+    };
+    readonly grey250: {
+        readonly main: "#57595B";
+    };
+    readonly grey300: {
+        readonly main: "#969B9D";
+    };
+    readonly grey400: {
+        readonly main: "#D0D4D8";
+    };
+    readonly grey500: {
+        readonly main: "#EAECEE";
+    };
+    readonly backgroundGrey100: {
+        readonly main: "#FBFBFB";
+    };
+    readonly backgroundGrey200: {
+        readonly main: "#f4f5f6";
+    };
+    readonly backgroundGrey300: {
+        readonly main: "#F5F6F7";
+    };
+    readonly containedButtonHover: {
+        readonly main: "#00A3FF";
+    };
+    readonly patchMethod: {
+        readonly main: "#9B59B6";
+    };
+    readonly getMethodHover: {
+        readonly main: "#0091E2";
+    };
+    readonly putMethodHover: {
+        readonly main: "#DD9F00";
+    };
+    readonly postMethodHover: {
+        readonly main: "#00AE70";
+    };
+    readonly deleteMethodHover: {
+        readonly main: "#FF2F2F";
+    };
+    readonly patchMethodHover: {
+        readonly main: "#7A4092";
+    };
+    readonly mutedInkHover: {
+        readonly main: "#1C2022";
+    };
+    readonly containedButtonActive: {
+        readonly main: "#0399ED";
+    };
+    readonly notchDeskBefore: {
+        readonly main: "#080805";
+    };
+    readonly notchDeskAfter: {
+        readonly main: "#0e314c";
+    };
+    readonly notchMobileBefore: {
+        readonly main: "#0c0b0e";
+    };
+    readonly notchMobileAfter: {
+        readonly main: "#0f0b25";
+    };
+    readonly textLinkHover: {
+        readonly main: "#297FFF";
+    };
+    readonly textLinkActive: {
+        readonly main: "#0399ED";
+    };
+};
 
 // @public (undocumented)
 export type CustomTextField<T extends FieldValues> = UiInputProps & {
@@ -349,6 +458,7 @@ export type UiBackToMainProps = {
     to?: string | undefined;
     label?: React_2.ReactNode | undefined;
     icon?: React_2.ReactNode | undefined;
+    'aria-label'?: string | undefined;
 };
 
 // @public (undocumented)
@@ -357,10 +467,16 @@ export function UiButton(input: React_2.PropsWithChildren<UiButtonProps>): React
 // @public (undocumented)
 export interface UiButtonProps extends ButtonProps {
     // (undocumented)
+    appearance?: 'kit' | 'theme' | undefined;
+    // (undocumented)
     focusOutline?: boolean | undefined;
+    // (undocumented)
+    kitInk?: boolean | undefined;
     loadingMode?: 'aria-disabled' | 'native' | undefined;
     loadingText?: string | undefined;
     rel?: string | undefined;
+    // (undocumented)
+    responsiveLabel?: boolean | undefined;
     target?: React_2.HTMLAttributeAnchorTarget | undefined;
     // (undocumented)
     to?: ButtonLinkTarget | undefined;
@@ -591,6 +707,12 @@ export function UiFooter(input: Readonly<{
     variant?: 'website' | 'crm' | undefined;
     privacyHref?: string | undefined;
     usagePolicyHref?: string | undefined;
+    logo?: React_2.ReactNode | undefined;
+    slotProps?: {
+        link?: {
+            sx?: SxProps<Theme> | undefined;
+        } | undefined;
+    } | undefined;
 }>): React_2.ReactElement;
 
 // @public (undocumented)
@@ -644,8 +766,16 @@ export interface UiFormProps<T extends FieldValues> {
     // (undocumented)
     submitFocusOutline?: UiButtonProps['focusOutline'] | undefined;
     // (undocumented)
+    submitKitInk?: boolean | undefined;
+    // (undocumented)
     submitLabel: string;
+    // (undocumented)
+    submitLoadingIndicator?: ReactNode | undefined;
     submitLoadingMode?: UiButtonProps['loadingMode'] | undefined;
+    // (undocumented)
+    submitResponsiveLabel?: boolean | undefined;
+    // (undocumented)
+    submittingAnnouncement?: boolean | undefined;
     submittingLabel?: string | undefined;
     // (undocumented)
     subtitle?: ReactNode | undefined;
@@ -674,6 +804,7 @@ export const UiInput: React_2.ForwardRefExoticComponent<UiInputProps & React_2.R
 // @public (undocumented)
 export type UiInputProps = Omit<TextFieldProps, 'inputRef' | 'onBlur' | 'onChange'> & {
     describedBy?: string | undefined;
+    density?: 'crm' | undefined;
     InputProps?: OutlinedInputProps | undefined;
     onBlur?: React_2.FocusEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
     onChange?: React_2.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> | undefined;
@@ -745,7 +876,8 @@ export type UiLinkProps = {
     rel?: string | undefined;
     sx?: SxProps<Theme> | undefined;
     disabled?: boolean | undefined;
-    tone?: 'brand' | 'accessible' | undefined;
+    tone?: 'brand' | 'accessible' | 'inherit' | undefined;
+    responsiveSize?: boolean | undefined;
     underline?: 'always' | 'hover' | 'none' | undefined;
 } & Omit<LinkProps, 'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color' | 'component'> & ({
     target: '_blank';
@@ -1298,6 +1430,8 @@ export function UiThemeProvider(input: Readonly<UiThemeProviderProps>): React_2.
 export interface UiThemeProviderProps {
     // (undocumented)
     children: ReactNode;
+    // (undocumented)
+    scope?: 'theme' | 'tokens' | undefined;
     // (undocumented)
     theme?: UiThemeOptions | undefined;
     // (undocumented)

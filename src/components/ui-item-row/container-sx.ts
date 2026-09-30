@@ -5,7 +5,7 @@
 // `RowRecipe` (see `recipe.ts`).
 import type { SxProps, Theme } from '@mui/material';
 
-import colorTheme from '@/components/ui-color-theme';
+import { colorTokens as colorTheme, type UiPaletteTokens } from '@/utils/palette-tokens';
 
 import type { RowRecipe } from './recipe';
 import {
@@ -17,7 +17,7 @@ import {
   PATH_CLASS,
 } from './styles';
 
-const palette: Theme['palette'] = colorTheme.palette;
+const palette: UiPaletteTokens = colorTheme.palette;
 
 // The mobile badge is transparent, so `box-shadow` would paint a rounded-rectangle
 // smudge behind the glyphs Figma does not have — Figma shadows the text itself.

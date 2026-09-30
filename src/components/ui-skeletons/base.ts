@@ -1,6 +1,6 @@
 import { keyframes, Keyframes } from '@emotion/react';
 
-import { sharedPalette } from '../ui-color-theme';
+import { sharedPalette } from '@/utils/palette-tokens';
 
 export const shimmerAnimation: Keyframes = keyframes`
   0% {

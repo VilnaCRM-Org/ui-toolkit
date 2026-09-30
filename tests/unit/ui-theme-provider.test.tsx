@@ -4,7 +4,7 @@ import React from 'react';
 
 import { sharedPalette } from '../../src/components/ui-color-theme';
 import UiThemeProvider, { createUiTheme, uiTheme } from '../../src/components/ui-theme-provider';
-import { createUiTheme as createFromUtils, uiTheme as utilsTheme } from '../../src/utils/ui-theme';
+import { createUiTheme as createFromUtils, defaultUiTheme } from '../../src/utils/ui-theme';
 
 function Probe(): React.ReactElement {
   const { palette, breakpoints }: Theme = useTheme();
@@ -23,7 +23,7 @@ function probeText(): string | null {
 describe('UiThemeProvider', () => {
   it('re-exports the theme factory and the default theme', () => {
     expect(createUiTheme).toBe(createFromUtils);
-    expect(uiTheme).toBe(utilsTheme);
+    expect(uiTheme).toBe(defaultUiTheme());
   });
 
   it('provides the toolkit theme with the website breakpoints by default', () => {

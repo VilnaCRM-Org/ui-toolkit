@@ -1,10 +1,10 @@
 import { CSSObject, type Theme } from '@mui/material';
 
+import { breakpointTokens as breakpointsTheme } from '@/utils/breakpoint-tokens';
 import { fontFamilies } from '@/utils/font-tokens';
+import { sharedPalette } from '@/utils/palette-tokens';
 import { smUpQuery } from '@/utils/ui-breakpoint-queries';
 
-import breakpointsTheme from '../ui-breakpoints';
-import { sharedPalette } from '../ui-color-theme';
 import { SKELETON_BORDER_COLOR } from '../ui-skeletons';
 
 export const fieldGapMargins: (theme: Theme) => CSSObject = (theme: Theme): CSSObject => ({
@@ -61,4 +61,16 @@ export const formWrapper: CSSObject = {
     maxWidth: '31.375rem',
     padding: '2.1rem 2.4375rem 1.9375rem',
   },
+};
+
+export const fillLayout: CSSObject = {
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+};
+
+export const crmCardTone: CSSObject = {
+  border: `1px solid ${sharedPalette.grey500.main}`,
+  boxShadow: '0px 7px 40px 0px #E7E7E77D',
 };
