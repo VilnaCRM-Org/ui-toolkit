@@ -6,7 +6,10 @@ import AuthSkeleton from '../../../src/components/auth-skeleton';
 import UiFooter from '../../../src/components/ui-footer';
 import UiForm from '../../../src/components/ui-form';
 
-function SignIn({ isSubmitting }: Readonly<{ isSubmitting: boolean }>): React.ReactElement {
+function SignIn({
+  isSubmitting,
+  announce,
+}: Readonly<{ isSubmitting: boolean; announce?: boolean }>): React.ReactElement {
   return (
     <UiForm
       onSubmit={jest.fn()}
@@ -19,6 +22,7 @@ function SignIn({ isSubmitting }: Readonly<{ isSubmitting: boolean }>): React.Re
       submitResponsiveLabel={false}
       submitLoadingIndicator={<span aria-hidden="true">arc</span>}
       isSubmitting={isSubmitting}
+      submittingAnnouncement={announce}
     >
       <input aria-label="Email" />
     </UiForm>
@@ -79,5 +83,11 @@ describe('UiForm native crm submit (integration)', () => {
     rerender(<SignIn isSubmitting={false} />);
     expect(screen.getByRole('status')).toBeEmptyDOMElement();
     expect(submit).toHaveFocus();
+  });
+
+  it('lets the announcement run on its own schedule', () => {
+    render(<SignIn isSubmitting={false} announce />);
+    expect(screen.getByRole('status')).toHaveTextContent('Signing in');
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled();
   });
 });
