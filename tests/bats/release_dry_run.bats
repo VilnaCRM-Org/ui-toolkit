@@ -10,7 +10,17 @@ workflow_code() {
 }
 
 release_commands() {
-  workflow_code "$1" | grep -oE 'make [a-z-]+|bash scripts/ci/[a-z-]+\.sh'
+  workflow_code "$1" |
+    grep -oE '(^ *(run: )?|\$\()(make|bash|sh|node|bun|bunx|npx) [^)"]*' |
+    sed -E 's/^ *(run: )?//; s/^\$\(//; s/ +$//'
+}
+
+pull_request_branches() {
+  workflow_code "$1" | awk '
+    /^  pull_request:$/ { inside = 1; next }
+    inside && /^  [a-z_]+:/ { exit }
+    inside && /^ +- / { sub(/^ +- /, ""); gsub(/\047/, ""); print }
+  '
 }
 
 changelog_inputs() {
@@ -20,7 +30,7 @@ changelog_inputs() {
 @test "the dry run runs the release's commands in the release's order" {
   run diff <(release_commands "$RELEASE") <(release_commands "$DRY_RUN")
   [ "$status" -eq 0 ]
-  [ -n "$(release_commands "$DRY_RUN")" ]
+  [ "$(release_commands "$DRY_RUN" | wc -l)" -ge 6 ]
 }
 
 @test "the dry run drives the same changelog action with the same inputs" {
@@ -40,10 +50,13 @@ changelog_inputs() {
 
 @test "the dry run gates every pull request to main and re-checks main daily" {
   run workflow_code "$DRY_RUN"
-  assert_output_contains 'pull_request:'
   assert_output_contains '- cron:'
   [[ "$output" != *'paths:'* ]]
   [[ "$output" != *'paths-ignore:'* ]]
+  [[ "$output" != *'branches-ignore:'* ]]
+  run pull_request_branches "$DRY_RUN"
+  [ "$status" -eq 0 ]
+  printf '%s\n' "$output" | grep -qxF main
 }
 
 @test "no dry-run step is skipped except the teardown" {
