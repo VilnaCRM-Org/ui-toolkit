@@ -1,0 +1,87 @@
+name: release dry run
+
+on:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '43 5 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the release version cannot collide with an existing tag
+        run: bash scripts/ci/check-release-version.sh .
+
+      - name: Conventional Changelog Action
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@469f0e5e35831fbd1962706f29f65daf0a5723f2 # v6.5.0
+        with:
+          github-token: ${{ github.token }}
+          output-file: 'CHANGELOG.md'
+          version-file: 'package.json'
+          git-push: false
+          skip-git-pull: true
+
+      - name: Start docker build environment
+        run: make start-bun
+
+      - name: Pack the publishable tarball
+        run: make package
+
+      - name: Fail the release on a licence, IP or secret finding in the tarball
+        run: make lint-licenses
+
+      - name: Assert the release assets match the computed version
+        env:
+          SKIPPED: ${{ steps.changelog.outputs.skipped }}
+          RELEASE_TAG: ${{ steps.changelog.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          version="$(jq -r .version package.json)"
+          expected="dist/vilnacrm-ui-toolkit-${version}.tgz"
+          tarball="$(bash scripts/ci/write-release-checksum.sh dist)"
+
+          if [ "$tarball" != "$expected" ]; then
+            echo "::error::The packed tarball is $tarball, but the release would" \
+              "publish $expected."
+            exit 1
+          fi
+
+          if [ "$SKIPPED" = "false" ] && [ "$RELEASE_TAG" != "v${version}" ]; then
+            echo "::error::The changelog action tagged $RELEASE_TAG, but package.json" \
+              "was bumped to ${version}."
+            exit 1
+          fi
+
+          (cd dist && sha256sum -c "$(basename "$tarball").sha256")
+
+          if [ "$SKIPPED" = "false" ]; then
+            echo "Merging this would release $RELEASE_TAG as $tarball." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Merging this would not cut a release; $tarball still packs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Stop docker build environment
+        if: always()
+        run: make down
