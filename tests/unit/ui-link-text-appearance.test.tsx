@@ -11,10 +11,7 @@ import { emotionCssFor } from './utils/emotion-css';
 
 const NAME: string = 'Забули пароль?';
 const TABLET_QUERY: string = '@media(min-width:768px)and(max-width:1439.95px)';
-const TABLET_RULE: RegExp = new RegExp(
-  `${TABLET_QUERY.replace(/[().]/g, '\\$&')}\\{\\.[\\w-]+\\{` +
-    'font-size:1\\.125rem;font-weight:600;line-height:normal;\\}\\}'
-);
+const TABLET_DECLARATIONS: string = '{font-size:1.125rem;font-weight:600;line-height:normal;}}';
 
 type LinkOptions = Pick<UiLinkProps, 'tone' | 'underline' | 'responsiveSize' | 'disabled'>;
 
@@ -59,7 +56,12 @@ describe('UiLink appearance="text" at rest', () => {
   it('switches to Golos 600 18px/normal between the md and xl breakpoints', () => {
     renderTextLink();
 
-    expect(compactCss()).toMatch(TABLET_RULE);
+    const css: string = compactCss();
+    const start: number = css.indexOf(`${TABLET_QUERY}{.`);
+    const block: string = css.slice(start, css.indexOf('}}', start) + 2);
+
+    expect(start).toBeGreaterThan(-1);
+    expect(block.endsWith(TABLET_DECLARATIONS)).toBe(true);
   });
 
   it('drops the default link font-size media rules', () => {
