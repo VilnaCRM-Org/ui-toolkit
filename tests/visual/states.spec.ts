@@ -57,6 +57,19 @@ async function shoot(page: Page, name: string): Promise<void> {
   await expect(root(page)).toHaveScreenshot(name);
 }
 
+async function shootWithOutline(page: Page, name: string): Promise<void> {
+  await settle(page);
+  const bounds: { x: number; y: number; width: number; height: number } | null =
+    await root(page).boundingBox();
+  expect(bounds).not.toBeNull();
+  const { x, y, width, height } = bounds ?? { x: 0, y: 0, width: 0, height: 0 };
+  const left: number = Math.max(0, x - 16);
+  const top: number = Math.max(0, y - 8);
+  await expect(page).toHaveScreenshot(name, {
+    clip: { x: left, y: top, width: width + (x - left) + 16, height: height + (y - top) + 8 },
+  });
+}
+
 test.describe('Visual states (Figma state grid)', () => {
   test.skip(
     ({ browserName }) => browserName !== 'chromium',
@@ -134,7 +147,7 @@ test.describe('Visual states (Figma state grid)', () => {
       await page.keyboard.press('Tab');
       await expect(page.getByRole('checkbox')).toBeFocused();
       expect(await checkboxBoxStyle(page, 'outline')).toBe('rgb(64, 65, 66) solid 2px');
-      await shoot(page, `checkbox${name}-focus.png`);
+      await shootWithOutline(page, `checkbox${name}-focus.png`);
     });
   }
 
@@ -226,7 +239,7 @@ test.describe('Visual states (Figma state grid)', () => {
     expect(await linkStyle(page, 'text-decoration-line')).toBe('underline');
     expect(await linkStyle(page, 'outline')).toBe('rgb(64, 65, 66) solid 2px');
     expect(await linkStyle(page, 'outline-offset')).toBe('2px');
-    await shoot(page, 'link-text-focus.png');
+    await shootWithOutline(page, 'link-text-focus.png');
   });
 });
 
