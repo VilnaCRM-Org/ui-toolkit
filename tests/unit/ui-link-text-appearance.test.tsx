@@ -89,31 +89,23 @@ describe('UiLink appearance="text" at rest', () => {
 });
 
 describe('UiLink appearance="text" interaction cues', () => {
-  it('underlines on hover', () => {
+  it('never underlines on hover or focus', () => {
     renderTextLink();
 
-    expect(ruleBodies(':hover')).toContain('text-decoration:underline;');
+    const bodies: string[] = [':hover', ':focus', ':focus:not(:focus-visible)'].flatMap(ruleBodies);
+    expect(bodies.join('')).not.toContain('text-decoration');
   });
 
-  it('underlines and outlines focus 2px in the text-primary token, offset 2px', () => {
+  it('outlines focus 2px in the text-primary token, offset 2px', () => {
     renderTextLink();
 
-    expect(ruleBodies(':focus')).toEqual([
-      'text-decoration:underline;outline:2pxsolid#404142;outline-offset:2px;',
-    ]);
+    expect(ruleBodies(':focus')).toEqual(['outline:2pxsolid#404142;outline-offset:2px;']);
   });
 
-  it('drops the ring and the underline on pointer focus where focus-visible is supported', () => {
+  it('drops the ring on pointer focus where focus-visible is supported', () => {
     renderTextLink();
 
     expect(ruleBodies(':focus:not(:focus-visible)')).toEqual(['outline:none;']);
-    expect(ruleBodies(':focus:not(:focus-visible):not(:hover)')).toEqual(['text-decoration:none;']);
-  });
-
-  it('keeps the underline on pointer focus when the link is underlined at rest', () => {
-    renderTextLink({ underline: 'always' });
-
-    expect(compactCss()).not.toContain(':not(:hover)');
   });
 
   it('keeps the brand hover and press inks', () => {

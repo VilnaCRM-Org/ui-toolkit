@@ -13,9 +13,7 @@ function buildTextLinkStyles(theme: Theme): LinkStyle {
     fontWeight: '500',
     lineHeight: '1.125rem',
     letterSpacing: 0,
-    '&:hover': { textDecoration: 'underline' },
     '&:focus': {
-      textDecoration: 'underline',
       outline: `2px solid ${theme.palette.grey200.main}`,
       outlineOffset: '2px',
     },
@@ -37,16 +35,7 @@ const textLinkStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildTextLinkSt
 
 const textLinkTabletStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildTextLinkTabletStyles);
 
-const pointerFocusUnderlineReset: LinkStyle = {
-  '&:focus:not(:focus-visible):not(:hover)': { textDecoration: 'none' },
-};
-
-export function textLinkTypography(
-  theme: Theme,
-  responsive: boolean,
-  underlinedAtRest: boolean
-): LinkStyle[] {
+export function textLinkTypography(theme: Theme, responsive: boolean): LinkStyle[] {
   const tablet: LinkStyle[] = responsive ? [textLinkTabletStyles(theme)] : [];
-  const reset: LinkStyle[] = underlinedAtRest ? [] : [pointerFocusUnderlineReset];
-  return [textLinkStyles(theme), ...tablet, ...reset];
+  return [textLinkStyles(theme), ...tablet];
 }

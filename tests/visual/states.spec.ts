@@ -226,9 +226,8 @@ test.describe('Visual states (Figma state grid)', () => {
 
   test('link text hover', async ({ page }) => {
     await openStory(page, 'uicomponents-uilink--text-link');
-    expect(await linkStyle(page, 'text-decoration-line')).toBe('none');
     await page.getByRole('link').hover();
-    expect(await linkStyle(page, 'text-decoration-line')).toBe('underline');
+    expect(await linkStyle(page, 'text-decoration-line')).toBe('none');
     await shoot(page, 'link-text-hover.png');
   });
 
@@ -236,7 +235,7 @@ test.describe('Visual states (Figma state grid)', () => {
     await openStory(page, 'uicomponents-uilink--text-link');
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link')).toBeFocused();
-    expect(await linkStyle(page, 'text-decoration-line')).toBe('underline');
+    expect(await linkStyle(page, 'text-decoration-line')).toBe('none');
     expect(await linkStyle(page, 'outline')).toBe('rgb(64, 65, 66) solid 2px');
     expect(await linkStyle(page, 'outline-offset')).toBe('2px');
     await shootWithOutline(page, 'link-text-focus.png');

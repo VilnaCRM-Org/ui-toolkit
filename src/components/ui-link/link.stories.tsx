@@ -29,7 +29,7 @@ const meta: Meta<typeof UiLink> = {
       control: 'inline-radio',
       options: ['default', 'text'],
       description:
-        '`text` = Figma sign-in text link: Golos 500 15/18, 600 18/normal md-xl, no rest underline',
+        '`text` = Figma sign-in text link: Golos 500 15/18, 600 18/normal md-xl, no underline',
     },
     tone: {
       control: 'inline-radio',
