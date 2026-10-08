@@ -268,7 +268,7 @@ Each component's prop types are exported alongside it (`UiButtonProps`, `UiInput
 nodes 15:793, 15:959, 19:855). It uses Golos 500 at 15px/18px with letter-spacing 0. From `md`
 (768px) up to, but not including, `xl` (1440px), the range that holds the 1024px tablet frame, it
 switches to Golos 600 at 18px with a `normal` line-height. There is no underline at rest, because
-`underline` defaults to `'none'`, and the link stays without an underline on hover and on focus.
+`underline` defaults to `'none'`, and by default it stays without an underline on hover and focus.
 Keyboard focus draws a 2px `#404142` outline offset by 2px. Browsers without `:focus-visible`
 (back to the Safari 13.1 floor) show that outline on every focus. The default
 `appearance="default"` keeps the existing Inter 700 underlined link unchanged. Pass
@@ -277,8 +277,8 @@ Keyboard focus draws a 2px `#404142` outline offset by 2px. Browsers without `:f
 The brand tone is `#1EAEFF`, the Figma Primary token and the primary button's fill. It is 2.46:1
 on white, which fails WCAG 1.4.3 (4.5:1). The design keeps it on purpose, and the exception is
 recorded as `DEV-67` in the deviation ledger. Use `tone="accessible"` (`#0074B5`, 5.04:1) wherever
-the exception does not apply. A text link has no underline in any state, so place it as a standalone
-control. If it sits inside running prose, pass `underline="always"` (WCAG 1.4.1).
+the exception does not apply. By default a text link has no underline in any state, so place it
+as a standalone control. If it sits inside running prose, pass `underline="always"` (WCAG 1.4.1).
 
 ### Checkbox size and focus
 

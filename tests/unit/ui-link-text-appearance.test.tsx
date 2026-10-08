@@ -96,6 +96,21 @@ describe('UiLink appearance="text" interaction cues', () => {
     expect(bodies.join('')).not.toContain('text-decoration');
   });
 
+  it('keeps an explicit underline="always" through hover and focus', () => {
+    renderTextLink({ underline: 'always' });
+
+    const bodies: string[] = [':hover', ':focus', ':focus:not(:focus-visible)'].flatMap(ruleBodies);
+    expect(link()).toHaveStyle({ textDecoration: 'underline' });
+    expect(bodies.join('')).not.toContain('text-decoration:none');
+  });
+
+  it('still underlines on hover with an explicit underline="hover"', () => {
+    renderTextLink({ underline: 'hover' });
+
+    expect(ruleBodies(':hover')).toContain('text-decoration:underline;');
+    expect(ruleBodies(':focus').join('')).not.toContain('text-decoration');
+  });
+
   it('outlines focus 2px in the text-primary token, offset 2px', () => {
     renderTextLink();
 
