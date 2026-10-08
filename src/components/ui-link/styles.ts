@@ -4,6 +4,8 @@ import type { SystemStyleObject } from '@mui/system';
 import { fontFamilies } from '@/utils/font-tokens';
 import { cacheByTheme } from '@/utils/ui-theme';
 
+import { textLinkTypography } from './text-link-styles';
+
 type LinkStyle = SystemStyleObject<Theme>;
 
 export const accessibleLinkPalette = {
@@ -85,41 +87,11 @@ function baseStyles(theme: Theme, appearance: LinkAppearance): LinkStyle {
   ) as LinkStyle;
 }
 
-function buildTextLinkStyles(theme: Theme): LinkStyle {
-  return {
-    fontFamily: fontFamilies.golos,
-    fontSize: '0.9375rem',
-    fontWeight: '500',
-    lineHeight: '1.125rem',
-    letterSpacing: 0,
-    '&:hover, &:focus-visible': { textDecoration: 'underline' },
-    '&:focus-visible': {
-      outline: `2px solid ${theme.palette.grey200.main}`,
-      outlineOffset: '2px',
-    },
-  };
-}
-
-function buildTextLinkTabletStyles(theme: Theme): LinkStyle {
-  return {
-    [theme.breakpoints.between('md', 'xl')]: {
-      fontSize: '1.125rem',
-      fontWeight: '600',
-      lineHeight: 'normal',
-    },
-  };
-}
-
-const textLinkStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildTextLinkStyles);
-
-const textLinkTabletStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildTextLinkTabletStyles);
-
 function typographyStyles(theme: Theme, appearance: LinkAppearance): LinkStyle[] {
   if (appearance.appearance === 'default') {
     return [];
   }
-  const tablet: LinkStyle[] = appearance.responsiveSize ? [textLinkTabletStyles(theme)] : [];
-  return [textLinkStyles(theme), ...tablet];
+  return textLinkTypography(theme, appearance.responsiveSize);
 }
 
 function consumerSxArray(sx: SxProps<Theme> | undefined): LinkStyle[] {

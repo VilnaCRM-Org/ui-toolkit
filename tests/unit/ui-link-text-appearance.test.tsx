@@ -82,7 +82,13 @@ describe('UiLink appearance="text" interaction cues', () => {
   it('underlines on hover and on keyboard focus', () => {
     renderTextLink();
 
-    expect(compactCss()).toMatch(/:hover,\.[\w-]+:focus-visible\{text-decoration:underline;\}/);
+    const underlineRule: RegExpMatchArray | null = compactCss().match(
+      /:hover,\.[\w-]+:focus-visible\{([^}]*)\}/
+    );
+
+    expect(underlineRule?.[1]?.replace('-webkit-text-decoration:underline;', '')).toBe(
+      'text-decoration:underline;'
+    );
   });
 
   it('outlines keyboard focus 2px in the text-primary token, offset 2px', () => {
