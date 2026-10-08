@@ -1,3 +1,12 @@
+# [0.8.0](https://github.com/VilnaCRM-Org/ui-toolkit/compare/v0.7.0...v0.8.0) (2026-10-08)
+
+
+### Features
+
+* **#203:** render the checkbox tick and focus ring, add the Figma text-link appearance ([#204](https://github.com/VilnaCRM-Org/ui-toolkit/issues/204)) ([fa8523d](https://github.com/VilnaCRM-Org/ui-toolkit/commit/fa8523d2245a0244fb18f76218d4d5060d7f81f4)), closes [#203](https://github.com/VilnaCRM-Org/ui-toolkit/issues/203)
+
+
+
 # [0.7.0](https://github.com/VilnaCRM-Org/ui-toolkit/compare/v0.3.0...v0.7.0) (2026-10-01)
 
 
