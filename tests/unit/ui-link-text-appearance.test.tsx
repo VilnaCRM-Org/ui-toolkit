@@ -38,6 +38,14 @@ function compactCss(): string {
   return emotionCssFor(link()).replace(/\s+/g, '');
 }
 
+function ruleBodies(selectorTail: string): string[] {
+  return compactCss()
+    .split('}')
+    .filter((chunk: string): boolean => chunk.includes(`${selectorTail}{`))
+    .map((chunk: string): string => chunk.slice(chunk.lastIndexOf('{') + 1))
+    .map((body: string): string => body.replace(/-webkit-text-decoration:[a-z]+;/g, ''));
+}
+
 describe('UiLink appearance="text" at rest', () => {
   it('paints the Figma Primary ink with Golos 500 15px/18px and no underline', () => {
     renderTextLink();
@@ -81,22 +89,31 @@ describe('UiLink appearance="text" at rest', () => {
 });
 
 describe('UiLink appearance="text" interaction cues', () => {
-  it('underlines on hover and on keyboard focus', () => {
+  it('underlines on hover', () => {
     renderTextLink();
 
-    const underlineRule: RegExpMatchArray | null = compactCss().match(
-      /:hover,\.[\w-]+:focus-visible\{([^}]*)\}/
-    );
-
-    expect(underlineRule?.[1]?.replace('-webkit-text-decoration:underline;', '')).toBe(
-      'text-decoration:underline;'
-    );
+    expect(ruleBodies(':hover')).toContain('text-decoration:underline;');
   });
 
-  it('outlines keyboard focus 2px in the text-primary token, offset 2px', () => {
+  it('underlines and outlines focus 2px in the text-primary token, offset 2px', () => {
     renderTextLink();
 
-    expect(compactCss()).toMatch(/:focus-visible\{outline:2pxsolid#404142;outline-offset:2px;\}/);
+    expect(ruleBodies(':focus')).toEqual([
+      'text-decoration:underline;outline:2pxsolid#404142;outline-offset:2px;',
+    ]);
+  });
+
+  it('drops the ring and the underline on pointer focus where focus-visible is supported', () => {
+    renderTextLink();
+
+    expect(ruleBodies(':focus:not(:focus-visible)')).toEqual(['outline:none;']);
+    expect(ruleBodies(':focus:not(:focus-visible):not(:hover)')).toEqual(['text-decoration:none;']);
+  });
+
+  it('keeps the underline on pointer focus when the link is underlined at rest', () => {
+    renderTextLink({ underline: 'always' });
+
+    expect(compactCss()).not.toContain(':not(:hover)');
   });
 
   it('keeps the brand hover and press inks', () => {

@@ -91,7 +91,7 @@ function typographyStyles(theme: Theme, appearance: LinkAppearance): LinkStyle[]
   if (appearance.appearance === 'default') {
     return [];
   }
-  return textLinkTypography(theme, appearance.responsiveSize);
+  return textLinkTypography(theme, appearance.responsiveSize, appearance.underline === 'always');
 }
 
 function consumerSxArray(sx: SxProps<Theme> | undefined): LinkStyle[] {

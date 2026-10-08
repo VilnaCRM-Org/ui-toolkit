@@ -12,7 +12,8 @@ import { emotionCssFor } from './utils/emotion-css';
 const LABEL: string = 'Remember me';
 const DATA_URI_PREFIX: string = 'data:image/svg+xml,';
 const QUOTED_URL: RegExp = /^url\("([^"\\\n]*)"\)$/;
-const FOCUS_SELECTOR: string = '&.Mui-focusVisible .ui-checkbox-box';
+const FOCUS_SELECTOR: string = '&:focus-within .ui-checkbox-box';
+const POINTER_FOCUS_SELECTOR: string = '&:focus-within:not(:has(:focus-visible)) .ui-checkbox-box';
 const CHECKED_SELECTOR: string = '& .ui-checkbox-box.ui-checkbox-box--checked';
 
 type StyleRecord = Record<string, unknown>;
@@ -103,15 +104,21 @@ describe('UiCheckbox keyboard focus ring', () => {
     expect((variant as StyleRecord)[FOCUS_SELECTOR]).toEqual({
       outline: `2px solid ${colorTokens.palette.grey200.main}`,
       outlineOffset: '2px',
+      '@media (forced-colors: active)': { outlineColor: 'CanvasText' },
     });
+    expect((variant as StyleRecord)[POINTER_FOCUS_SELECTOR]).toEqual({ outline: 'none' });
   });
 
-  it('emits the focus-visible rule for the rendered box', () => {
+  it('emits the focus ring, its forced-colours ink and the pointer-focus reset', () => {
     renderCheckbox();
 
-    expect(compactCss(emotionCssFor(checkboxRoot()))).toContain(
-      '.Mui-focusVisible.ui-checkbox-box{outline:2pxsolid#404142;outline-offset:2px;}'
+    const css: string = compactCss(emotionCssFor(checkboxRoot()));
+    expect(css).toContain(
+      ':focus-within.ui-checkbox-box{outline:2pxsolid#404142;outline-offset:2px;}'
     );
+    expect(css).toContain('@media(forced-colors:active){');
+    expect(css).toContain(':focus-within.ui-checkbox-box{outline-color:CanvasText;}');
+    expect(css).toContain(':focus-within:not(:has(:focus-visible)).ui-checkbox-box{outline:none;}');
   });
 
   it('keeps a disabled checkbox out of the tab order so no ring can appear', async () => {

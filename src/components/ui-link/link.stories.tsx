@@ -34,7 +34,7 @@ const meta: Meta<typeof UiLink> = {
     tone: {
       control: 'inline-radio',
       options: ['brand', 'accessible', 'inherit'],
-      description: '`brand` = #1EAEFF (2.46:1 on white); `accessible` = #0074B5 (5.3:1)',
+      description: '`brand` = #1EAEFF (2.46:1 on white); `accessible` = #0074B5 (5.04:1)',
     },
     disabled: {
       control: 'boolean',

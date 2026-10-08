@@ -27,7 +27,10 @@ const checkedBox: SxProps<Theme> = {
 const focusVisibleBox: SxProps<Theme> = {
   outline: `2px solid ${colorTheme.palette.grey200.main}`,
   outlineOffset: '2px',
+  '@media (forced-colors: active)': { outlineColor: 'CanvasText' },
 };
+
+const pointerFocusBox: SxProps<Theme> = { outline: 'none' };
 
 const baseCheckbox: SxProps<Theme> = {
   padding: 0,
@@ -36,7 +39,8 @@ const baseCheckbox: SxProps<Theme> = {
   // fill wins over the base `.ui-checkbox-box` rule regardless of emitted order —
   // otherwise a checked box renders white instead of the primary fill + check.
   '& .ui-checkbox-box.ui-checkbox-box--checked': checkedBox,
-  '&.Mui-focusVisible .ui-checkbox-box': focusVisibleBox,
+  '&:focus-within .ui-checkbox-box': focusVisibleBox,
+  '&:focus-within:not(:has(:focus-visible)) .ui-checkbox-box': pointerFocusBox,
   '&:hover:not(.Mui-disabled) .ui-checkbox-box': {
     cursor: 'pointer',
     borderColor: colorTheme.palette.primary.main,
