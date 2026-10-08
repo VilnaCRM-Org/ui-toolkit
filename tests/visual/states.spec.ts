@@ -33,6 +33,25 @@ function root(page: Page): Locator {
   return page.locator('#storybook-root, #root').first();
 }
 
+function checkboxBoxStyle(page: Page, property: 'backgroundImage' | 'outline'): Promise<string> {
+  return page
+    .getByRole('checkbox')
+    .evaluate(
+      (input: HTMLElement, key: 'backgroundImage' | 'outline'): string =>
+        getComputedStyle(input.parentElement?.querySelector('.ui-checkbox-box') ?? input)[key],
+      property
+    );
+}
+
+function linkStyle(page: Page, property: string): Promise<string> {
+  return page
+    .getByRole('link')
+    .evaluate(
+      (link: HTMLElement, key: string): string => getComputedStyle(link).getPropertyValue(key),
+      property
+    );
+}
+
 async function shoot(page: Page, name: string): Promise<void> {
   await settle(page);
   await expect(root(page)).toHaveScreenshot(name);
@@ -100,8 +119,24 @@ test.describe('Visual states (Figma state grid)', () => {
   test('checkbox checked', async ({ page }) => {
     await openStory(page, 'uicomponents-uicheckbox--checkbox', 'checked:!true');
     await expect(page.getByRole('checkbox')).toBeChecked();
+    expect(await checkboxBoxStyle(page, 'backgroundImage')).toMatch(/^url\("data:image\/svg\+xml,/);
     await shoot(page, 'checkbox-checked.png');
   });
+
+  for (const [name, args] of [
+    ['', undefined],
+    ['-checked', 'checked:!true'],
+    ['-error', 'error:!true'],
+  ] as const) {
+    test(`checkbox${name} focus-visible`, async ({ page }) => {
+      await openStory(page, 'uicomponents-uicheckbox--checkbox', args);
+      expect(await checkboxBoxStyle(page, 'outline')).not.toContain('solid');
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('checkbox')).toBeFocused();
+      expect(await checkboxBoxStyle(page, 'outline')).toBe('rgb(64, 65, 66) solid 2px');
+      await shoot(page, `checkbox${name}-focus.png`);
+    });
+  }
 
   test('checkbox error', async ({ page }) => {
     await openStory(page, 'uicomponents-uicheckbox--checkbox', 'error:!true');
@@ -175,6 +210,51 @@ test.describe('Visual states (Figma state grid)', () => {
     await page.keyboard.press('Tab');
     await shoot(page, 'link-focus.png');
   });
+
+  test('link text hover', async ({ page }) => {
+    await openStory(page, 'uicomponents-uilink--text-link');
+    expect(await linkStyle(page, 'text-decoration-line')).toBe('none');
+    await page.getByRole('link').hover();
+    expect(await linkStyle(page, 'text-decoration-line')).toBe('underline');
+    await shoot(page, 'link-text-hover.png');
+  });
+
+  test('link text focus-visible', async ({ page }) => {
+    await openStory(page, 'uicomponents-uilink--text-link');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('link')).toBeFocused();
+    expect(await linkStyle(page, 'text-decoration-line')).toBe('underline');
+    expect(await linkStyle(page, 'outline')).toBe('rgb(64, 65, 66) solid 2px');
+    expect(await linkStyle(page, 'outline-offset')).toBe('2px');
+    await shoot(page, 'link-text-focus.png');
+  });
+});
+
+test.describe('Visual states (Figma state grid) — text link per sign-in frame', () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'pixel baselines are generated for chromium only'
+  );
+
+  for (const frame of [
+    { width: 1440, size: '15px', weight: '500', lineHeight: '18px' },
+    { width: 1024, size: '18px', weight: '600', lineHeight: 'normal' },
+    { width: 375, size: '15px', weight: '500', lineHeight: '18px' },
+  ] as const) {
+    test.describe(`${frame.width}px`, () => {
+      test.use({ viewport: { width: frame.width, height: 120 } });
+
+      test(`link text at ${frame.width}`, async ({ page }) => {
+        await openStory(page, 'uicomponents-uilink--text-link');
+        expect(await linkStyle(page, 'color')).toBe('rgb(30, 174, 255)');
+        expect(await linkStyle(page, 'font-size')).toBe(frame.size);
+        expect(await linkStyle(page, 'font-weight')).toBe(frame.weight);
+        expect(await linkStyle(page, 'line-height')).toBe(frame.lineHeight);
+        expect(await linkStyle(page, 'text-decoration-line')).toBe('none');
+        await shoot(page, `link-text-${frame.width}.png`);
+      });
+    });
+  }
 });
 
 test.describe('Visual states (Figma state grid) — pagination', () => {

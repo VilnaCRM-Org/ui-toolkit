@@ -15,6 +15,15 @@ export type LinkAppearance = {
   tone: 'brand' | 'accessible' | 'inherit';
   underline: 'always' | 'hover' | 'none';
   responsiveSize: boolean;
+  appearance: 'default' | 'text';
+};
+
+export const restUnderlineByAppearance: Record<
+  LinkAppearance['appearance'],
+  LinkAppearance['underline']
+> = {
+  default: 'always',
+  text: 'none',
 };
 
 const accessibleTone: LinkStyle = {
@@ -55,14 +64,18 @@ const linkStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildLinkStyles);
 
 const toneKeys: readonly string[] = ['color', '&:hover', '&:active'];
 
+function keepsBaseMediaRules(appearance: LinkAppearance): boolean {
+  return appearance.responsiveSize && appearance.appearance === 'default';
+}
+
 function isDroppedKey(key: string, appearance: LinkAppearance): boolean {
   const toneDropped: boolean = appearance.tone === 'inherit' && toneKeys.includes(key);
-  return toneDropped || (!appearance.responsiveSize && key.startsWith('@media'));
+  return toneDropped || (!keepsBaseMediaRules(appearance) && key.startsWith('@media'));
 }
 
 function baseStyles(theme: Theme, appearance: LinkAppearance): LinkStyle {
   const base: LinkStyle = linkStyles(theme);
-  if (appearance.tone !== 'inherit' && appearance.responsiveSize) {
+  if (appearance.tone !== 'inherit' && keepsBaseMediaRules(appearance)) {
     return base;
   }
   return Object.fromEntries(
@@ -70,6 +83,43 @@ function baseStyles(theme: Theme, appearance: LinkAppearance): LinkStyle {
       ([key]: [string, unknown]): boolean => !isDroppedKey(key, appearance)
     )
   ) as LinkStyle;
+}
+
+function buildTextLinkStyles(theme: Theme): LinkStyle {
+  return {
+    fontFamily: fontFamilies.golos,
+    fontSize: '0.9375rem',
+    fontWeight: '500',
+    lineHeight: '1.125rem',
+    letterSpacing: 0,
+    '&:hover, &:focus-visible': { textDecoration: 'underline' },
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.grey200.main}`,
+      outlineOffset: '2px',
+    },
+  };
+}
+
+function buildTextLinkTabletStyles(theme: Theme): LinkStyle {
+  return {
+    [theme.breakpoints.between('md', 'xl')]: {
+      fontSize: '1.125rem',
+      fontWeight: '600',
+      lineHeight: 'normal',
+    },
+  };
+}
+
+const textLinkStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildTextLinkStyles);
+
+const textLinkTabletStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildTextLinkTabletStyles);
+
+function typographyStyles(theme: Theme, appearance: LinkAppearance): LinkStyle[] {
+  if (appearance.appearance === 'default') {
+    return [];
+  }
+  const tablet: LinkStyle[] = appearance.responsiveSize ? [textLinkTabletStyles(theme)] : [];
+  return [textLinkStyles(theme), ...tablet];
 }
 
 function consumerSxArray(sx: SxProps<Theme> | undefined): LinkStyle[] {
@@ -89,5 +139,10 @@ export function linkSx(
   appearance: LinkAppearance,
   sx: SxProps<Theme> | undefined
 ): SxProps<Theme> {
-  return [baseStyles(theme, appearance), ...appearanceStyles(appearance), ...consumerSxArray(sx)];
+  return [
+    baseStyles(theme, appearance),
+    ...typographyStyles(theme, appearance),
+    ...appearanceStyles(appearance),
+    ...consumerSxArray(sx),
+  ];
 }

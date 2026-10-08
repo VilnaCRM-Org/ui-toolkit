@@ -70,8 +70,8 @@ Enforcement: `tests/unit/board-coverage-traceability.test.ts`. Story artifact:
 - Registry: `specs/planning-artifacts/component-provenance.md` records a `crm` / `website` / `new`
   source and rationale for every runtime export of `src/components/index.ts` (groups A-D of the
   drift guard).
-- Deviation ledger: `specs/planning-artifacts/deviation-ledger.md` holds 66 rows, `DEV-01` to
-  `DEV-66`. By status: 34 `ratified`, 10 `pending-ratification`, 3 `escalated`, 8
+- Deviation ledger: `specs/planning-artifacts/deviation-ledger.md` holds 67 rows, `DEV-01` to
+  `DEV-67`. By status: 35 `ratified`, 10 `pending-ratification`, 3 `escalated`, 8
   `deferred-tracked`, 11 `superseded`. Thirteen rows carry an `unfiled:` tracking ref rather than
   a GitHub issue. `DEV-43` (bundled fonts without a licence note) is `superseded` by #178, which
   ships the OFL texts.

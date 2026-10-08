@@ -5,6 +5,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 import UiCheckbox from './index';
 
 const toggleLabel: string = t('Send me product updates');
+const rememberLabel: string = t('Remember me');
 
 const meta: Meta<typeof UiCheckbox> = {
   title: 'UiComponents/UiCheckbox',
@@ -50,6 +51,42 @@ export const Checkbox: Story = {
   args: {
     error: false,
     label: t('Checkbox label text'),
+  },
+};
+
+export const Checked: Story = {
+  args: {
+    checked: true,
+    label: rememberLabel,
+  },
+};
+
+export const CompactMobileSize: Story = {
+  args: {
+    checked: true,
+    label: rememberLabel,
+    sx: { '& .MuiCheckbox-root .ui-checkbox-box': { width: '1.25rem', height: '1.25rem' } },
+  },
+};
+
+export const KeyboardFocusReachesCheckedBox: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    checked: true,
+    label: rememberLabel,
+    onChange: fn(),
+  },
+  play: async ({ canvasElement }): Promise<void> => {
+    const input: HTMLElement = within(canvasElement).getByRole('checkbox', { name: rememberLabel });
+    const box: Element = canvasElement.querySelector('.ui-checkbox-box--checked') as Element;
+
+    await expect(getComputedStyle(box).backgroundImage).toMatch(/^url\("data:image\/svg\+xml,/);
+    await expect(getComputedStyle(box).backgroundColor).toBe('rgb(30, 174, 255)');
+
+    await userEvent.tab();
+
+    await expect(input).toHaveFocus();
+    await expect(input).toBeChecked();
   },
 };
 

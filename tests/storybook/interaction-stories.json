@@ -24,6 +24,12 @@
     "exportName": "ClickTogglesCheckedState"
   },
   {
+    "id": "uicomponents-uicheckbox--keyboard-focus-reaches-checked-box",
+    "title": "UiComponents/UiCheckbox",
+    "name": "Keyboard Focus Reaches Checked Box",
+    "exportName": "KeyboardFocusReachesCheckedBox"
+  },
+  {
     "id": "uicomponents-uiform--validation-blocks-empty-submit",
     "title": "UiComponents/UiForm",
     "name": "Validation Blocks Empty Submit",
@@ -40,6 +46,12 @@
     "title": "UiComponents/UiLink",
     "name": "Keyboard Focus Exposes New Tab Hint",
     "exportName": "KeyboardFocusExposesNewTabHint"
+  },
+  {
+    "id": "uicomponents-uilink--text-link-rests-without-underline",
+    "title": "UiComponents/UiLink",
+    "name": "Text Link Rests Without Underline",
+    "exportName": "TextLinkRestsWithoutUnderline"
   },
   {
     "id": "uicomponents-uimultiselect--picking-options-adds-chips",

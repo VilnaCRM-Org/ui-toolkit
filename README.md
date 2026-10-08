@@ -262,6 +262,44 @@ and `Layout` is `@vilnacrm/ui-toolkit/layout`.
 Each component's prop types are exported alongside it (`UiButtonProps`, `UiInputProps`, …).
 `tests/bats/consumer_docs_contract.bats` fails when a root export is missing from this table.
 
+### Text links
+
+`<UiLink appearance="text">` renders the Figma sign-in text link ("Забули пароль?",
+nodes 15:793, 15:959, 19:855). It uses Golos 500 at 15px/18px with letter-spacing 0. From the
+`md` breakpoint up to, but not including, `xl` (the 1024px tablet frame) it switches to Golos 600
+at 18px with a `normal` line-height. There is no underline at rest, because `underline` defaults
+to `'none'`. Hover and `:focus-visible` add the underline, and `:focus-visible` also draws a 2px
+`#404142` outline offset by 2px. The default `appearance="default"` keeps the existing Inter 700
+underlined link unchanged. Pass `responsiveSize={false}` to keep 15px/18px at every width.
+
+The brand tone is `#1EAEFF`, the Figma Primary token and the primary button's fill. It is 2.46:1
+on white, which fails WCAG 1.4.3 (4.5:1). The design keeps it on purpose, and the exception is
+recorded as `DEV-67` in the deviation ledger. Use `tone="accessible"` (`#0074B5`, 5.3:1) wherever
+the exception does not apply. A text link has no underline at rest, so place it as a standalone
+control. If it sits inside running prose, pass `underline="always"` (WCAG 1.4.1).
+
+### Checkbox size and focus
+
+`UiCheckbox` draws the Figma `checkbox` component (7:95) at 24×24px with an 8px radius. A checked
+box fills with `#1EAEFF` and shows a centred white 16px tick. A keyboard-focused box shows a 2px
+`#404142` outline offset by 2px. The CRM mobile sign-in frame (15:1043) draws the box at 20×20px.
+The component keeps 24px and leaves that size to the consumer:
+
+```tsx
+<UiCheckbox
+  label={label}
+  onChange={onChange}
+  sx={{
+    '@media (max-width: 767.95px)': {
+      '& .MuiCheckbox-root .ui-checkbox-box': { width: '1.25rem', height: '1.25rem' },
+    },
+  }}
+/>
+```
+
+The label stays part of the click target, so a 20px box still meets the 24×24px target size of
+WCAG 2.5.8.
+
 ## Error handling
 
 A React render error is not recoverable in place: React unmounts the tree from the root, so one

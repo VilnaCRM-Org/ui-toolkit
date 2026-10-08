@@ -1,11 +1,10 @@
 import { SxProps } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
 
-import Check from '@/assets/svg/check.svg';
 import { fontFamilies } from '@/utils/font-tokens';
 import { colorTokens as colorTheme } from '@/utils/palette-tokens';
 
-const checkIconUrl: string = typeof Check === 'string' ? Check : Check.src;
+import { checkIconBackgroundImage } from './check-icon';
 
 const boxBase: SxProps<Theme> = {
   display: 'block',
@@ -19,9 +18,15 @@ const boxBase: SxProps<Theme> = {
 const checkedBox: SxProps<Theme> = {
   border: 'none',
   backgroundColor: colorTheme.palette.primary.main,
-  backgroundImage: `url(${checkIconUrl})`,
+  backgroundImage: checkIconBackgroundImage,
   backgroundPosition: 'center center',
   backgroundRepeat: 'no-repeat',
+  '@media (forced-colors: active)': { forcedColorAdjust: 'none' },
+};
+
+const focusVisibleBox: SxProps<Theme> = {
+  outline: `2px solid ${colorTheme.palette.grey200.main}`,
+  outlineOffset: '2px',
 };
 
 const baseCheckbox: SxProps<Theme> = {
@@ -31,6 +36,7 @@ const baseCheckbox: SxProps<Theme> = {
   // fill wins over the base `.ui-checkbox-box` rule regardless of emitted order —
   // otherwise a checked box renders white instead of the primary fill + check.
   '& .ui-checkbox-box.ui-checkbox-box--checked': checkedBox,
+  '&.Mui-focusVisible .ui-checkbox-box': focusVisibleBox,
   '&:hover:not(.Mui-disabled) .ui-checkbox-box': {
     cursor: 'pointer',
     borderColor: colorTheme.palette.primary.main,

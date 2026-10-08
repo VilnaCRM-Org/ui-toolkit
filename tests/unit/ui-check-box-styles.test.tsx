@@ -1,49 +1,132 @@
-/**
- * Covers the `typeof Check === 'string'` branch in
- * src/components/ui-checkbox/styles.ts line 8.
- *
- * The global SVG mock (tests/unit/mocks/svg-mock.ts) resolves the imported
- * asset to an object `{ src }`, so the default test run only exercises the
- * `Check.src` (else) side of the ternary. Here we override the asset module so
- * the import resolves to a plain string, forcing the `true` side, and assert
- * the resulting checked-box background image embeds that string URL.
- */
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import React from 'react';
 
-interface CheckedBoxRule {
-  backgroundImage?: string;
+import UiCheckbox from '../../src/components/ui-checkbox';
+import { checkIconBackgroundImage } from '../../src/components/ui-checkbox/check-icon';
+import styles from '../../src/components/ui-checkbox/styles';
+import { colorTokens } from '../../src/utils/palette-tokens';
+
+import { emotionCssFor } from './utils/emotion-css';
+
+const LABEL: string = 'Remember me';
+const DATA_URI_PREFIX: string = 'data:image/svg+xml,';
+const QUOTED_URL: RegExp = /^url\("([^"\\\n]*)"\)$/;
+const FOCUS_SELECTOR: string = '&.Mui-focusVisible .ui-checkbox-box';
+const CHECKED_SELECTOR: string = '& .ui-checkbox-box.ui-checkbox-box--checked';
+
+type StyleRecord = Record<string, unknown>;
+
+function quotedPayload(value: string): string {
+  const payload: string | undefined = QUOTED_URL.exec(value)?.[1];
+  expect(payload).toBeDefined();
+  return payload ?? '';
 }
 
-interface CheckboxStyles {
-  checkbox: { '& .ui-checkbox-box.ui-checkbox-box--checked': CheckedBoxRule };
+function decodedIcon(): string {
+  const payload: string = quotedPayload(checkIconBackgroundImage);
+  return decodeURIComponent(payload.slice(DATA_URI_PREFIX.length));
 }
 
-function loadCheckedBoxRule(): CheckedBoxRule {
-  const styles: CheckboxStyles = require('@/components/ui-checkbox/styles').default;
-  return styles.checkbox['& .ui-checkbox-box.ui-checkbox-box--checked'];
+function compactCss(css: string): string {
+  return css.replace(/\s+/g, '');
 }
 
-describe('UiCheckbox styles checkIconUrl resolution', () => {
-  afterEach(() => {
-    jest.resetModules();
+function checkboxRoot(): HTMLElement {
+  return screen.getByRole('checkbox', { name: LABEL }).parentElement as HTMLElement;
+}
+
+type RenderState = { checked?: boolean; disabled?: boolean };
+
+function renderCheckbox({ checked, disabled }: RenderState = {}): void {
+  render(<UiCheckbox label={LABEL} onChange={jest.fn()} checked={checked} disabled={disabled} />);
+}
+
+describe('UiCheckbox checked tick background', () => {
+  it('is a double-quoted url() so the declaration survives CSS parsing', () => {
+    expect(checkIconBackgroundImage).toMatch(QUOTED_URL);
+    expect(checkIconBackgroundImage).not.toMatch(/^url\(data:/);
   });
 
-  it('uses the string asset directly when the SVG import resolves to a string', () => {
-    jest.isolateModules(() => {
-      jest.doMock('@/assets/svg/check.svg', () => 'string-check.svg');
+  it('percent-encodes every character that would end or corrupt the url token', () => {
+    const payload: string = quotedPayload(checkIconBackgroundImage);
 
-      const checkedBox: CheckedBoxRule = loadCheckedBoxRule();
+    expect(payload.startsWith(DATA_URI_PREFIX)).toBe(true);
+    expect(payload).not.toMatch(/%(?![0-9A-F]{2})/);
+    expect(payload).not.toMatch(/[\s"<>#]/);
+  });
 
-      expect(checkedBox.backgroundImage).toBe('url(string-check.svg)');
+  it('decodes to the Figma check icon 7:90', () => {
+    const icon: string = decodedIcon();
+
+    expect(icon).toContain("xmlns='http://www.w3.org/2000/svg'");
+    expect(icon).toContain("width='16' height='16' viewBox='0 0 16 16'");
+    expect(icon).toContain("d='M13.3333 4L6 11.3333L2.66667 8'");
+    expect(icon).toContain("stroke='white' stroke-width='2'");
+    expect(icon).toContain("stroke-linecap='round' stroke-linejoin='round'");
+  });
+
+  it('centres the tick without tiling it on the primary fill', () => {
+    const checked: StyleRecord = (styles.checkbox as StyleRecord)[CHECKED_SELECTOR] as StyleRecord;
+
+    expect(checked).toMatchObject({
+      border: 'none',
+      backgroundColor: colorTokens.palette.primary.main,
+      backgroundImage: checkIconBackgroundImage,
+      backgroundPosition: 'center center',
+      backgroundRepeat: 'no-repeat',
     });
   });
 
-  it('uses the object .src field when the SVG import resolves to an object', () => {
-    jest.isolateModules(() => {
-      jest.doMock('@/assets/svg/check.svg', () => ({ src: 'object-check.svg' }));
+  it('opts the checked box out of forced colours so the tick stays visible', () => {
+    const checked: StyleRecord = (styles.checkbox as StyleRecord)[CHECKED_SELECTOR] as StyleRecord;
 
-      const checkedBox: CheckedBoxRule = loadCheckedBoxRule();
+    expect(checked['@media (forced-colors: active)']).toEqual({ forcedColorAdjust: 'none' });
+  });
 
-      expect(checkedBox.backgroundImage).toBe('url(object-check.svg)');
+  it('emits the quoted tick into the rendered checked box rule', () => {
+    renderCheckbox({ checked: true });
+
+    expect(screen.getByRole('checkbox', { name: LABEL })).toBeChecked();
+    expect(compactCss(emotionCssFor(checkboxRoot()))).toContain(
+      `.ui-checkbox-box.ui-checkbox-box--checked{border:none;background-color:#1EAEFF;` +
+        `background-image:${checkIconBackgroundImage};`
+    );
+  });
+});
+
+describe('UiCheckbox keyboard focus ring', () => {
+  it.each([
+    ['default', styles.checkbox],
+    ['error', styles.checkboxError],
+  ])('outlines the %s box 2px in the text-primary token, offset 2px', (_state, variant) => {
+    expect((variant as StyleRecord)[FOCUS_SELECTOR]).toEqual({
+      outline: `2px solid ${colorTokens.palette.grey200.main}`,
+      outlineOffset: '2px',
     });
+  });
+
+  it('emits the focus-visible rule for the rendered box', () => {
+    renderCheckbox();
+
+    expect(compactCss(emotionCssFor(checkboxRoot()))).toContain(
+      '.Mui-focusVisible.ui-checkbox-box{outline:2pxsolid#404142;outline-offset:2px;}'
+    );
+  });
+
+  it('keeps a disabled checkbox out of the tab order so no ring can appear', async () => {
+    renderCheckbox({ disabled: true });
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('checkbox', { name: LABEL })).not.toHaveFocus();
+  });
+
+  it('moves keyboard focus onto an enabled checkbox', async () => {
+    renderCheckbox();
+
+    await userEvent.tab();
+
+    expect(screen.getByRole('checkbox', { name: LABEL })).toHaveFocus();
   });
 });

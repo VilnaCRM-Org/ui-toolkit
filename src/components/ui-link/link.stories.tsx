@@ -6,6 +6,7 @@ import UiLink from './index';
 
 const externalLinkText: string = t('Read the docs');
 const newTabHint: string = '(opens in new tab)';
+const forgotPasswordText: string = t('Forgot password?');
 
 const meta: Meta<typeof UiLink> = {
   title: 'UiComponents/UiLink',
@@ -24,6 +25,17 @@ const meta: Meta<typeof UiLink> = {
       control: 'text',
       description: 'Required with target="_blank": the application\'s translated new-tab cue',
     },
+    appearance: {
+      control: 'inline-radio',
+      options: ['default', 'text'],
+      description:
+        '`text` = Figma sign-in text link: Golos 500 15/18, 600 18/normal md-xl, no rest underline',
+    },
+    tone: {
+      control: 'inline-radio',
+      options: ['brand', 'accessible', 'inherit'],
+      description: '`brand` = #1EAEFF (2.46:1 on white); `accessible` = #0074B5 (5.3:1)',
+    },
     disabled: {
       control: 'boolean',
       description:
@@ -40,6 +52,33 @@ export const Link: Story = {
   args: {
     children: t('Link'),
     href: '/',
+  },
+};
+
+export const TextLink: Story = {
+  args: {
+    children: forgotPasswordText,
+    href: '/',
+    appearance: 'text',
+  },
+};
+
+export const TextLinkRestsWithoutUnderline: Story = {
+  tags: ['interaction', '!autodocs'],
+  args: {
+    children: forgotPasswordText,
+    href: '/',
+    appearance: 'text',
+  },
+  play: async ({ canvasElement }): Promise<void> => {
+    const link: HTMLElement = within(canvasElement).getByRole('link', { name: forgotPasswordText });
+
+    await expect(getComputedStyle(link).color).toBe('rgb(30, 174, 255)');
+    await expect(getComputedStyle(link).textDecorationLine).toBe('none');
+
+    await userEvent.tab();
+
+    await expect(link).toHaveFocus();
   },
 };
 
