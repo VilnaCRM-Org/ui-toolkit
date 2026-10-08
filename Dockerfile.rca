@@ -1,6 +1,6 @@
 # alpine-exception: rust-code-analysis-cli prebuilt releases are glibc-only; Mozilla publishes no Alpine/musl binary for this tool, mirroring the Dockerfile.playwright glibc exception.
 
-FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
 
 ARG RCA_VERSION=0.0.25
 ARG TARGETARCH
@@ -15,8 +15,9 @@ RUN set -eux; \
       ca-certificates=20230311+deb12u1 \
       curl=7.88.1-10+deb12u15 \
       jq=1.6-2.1+deb12u2 \
-      libpcre2-8-0=10.42-1+deb12u1 \
+      libpcre2-8-0=10.42-1+deb12u2 \
       make=4.3-4.1 \
+      perl-base=5.36.0-7+deb12u4 \
       tar=1.34+dfsg-1.2+deb12u1; \
     rm -rf /var/lib/apt/lists/*; \
     ARCH="${TARGETARCH:-$(uname -m)}"; \

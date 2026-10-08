@@ -160,9 +160,24 @@
     "name": "Checkbox"
   },
   {
+    "id": "uicomponents-uicheckbox--checked",
+    "title": "UiComponents/UiCheckbox",
+    "name": "Checked"
+  },
+  {
     "id": "uicomponents-uicheckbox--click-toggles-checked-state",
     "title": "UiComponents/UiCheckbox",
     "name": "Click Toggles Checked State"
+  },
+  {
+    "id": "uicomponents-uicheckbox--compact-mobile-size",
+    "title": "UiComponents/UiCheckbox",
+    "name": "Compact Mobile Size"
+  },
+  {
+    "id": "uicomponents-uicheckbox--keyboard-focus-reaches-checked-box",
+    "title": "UiComponents/UiCheckbox",
+    "name": "Keyboard Focus Reaches Checked Box"
   },
   {
     "id": "uicomponents-uichevronbutton--chevron-button",
@@ -353,6 +368,16 @@
     "id": "uicomponents-uilink--link",
     "title": "UiComponents/UiLink",
     "name": "Link"
+  },
+  {
+    "id": "uicomponents-uilink--text-link",
+    "title": "UiComponents/UiLink",
+    "name": "Text Link"
+  },
+  {
+    "id": "uicomponents-uilink--text-link-rests-without-underline",
+    "title": "UiComponents/UiLink",
+    "name": "Text Link Rests Without Underline"
   },
   {
     "id": "uicomponents-uimultiselect--loading",

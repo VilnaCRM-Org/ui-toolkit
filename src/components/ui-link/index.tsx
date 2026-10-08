@@ -6,7 +6,7 @@ import { useDevWarning } from '@/utils/dev-warn';
 import { useUiTheme } from '@/utils/ui-theme';
 
 import newTabLabelWarning from './new-tab-label-warning';
-import { linkSx } from './styles';
+import { linkSx, restUnderlineByAppearance } from './styles';
 import type { UiLinkProps } from './types';
 
 const visuallyHidden: React.CSSProperties = {
@@ -60,7 +60,8 @@ function UiLink({
   disabled,
   newTabLabel,
   tone = 'brand',
-  underline = 'always',
+  appearance = 'default',
+  underline = restUnderlineByAppearance[appearance],
   responsiveSize = true,
   ...rest
 }: UiLinkProps): React.ReactElement {
@@ -79,7 +80,7 @@ function UiLink({
       target={target}
       rel={mergeRel(opensInNewTab, rel)}
       underline={underline}
-      sx={linkSx(theme, { tone, underline, responsiveSize }, sx)}
+      sx={linkSx(theme, { tone, underline, responsiveSize, appearance }, sx)}
     >
       {children}
       {opensInNewTab && newTabLabel ? (

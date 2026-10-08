@@ -70,8 +70,8 @@ Enforcement: `tests/unit/board-coverage-traceability.test.ts`. Story artifact:
 - Registry: `specs/planning-artifacts/component-provenance.md` records a `crm` / `website` / `new`
   source and rationale for every runtime export of `src/components/index.ts` (groups A-D of the
   drift guard).
-- Deviation ledger: `specs/planning-artifacts/deviation-ledger.md` holds 66 rows, `DEV-01` to
-  `DEV-66`. By status: 34 `ratified`, 10 `pending-ratification`, 3 `escalated`, 8
+- Deviation ledger: `specs/planning-artifacts/deviation-ledger.md` holds 67 rows, `DEV-01` to
+  `DEV-67`. By status: 35 `ratified`, 10 `pending-ratification`, 3 `escalated`, 8
   `deferred-tracked`, 11 `superseded`. Thirteen rows carry an `unfiled:` tracking ref rather than
   a GitHub issue. `DEV-43` (bundled fonts without a licence note) is `superseded` by #178, which
   ships the OFL texts.
@@ -263,7 +263,7 @@ exposed, and a release pipeline that fails when any of these checks fails. The g
 | --- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | FR1 | Complete board coverage                       | `specs/planning-artifacts/board-coverage-checklist.md` (46/46 `Done`), `specs/implementation-artifacts/5-1-board-coverage-closure-and-traceability.md`, `tests/unit/board-coverage-traceability.test.ts`             | Met; provisional on RB-05          |
 | FR2 | Reuse-first provenance                        | `specs/planning-artifacts/component-provenance.md`, `specs/implementation-artifacts/5-2-reuse-canonical-compliance-and-provenance-completion.md`, `tests/unit/component-provenance-traceability.test.ts`             | Met                                |
-| FR3 | `crm`-canonical behaviour, `website` gap-fill | `specs/planning-artifacts/deviation-ledger.md` (every divergence ledgered, 66 rows), `specs/planning-artifacts/component-provenance.md` alignment notes                                                              | Met; 13 rulings unratified (RB-05) |
+| FR3 | `crm`-canonical behaviour, `website` gap-fill | `specs/planning-artifacts/deviation-ledger.md` (every divergence ledgered, 67 rows), `specs/planning-artifacts/component-provenance.md` alignment notes                                                              | Met; 13 rulings unratified (RB-05) |
 | FR8 | Storybook, unit tests, strict tsc, exports    | `tests/unit/story-coverage.test.ts`, `tests/unit/epic-quality-gate-closure.test.ts`, `tests/unit/export-contract-integrity.test.ts`, `specs/planning-artifacts/export-contract.md`, §2.4 gate set, §4 licensing gate | Met for Epics 1-4                  |
 
 ### 5.2 FR4 to FR7 traceability

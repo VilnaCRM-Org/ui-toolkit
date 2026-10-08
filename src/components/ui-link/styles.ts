@@ -4,6 +4,8 @@ import type { SystemStyleObject } from '@mui/system';
 import { fontFamilies } from '@/utils/font-tokens';
 import { cacheByTheme } from '@/utils/ui-theme';
 
+import { textLinkTypography } from './text-link-styles';
+
 type LinkStyle = SystemStyleObject<Theme>;
 
 export const accessibleLinkPalette = {
@@ -15,6 +17,15 @@ export type LinkAppearance = {
   tone: 'brand' | 'accessible' | 'inherit';
   underline: 'always' | 'hover' | 'none';
   responsiveSize: boolean;
+  appearance: 'default' | 'text';
+};
+
+export const restUnderlineByAppearance: Record<
+  LinkAppearance['appearance'],
+  LinkAppearance['underline']
+> = {
+  default: 'always',
+  text: 'none',
 };
 
 const accessibleTone: LinkStyle = {
@@ -55,14 +66,18 @@ const linkStyles: (theme: Theme) => LinkStyle = cacheByTheme(buildLinkStyles);
 
 const toneKeys: readonly string[] = ['color', '&:hover', '&:active'];
 
+function keepsBaseMediaRules(appearance: LinkAppearance): boolean {
+  return appearance.responsiveSize && appearance.appearance === 'default';
+}
+
 function isDroppedKey(key: string, appearance: LinkAppearance): boolean {
   const toneDropped: boolean = appearance.tone === 'inherit' && toneKeys.includes(key);
-  return toneDropped || (!appearance.responsiveSize && key.startsWith('@media'));
+  return toneDropped || (!keepsBaseMediaRules(appearance) && key.startsWith('@media'));
 }
 
 function baseStyles(theme: Theme, appearance: LinkAppearance): LinkStyle {
   const base: LinkStyle = linkStyles(theme);
-  if (appearance.tone !== 'inherit' && appearance.responsiveSize) {
+  if (appearance.tone !== 'inherit' && keepsBaseMediaRules(appearance)) {
     return base;
   }
   return Object.fromEntries(
@@ -70,6 +85,13 @@ function baseStyles(theme: Theme, appearance: LinkAppearance): LinkStyle {
       ([key]: [string, unknown]): boolean => !isDroppedKey(key, appearance)
     )
   ) as LinkStyle;
+}
+
+function typographyStyles(theme: Theme, appearance: LinkAppearance): LinkStyle[] {
+  if (appearance.appearance === 'default') {
+    return [];
+  }
+  return textLinkTypography(theme, appearance.responsiveSize);
 }
 
 function consumerSxArray(sx: SxProps<Theme> | undefined): LinkStyle[] {
@@ -89,5 +111,10 @@ export function linkSx(
   appearance: LinkAppearance,
   sx: SxProps<Theme> | undefined
 ): SxProps<Theme> {
-  return [baseStyles(theme, appearance), ...appearanceStyles(appearance), ...consumerSxArray(sx)];
+  return [
+    baseStyles(theme, appearance),
+    ...typographyStyles(theme, appearance),
+    ...appearanceStyles(appearance),
+    ...consumerSxArray(sx),
+  ];
 }

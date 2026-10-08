@@ -877,6 +877,7 @@ export type UiLinkProps = {
     sx?: SxProps<Theme> | undefined;
     disabled?: boolean | undefined;
     tone?: 'brand' | 'accessible' | 'inherit' | undefined;
+    appearance?: 'default' | 'text' | undefined;
     responsiveSize?: boolean | undefined;
     underline?: 'always' | 'hover' | 'none' | undefined;
 } & Omit<LinkProps, 'children' | 'href' | 'target' | 'rel' | 'sx' | 'underline' | 'color' | 'component'> & ({
