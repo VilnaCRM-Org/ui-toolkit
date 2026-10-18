@@ -48,7 +48,7 @@ jobs:
       # 34). Same strength, same purpose -- a lockfile-blind run still produces
       # zero and is still caught.
       - name: Generate the CycloneDX SBOM for the npm package
-        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
           path: .
           format: cyclonedx-json
@@ -61,7 +61,7 @@ jobs:
         run: bash scripts/ci/assert-sbom.sh sbom/ui-toolkit-package.cyclonedx.json 34
 
       - name: Upload the package SBOM
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sbom-package
           path: sbom/ui-toolkit-package.cyclonedx.json
@@ -101,7 +101,7 @@ jobs:
         run: docker build --file "$DOCKERFILE" --tag "$IMAGE" .
 
       - name: Generate the CycloneDX SBOM for the ${{ matrix.name }} image
-        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
           image: ui-toolkit-sbom-${{ matrix.name }}:${{ github.sha }}
           format: cyclonedx-json
@@ -116,7 +116,7 @@ jobs:
         run: bash scripts/ci/assert-sbom.sh "$SBOM_PATH"
 
       - name: Upload the ${{ matrix.name }} image SBOM
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sbom-image-${{ matrix.name }}
           path: sbom/ui-toolkit-${{ matrix.name }}-image.cyclonedx.json
